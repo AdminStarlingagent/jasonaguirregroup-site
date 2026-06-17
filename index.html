@@ -63,10 +63,11 @@
   .nav-links a:hover{color:var(--emerald)} .nav-links a:hover::after{width:100%}
   .nav-right{margin-left:auto; display:flex; align-items:center; gap:20px}
   .nav-phone{font-family:var(--ui); font-weight:500; font-size:14px; letter-spacing:.04em; color:var(--emerald); display:flex; align-items:center; gap:8px}
+  .nav-cta{padding:11px 22px; font-size:12px; letter-spacing:.12em}
   .lang{display:inline-flex; border:1px solid var(--gold-line); border-radius:2px; overflow:hidden}
   .lang button{font-family:var(--ui); font-weight:500; font-size:11.5px; letter-spacing:.14em; color:var(--muted-2); background:transparent; border:none; padding:7px 13px; cursor:pointer; transition:.25s}
   .lang button.active{background:var(--emerald); color:var(--gold-2)}
-  @media(max-width:960px){ .nav-links,.nav-phone{display:none} }
+  @media(max-width:960px){ .nav-links,.nav-phone,.nav-cta{display:none} }
 
   /* ---------------- HERO ---------------- */
   .hero{position:relative; background:radial-gradient(130% 130% at 78% -20%, #1A4A3B 0%, var(--emerald) 50%, var(--noir) 130%); color:var(--creamtext); overflow:hidden}
@@ -265,6 +266,7 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         (832) 808-6483
       </a>
+      <a href="/offer-listing-intake.html" class="btn btn-gold nav-cta"><span data-en="Submit an offer" data-es="Envía tu oferta">Submit an offer</span></a>
       <div class="lang" role="group" aria-label="Language">
         <button data-set="en" class="active">EN</button>
         <button data-set="es">ES</button>
