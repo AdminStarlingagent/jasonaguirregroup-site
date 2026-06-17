@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get Started — Jason Aguirre Group LLC</title>
+<!--
+  ============================================================================
+  COMBINED CLIENT INTAKE  →  one link, routes to Buyer Offer OR Seller Listing.
+  Each submission emails the agent (Web3Forms). One free key works for both.
+  ----------------------------------------------------------------------------
+  SETUP — choose EITHER or BOTH destinations (fill what you want, leave the rest):
+   • EMAIL: web3forms.com → get a free ACCESS KEY → paste into WEB3FORMS_ACCESS_KEY.
+   • GOHIGHLEVEL: in GHL build a Workflow with an "Inbound Webhook" trigger →
+     copy its URL → paste into GHL_WEBHOOK_URL. (Free; sends submissions into your CRM.)
+   Then host this file (GitHub Pages / Netlify / GHL "Custom Code") and share ONE link.
+   Buyer email subject "New Buyer Offer: …"; seller "New Seller Lead: …".
+  ============================================================================
+-->
+<style>
+:root{
+  --ink:#0d1b2a;--primary:#0e7c7b;--primary-d:#0a5a59;--primary-l:#e6f3f2;
+  --accent:#ef8354;--bg:#eef2f4;--card:#fff;--muted:#5c6b7a;--line:#dbe3e9;--line-d:#c3cfd8;
+  --green:#10987a;--green-l:#e4f5ef;--red:#d8553f;--amber-l:#fbf3df;--amber-b:#f0dca8;--amber-t:#7a5a12;
+  --shadow:0 10px 40px rgba(13,27,42,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;padding:20px;-webkit-font-smoothing:antialiased}
+.shell{max-width:600px;margin:18px auto}
+.brandbar{display:flex;align-items:center;gap:11px;margin-bottom:14px;padding-left:4px}
+.brandbar .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-d));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.15rem}
+.brandbar b{font-size:1.02rem;letter-spacing:-.01em}
+.brandbar small{display:block;color:var(--muted);font-size:.78rem;font-weight:500}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+[data-screen][hidden]{display:none}
+.draft{background:var(--accent);color:#fff;text-align:center;font-size:.72rem;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;padding:7px}
+.prog{height:6px;background:#dfe8ea}
+.prog span{display:block;height:100%;width:14%;background:var(--accent);transition:width .3s}
+.inner{padding:26px 26px 22px}
+.stepcount{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);margin-bottom:6px}
+h1{font-size:1.34rem;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:.92rem;margin:0 0 18px}
+.step{display:none;animation:fade .25s}
+.step.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+label.fl{display:block;font-size:.82rem;font-weight:700;margin:0 0 5px;color:#27384a}
+label.fl .opt{color:var(--muted);font-weight:500}
+.req-star{color:var(--red)}
+input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],select,textarea{
+  width:100%;border:1px solid var(--line-d);border-radius:10px;padding:11px 13px;font-size:1rem;
+  font-family:inherit;color:var(--ink);background:#fff;transition:border .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-l)}
+textarea{min-height:84px;resize:vertical}
+.fg{margin-bottom:15px}
+.two{display:flex;gap:12px}.two>*{flex:1}
+@media(max-width:460px){.two{flex-direction:column;gap:0}}
+.hint{font-size:.76rem;color:var(--muted);margin-top:4px}
+.err{display:none;color:var(--red);font-size:.78rem;font-weight:600;margin-top:4px}
+.fg.invalid input,.fg.invalid select{border-color:var(--red);box-shadow:0 0 0 3px #f9e3de}
+.fg.invalid .err{display:block}
+.choices{display:flex;gap:10px;flex-wrap:wrap}
+.choice{flex:1;min-width:110px;position:relative}
+.choice input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.choice span{display:block;text-align:center;border:1.5px solid var(--line-d);border-radius:11px;padding:12px;
+  font-weight:600;font-size:.92rem;cursor:pointer;transition:.15s}
+.choice input:checked+span{border-color:var(--primary);background:var(--primary-l);color:var(--primary-d)}
+.check{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:11px;
+  padding:12px 14px;margin-bottom:9px;cursor:pointer;font-weight:600;font-size:.93rem;background:#fff;transition:.15s}
+.check input{width:19px;height:19px;accent-color:var(--primary);flex:none;margin:0}
+.check.on{border-color:var(--primary);background:var(--primary-l)}
+.notice{background:var(--amber-l);border:1px solid var(--amber-b);border-radius:11px;padding:14px;font-size:.85rem;color:var(--amber-t)}
+.notice b{color:#634509}
+.ack{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--primary);background:var(--primary-l);
+  border-radius:11px;padding:13px 15px;margin-top:14px;cursor:pointer}
+.ack input{width:21px;height:21px;accent-color:var(--primary);flex:none;margin:2px 0 0}
+.ack span{font-size:.9rem;font-weight:600;color:var(--primary-d)}
+.rev{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:6px}
+.rev .r{display:flex;justify-content:space-between;gap:14px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:.88rem}
+.rev .r:last-child{border:0}
+.rev .r .k{color:var(--muted);flex:none}
+.rev .r .v{font-weight:600;text-align:right;word-break:break-word}
+.rev .r .v.empty{color:var(--line-d);font-weight:500}
+.nav{display:flex;gap:12px;margin-top:22px}
+.btn{flex:1;border:1px solid var(--line-d);background:#fff;color:var(--ink);padding:13px;border-radius:11px;
+  font-weight:700;font-size:.96rem;cursor:pointer;font-family:inherit;transition:.15s}
+.btn:hover{border-color:var(--primary);color:var(--primary-d)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);flex:2}
+.btn.primary:hover{background:var(--primary-d);color:#fff}
+.btn.primary:disabled{opacity:.55;cursor:not-allowed;background:var(--primary)}
+.btn.hidden{display:none}
+.changelink{background:none;border:0;color:var(--muted);font-weight:600;font-size:.8rem;cursor:pointer;padding:0 0 14px;font-family:inherit}
+.changelink:hover{color:var(--primary-d)}
+.done{text-align:center;padding:20px 10px 6px}
+.done .big{width:74px;height:74px;border-radius:50%;background:var(--green-l);color:var(--green);
+  display:grid;place-items:center;font-size:2.3rem;margin:0 auto 16px}
+.done h1{font-size:1.5rem}
+.spin{display:inline-block;width:16px;height:16px;border:2.5px solid #ffffff77;border-top-color:#fff;
+  border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px;margin-right:7px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.footnote{text-align:center;color:var(--muted);font-size:.76rem;margin:14px 8px 0}
+.cfgwarn{display:none;background:#fbeae6;border:1px solid #f3c4b8;color:#9c3a28;border-radius:10px;
+  padding:10px 13px;font-size:.8rem;margin:0 0 16px}
+/* landing */
+.picks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+@media(max-width:480px){.picks{grid-template-columns:1fr}}
+.pick{text-align:left;border:1.5px solid var(--line-d);border-radius:14px;padding:20px;background:#fff;cursor:pointer;font-family:inherit;transition:.15s;display:block}
+.pick:hover{border-color:var(--primary);box-shadow:var(--shadow);transform:translateY(-2px)}
+.pick .ico{font-size:2rem;display:block;margin-bottom:8px}
+.pick b{display:block;font-size:1.1rem;margin-bottom:3px}
+.pick small{color:var(--muted);font-size:.85rem;line-height:1.45}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="brandbar">
+    <div class="logo">JA</div>
+    <div><b>Jason Aguirre Group LLC</b><small>Buying or selling? Start here</small></div>
+  </div>
+
+  <div class="card">
+
+    <!-- ===== LANDING ===== -->
+    <div class="inner" data-screen="landing" id="landing">
+      <div class="cfgwarn" id="cfgwarn">⚙️ Setup note (only you see this): add a destination near the top of this file — your free <b>WEB3FORMS_ACCESS_KEY</b> (emails you) and/or your <b>GHL_WEBHOOK_URL</b> (sends into GoHighLevel). Fill either or both; submissions won't send until one is set.</div>
+      <h1>Let's get started</h1>
+      <p class="sub">Are you looking to buy or sell? Pick one — it takes about 2 minutes and goes straight to Jay.</p>
+      <div class="picks">
+        <button class="pick" data-choose="buyer" type="button">
+          <span class="ico">🏠</span>
+          <b>I'm buying</b>
+          <small>Send Jay the offer you'd like to make on a home.</small>
+        </button>
+        <button class="pick" data-choose="seller" type="button">
+          <span class="ico">🔑</span>
+          <b>I'm selling</b>
+          <small>Tell Jay about the home you're thinking of listing.</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== BUYER FLOW ===== -->
+    <div data-screen="buyer" id="flow-buyer" hidden>
+      <div class="draft">Draft worksheet — not a binding offer</div>
+      <div class="prog"><span></span></div>
+      <div class="inner">
+        <button class="changelink" type="button" data-tolanding>← Buying or selling?</button>
+        <form novalidate>
+          <input type="checkbox" name="botcheck" style="display:none!important" tabindex="-1" autocomplete="off">
+
+          <section class="step active" data-step>
+            <div class="stepcount">Step 1 of 7</div>
+            <h1>Before we begin</h1>
+            <p class="sub">A quick worksheet so Jay can prepare your offer.</p>
+            <div class="notice"><b>This is a worksheet, not a contract.</b> You're giving Jay the details he needs to prepare your offer. Nothing here is a binding offer — no offer exists until Jay prepares official documents and you sign them. This goes to Jay only, never to the seller.</div>
+            <label class="ack"><input type="checkbox" data-f="acknowledgment" data-req><span>I understand this is a draft request, not a legally binding offer.</span></label>
+            <div class="err ackerr" style="margin-top:8px">Please confirm to continue.</div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 2 of 7</div>
+            <h1>Your information</h1>
+            <p class="sub">So Jay can reach you and prepare documents.</p>
+            <div class="two">
+              <div class="fg"><label class="fl">First name <span class="req-star">*</span></label><input type="text" data-f="firstName" data-req><div class="err">Required</div></div>
+              <div class="fg"><label class="fl">Last name <span class="req-star">*</span></label><input type="text" data-f="lastName" data-req><div class="err">Required</div></div>
+            </div>
+            <div class="fg"><label class="fl">Email <span class="req-star">*</span></label><input type="email" data-f="email" data-req data-email><div class="err">Enter a valid email</div></div>
+            <div class="fg"><label class="fl">Mobile phone <span class="req-star">*</span></label><input type="tel" data-f="phone" data-req><div class="err">Required</div></div>
+            <div class="fg"><label class="fl">Co-buyer name <span class="opt">(optional)</span></label><input type="text" data-f="coBuyer"><div class="hint">Anyone else who will be on title.</div></div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 3 of 7</div>
+            <h1>The property</h1>
+            <p class="sub">Which home are you offering on?</p>
+            <div class="fg"><label class="fl">Property address <span class="req-star">*</span></label><input type="text" data-f="propertyAddress" data-req placeholder="123 Main St, Houston, TX 77002"><div class="err">Required</div></div>
+            <div class="fg"><label class="fl">Property type</label>
+              <select data-f="propertyType"><option value="">Select…</option><option>Single Family</option><option>Condo</option><option>Townhome</option><option>Multi-Family</option><option>Land</option><option>Other</option></select>
+            </div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 4 of 7</div>
+            <h1>Your offer</h1>
+            <p class="sub">The core numbers.</p>
+            <div class="fg"><label class="fl">Offer price <span class="req-star">*</span></label><input type="number" data-f="offerPrice" data-req placeholder="$" min="0"><div class="err">Required</div></div>
+            <div class="two">
+              <div class="fg"><label class="fl">Earnest money <span class="opt">(optional)</span></label><input type="number" data-f="earnestMoney" placeholder="$" min="0"><div class="hint">Good-faith deposit (~1–3%).</div></div>
+              <div class="fg"><label class="fl">Offer expires <span class="opt">(optional)</span></label><input type="date" data-f="offerExpiration"></div>
+            </div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 5 of 7</div>
+            <h1>Financing</h1>
+            <p class="sub">How are you paying?</p>
+            <div class="fg">
+              <div class="choices">
+                <label class="choice"><input type="radio" name="payingWith" value="Cash" data-req><span>💵 Cash</span></label>
+                <label class="choice"><input type="radio" name="payingWith" value="Financed" data-req><span>🏦 Financed</span></label>
+              </div>
+              <div class="err raderr">Please choose one</div>
+            </div>
+            <div data-fin style="display:none">
+              <div class="two">
+                <div class="fg"><label class="fl">Loan type</label><select data-f="loanType"><option value="">Select…</option><option>Conventional</option><option>FHA</option><option>VA</option><option>USDA</option></select></div>
+                <div class="fg"><label class="fl">Down payment</label><input type="text" data-f="downPayment" placeholder="20% or $"></div>
+              </div>
+              <div class="fg"><label class="fl">Lender name</label><input type="text" data-f="lenderName"></div>
+              <div class="fg"><label class="fl">Pre-approval / proof of funds ready?</label>
+                <select data-f="preApprovalReady"><option value="">Select…</option><option>Yes — ready to send</option><option>Working on it</option><option>Not yet</option></select>
+                <div class="hint">🔒 Don't upload it here — Jay will text you a private upload link.</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 6 of 7</div>
+            <h1>Protections &amp; timeline</h1>
+            <p class="sub">Conditions that let you back out safely, and your dates.</p>
+            <label class="fl" style="margin-bottom:8px">Contingencies to include</label>
+            <label class="check"><input type="checkbox" class="cont" value="Inspection"> 🔍 Inspection</label>
+            <label class="check"><input type="checkbox" class="cont" value="Appraisal"> 📊 Appraisal</label>
+            <label class="check"><input type="checkbox" class="cont" value="Financing"> 🏦 Financing</label>
+            <label class="check"><input type="checkbox" class="cont" value="Sale of my current home"> 🏚️ Sale of my current home</label>
+            <div class="two" style="margin-top:14px">
+              <div class="fg"><label class="fl">Inspection / option days <span class="opt">(TX)</span></label><input type="number" data-f="optionPeriodDays" placeholder="e.g. 7" min="0"><div class="hint">Texas option period length.</div></div>
+              <div class="fg"><label class="fl">Target closing date</label><input type="date" data-f="targetClosingDate"></div>
+            </div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 7 of 7</div>
+            <h1>Anything else, then review</h1>
+            <p class="sub">Add notes for Jay, then check your details.</p>
+            <div class="fg"><label class="fl">Additional notes <span class="opt">(optional)</span></label><textarea data-f="additionalNotes" placeholder="Requests, questions, special terms…"></textarea></div>
+            <div class="rev" data-review></div>
+            <div class="notice" style="margin-top:12px">Submitting sends this to <b>Jay only</b>. He'll review and prepare your official documents for signature.</div>
+          </section>
+
+          <section class="step" data-done>
+            <div class="done"><div class="big">✓</div><h1>Your offer draft is in!</h1>
+            <p class="sub" style="font-size:1rem">Jay has been notified and will review your details, then send official documents to sign. Watch your phone and email.</p></div>
+          </section>
+
+          <div class="nav" data-nav>
+            <button type="button" class="btn hidden" data-back>← Back</button>
+            <button type="button" class="btn primary" data-next>Continue →</button>
+            <button type="submit" class="btn primary hidden" data-submit>Submit to Jay</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== SELLER FLOW ===== -->
+    <div data-screen="seller" id="flow-seller" hidden>
+      <div class="draft">Listing inquiry — terms finalized together later</div>
+      <div class="prog"><span></span></div>
+      <div class="inner">
+        <button class="changelink" type="button" data-tolanding>← Buying or selling?</button>
+        <form novalidate>
+          <input type="checkbox" name="botcheck" style="display:none!important" tabindex="-1" autocomplete="off">
+
+          <section class="step active" data-step>
+            <div class="stepcount">Step 1 of 6</div>
+            <h1>Let's talk about your home</h1>
+            <p class="sub">A few quick questions so Jay can prepare for your listing.</p>
+            <div class="notice"><b>This is an inquiry, not a listing agreement.</b> You're sharing details so Jay can review your home and reach out. Price, commission, and terms are decided together later — nothing here commits you to anything.</div>
+            <label class="ack"><input type="checkbox" data-f="acknowledgment" data-req><span>Got it — this is a request to discuss listing, not a binding agreement.</span></label>
+            <div class="err ackerr" style="margin-top:8px">Please confirm to continue.</div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 2 of 6</div>
+            <h1>Your information</h1>
+            <p class="sub">So Jay can get back to you.</p>
+            <div class="two">
+              <div class="fg"><label class="fl">First name <span class="req-star">*</span></label><input type="text" data-f="firstName" data-req><div class="err">Required</div></div>
+              <div class="fg"><label class="fl">Last name <span class="req-star">*</span></label><input type="text" data-f="lastName" data-req><div class="err">Required</div></div>
+            </div>
+            <div class="fg"><label class="fl">Email <span class="req-star">*</span></label><input type="email" data-f="email" data-req data-email><div class="err">Enter a valid email</div></div>
+            <div class="fg"><label class="fl">Mobile phone <span class="req-star">*</span></label><input type="tel" data-f="phone" data-req><div class="err">Required</div></div>
+            <div class="fg"><label class="fl">Best way / time to reach you <span class="opt">(optional)</span></label><input type="text" data-f="bestContact" placeholder="e.g. text, after 5pm"></div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 3 of 6</div>
+            <h1>The property</h1>
+            <p class="sub">Which home would you list?</p>
+            <div class="fg"><label class="fl">Property address <span class="req-star">*</span></label><input type="text" data-f="propertyAddress" data-req placeholder="123 Main St, Houston, TX 77002"><div class="err">Required</div></div>
+            <div class="two">
+              <div class="fg"><label class="fl">Property type</label><select data-f="propertyType"><option value="">Select…</option><option>Single Family</option><option>Condo</option><option>Townhome</option><option>Multi-Family</option><option>Land</option><option>Other</option></select></div>
+              <div class="fg"><label class="fl">Year built <span class="opt">(if known)</span></label><input type="number" data-f="yearBuilt" placeholder="e.g. 2004"></div>
+            </div>
+            <div class="two">
+              <div class="fg"><label class="fl">Beds</label><input type="number" data-f="beds" min="0" placeholder="3"></div>
+              <div class="fg"><label class="fl">Baths</label><input type="number" data-f="baths" min="0" step="0.5" placeholder="2"></div>
+              <div class="fg"><label class="fl">Approx. sqft</label><input type="number" data-f="sqft" min="0" placeholder="1800"></div>
+            </div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 4 of 6</div>
+            <h1>Condition &amp; highlights</h1>
+            <p class="sub">Helps Jay price and market it.</p>
+            <div class="fg"><label class="fl">Overall condition</label>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="condition" value="Move-in ready"><span>Move-in ready</span></label>
+                <label class="choice"><input type="radio" name="condition" value="Average"><span>Average</span></label>
+                <label class="choice"><input type="radio" name="condition" value="Needs work"><span>Needs work</span></label>
+              </div>
+            </div>
+            <div class="fg"><label class="fl">Recent updates / renovations <span class="opt">(optional)</span></label><textarea data-f="updates" placeholder="New roof '22, kitchen remodel '21, HVAC '20…"></textarea></div>
+            <div class="fg"><label class="fl">Standout features <span class="opt">(optional)</span></label><input type="text" data-f="specialFeatures" placeholder="Pool, big lot, views, solar, ADU…"></div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 5 of 6</div>
+            <h1>Your goals</h1>
+            <p class="sub">No commitment — just what you're hoping for.</p>
+            <div class="fg"><label class="fl">Hoped-for list price <span class="opt">(optional)</span></label><input type="number" data-f="desiredListPrice" placeholder="$" min="0"><div class="hint">A ballpark is fine — Jay will share a market analysis.</div></div>
+            <div class="fg"><label class="fl">How soon do you want to sell?</label>
+              <select data-f="timeline"><option value="">Select…</option><option>ASAP</option><option>1–3 months</option><option>3–6 months</option><option>6–12 months</option><option>Just exploring</option></select>
+            </div>
+            <div class="fg"><label class="fl">Will you also need to buy a home?</label>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="alsoBuying" value="Yes"><span>Yes</span></label>
+                <label class="choice"><input type="radio" name="alsoBuying" value="No"><span>No</span></label>
+                <label class="choice"><input type="radio" name="alsoBuying" value="Maybe"><span>Maybe</span></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="step" data-step>
+            <div class="stepcount">Step 6 of 6</div>
+            <h1>A few last details</h1>
+            <p class="sub">Then review and send.</p>
+            <div class="fg"><label class="fl">Occupancy</label>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="occupancy" value="Owner-occupied"><span>I live there</span></label>
+                <label class="choice"><input type="radio" name="occupancy" value="Tenant-occupied"><span>Tenant</span></label>
+                <label class="choice"><input type="radio" name="occupancy" value="Vacant"><span>Vacant</span></label>
+              </div>
+            </div>
+            <div class="fg"><label class="fl">Currently under a listing agreement with another agent?</label>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="workingWithAgent" value="No"><span>No</span></label>
+                <label class="choice"><input type="radio" name="workingWithAgent" value="Yes"><span>Yes</span></label>
+              </div>
+              <div class="hint">If yes, Jay will respect that and won't interfere.</div>
+            </div>
+            <div class="fg"><label class="fl">Anything else? <span class="opt">(optional)</span></label><textarea data-f="additionalNotes" placeholder="Reason for selling, questions, special situations…"></textarea></div>
+            <div class="rev" data-review></div>
+            <div class="notice" style="margin-top:12px">This goes to <b>Jay only</b>. He'll review your home and reach out about listing it.</div>
+          </section>
+
+          <section class="step" data-done>
+            <div class="done"><div class="big">✓</div><h1>Thanks — it's on its way to Jay!</h1>
+            <p class="sub" style="font-size:1rem">Jay has your home details and will reach out soon with next steps and a market analysis. Watch your phone and email.</p></div>
+          </section>
+
+          <div class="nav" data-nav>
+            <button type="button" class="btn hidden" data-back>← Back</button>
+            <button type="button" class="btn primary" data-next>Continue →</button>
+            <button type="submit" class="btn primary hidden" data-submit>Send to Jay</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+  <p class="footnote">🔒 Your information is sent securely to Jason Aguirre. This form does not create a binding offer or agreement.</p>
+</div>
+
+<script>
+(function(){
+  /* ===== CONFIG — fill in EITHER or BOTH ===== */
+  var WEB3FORMS_ACCESS_KEY = "0c030dec-75ac-44a3-8a41-3dca53bb4529"; // email-to-inbox (free). Leave blank "" to skip email.
+  var GHL_WEBHOOK_URL = "";  // optional: paste your GoHighLevel Inbound Webhook URL to also send into your CRM
+  var DELIVER_TO_NAME = "Jason Aguirre Group LLC";   // email "from" name
+  /* =========================================== */
+  var WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
+  var emailRe = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  var w3On  = WEB3FORMS_ACCESS_KEY.indexOf('PASTE_')!==0 && WEB3FORMS_ACCESS_KEY.trim()!=='';
+  var ghlOn = GHL_WEBHOOK_URL.indexOf('PASTE_')!==0 && GHL_WEBHOOK_URL.trim()!=='';
+  var notConfigured = !w3On && !ghlOn;
+  if(notConfigured){var w=document.getElementById('cfgwarn'); if(w) w.style.display='block';}
+
+  var card=document.querySelector('.card');
+  function screenTo(name){
+    card.querySelectorAll('[data-screen]').forEach(function(s){s.hidden=(s.dataset.screen!==name);});
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  var flows={};
+  document.querySelectorAll('[data-choose]').forEach(function(b){
+    b.addEventListener('click',function(){var k=b.dataset.choose; screenTo(k); flows[k].reset();});
+  });
+  document.querySelectorAll('[data-tolanding]').forEach(function(b){
+    b.addEventListener('click',function(){screenTo('landing');});
+  });
+
+  function Flow(rootId,cfg){
+    var root=document.getElementById(rootId);
+    var form=root.querySelector('form');
+    var steps=[].slice.call(form.querySelectorAll('[data-step]'));
+    var doneStep=form.querySelector('[data-done]');
+    var bar=root.querySelector('.prog span');
+    var back=form.querySelector('[data-back]'), next=form.querySelector('[data-next]'),
+        submitBtn=form.querySelector('[data-submit]'), nav=form.querySelector('[data-nav]');
+    var i=0;
+    function f(n){return form.querySelector('[data-f="'+n+'"]');}
+    function val(n){var el=f(n);return el?(el.value||'').trim():'';}
+    function radioVal(n){var r=form.querySelector('input[name="'+n+'"]:checked');return r?r.value:'';}
+
+    function show(){
+      steps.forEach(function(s,n){s.classList.toggle('active',n===i);});
+      doneStep.classList.remove('active');
+      bar.style.width=((i+1)/steps.length*100)+'%';
+      back.classList.toggle('hidden',i===0);
+      var last=(i===steps.length-1);
+      next.classList.toggle('hidden',last);
+      submitBtn.classList.toggle('hidden',!last);
+      nav.style.display='flex';
+      if(last) review();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    function validate(){
+      var step=steps[i], ok=true;
+      step.querySelectorAll('[data-req]').forEach(function(el){
+        if(el.type==='radio'||el.type==='checkbox')return;
+        var fg=el.closest('.fg'), v=(el.value||'').trim();
+        var bad=!v || (el.hasAttribute('data-email') && !emailRe.test(v));
+        if(fg) fg.classList.toggle('invalid',bad);
+        if(bad) ok=false;
+      });
+      var ack=step.querySelector('[data-f="acknowledgment"]');
+      if(ack){var ae=step.querySelector('.ackerr'), b=!ack.checked; if(ae) ae.style.display=b?'block':'none'; if(b) ok=false;}
+      var seen={};
+      step.querySelectorAll('input[type=radio][data-req]').forEach(function(r){
+        if(seen[r.name])return; seen[r.name]=1;
+        var picked=!!form.querySelector('input[name="'+r.name+'"]:checked');
+        var fg=r.closest('.fg'), e=fg?fg.querySelector('.raderr'):null;
+        if(e) e.style.display=picked?'none':'block';
+        if(!picked) ok=false;
+      });
+      return ok;
+    }
+    next.addEventListener('click',function(){ if(validate() && i<steps.length-1){i++;show();} });
+    back.addEventListener('click',function(){ if(i>0){i--;show();} });
+    form.addEventListener('input',function(e){var fg=e.target.closest&&e.target.closest('.fg.invalid'); if(fg) fg.classList.remove('invalid');});
+    form.querySelectorAll('.check input').forEach(function(c){c.addEventListener('change',function(){c.closest('.check').classList.toggle('on',c.checked);});});
+
+    function review(){
+      var d=cfg.collect(f,val,radioVal,form);
+      form.querySelector('[data-review]').innerHTML=cfg.rows(d).map(function(r){
+        var v=r[1]?('<span class="v">'+String(r[1]).replace(/</g,'&lt;')+'</span>'):'<span class="v empty">—</span>';
+        return '<div class="r"><span class="k">'+r[0]+'</span>'+v+'</div>';
+      }).join('');
+    }
+
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+      if(!validate())return;
+      var hp=form.querySelector('[name=botcheck]'); if(hp&&hp.checked)return;
+      var d=cfg.collect(f,val,radioVal,form);
+      submitBtn.disabled=true; submitBtn.innerHTML='<span class="spin"></span>Sending…';
+      function finish(){steps.forEach(function(s){s.classList.remove('active');}); doneStep.classList.add('active'); nav.style.display='none'; bar.style.width='100%'; window.scrollTo({top:0,behavior:'smooth'});}
+      function fail(m){submitBtn.disabled=false; submitBtn.textContent=cfg.submitLabel; alert(m||'Sorry — something went wrong sending this. Please try again, or contact your agent directly.');}
+      if(notConfigured){
+        console.log('PAYLOAD (add a Web3Forms key and/or GHL webhook URL to send):',d);
+        alert('Setup needed: add your free Web3Forms access key (email) and/or your GoHighLevel Inbound Webhook URL near the top of this file. Your entered data is in the console.');
+        submitBtn.disabled=false; submitBtn.textContent=cfg.submitLabel; return;
+      }
+      // 1) Send into GoHighLevel CRM (fire-and-forget; opaque cross-origin response)
+      if(ghlOn){
+        try{ fetch(GHL_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(d)}); }catch(e){}
+      }
+      // 2) Email via Web3Forms (authoritative for the success screen when enabled)
+      if(w3On){
+        var payload={access_key:WEB3FORMS_ACCESS_KEY,subject:cfg.subject(d),from_name:DELIVER_TO_NAME,replyto:d.email,botcheck:false,message:cfg.message(d),formType:d.formType};
+        fetch(WEB3FORMS_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)})
+          .then(function(r){return r.json();})
+          .then(function(res){ if(res&&res.success){finish();}else{fail(res&&res.message?('Send failed: '+res.message):null);} })
+          .catch(function(){ fail(); });
+      } else {
+        // GoHighLevel only: opaque response can't be read, so confirm optimistically
+        finish();
+      }
+    });
+
+    if(cfg.init) cfg.init(form);
+    return {reset:function(){i=0; form.querySelectorAll('.fg.invalid').forEach(function(x){x.classList.remove('invalid');}); submitBtn.disabled=false; submitBtn.textContent=cfg.submitLabel; show();}};
+  }
+
+  function nl(l,v){return v?(l+': '+v+'\n'):'';}
+
+  flows.buyer=Flow('flow-buyer',{
+    submitLabel:'Submit to Jay',
+    init:function(form){
+      form.querySelectorAll('input[name=payingWith]').forEach(function(r){
+        r.addEventListener('change',function(){ form.querySelector('[data-fin]').style.display=(r.value==='Financed'&&r.checked)?'block':'none'; });
+      });
+    },
+    collect:function(f,val,radioVal,form){
+      var cont=[].slice.call(form.querySelectorAll('.cont:checked')).map(function(c){return c.value;}).join(', ');
+      return {formType:'Buyer Offer', submittedAt:new Date().toLocaleString(),
+        acknowledgment:f('acknowledgment').checked?'Yes':'No',
+        firstName:val('firstName'),lastName:val('lastName'),email:val('email'),phone:val('phone'),coBuyer:val('coBuyer'),
+        propertyAddress:val('propertyAddress'),propertyType:val('propertyType'),
+        offerPrice:val('offerPrice'),earnestMoney:val('earnestMoney'),offerExpiration:val('offerExpiration'),
+        payingWith:radioVal('payingWith'),loanType:val('loanType'),downPayment:val('downPayment'),lenderName:val('lenderName'),preApprovalReady:val('preApprovalReady'),
+        contingencies:cont,optionPeriodDays:val('optionPeriodDays'),targetClosingDate:val('targetClosingDate'),additionalNotes:val('additionalNotes')};
+    },
+    rows:function(d){return [['Name',[d.firstName,d.lastName].join(' ').trim()],['Email',d.email],['Phone',d.phone],['Property',d.propertyAddress],['Type',d.propertyType],['Offer price',d.offerPrice?('$'+Number(d.offerPrice).toLocaleString()):''],['Earnest money',d.earnestMoney?('$'+Number(d.earnestMoney).toLocaleString()):''],['Paying with',d.payingWith],['Loan type',d.loanType],['Contingencies',d.contingencies],['Option period',d.optionPeriodDays?d.optionPeriodDays+' days':''],['Closing',d.targetClosingDate]];},
+    subject:function(d){return 'New Buyer Offer: '+[d.firstName,d.lastName].join(' ').trim()+(d.propertyAddress?(' — '+d.propertyAddress):'');},
+    message:function(d){return 'NEW BUYER OFFER DRAFT\n(Draft request via intake form — NOT a binding offer)\n----------------------------------------\n'+nl('Submitted',d.submittedAt)+'\nBUYER\n'+nl('Name',[d.firstName,d.lastName].join(' ').trim())+nl('Email',d.email)+nl('Phone',d.phone)+nl('Co-buyer',d.coBuyer)+'\nPROPERTY\n'+nl('Address',d.propertyAddress)+nl('Type',d.propertyType)+'\nOFFER\n'+nl('Offer price',d.offerPrice?('$'+Number(d.offerPrice).toLocaleString()):'')+nl('Earnest money',d.earnestMoney?('$'+Number(d.earnestMoney).toLocaleString()):'')+nl('Offer expires',d.offerExpiration)+'\nFINANCING\n'+nl('Paying with',d.payingWith)+nl('Loan type',d.loanType)+nl('Down payment',d.downPayment)+nl('Lender',d.lenderName)+nl('Pre-approval ready',d.preApprovalReady)+'\nTERMS\n'+nl('Contingencies',d.contingencies)+nl('Option period (days)',d.optionPeriodDays)+nl('Target closing',d.targetClosingDate)+'\nNOTES\n'+(d.additionalNotes||'(none)')+'\n';}
+  });
+
+  flows.seller=Flow('flow-seller',{
+    submitLabel:'Send to Jay',
+    collect:function(f,val,radioVal,form){
+      return {formType:'Seller / Listing Inquiry', submittedAt:new Date().toLocaleString(),
+        acknowledgment:f('acknowledgment').checked?'Yes':'No',
+        firstName:val('firstName'),lastName:val('lastName'),email:val('email'),phone:val('phone'),bestContact:val('bestContact'),
+        propertyAddress:val('propertyAddress'),propertyType:val('propertyType'),yearBuilt:val('yearBuilt'),beds:val('beds'),baths:val('baths'),sqft:val('sqft'),
+        condition:radioVal('condition'),updates:val('updates'),specialFeatures:val('specialFeatures'),
+        desiredListPrice:val('desiredListPrice'),timeline:val('timeline'),alsoBuying:radioVal('alsoBuying'),
+        occupancy:radioVal('occupancy'),workingWithAgent:radioVal('workingWithAgent'),additionalNotes:val('additionalNotes')};
+    },
+    rows:function(d){return [['Name',[d.firstName,d.lastName].join(' ').trim()],['Email',d.email],['Phone',d.phone],['Property',d.propertyAddress],['Type',d.propertyType],['Beds/Baths',[d.beds,d.baths].filter(Boolean).join(' / ')],['Sqft',d.sqft],['Condition',d.condition],['Hoped price',d.desiredListPrice?('$'+Number(d.desiredListPrice).toLocaleString()):''],['Timeline',d.timeline],['Also buying',d.alsoBuying],['Occupancy',d.occupancy],['Under another agent',d.workingWithAgent]];},
+    subject:function(d){return 'New Seller Lead: '+[d.firstName,d.lastName].join(' ').trim()+(d.propertyAddress?(' — '+d.propertyAddress):'');},
+    message:function(d){return 'NEW SELLER / LISTING INQUIRY\n(Inquiry via intake form — not a listing agreement)\n----------------------------------------\n'+nl('Submitted',d.submittedAt)+'\nSELLER\n'+nl('Name',[d.firstName,d.lastName].join(' ').trim())+nl('Email',d.email)+nl('Phone',d.phone)+nl('Best contact',d.bestContact)+'\nPROPERTY\n'+nl('Address',d.propertyAddress)+nl('Type',d.propertyType)+nl('Year built',d.yearBuilt)+nl('Beds',d.beds)+nl('Baths',d.baths)+nl('Sqft',d.sqft)+'\nCONDITION\n'+nl('Condition',d.condition)+nl('Updates',d.updates)+nl('Features',d.specialFeatures)+'\nGOALS\n'+nl('Hoped list price',d.desiredListPrice?('$'+Number(d.desiredListPrice).toLocaleString()):'')+nl('Timeline',d.timeline)+nl('Also buying',d.alsoBuying)+'\nSITUATION\n'+nl('Occupancy',d.occupancy)+nl('Under another agent',d.workingWithAgent)+'\nNOTES\n'+(d.additionalNotes||'(none)')+'\n';}
+  });
+})();
+</script>
+</body>
+</html>
