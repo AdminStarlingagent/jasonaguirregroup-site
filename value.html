@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What's my home worth? — Jason Aguirre Group</title>
+<meta name="description" content="Get an instant estimate of your home's value from recent nearby sales, then get a full valuation from Jason Aguirre.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--green:#0E9F6E;--green-d:#0A6B4A;--ink:#1A1B14;--muted:#6E6E63;--line:#E7E3D9;--bg:#F7F5F0;--card:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
+  h1,h2,h3,.brand-nm,.cta{font-family:'Space Grotesk','Hanken Grotesk',sans-serif}
+  a{color:var(--green-d)}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+  /* top bar */
+  header.bar{position:sticky;top:0;z-index:30;background:rgba(247,245,240,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar-in{max-width:760px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+  .ja{width:32px;height:32px;border-radius:9px;background:var(--green);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .brand-nm{font-weight:600;font-size:15px}
+  .back{font-size:14px;font-weight:600;color:var(--green-d);text-decoration:none}
+  /* hero */
+  .hero{padding:34px 0 8px;text-align:center}
+  .pill{display:inline-block;background:#E6F4EC;color:var(--green-d);font-weight:600;font-size:12.5px;padding:5px 13px;border-radius:999px;margin-bottom:14px}
+  h1{font-size:30px;line-height:1.12;margin:0 0 10px}
+  h1 .g{color:var(--green)}
+  .lede{color:#44453c;font-size:16px;max-width:540px;margin:0 auto 4px}
+  /* card / form */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:18px 0;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  label{display:block;font-weight:600;font-size:13px;color:var(--muted);margin:0 0 6px}
+  .field{position:relative;margin-bottom:12px}
+  input[type=text],input[type=email],input[type=tel]{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px 15px;font-size:16px;background:#fff;color:var(--ink);font-weight:500;outline:none;font-family:inherit}
+  input:focus{border-color:var(--green)}
+  .suggest{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 12px 34px rgba(0,0,0,.14);z-index:60;max-height:250px;overflow-y:auto}
+  .suggest .opt{padding:12px 14px;font-size:14.5px;cursor:pointer;border-bottom:1px solid var(--line);line-height:1.35}
+  .suggest .opt:last-child{border-bottom:0}
+  .suggest .opt:hover{background:#F3F1EA}
+  .cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:none;cursor:pointer;background:var(--green);color:#fff;font-weight:600;font-size:16px;padding:15px 22px;border-radius:12px;box-shadow:0 4px 0 var(--green-d);transition:transform .08s ease,box-shadow .08s ease;text-decoration:none}
+  .cta:active{transform:translateY(4px);box-shadow:0 0 0 var(--green-d)}
+  .cta.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+  .cta svg{width:19px;height:19px}
+  .cta[disabled]{opacity:.6;cursor:default}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* result */
+  .result{background:linear-gradient(135deg,var(--green),var(--green-d));border-radius:18px;padding:24px;color:#fff;text-align:center;margin-bottom:16px}
+  .result .lbl{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.9;font-weight:700}
+  .result .big{font-size:40px;font-weight:700;line-height:1.05;margin:6px 0 2px;font-family:'Space Grotesk',sans-serif}
+  .result .note{font-size:13.5px;opacity:.92}
+  .prop-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .prop-tag{font-size:12.5px;font-weight:600;background:#F3F1EA;border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+  .cmp .cmp-h{font-weight:700;font-size:15px;margin:0 0 3px}
+  .cmp .cmp-sub2{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .cmp-item{margin-bottom:13px}
+  .cmp-item:last-child{margin-bottom:0}
+  .cmp-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+  .cmp-a{font-size:13.5px;font-weight:600;line-height:1.25}
+  .cmp-meta{font-size:12px;color:var(--muted);margin-top:2px}
+  .cmp-p{font-size:14px;font-weight:700;white-space:nowrap}
+  .cmp-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:6px;background:#E6F4EC;color:var(--green-d);vertical-align:1px}
+  .cmp-track{height:8px;background:#EFECE3;border-radius:6px;overflow:hidden}
+  .cmp-fill{height:100%;background:#CDBA9B;border-radius:6px}
+  .cmp-item.est .cmp-fill{background:var(--green)}
+  .cmp-item.est .cmp-a,.cmp-item.est .cmp-p{color:var(--green-d)}
+  .disc{color:var(--muted);font-size:12.5px;line-height:1.5;margin:2px 2px 16px}
+  .h-sub{font-weight:700;font-size:18px;margin:0 0 4px}
+  .h-note{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .ok{background:#E6F4EC;border:1px solid #B7E2CC;color:var(--green-d);border-radius:14px;padding:16px;text-align:center;font-weight:600}
+  .err{color:#C0392B;font-size:12.5px;margin-top:-6px;margin-bottom:8px}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 0 36px;color:var(--muted);font-size:12.5px;text-align:center}
+  footer a{color:var(--green-d);text-decoration:none;font-weight:600}
+  .foot-links{margin:8px 0}
+  .hide{display:none}
+  @media(max-width:560px){h1{font-size:25px}.result .big{font-size:34px}}
+</style>
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-in">
+      <a class="brand" href="index.html"><span class="ja">JA</span><span class="brand-nm">Jason Aguirre Group</span></a>
+      <a class="back" href="index.html">&larr; Home</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="hero">
+      <span class="pill">● For sellers</span>
+      <h1>What's my <span class="g">home worth?</span></h1>
+      <p class="lede">Get an instant estimate from recent nearby sales — then Jason follows up with a full, personalized valuation.</p>
+    </section>
+
+    <div class="card">
+      <div class="field">
+        <label for="hv-address">Your property address</label>
+        <input type="text" id="hv-address" placeholder="123 Main St, Houston, TX 77002" autocomplete="off" autocorrect="off" autocapitalize="words">
+        <div id="hv-suggest" class="suggest hide"></div>
+      </div>
+      <button class="cta" id="hv-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
+        Get my estimate
+      </button>
+    </div>
+
+    <div id="hv-result"></div>
+
+    <!-- lead capture -->
+    <div class="card hide" id="lead-card">
+      <div class="h-sub">Get Jason's full valuation</div>
+      <p class="h-note">An automated estimate is a starting point. Tell Jason where to send your detailed, personalized valuation — no obligation.</p>
+      <div id="lead-form">
+        <div class="field"><label for="ld-name">Your name</label><input type="text" id="ld-name" placeholder="First and last name"></div>
+        <div class="err hide" id="err-name">Please enter your name.</div>
+        <div class="row2">
+          <div class="field"><label for="ld-email">Email</label><input type="email" id="ld-email" placeholder="you@email.com"></div>
+          <div class="field"><label for="ld-phone">Phone</label><input type="tel" id="ld-phone" placeholder="(832) 000-0000"></div>
+        </div>
+        <div class="err hide" id="err-contact">Please add a valid email and phone.</div>
+        <button class="cta" id="ld-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Send my request to Jason
+        </button>
+      </div>
+      <div class="ok hide" id="lead-ok">Thanks! Jason got your request and will follow up with your full valuation shortly.</div>
+      <div style="margin-top:10px"><a class="cta ghost" href="tel:+18327023574"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call Jason — (832) 702-3574</a></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <div>Jason Aguirre &middot; Licensed Texas Real Estate Agent &middot; eXp Realty, LLC</div>
+      <div class="foot-links"><a href="index.html">Home</a> &nbsp;·&nbsp; <a href="privacy-terms.html">Privacy &amp; Terms</a> &nbsp;·&nbsp; <a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></div>
+      <div>Each office is independently owned and operated. Estimates are automated and not an appraisal. &copy; 2026 Jason Aguirre Group, LLC.</div>
+    </div>
+  </footer>
+
+<script>
+  var VALUE_PROXY = 'https://lucky-lake-acf9rentcast-proxy.jason-aguirre.workers.dev/';
+  var WEB3FORMS_KEY = '0c030dec-75ac-44a3-8a41-3dca53bb4529';
+  var $ = function(id){ return document.getElementById(id); };
+  function money(n){ return '$' + Math.round(n).toLocaleString('en-US'); }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  var lastAddr = '', lastPrice = 0;
+
+  // ---- comparables chart ----
+  function compsHtml(data){
+    var comps = ((data && data.comparables) || []).filter(function(c){ return c && +c.price > 0; }).slice(0,6);
+    if(!comps.length) return '';
+    var est = +data.price || 0;
+    var maxP = Math.max.apply(null, [est].concat(comps.map(function(c){ return +c.price; }))) || 1;
+    function bar(pct){ return '<div class="cmp-track"><div class="cmp-fill" style="width:' + Math.max(8, Math.round(pct)) + '%"></div></div>'; }
+    var h = '<div class="card cmp"><div class="cmp-h">How your estimate compares</div><div class="cmp-sub2">The nearby homes this estimate is measured against.</div>';
+    h += '<div class="cmp-item est"><div class="cmp-top"><div class="cmp-a">Your home (estimate)</div><div class="cmp-p">' + money(est) + '</div></div>' + bar(est/maxP*100) + '</div>';
+    comps.forEach(function(c){
+      var meta = [(c.bedrooms!=null?c.bedrooms+' bd':''),(c.bathrooms!=null?c.bathrooms+' ba':''),(c.squareFootage?(+c.squareFootage).toLocaleString()+' sqft':''),(c.distance!=null?(+c.distance).toFixed(1)+' mi away':'')].filter(Boolean).join(' · ');
+      var badge = (c.status==='Active') ? '<span class="cmp-badge">For sale</span>' : '';
+      h += '<div class="cmp-item"><div class="cmp-top"><div><div class="cmp-a">' + esc(c.formattedAddress||c.addressLine1||'Nearby home') + badge + '</div>' + (meta?'<div class="cmp-meta">'+esc(meta)+'</div>':'') + '</div><div class="cmp-p">' + money(+c.price) + '</div></div>' + bar((+c.price)/maxP*100) + '</div>';
+    });
+    return h + '</div>';
+  }
+  function propHtml(sp, addr){
+    if(!sp) return '';
+    var det = [sp.bedrooms!=null?sp.bedrooms+' bd':'', sp.bathrooms!=null?sp.bathrooms+' ba':'', sp.squareFootage?(+sp.squareFootage).toLocaleString()+' sqft':'', sp.yearBuilt?'Built '+sp.yearBuilt:'', sp.lotSize?(+sp.lotSize).toLocaleString()+' sqft lot':'', sp.propertyType||''].filter(Boolean);
+    var addrLine = esc(sp.formattedAddress||addr||'');
+    if(!addrLine && !det.length) return '';
+    return '<div class="card"><div style="font-weight:700">' + addrLine + '</div>' + (det.length?'<div class="prop-grid">'+det.map(function(d){return '<span class="prop-tag">'+esc(d)+'</span>';}).join('')+'</div>':'') + '</div>';
+  }
+  function renderEstimate(data, addr){
+    var box = $('hv-result');
+    box.innerHTML = '<div class="result"><div class="lbl">Estimated value</div><div class="big">' + money(data.price) + '</div>' + (data.priceRangeLow&&data.priceRangeHigh?'<div class="note">Likely range ' + money(data.priceRangeLow) + ' – ' + money(data.priceRangeHigh) + '</div>':'') + '</div>'
+      + propHtml(data.subjectProperty, addr)
+      + compsHtml(data)
+      + '<p class="disc">This is an automated estimate from recent nearby sales — not an appraisal or formal market analysis. For an accurate, personalized valuation, request Jason’s full report below.</p>';
+    lastAddr = (data.subjectProperty && data.subjectProperty.formattedAddress) ? data.subjectProperty.formattedAddress : addr;
+    lastPrice = data.price || 0;
+    $('lead-card').classList.remove('hide');
+    $('lead-card').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  function getEstimate(){
+    var addr = $('hv-address').value.trim(), box = $('hv-result');
+    if(!addr){ box.innerHTML = '<p class="disc" style="text-align:center">Enter your address above to get started.</p>'; return; }
+    $('hv-btn').disabled = true;
+    box.innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">Estimating your home’s value…</div>';
+    fetch(VALUE_PROXY + '?address=' + encodeURIComponent(addr))
+      .then(function(r){ return r.json().catch(function(){ return null; }).then(function(data){ return { ok:r.ok, data:data }; }); })
+      .then(function(res){
+        if(!res.ok || !res.data || !res.data.price){
+          box.innerHTML = '<div class="card">We couldn’t pull an automated estimate for that address — double-check it, or have Jason run a full valuation for you below.</div>';
+          lastAddr = addr; lastPrice = 0; $('lead-card').classList.remove('hide');
+        } else {
+          renderEstimate(res.data, addr);
+        }
+      })
+      .catch(function(){
+        box.innerHTML = '<div class="card">Couldn’t reach the estimate service — check your connection and try again. You can still request a full valuation from Jason below.</div>';
+        lastAddr = addr; lastPrice = 0; $('lead-card').classList.remove('hide');
+      })
+      .then(function(){ $('hv-btn').disabled = false; });
+  }
+  $('hv-btn').addEventListener('click', getEstimate);
+  $('hv-address').addEventListener('keydown', function(e){ if(e.key==='Enter'){ hideSuggest(); getEstimate(); } });
+
+  // ---- address autocomplete (Photon / OpenStreetMap, Houston-biased) ----
+  var hvTimer = null;
+  function hideSuggest(){ var s = $('hv-suggest'); if(s){ s.classList.add('hide'); s.innerHTML=''; } }
+  $('hv-address').addEventListener('input', function(){
+    var q = this.value.trim(); clearTimeout(hvTimer);
+    if(q.length < 4){ hideSuggest(); return; }
+    hvTimer = setTimeout(function(){ suggestAddr(q); }, 300);
+  });
+  function suggestAddr(q){
+    fetch('https://photon.komoot.io/api?lang=en&limit=6&lat=29.76&lon=-95.37&q=' + encodeURIComponent(q))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var seen = {}, items = ((data && data.features) || []).map(function(f){ return f.properties || {}; }).filter(function(p){ return (p.countrycode||'').toUpperCase()==='US'; }).map(function(p){
+          var line1 = ((p.housenumber?p.housenumber+' ':'') + (p.street||p.name||'')).trim();
+          return [line1,(p.city||p.county||'').trim(),((p.state||'').trim()+' '+(p.postcode||'').trim()).trim()].filter(Boolean).join(', ');
+        }).filter(function(t){ return t && t.length>5 && !seen[t] && (seen[t]=1); });
+        var box = $('hv-suggest');
+        if(!items.length){ hideSuggest(); return; }
+        box.innerHTML = items.map(function(t){ return '<div class="opt">'+esc(t)+'</div>'; }).join('');
+        Array.prototype.forEach.call(box.querySelectorAll('.opt'), function(el){
+          el.addEventListener('mousedown', function(ev){ ev.preventDefault(); $('hv-address').value = el.textContent; hideSuggest(); });
+        });
+        box.classList.remove('hide');
+      })
+      .catch(function(){ hideSuggest(); });
+  }
+  $('hv-address').addEventListener('blur', function(){ setTimeout(hideSuggest, 200); });
+
+  // ---- lead capture (Web3Forms -> Jason's inbox) ----
+  function emailOk(v){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((v||'').trim()); }
+  $('ld-btn').addEventListener('click', function(){
+    var name = $('ld-name').value.trim(), email = $('ld-email').value.trim(), phone = $('ld-phone').value.trim();
+    var nameOk = name.length > 0, contactOk = emailOk(email) && phone.replace(/[^0-9]/g,'').length >= 7;
+    $('err-name').classList.toggle('hide', nameOk);
+    $('err-contact').classList.toggle('hide', contactOk);
+    if(!nameOk || !contactOk) return;
+    $('ld-btn').disabled = true;
+    var msg = 'NEW SELLER / HOME-VALUE LEAD (via website)\n----------------------------------------\n'
+      + 'Name: ' + name + '\nEmail: ' + email + '\nPhone: ' + phone + '\n\n'
+      + 'Property: ' + (lastAddr || '(not entered)') + '\n'
+      + 'Automated estimate: ' + (lastPrice ? money(lastPrice) : 'n/a') + '\n';
+    fetch('https://api.web3forms.com/submit', {
+      method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify({ access_key: WEB3FORMS_KEY, subject:'New Home-Value Lead — ' + name, from_name:'Jason Aguirre Group — Website', replyto: email, botcheck:false, message: msg })
+    }).then(function(){
+      $('lead-form').classList.add('hide'); $('lead-ok').classList.remove('hide');
+    }).catch(function(){
+      $('ld-btn').disabled = false; $('err-contact').textContent = 'Something went wrong — please call or text Jason instead.'; $('err-contact').classList.remove('hide');
+    });
+  });
+</script>
+</body>
+</html>

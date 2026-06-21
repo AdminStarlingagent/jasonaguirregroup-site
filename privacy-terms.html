@@ -1,194 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy &amp; Terms of Service</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy Policy & Terms — Jason Aguirre Group</title>
 <style>
-  :root{
-    --ink:#1a1d24; --soft:#52586a; --line:#e3e6ee; --bg:#ffffff;
-    --accent:#2f5fd6; --tok:#b23b00; --banner:#fff7e6; --bannerline:#f0d9a6;
-  }
+  :root{--green:#0E9F6E;--green-d:#0A6B4A;--ink:#1A1B14;--muted:#6E6E63;--line:#E7E3D9;--bg:#F7F5F0;--card:#fff}
   *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%}
-  body{
-    margin:0; background:#f3f4f8; color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.62; font-size:16px;
-  }
-  .sheet{max-width:760px; margin:0 auto; background:var(--bg); padding:64px 72px 88px;}
-  @media(max-width:680px){ .sheet{padding:40px 24px 64px} body{font-size:15.5px} }
-
-  .setup{
-    background:var(--banner); border:1px solid var(--bannerline); border-radius:10px;
-    padding:18px 22px; margin-bottom:48px; font-size:14px; line-height:1.55; color:#6b5418;
-  }
-  .setup h4{margin:0 0 8px; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:#8a6d1f}
-  .setup code{background:#fff; border:1px solid var(--bannerline); border-radius:4px; padding:1px 6px; font-size:13px; color:var(--tok); white-space:nowrap}
-  .setup ul{margin:8px 0 0; padding-left:18px}
-  .setup li{margin:3px 0}
-
-  header.doc{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:14px}
-  header.doc h1{font-size:30px; line-height:1.15; margin:0 0 6px; letter-spacing:-.01em}
-  header.doc .biz{font-weight:600; color:var(--ink)}
-  header.doc .eff{color:var(--soft); font-size:14px; margin-top:6px}
-
-  nav.toc{display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 44px}
-  nav.toc a{
-    font-size:13.5px; text-decoration:none; color:var(--accent);
-    border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-weight:500;
-  }
-  nav.toc a:hover{background:#f5f7fc}
-
-  section.block{margin-bottom:54px}
-  h2.part{font-size:22px; letter-spacing:-.01em; margin:0 0 4px; padding-top:8px}
-  .part-rule{height:3px; width:46px; background:var(--accent); border-radius:2px; margin:10px 0 26px}
-
-  h3{font-size:16px; margin:30px 0 8px; letter-spacing:.005em}
-  p{margin:0 0 14px; color:#2a2e38}
-  ul.body{margin:0 0 16px; padding-left:20px}
-  ul.body li{margin:6px 0; color:#2a2e38}
-  strong{color:var(--ink)}
-  .muted{color:var(--soft)}
-
-  .callout{
-    border-left:3px solid var(--accent); background:#f6f8fd;
-    padding:14px 18px; border-radius:0 8px 8px 0; margin:18px 0; font-size:15px;
-  }
-  .fairhousing{display:flex; align-items:flex-start; gap:12px; border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:26px; font-size:14px; color:var(--soft)}
-  .fairhousing .eho{flex:0 0 auto; font-weight:800; font-size:11px; letter-spacing:.06em; text-align:center; line-height:1.3; border:2px solid var(--soft); border-radius:6px; padding:8px 9px; color:var(--soft)}
-
-  footer.doc{border-top:1px solid var(--line); margin-top:60px; padding-top:22px; font-size:13.5px; color:var(--soft)}
-
-  @media print{
-    body{background:#fff} .sheet{max-width:none; padding:0} .setup{display:none}
-    nav.toc{display:none} a{color:inherit; text-decoration:none}
-    section.block{page-break-inside:avoid}
-  }
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+  .wrap{max-width:760px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 20px max(28px,env(safe-area-inset-bottom))}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-weight:700;font-size:15px;text-decoration:none;padding:10px 0;cursor:pointer}
+  header{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .ja{width:34px;height:34px;border-radius:9px;background:var(--green);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;letter-spacing:.5px}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:18px;margin:30px 0 8px;color:var(--ink)}
+  h3{font-size:15px;margin:18px 0 4px}
+  p,li{font-size:15px;color:#33342B}
+  .muted{color:var(--muted);font-size:13.5px}
+  ul{padding-left:20px;margin:8px 0}
+  li{margin-bottom:6px}
+  a{color:var(--green-d)}
+  .note{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0;font-size:14px}
+  footer{border-top:1px solid var(--line);margin-top:34px;padding-top:18px;color:var(--muted);font-size:13px}
+  hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 </style>
 </head>
 <body>
-<div class="sheet">
+<div class="wrap">
+  <a class="back" href="javascript:history.back()">&larr; Back</a>
 
-  <header class="doc">
-    <h1>Privacy Policy &amp; Terms of Service</h1>
-    <div class="biz">Jason Aguirre Group</div>
-    <div class="eff">Effective June 15, 2026</div>
+  <header>
+    <div class="brand"><div class="ja">JA</div><strong>Jason Aguirre Group</strong></div>
+    <h1>Privacy Policy &amp; Terms of Use</h1>
+    <p class="muted">Last updated: June 19, 2026</p>
   </header>
 
-  <nav class="toc">
-    <a href="#privacy">Privacy Policy</a>
-    <a href="#sms">SMS &amp; Text Messaging</a>
-    <a href="#terms">Terms of Service</a>
-    <a href="#contact">Contact</a>
-  </nav>
+  <p>This Privacy Policy and Terms of Use ("Terms") apply to the <strong>Jason Aguirre Group</strong> mobile application (the "App"). The App is provided by Jason Aguirre, a licensed Texas real estate agent with eXp Realty, LLC ("we," "us," or "our"). By using the App, you agree to this Policy and these Terms.</p>
 
-  <!-- =================== PRIVACY =================== -->
-  <section class="block" id="privacy">
-    <h2 class="part">Privacy Policy</h2>
-    <div class="part-rule"></div>
+  <h1 style="font-size:19px;margin-top:30px">Privacy Policy</h1>
 
-    <p>Jason Aguirre Group (“we,” “us,” or “our”) respects your privacy. This policy explains what information we collect when you use jasonaguirregroup.company or otherwise interact with us, how we use it, and the choices you have.</p>
+  <h2>1. Information you provide</h2>
+  <p>The App lets you prepare a home offer, request a home-value estimate, and contact us. Depending on what you choose to do, you may provide:</p>
+  <ul>
+    <li><strong>Contact details</strong> — your name, email address, and phone number, when you submit an offer or ask us to follow up.</li>
+    <li><strong>Property and offer details</strong> — a property address and the offer terms you enter (price, financing, earnest money, dates, and any notes).</li>
+    <li><strong>Home-value requests</strong> — a property address you enter to receive an automated estimate.</li>
+  </ul>
+  <p>You do not need to create an account, and we do not ask you to sign in.</p>
 
-    <h3>Information we collect</h3>
-    <ul class="body">
-      <li><strong>Information you give us</strong> — your name, email address, phone number, mailing address, and details about your real estate needs (such as buying or selling timeline, budget, and property preferences) when you submit a form, message us, or work with us.</li>
-      <li><strong>Information collected automatically</strong> — basic usage data such as pages visited and general device or browser information, used to operate and improve the site.</li>
-    </ul>
+  <h2>2. Information stored on your device</h2>
+  <p>Offers and home-value estimates you create are saved <strong>locally on your device</strong> so you can review them later. This information stays on your device and is not sent to us unless you choose to email or submit it. You can delete it at any time inside the App, or by deleting the App.</p>
 
-    <h3>How we use your information</h3>
-    <ul class="body">
-      <li>To respond to your inquiries and provide real estate services.</li>
-      <li>To send you appointment reminders, listing updates, and transaction-related communications.</li>
-      <li>To send promotional messages about properties and our services <em>only</em> where you have separately opted in.</li>
-      <li>To operate, secure, and improve our website and services, and to comply with law.</li>
-    </ul>
+  <h2>3. How we use information</h2>
+  <ul>
+    <li>To prepare the draft offer or estimate you requested.</li>
+    <li>To respond to you and follow up about your real estate needs.</li>
+    <li>To operate, maintain, and improve the App.</li>
+  </ul>
 
-    <h3 id="sms">SMS &amp; text messaging</h3>
-    <p>When you provide your phone number and opt in — through a form on jasonaguirregroup.company or directly with one of our agents — you consent to receive text messages from Jason Aguirre Group. Depending on the consent you give, these may include appointment and showing reminders, listing and transaction updates, replies to your inquiries, and promotional messages about new listings and our services.</p>
-    <ul class="body">
-      <li>Message frequency varies.</li>
-      <li>Message and data rates may apply.</li>
-      <li>Reply <strong>STOP</strong> to any message to opt out at any time. Reply <strong>HELP</strong> for help.</li>
-      <li>Opting out of texts does not affect your ability to work with us by phone, email, or in person.</li>
-    </ul>
-    <div class="callout">
-      <strong>Your mobile information is never sold or shared for others’ marketing.</strong> No mobile information or SMS opt-in consent will be shared with third parties or affiliates for their marketing or promotional purposes. We may share it only with vendors that help us deliver the messages you requested (for example, our text-messaging platform), and those vendors are prohibited from using it for any other purpose.
-    </div>
+  <h2>4. How information is shared</h2>
+  <p>We do <strong>not</strong> sell your personal information. We share it only as needed to provide the features you use:</p>
+  <ul>
+    <li><strong>Form delivery</strong> — when you submit an offer or request, your details are delivered to us through a form-delivery service (Web3Forms) and/or your own email app.</li>
+    <li><strong>Home-value estimates</strong> — the property address you enter is sent to a third-party property-data provider (RentCast) to generate an automated estimate and nearby comparable sales.</li>
+    <li><strong>Address suggestions</strong> — as you type an address, the text is sent to an address-lookup service (Photon, by Komoot, using OpenStreetMap data) to suggest matching addresses.</li>
+    <li><strong>Service providers and legal</strong> — we may share information with vendors who help us operate the App, or when required by law.</li>
+  </ul>
+  <p class="muted">These providers process the information only to deliver their service. We encourage you to review RentCast's, Web3Forms', and Komoot's own privacy practices.</p>
 
-    <h3>How we share information</h3>
-    <p>We do not sell your personal information. We may share it with trusted service providers who perform functions on our behalf (such as hosting, CRM, and messaging), with our sponsoring brokerage eXp Realty as needed to provide services, and where required by law or to protect our rights. Mobile opt-in data and consent are excluded from any sharing as described above.</p>
+  <h2>5. What we do not do</h2>
+  <p>The App contains <strong>no advertising, no analytics or tracking software, and no third-party trackers.</strong> We do not track you across other apps or websites, and we do not build advertising profiles.</p>
 
-    <h3>Cookies</h3>
-    <p>Our site may use cookies and similar technologies to remember preferences and understand site usage. You can control cookies through your browser settings.</p>
+  <h2>6. Data retention</h2>
+  <p>Information you send us (such as an offer or a follow-up request) is kept as long as needed to assist you and to meet our legal and recordkeeping obligations, then deleted or anonymized. Information saved on your device remains until you delete it.</p>
 
-    <h3>Data security &amp; retention</h3>
-    <p>We use reasonable safeguards to protect your information and retain it only as long as needed for the purposes described here or as required by law.</p>
+  <h2>7. Your choices and rights</h2>
+  <ul>
+    <li>You can choose not to provide information — though some features need it to work.</li>
+    <li>You can delete saved offers and estimates in the App at any time.</li>
+    <li>You may ask us to access or delete information you have sent us by emailing the address below. Depending on where you live, you may have additional rights under laws such as the Texas Data Privacy and Security Act or the California Consumer Privacy Act.</li>
+  </ul>
 
-    <h3>Your choices</h3>
-    <p>You may request access to, correction of, or deletion of your personal information, and you may opt out of marketing messages at any time by replying STOP or contacting us below. We honor opt-out requests promptly.</p>
+  <h2>8. Security</h2>
+  <p>Information is transmitted over encrypted (HTTPS) connections. No method of transmission or storage is 100% secure, but we take reasonable steps to protect your information.</p>
 
-    <h3>Children’s privacy</h3>
-    <p>Our services are intended for adults. We do not knowingly collect information from children under 13.</p>
+  <h2>9. Children's privacy</h2>
+  <p>The App is intended for adults and is not directed to children under 13. We do not knowingly collect information from children under 13.</p>
 
-    <h3>Changes to this policy</h3>
-    <p>We may update this policy from time to time. The “Effective” date above reflects the latest version.</p>
-  </section>
+  <h2>10. Changes to this Policy</h2>
+  <p>We may update this Policy from time to time. Material changes will be reflected by updating the "Last updated" date above.</p>
 
-  <!-- =================== TERMS =================== -->
-  <section class="block" id="terms">
-    <h2 class="part">Terms of Service</h2>
-    <div class="part-rule"></div>
+  <h2>11. Contact us</h2>
+  <p>Jason Aguirre Group &middot; eXp Realty, LLC<br>
+  5373 W Alabama St, Ste 448, Houston, TX 77056<br>
+  Email: <a href="mailto:hello@jasonaguirregroup.company">hello@jasonaguirregroup.company</a><br>
+  Phone: <a href="tel:+18327023574">(832) 702-3574</a></p>
 
-    <p>By accessing jasonaguirregroup.company or using our services, you agree to these Terms. If you do not agree, please do not use the site.</p>
+  <hr>
 
-    <h3>Our services</h3>
-    <p>Jason Aguirre Group provides real estate brokerage and related services through Jason Aguirre, a licensed real estate agent affiliated with eXp Realty. Information on this site is provided for general purposes and is not a guarantee of availability, price, or any specific outcome.</p>
+  <h1 style="font-size:19px">Terms of Use</h1>
 
-    <h3>Text messaging terms</h3>
-    <p>By opting in to text messages, you agree to receive SMS from Jason Aguirre Group as described in the SMS section of our Privacy Policy. Message frequency varies, and message and data rates may apply. Reply STOP to opt out or HELP for help. Consent to receive marketing texts is not a condition of any purchase or service.</p>
+  <h2>1. The App is a tool, not advice</h2>
+  <p>The App helps you organize a real estate offer and explore an automated home-value estimate. It is provided for general informational purposes and is not legal, financial, tax, or appraisal advice.</p>
 
-    <h3>No agency relationship until agreed in writing</h3>
-    <p>Contacting us or submitting a form does not create a brokerage, agency, or fiduciary relationship. A representation relationship is formed only through a separate written agreement.</p>
+  <h2>2. Offers are drafts, not contracts</h2>
+  <p>When you "submit an offer," you are sending us the terms you would like to propose. <strong>This is not a binding contract and does not create any agreement to buy or sell.</strong> A licensed agent will prepare the official TREC contract, review it with you, and nothing is binding until you sign a written agreement.</p>
 
-    <h3>Accuracy of information</h3>
-    <p>Property details, availability, and pricing come from sources believed reliable but are not guaranteed and are subject to change, prior sale, or withdrawal without notice. Verify all information independently.</p>
+  <h2>3. Estimates are automated, not appraisals</h2>
+  <p>Home-value estimates are generated automatically from third-party data and recent nearby sales. They are <strong>not an appraisal, a broker price opinion, or a guarantee of value or sale price.</strong> Actual value can vary. For an accurate valuation, request a personalized review from Jason.</p>
 
-    <h3>Intellectual property</h3>
-    <p>Content on this site is owned by Jason Aguirre Group or its licensors and may not be copied or reused without permission.</p>
+  <h2>4. Real estate brokerage</h2>
+  <p>Real estate brokerage services are provided by Jason Aguirre, a licensed Texas real estate agent, through eXp Realty, LLC. Each office is independently owned and operated. See the <a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a> and <a href="https://www.trec.texas.gov/forms/information-about-brokerage-services" target="_blank" rel="noopener">Information About Brokerage Services</a>.</p>
 
-    <h3>Third-party links</h3>
-    <p>Our site may link to third-party sites we do not control and are not responsible for.</p>
+  <h2>5. No warranties</h2>
+  <p>The App and its content are provided "as is" without warranties of any kind, express or implied, including accuracy, availability, or fitness for a particular purpose. Third-party data may be incomplete or out of date.</p>
 
-    <h3>Disclaimers &amp; limitation of liability</h3>
-    <p>The site and services are provided “as is” without warranties of any kind. To the fullest extent permitted by law, Jason Aguirre Group is not liable for any indirect or consequential damages arising from your use of the site.</p>
+  <h2>6. Limitation of liability</h2>
+  <p>To the fullest extent permitted by law, we are not liable for any indirect, incidental, or consequential damages arising from your use of the App or reliance on its estimates or information.</p>
 
-    <h3>Governing law</h3>
-    <p>These Terms are governed by the laws of the State of Texas, without regard to conflict-of-law rules.</p>
+  <h2>7. Governing law</h2>
+  <p>These Terms are governed by the laws of the State of Texas, without regard to conflict-of-laws rules.</p>
 
-    <div class="fairhousing">
-      <div class="eho">EQUAL<br>HOUSING<br>OPPORTUNITY</div>
-      <div>Jason Aguirre Group supports the Fair Housing Act and the Equal Opportunity Act. We do not discriminate based on race, color, religion, sex, handicap, familial status, national origin, or any other protected class.</div>
-    </div>
-  </section>
+  <h2>8. Contact</h2>
+  <p>Questions about these Terms? Email <a href="mailto:hello@jasonaguirregroup.company">hello@jasonaguirregroup.company</a>.</p>
 
-  <!-- =================== CONTACT =================== -->
-  <section class="block" id="contact">
-    <h2 class="part">Contact us</h2>
-    <div class="part-rule"></div>
-    <p class="muted">Questions about this Privacy Policy or these Terms?</p>
-    <p>
-      <strong>Jason Aguirre Group</strong><br>
-      Jason Aguirre · eXp Realty<br>
-      hello@jasonaguirregroup.company<br>
-      (832) 808-6483
-    </p>
-  </section>
-
-  <footer class="doc">
-    © <span id="yr"></span> Jason Aguirre Group. All rights reserved. · eXp Realty
+  <footer>
+    Jason Aguirre &middot; Licensed Texas Real Estate Agent &middot; eXp Realty, LLC<br>
+    Each office is independently owned and operated.<br>
+    &copy; 2026 Jason Aguirre Group. All rights reserved.
   </footer>
 </div>
-<script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
 </body>
 </html>
