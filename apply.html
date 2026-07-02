@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Apply Online | Home Loan Application</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THEME — change these 4 lines to re-brand for any loan officer
+   ============================================================ */
+:root{
+  --accent:#c8102e;        /* progress bar + logo mark */
+  --ink:#17161c;           /* headings, buttons, selected states */
+  --card:#f5f5f7;          /* option cards + input fields */
+  --card-hov:#ededf1;
+
+  --paper:#ffffff;
+  --line:#e7e7ec;
+  --mut:#5b5a63;
+  --warn:#8a6a12;
+  --warn-bd:#c9a13f;
+  --ok:#1d7a3f;
+  --r:16px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit}
+input,select{font-family:inherit}
+
+/* ---------- Header ---------- */
+header.site{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:26px 48px;
+}
+.logo{display:flex;align-items:center;gap:11px;font-weight:700;font-size:20px;letter-spacing:-.02em;line-height:1.05}
+.logo svg{color:var(--accent);width:34px;height:34px;flex:0 0 34px}
+.logo small{display:block;font-weight:500;font-size:11px;color:#8a8992;letter-spacing:.04em;text-transform:uppercase}
+.hbadge{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--ok);background:#e9f5ec;padding:9px 16px;border-radius:99px}
+.hbadge svg{width:18px;height:18px}
+
+/* reassurance note under option cards (ITIN / work permit) */
+.notecard{display:none;align-items:flex-start;gap:10px;background:#e9f5ec;color:#1a5c31;border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.5;margin:2px 0 14px;animation:up .3s ease}
+.notecard.show{display:flex}
+.notecard svg{width:20px;height:20px;flex:0 0 20px;margin-top:1px}
+
+/* buying-power calculator */
+.calc{align-self:stretch;border:1px solid var(--line);border-radius:16px;padding:20px;margin:4px 0 8px;animation:up .4s ease}
+.calc h4{margin:0 0 3px;font-size:17px;font-weight:600}
+.calc .csub{margin:0 0 16px;font-size:13px;color:#6a6972}
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cgrid .field{margin-bottom:0;padding:10px 14px 8px}
+.cgrid .field input{font-size:15.5px}
+.rate-row{display:flex;align-items:center;gap:14px;margin:16px 2px 6px;font-size:14px;font-weight:500;color:#37363e}
+.rate-row output{font-weight:700;color:var(--ink);min-width:52px}
+.rate-row input[type=range]{flex:1;accent-color:var(--ink);height:4px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.pcard{background:var(--card);border-radius:14px;padding:16px 18px}
+.pcard .pname{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;font-weight:600}
+.pcard .ptag{font-size:11.5px;font-weight:600;color:#1a5c31;background:#e9f5ec;padding:4px 9px;border-radius:99px;white-space:nowrap}
+.pcard .pamt{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:9px 0 3px}
+.pcard .ppay{font-size:13px;color:#5b5a63}
+.pcard .plim{font-size:12.5px;color:var(--warn);margin-top:8px;line-height:1.45}
+.cnote{font-size:12px;color:#8a8992;margin:14px 2px 0;line-height:1.6}
+
+/* ---------- Progress ---------- */
+.progress-wrap{max-width:780px;margin:30px auto 0;padding:0 24px}
+.track{height:4px;background:#e9e9ee;border-radius:99px;overflow:hidden}
+.fill{height:100%;width:3%;background:var(--accent);border-radius:99px;transition:width .5s cubic-bezier(.3,.7,.3,1)}
+.prog-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;min-height:38px}
+.backbtn{width:38px;height:38px;border:0;border-radius:50%;background:transparent;color:#2a2930;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.backbtn:hover{background:#f1f1f4}
+.backbtn svg{width:22px;height:22px}
+.pct{font-size:14px;font-weight:500;color:#3f3e46}
+.hiddenv{visibility:hidden}
+
+/* ---------- Stage ---------- */
+main{min-height:60vh}
+#stage{max-width:562px;margin:52px auto 90px;padding:0 24px}
+#stage.chat-mode{max-width:760px;margin-top:34px}
+
+.step{animation:up .4s cubic-bezier(.2,.7,.3,1)}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:#eef0fb;color:#3b3f58;padding:8px 14px;border-radius:99px;font-size:14px;font-weight:500}
+.badge.ok{background:#e9f5ec;color:#1a5c31}
+.badge svg{width:16px;height:16px}
+
+h1.title{font-size:clamp(28px,4.8vw,36px);font-weight:600;letter-spacing:-.015em;line-height:1.22;margin:0 0 12px}
+.question{font-size:17px;font-weight:600;color:#2b2a31;margin:26px 0 22px}
+.hint{font-size:16px;font-weight:400;color:#4a4952;margin:-2px 0 24px}
+
+/* ---------- Option cards ---------- */
+.opt{
+  display:flex;align-items:center;gap:16px;
+  background:var(--card);border:1.5px solid transparent;border-radius:var(--r);
+  padding:19px 22px;margin-bottom:14px;cursor:pointer;user-select:none;
+  transition:background .15s,border-color .15s,transform .06s;
+}
+.opt:hover{background:var(--card-hov)}
+.opt:active{transform:scale(.995)}
+.opt .ic{width:24px;height:24px;flex:0 0 24px;color:var(--ink)}
+.opt .lb{font-size:16.5px;font-weight:500}
+.opt .circ{margin-left:auto;width:26px;height:26px;flex:0 0 26px;border-radius:50%;border:1.5px solid #b7b6c0;background:#fff;display:grid;place-items:center;transition:border-color .15s}
+.opt.sel{background:#fff;border-color:var(--ink)}
+.opt.sel .circ{border-color:var(--ink)}
+.opt.sel .circ::after{content:"";width:14px;height:14px;border-radius:50%;background:var(--ink)}
+.opt:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* ---------- Fields ---------- */
+.field{
+  background:var(--card);border-radius:14px;padding:13px 18px 11px;margin-bottom:16px;
+  box-shadow:inset 0 0 0 1.5px transparent;transition:background .15s,box-shadow .15s;position:relative;
+}
+.field label{display:block;font-size:13px;font-weight:500;color:#5b5a63;margin-bottom:2px}
+.inrow{display:flex;align-items:center;gap:6px}
+.inrow .pre{font-size:17px;font-weight:500;color:var(--ink)}
+.field input,.field select{width:100%;border:0;outline:0;background:transparent;font-size:17px;font-weight:500;color:var(--ink);padding:2px 0}
+.field input::placeholder{color:#a3a2ac;font-weight:400}
+.field:focus-within{background:#fff;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.field.err{background:#fff;box-shadow:inset 0 0 0 1.5px var(--warn-bd)}
+.field select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:26px}
+.field .chev{position:absolute;right:16px;top:50%;transform:translateY(-25%);pointer-events:none;color:#6a6972;width:18px;height:18px}
+.msg{display:none;color:var(--warn);font-size:14.5px;font-weight:500;margin:-6px 0 16px 20px}
+.msg.show{display:block}
+.helper{font-size:14px;color:#5b5a63;margin:-6px 0 16px 20px;min-height:18px}
+
+/* ---------- Buttons ---------- */
+.next{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-width:200px;height:62px;padding:0 36px;margin-top:30px;
+  border:0;border-radius:999px;background:var(--ink);color:#fff;
+  font-size:16.5px;font-weight:600;cursor:pointer;
+  transition:background .15s,transform .06s;
+}
+.next:hover{background:#000}
+.next:active{transform:scale(.98)}
+.next[disabled]{opacity:.7;cursor:default}
+.spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ---------- Fine print / consent ---------- */
+.fineprint{font-size:13px;color:#4c4b53;line-height:1.6;margin-top:22px}
+.fineprint p{margin:0 0 14px}
+.fineprint a{color:inherit}
+.consent{display:flex;align-items:flex-start;gap:10px;margin-top:4px;font-size:14px;color:#37363e;line-height:1.45;cursor:pointer;user-select:none}
+.consent input{width:18px;height:18px;margin-top:1px;accent-color:var(--ink);flex:0 0 18px;cursor:pointer}
+
+/* ---------- Chat phase ---------- */
+.chatcard{
+  background:#fff;border-radius:22px;
+  box-shadow:0 12px 44px rgba(20,20,30,.10),0 2px 8px rgba(20,20,30,.05);
+  padding:24px 24px 0;display:flex;flex-direction:column;height:min(74vh,700px);
+  animation:up .4s cubic-bezier(.2,.7,.3,1);
+}
+.chatscroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:6px 8px 16px;scroll-behavior:smooth}
+.greet{text-align:center;padding:6px 0 10px}
+.greet h2{font-size:24px;font-weight:600;margin:14px 0 7px;letter-spacing:-.01em}
+.greet p{font-size:13px;color:#6a6972;line-height:1.55;max-width:430px;margin:0 auto}
+.greet p a{color:inherit}
+
+.bub{max-width:78%;padding:14px 18px;border-radius:16px;font-size:15.5px;line-height:1.55;margin:9px 0;white-space:pre-line}
+.bub.bot{background:var(--card);color:#26252c;border-top-left-radius:6px;align-self:flex-start}
+.bub.user{background:var(--ink);color:#fff;font-weight:600;border-top-right-radius:6px;align-self:flex-end}
+
+.chips{display:flex;flex-direction:column;align-items:flex-end;gap:10px;margin:8px 0;align-self:flex-end}
+.chip{border:1.5px solid #d6d5dd;background:#fff;border-radius:999px;padding:11px 20px;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s}
+.chip:hover{border-color:var(--ink)}
+
+.task{align-self:flex-start;max-width:82%;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:11px 0}
+.task h4{margin:0 0 10px;font-size:14.5px;font-weight:600}
+.task h4 span{color:#7a7982;font-weight:500}
+.trow{display:flex;align-items:center;gap:9px;font-size:14px;color:#4c4b53;padding:3px 0}
+.trow svg{width:16px;height:16px;flex:0 0 16px}
+.trow.done{color:var(--ok)}
+.trow.dim{color:#a9a8b1}
+
+.typing{align-self:flex-start;display:inline-flex;gap:5px;background:var(--card);padding:15px 17px;border-radius:16px;border-top-left-radius:6px;margin:9px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:#a7a6b0;animation:blink 1.1s infinite}
+.typing i:nth-child(2){animation-delay:.18s}
+.typing i:nth-child(3){animation-delay:.36s}
+@keyframes blink{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+
+.chatbar{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding:15px 6px 17px;margin-top:auto}
+.chatbar input{flex:1;border:0;outline:0;background:transparent;font-size:16px;font-weight:500;color:var(--ink)}
+.chatbar input::placeholder{color:#a3a2ac;font-weight:400}
+.send{width:46px;height:46px;border:0;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;cursor:pointer;transition:opacity .15s,background .15s}
+.send:hover{background:#000}
+.send[disabled]{opacity:.3;cursor:default}
+.send svg{width:19px;height:19px}
+
+.success{align-self:stretch;border:1px solid var(--line);border-radius:16px;padding:24px 22px;margin:12px 0 20px;text-align:center;animation:up .4s ease}
+.success .ok-ic{width:56px;height:56px;color:var(--ok);margin:0 auto 8px}
+.success h3{margin:4px 0 6px;font-size:20px;font-weight:600}
+.success p{margin:0 auto;font-size:14.5px;color:#4c4b53;max-width:420px;line-height:1.55}
+.recap{margin:18px auto 6px;max-width:430px;text-align:left;font-size:14.5px}
+.recap div{display:flex;justify-content:space-between;gap:18px;padding:7px 2px;border-bottom:1px dashed #e7e7ec}
+.recap div span{color:#6a6972}
+.recap div b{font-weight:600;text-align:right}
+.restart{margin-top:20px;height:52px;min-width:0;padding:0 28px;font-size:15px}
+
+/* ---------- Footer ---------- */
+footer.legal{max-width:900px;margin:24px auto 46px;padding:0 24px;text-align:center;font-size:12.5px;color:#8a8992;line-height:1.65}
+
+/* ---------- Mobile ---------- */
+@media (max-width:640px){
+  header.site{padding:18px 20px}
+  .hbadge{padding:8px 12px;font-size:12.5px}
+  #stage{margin-top:36px}
+  .next{width:100%}
+  .bub{max-width:88%}
+  .chatcard{height:72vh;padding:16px 14px 0}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <a class="logo" id="logoBox" href="index.html" style="text-decoration:none;color:inherit" aria-label="Jason Aguirre Group home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M10 20v-5.5h4V20"/></svg>
+    <div><span id="logoName">Home Loans</span><small id="logoTag">Apply online</small></div>
+  </a>
+  <div class="hbadge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5v-6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg>
+    <span>No credit check</span>
+  </div>
+</header>
+
+<div class="progress-wrap hiddenv" id="progWrap">
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div class="prog-row">
+    <button class="backbtn" id="backBtn" aria-label="Go back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+    </button>
+    <div class="pct" id="pct">3%</div>
+  </div>
+</div>
+
+<main><div id="stage"></div></main>
+
+<footer class="legal" id="legalFoot"></footer>
+
+<script>
+/* ================================================================
+   CONFIG — everything a loan officer needs to change lives here
+   ================================================================ */
+const CONFIG = {
+  companyName : "JAG Home Loans",             // shown in header, consent copy, chat
+  tagline     : "Jason Aguirre Group",
+  nmls        : "NMLS #000000",               // footer license line
+  accessKey   : "b54619e1-0734-4f77-a6f6-c192aa348fe4", // Web3Forms access key
+  subjectPrefix: "New Mortgage Application",  // email subject prefix
+  privacyUrl  : "privacy-terms.html",         // site privacy & terms page
+  termsUrl    : "privacy-terms.html#terms",   // site privacy & terms page
+  webhookUrl  : "",                           // OPTIONAL: n8n / GHL inbound-webhook URL for a JSON copy of the lead
+
+  /* Buying-power calculator assumptions (Texas defaults — tune per market) */
+  CALC : {
+    rateDefault : 6.75,   // starting interest rate on the slider (%)
+    taxPct      : 2.2,    // annual property tax, % of home value
+    insPct      : 0.6,    // annual homeowners insurance, % of home value
+    itinRateAdd : 1.0     // ITIN portfolio loans priced this much above the slider rate (%)
+  }
+};
+
+/* ---------------- boot header from config (footer + badge text are set by applyChrome, per language) ---------------- */
+document.title = "Apply Online | " + CONFIG.companyName;
+document.getElementById('logoName').textContent = CONFIG.companyName;
+document.getElementById('logoTag').textContent = CONFIG.tagline;
+
+/* ================================================================
+   ICONS
+   ================================================================ */
+function svg(inner, vb){
+  return '<svg viewBox="' + (vb||'0 0 24 24') + '" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>';
+}
+const IC = {
+  clock: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  percent: svg('<circle cx="12" cy="12" r="9"/><path d="m9 15 6-6"/><circle cx="9.3" cy="9.3" r=".9" fill="currentColor"/><circle cx="14.7" cy="14.7" r=".9" fill="currentColor"/>'),
+  house: svg('<path d="M3.5 11.5 12 4.5l8.5 7"/><path d="M5.8 10v9.5h12.4V10"/><path d="M10 19.5v-5h4v5"/>'),
+  coins: svg('<ellipse cx="12" cy="6.5" rx="6.5" ry="2.6"/><path d="M5.5 6.5v5c0 1.4 2.9 2.6 6.5 2.6s6.5-1.2 6.5-2.6v-5"/><path d="M5.5 11.5v5c0 1.4 2.9 2.6 6.5 2.6s6.5-1.2 6.5-2.6v-5"/>'),
+  multi: svg('<path d="M2.5 20V10l4.5-3.5L11.5 10v10"/><path d="M11.5 20V10l4.5-3.5L20.5 10v10"/><path d="M2 20h20"/>'),
+  condo: svg('<rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.5 7.5h.01M14.5 7.5h.01M9.5 11h.01M14.5 11h.01M9.5 14.5h.01M14.5 14.5h.01"/><path d="M10.5 20.5v-3h3v3"/>'),
+  mfg: svg('<path d="M4 15.5V9.8L12 5l8 4.8v5.7"/><path d="M3 15.5h18"/><circle cx="8" cy="18.3" r="1.7"/><circle cx="16" cy="18.3" r="1.7"/>'),
+  primary: svg('<path d="M4 11.5 12 5l8 6.5"/><path d="M6.2 10.2V20h11.6v-9.8"/><path d="M12 5V2.5h3.5V5"/><path d="M10 20v-4.5h4V20"/>'),
+  vacay: svg('<circle cx="12" cy="10" r="3.6"/><path d="M12 3v1.6M17 5l-1.1 1.1M7 5l1.1 1.1M19.4 10h-1.6M6.2 10H4.6"/><path d="M3 16.5h18M6 20h12"/>'),
+  invest: svg('<rect x="2.5" y="6.5" width="19" height="11" rx="1.5"/><circle cx="12" cy="12" r="2.7"/><path d="M6 10h.01M18 14h.01"/>'),
+  doc: svg('<path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4"/><path d="M10 12.5h5M10 15.5h3"/>'),
+  search: svg('<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/>'),
+  photos: svg('<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4.5 17 4.5-4.5 3 3 3.5-3.5 4 4"/>'),
+  key: svg('<circle cx="8" cy="14.5" r="4.5"/><path d="m11.3 11.2 8.2-8.2"/><path d="M16.5 6l2.5 2.5M14 8.5l2 2"/>'),
+  brief: svg('<rect x="3" y="7.5" width="18" height="12.5" rx="2"/><path d="M9 7.5V5.8A1.8 1.8 0 0 1 10.8 4h2.4A1.8 1.8 0 0 1 15 5.8v1.7"/><path d="M3 12.5h18"/>'),
+  person: svg('<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.5 3.6-5.4 7-5.4s6.2 1.9 7 5.4"/>'),
+  chair: svg('<path d="M6 12V6.5A2.5 2.5 0 0 1 8.5 4h7A2.5 2.5 0 0 1 18 6.5V12"/><path d="M4.5 12a1.8 1.8 0 0 1 1.8 1.8V16h11.4v-2.2A1.8 1.8 0 0 1 21 12"/><path d="M5.5 16v4M18.5 16v4"/>'),
+  clip: svg('<rect x="5.5" y="4.5" width="13" height="16" rx="1.6"/><path d="M9 4.5V3h6v1.5"/><path d="M9 10h6M9 13.5h6M9 17h3.5"/>'),
+  shield: svg('<path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5v-6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/>'),
+  chev: svg('<path d="m6 9 6 6 6-6"/>'),
+  sendUp: svg('<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>'),
+  check: svg('<circle cx="12" cy="12" r="9"/><path d="m8.2 12.3 2.5 2.5 5.1-5.4"/>'),
+  spinC: svg('<path d="M12 3a9 9 0 1 0 9 9"/>')
+};
+const HOUSE_ART =
+'<svg width="180" height="96" viewBox="0 0 180 96" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+'<ellipse cx="34" cy="52" rx="16" ry="17" fill="#cfe3cd"/><ellipse cx="150" cy="58" rx="13" ry="14" fill="#dcebd9"/>' +
+'<rect x="52" y="30" width="62" height="52" fill="#b9b5d8"/><path d="M46 32 83 8l37 24z" fill="#8f8ab8"/>' +
+'<rect x="118" y="52" width="34" height="30" fill="#cac6e2"/><path d="M114 54l21-14 21 14z" fill="#a29dc6"/>' +
+'<rect x="60" y="40" width="9" height="13" fill="#fff"/><rect x="78" y="40" width="9" height="13" fill="#fff"/><rect x="96" y="40" width="9" height="13" fill="#fff"/>' +
+'<rect x="60" y="62" width="9" height="13" fill="#fff"/><rect x="96" y="62" width="9" height="13" fill="#fff"/>' +
+'<rect x="78" y="60" width="10" height="22" fill="#f0eef8"/><rect x="128" y="60" width="8" height="10" fill="#fff"/>' +
+'<path d="M14 84c40-7 112-7 152 0" stroke="#cdd8cb" stroke-width="3" stroke-linecap="round"/></svg>';
+
+/* ================================================================
+   STATE + STEP DEFINITIONS
+   ================================================================ */
+const A = {};                 // wizard answers
+const CHAT = {};              // chat-phase answers
+let idx = 0;
+
+const isBuy    = a => a.goal === 'Buy a home';
+const isRefi   = a => a.goal === 'Refinance';
+const isEquity = a => a.goal === 'Use my equity';
+
+const US_STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+
+const STEPS = [
+  /* -------- screen 1: language picker (bilingual by design) -------- */
+  { id:'language', type:'single', key:'language',
+    title:'Choose your language \u00b7 Elija su idioma',
+    options:[{v:'English'},{v:'Espa\u00f1ol'}]},
+
+  { id:'goal', type:'single', key:'goal',
+    badge:true,
+    title:{en:"We'll guide you to the best options and savings",
+           es:'Le guiaremos a las mejores opciones y ahorros'},
+    question:{en:"What's your goal?", es:'\u00bfCu\u00e1l es su meta?'},
+    options:[
+      {v:'Refinance',     lb:{en:'Refinance',     es:'Refinanciar'},        icon:IC.percent},
+      {v:'Buy a home',    lb:{en:'Buy a home',    es:'Comprar una casa'},   icon:IC.house},
+      {v:'Use my equity', lb:{en:'Use my equity', es:'Usar mi plusval\u00eda'}, icon:IC.coins}
+    ]},
+
+  { id:'status', type:'single', key:'status',
+    title:{en:'How will you be qualifying?', es:'\u00bfCon qu\u00e9 va a calificar?'},
+    hint:{en:'Choose what you have \u2014 no SSN or credit check is ever required to apply.',
+          es:'Elija lo que tiene \u2014 nunca se requiere SSN ni revisi\u00f3n de cr\u00e9dito para aplicar.'},
+    options:[
+      {v:'Social Security Number (SSN)',   lb:{en:'Social Security Number (SSN)',   es:'N\u00famero de Seguro Social (SSN)'}},
+      {v:'Work Permit (EAD)',              lb:{en:'Work Permit (EAD)',              es:'Permiso de trabajo (EAD)'}},
+      {v:'Permanent Resident / Green Card',lb:{en:'Permanent Resident / Green Card',es:'Residente permanente / Green Card'}},
+      {v:'ITIN (Tax ID number)',           lb:{en:'ITIN (Tax ID number)',           es:'ITIN (N\u00famero de identificaci\u00f3n fiscal)'}}
+    ],
+    notes:{
+      'ITIN (Tax ID number)':{
+        en:'Great news \u2014 we help ITIN buyers qualify every day, with as low as 3% down. No SSN needed.',
+        es:'\u00a1Excelente noticia! Ayudamos a compradores con ITIN todos los d\u00edas, con enganche desde el 3%. No se necesita SSN.'},
+      'Work Permit (EAD)':{
+        en:'Work-permit holders qualify for great loan programs \u2014 you\u2019re in the right place.',
+        es:'Las personas con permiso de trabajo califican para excelentes programas \u2014 est\u00e1 en el lugar correcto.'}
+    }},
+
+  { id:'loanOptions', type:'multi', key:'loanOptions', when:isBuy,
+    title:{en:"Let's customize your loan options and savings",
+           es:'Personalicemos sus opciones de pr\u00e9stamo y ahorros'},
+    hint:{en:'Select all that apply to you', es:'Seleccione todo lo que aplique'},
+    options:[
+      {v:'Eligible for VA benefits',        lb:{en:'Eligible for VA benefits',        es:'Elegible para beneficios VA'}},
+      {v:'Wanting a lower down payment',    lb:{en:'Wanting a lower down payment',    es:'Busco un enganche m\u00e1s bajo'}},
+      {v:"Haven't owned a home in 3 years", lb:{en:"Haven't owned a home in 3 years", es:'No he sido due\u00f1o de casa en 3 a\u00f1os'}},
+      {v:'Needing a loan of $1M or more',   lb:{en:'Needing a loan of $1M or more',   es:'Necesito un pr\u00e9stamo de $1M o m\u00e1s'}}
+    ]},
+
+  { id:'propertyType', type:'single', key:'propertyType',
+    title:{en:"What's the property type?", es:'\u00bfQu\u00e9 tipo de propiedad es?'},
+    options:[
+      {v:'Single-family', lb:{en:'Single-family', es:'Casa unifamiliar'},   icon:IC.house},
+      {v:'Multifamily',   lb:{en:'Multifamily',   es:'Multifamiliar'},      icon:IC.multi},
+      {v:'Condo',         lb:{en:'Condo',         es:'Condominio'},         icon:IC.condo},
+      {v:'Manufactured',  lb:{en:'Manufactured',  es:'Casa manufacturada'}, icon:IC.mfg}
+    ]},
+
+  { id:'propertyUse', type:'single', key:'propertyUse',
+    title:{en:'How would you describe it?', es:'\u00bfC\u00f3mo la describir\u00eda?'},
+    options:[
+      {v:'Primary residence',   lb:{en:'Primary residence',   es:'Residencia principal'},   icon:IC.primary},
+      {v:'Vacation home',       lb:{en:'Vacation home',       es:'Casa vacacional'},        icon:IC.vacay},
+      {v:'Investment property', lb:{en:'Investment property', es:'Propiedad de inversi\u00f3n'}, icon:IC.invest}
+    ]},
+
+  { id:'stage', type:'single', key:'stage', when:isBuy,
+    title:{en:'Where in the home buying process are you?',
+           es:'\u00bfEn qu\u00e9 parte del proceso de compra est\u00e1?'},
+    options:[
+      {v:'Signed purchase agreement',  lb:{en:'Signed purchase agreement',  es:'Contrato de compra firmado'},      icon:IC.doc},
+      {v:'Just researching',           lb:{en:'Just researching',           es:'Apenas investigando'},             icon:IC.search},
+      {v:'Looking at homes & listings',lb:{en:'Looking at homes & listings',es:'Viendo casas y listados'},         icon:IC.photos},
+      {v:'Offer pending/found a house',lb:{en:'Offer pending/found a house',es:'Oferta pendiente / ya encontr\u00e9 casa'}, icon:IC.key}
+    ]},
+
+  { id:'timeline', type:'single', key:'timeline', when:isBuy,
+    title:{en:'How soon are you looking to buy?', es:'\u00bfQu\u00e9 tan pronto quiere comprar?'},
+    options:[
+      {v:'ASAP (0-3 months)',   lb:{en:'ASAP (0-3 months)',   es:'Lo antes posible (0-3 meses)'}},
+      {v:'3-6 months',          lb:{en:'3-6 months',          es:'3-6 meses'}},
+      {v:'6-12 months',         lb:{en:'6-12 months',         es:'6-12 meses'}},
+      {v:'Just planning ahead', lb:{en:'Just planning ahead', es:'Solo planeando a futuro'}}
+    ]},
+
+  { id:'agent', type:'single', key:'agent', when:isBuy,
+    title:{en:'Are you currently working with a real estate agent?',
+           es:'\u00bfEst\u00e1 trabajando con un agente de bienes ra\u00edces?'},
+    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
+
+  { id:'price', type:'currency', key:'price', when:isBuy,
+    title:{en:'What purchase price do you have in mind?', es:'\u00bfQu\u00e9 precio de compra tiene en mente?'},
+    label:{en:'Purchase price', es:'Precio de compra'}, ph:'e.g. 250,000',
+    err:{en:'Please enter the purchase price of your new home.',
+         es:'Por favor ingrese el precio de compra de su nueva casa.'}},
+
+  { id:'down', type:'currency', key:'down', when:isBuy,
+    title:{en:'How much do you plan to use for a down payment?', es:'\u00bfCu\u00e1nto planea dar de enganche?'},
+    label:{en:'Down payment amount', es:'Monto del enganche'}, ph:'e.g. 10,000',
+    err:{en:'Please enter your estimated down payment.', es:'Por favor ingrese su enganche estimado.'},
+    helper:function(a){
+      var p=+a.price||0, d=+a.down||0;
+      if(p>0 && d>0 && d<p) return ui('ofPrice')((d/p*100).toFixed(1).replace(/\.0$/,''));
+      return '';
+    },
+    validate:function(a){
+      if(!(+a.down>=0) || a.down==='' || a.down==null) return {en:'Please enter your estimated down payment.', es:'Por favor ingrese su enganche estimado.'};
+      if(+a.down >= +a.price) return ui('downLess');
+      return true;
+    }},
+
+  { id:'comfortPay', type:'currency', key:'comfortPay', when:isBuy,
+    title:{en:'What monthly payment feels comfortable to you?', es:'\u00bfQu\u00e9 pago mensual le parece c\u00f3modo?'},
+    label:{en:'Comfortable monthly payment', es:'Pago mensual c\u00f3modo'}, ph:'e.g. 2,200',
+    err:{en:'Give us your best guess \u2014 you can always change it later.',
+         es:'D\u00e9nos su mejor estimado \u2014 siempre puede cambiarlo despu\u00e9s.'}},
+
+  { id:'homeValue', type:'currency', key:'homeValue', when:a=>isRefi(a)||isEquity(a),
+    title:{en:"What's your home's estimated value?", es:'\u00bfCu\u00e1l es el valor estimado de su casa?'},
+    label:{en:'Estimated home value', es:'Valor estimado de la casa'}, ph:'e.g. 350,000',
+    err:{en:"Please enter your home's estimated value.", es:'Por favor ingrese el valor estimado de su casa.'}},
+
+  { id:'balance', type:'currency', key:'balance', when:a=>isRefi(a)||isEquity(a),
+    title:{en:"What's your remaining mortgage balance?", es:'\u00bfCu\u00e1nto debe todav\u00eda de su hipoteca?'},
+    label:{en:'Remaining balance', es:'Saldo restante'}, ph:'e.g. 180,000',
+    err:{en:'Please enter your remaining mortgage balance.', es:'Por favor ingrese el saldo de su hipoteca.'},
+    allowZero:true,
+    helper:function(a){
+      var v=+a.homeValue||0, b=+a.balance||0;
+      if(v>0 && b>=0 && b<=v) return ui('ltv')((b/v*100).toFixed(1).replace(/\.0$/,''));
+      return '';
+    }},
+
+  { id:'cashOut', type:'currency', key:'cashOut', when:isEquity,
+    title:{en:'How much cash would you like to access?', es:'\u00bfCu\u00e1nto efectivo le gustar\u00eda obtener?'},
+    label:{en:'Desired cash amount', es:'Monto de efectivo deseado'}, ph:'e.g. 50,000',
+    err:{en:"Please enter the amount you'd like to access.", es:'Por favor ingrese el monto que le gustar\u00eda obtener.'}},
+
+  { id:'credit', type:'single', key:'credit',
+    title:{en:'Your credit profile', es:'Su perfil de cr\u00e9dito'},
+    hint:{en:'Your best guess is just fine \u2014 we never run a credit check on this application.',
+          es:'Su mejor estimado est\u00e1 bien \u2014 nunca revisamos su cr\u00e9dito en esta solicitud.'},
+    options:[
+      {v:'720+'},{v:'660-719'},{v:'620-659'},{v:'580-619'},
+      {v:'579 or below', lb:{en:'579 or below', es:'579 o menos'}}
+    ]},
+
+  { id:'work', type:'single', key:'work',
+    title:{en:"What's your work status?", es:'\u00bfCu\u00e1l es su situaci\u00f3n laboral?'},
+    options:[
+      {v:'Employed',      lb:{en:'Employed',      es:'Empleado'},             icon:IC.brief},
+      {v:'Self-employed', lb:{en:'Self-employed', es:'Trabajo por mi cuenta'},icon:IC.person},
+      {v:'Retired',       lb:{en:'Retired',       es:'Jubilado'},             icon:IC.chair},
+      {v:'Not employed',  lb:{en:'Not employed',  es:'Sin empleo'},           icon:IC.clip}
+    ]},
+
+  { id:'employerW2', type:'group', when:a=>a.work==='Employed',
+    title:{en:'Tell us about your work', es:'Cu\u00e9ntenos sobre su trabajo'},
+    fields:[
+      {key:'employer', label:{en:'Employer name',es:'Nombre del empleador'}, ph:{en:'e.g. HEB',es:'ej. HEB'},
+       err:{en:'Please enter your employer\u2019s name.', es:'Por favor ingrese el nombre de su empleador.'}},
+      {key:'jobTitle', label:{en:'Job title',es:'Puesto'}, ph:{en:'e.g. Site supervisor',es:'ej. Supervisor de obra'},
+       err:{en:'Please enter your job title.', es:'Por favor ingrese su puesto.'}}
+    ]},
+
+  { id:'employerSE', type:'group', when:a=>a.work==='Self-employed',
+    title:{en:'Tell us about your business', es:'Cu\u00e9ntenos sobre su negocio'},
+    fields:[
+      {key:'businessName', label:{en:'Business name',es:'Nombre del negocio'}, ph:{en:'e.g. Lopez Remodeling LLC',es:'ej. Lopez Remodeling LLC'},
+       err:{en:'Please enter your business name.', es:'Por favor ingrese el nombre de su negocio.'}},
+      {key:'businessType', label:{en:'What you do',es:'A qu\u00e9 se dedica'}, ph:{en:'e.g. General contractor',es:'ej. Contratista general'},
+       err:{en:'Please tell us what you do.', es:'Por favor d\u00edganos a qu\u00e9 se dedica.'}}
+    ]},
+
+  { id:'tenure', type:'single', key:'tenure', when:a=>a.work==='Employed'||a.work==='Self-employed',
+    title:{en:'How long have you been at your current job or business?',
+           es:'\u00bfCu\u00e1nto tiempo lleva en su trabajo o negocio actual?'},
+    options:[
+      {v:'Less than 1 year', lb:{en:'Less than 1 year', es:'Menos de 1 a\u00f1o'}},
+      {v:'1-2 years',        lb:{en:'1-2 years',        es:'1-2 a\u00f1os'}},
+      {v:'2-5 years',        lb:{en:'2-5 years',        es:'2-5 a\u00f1os'}},
+      {v:'5+ years',         lb:{en:'5+ years',         es:'5+ a\u00f1os'}}
+    ]},
+
+  { id:'incomeDoc', type:'single', key:'incomeDoc', when:a=>a.work==='Employed'||a.work==='Self-employed',
+    title:{en:'How is your income paid?', es:'\u00bfC\u00f3mo recibe sus ingresos?'},
+    hint:{en:'This helps us match you to the right program \u2014 cash income can still work.',
+          es:'Esto nos ayuda a encontrar el programa correcto \u2014 el ingreso en efectivo tambi\u00e9n puede funcionar.'},
+    options:[
+      {v:'W-2 paycheck',                  lb:{en:'W-2 paycheck',                  es:'Cheque W-2'}},
+      {v:'1099 contractor',               lb:{en:'1099 contractor',               es:'Contratista 1099'}},
+      {v:'Self-employed (tax returns)',   lb:{en:'Self-employed (tax returns)',   es:'Por mi cuenta (declaraciones de impuestos)'}},
+      {v:'Cash or bank statements',       lb:{en:'Cash or bank statements',       es:'Efectivo o estados de cuenta'}}
+    ]},
+
+  { id:'income', type:'currency', key:'income',
+    title:{en:"What's your total monthly household income?", es:'\u00bfCu\u00e1l es el ingreso mensual total de su hogar?'},
+    hint:{en:'Before taxes \u2014 include all jobs, plus any pension or Social Security income.',
+          es:'Antes de impuestos \u2014 incluya todos los trabajos, m\u00e1s pensi\u00f3n o Seguro Social.'},
+    label:{en:'Gross monthly income', es:'Ingreso mensual bruto'}, ph:'e.g. 6,500',
+    err:{en:'Please enter your monthly household income.', es:'Por favor ingrese el ingreso mensual de su hogar.'},
+    helper:function(a){
+      var v=+a.income||0;
+      return v>0 ? ui('perYear')(money(v*12)) : '';
+    }},
+
+  { id:'debts', type:'currency', key:'debts', allowZero:true,
+    title:{en:'About how much do you pay toward debts each month?',
+           es:'\u00bfAproximadamente cu\u00e1nto paga de deudas al mes?'},
+    hint:{en:"Car payments, credit cards, student or personal loans \u2014 don't include rent or utilities.",
+          es:'Pagos de carro, tarjetas de cr\u00e9dito, pr\u00e9stamos estudiantiles o personales \u2014 no incluya renta ni servicios.'},
+    label:{en:'Monthly debt payments', es:'Pagos mensuales de deudas'}, ph:'e.g. 800',
+    err:{en:'Enter your total monthly debts \u2014 0 is okay.', es:'Ingrese el total de sus deudas mensuales \u2014 0 est\u00e1 bien.'}},
+
+  { id:'bk', type:'single', key:'bk',
+    title:{en:'Any bankruptcies in the past 3 years?', es:'\u00bfAlguna bancarrota en los \u00faltimos 3 a\u00f1os?'},
+    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
+
+  { id:'name', type:'group',
+    title:{en:"What's your name?", es:'\u00bfCu\u00e1l es su nombre?'},
+    fields:[
+      {key:'first', label:{en:'First name',es:'Nombre'},   ph:{en:'e.g. Jennifer',es:'ej. Mar\u00eda'},
+       err:{en:'Please enter your first name.', es:'Por favor ingrese su nombre.'}},
+      {key:'last',  label:{en:'Last name',es:'Apellido'},  ph:{en:'e.g. Smith',es:'ej. Garc\u00eda'},
+       err:{en:'Please enter your last name.', es:'Por favor ingrese su apellido.'}}
+    ]},
+
+  { id:'phone', type:'phone', key:'phone',
+    title:{en:'Phone number', es:'N\u00famero de tel\u00e9fono'},
+    label:{en:'Phone number', es:'N\u00famero de tel\u00e9fono'}, ph:'(555) 555-5555',
+    err:{en:'Please enter your phone number.', es:'Por favor ingrese su n\u00famero de tel\u00e9fono.'},
+    button:'confirm'},
+
+  { id:'email', type:'email', key:'email',
+    title:{en:'Email address', es:'Correo electr\u00f3nico'},
+    label:{en:'Email address', es:'Correo electr\u00f3nico'}, ph:'example@email.com',
+    err:{en:'Please enter your email address.', es:'Por favor ingrese su correo electr\u00f3nico.'}},
+
+  { id:'address', type:'address',
+    title:{en:'Current mailing address', es:'Direcci\u00f3n postal actual'},
+    button:'confirm'}
+];
+
+/* ================================================================
+   HELPERS
+   ================================================================ */
+const $ = s => document.querySelector(s);
+const stage = $('#stage'), fill = $('#fill'), pctEl = $('#pct'),
+      progWrap = $('#progWrap'), backBtn = $('#backBtn');
+
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const digits = s => String(s||'').replace(/\D/g,'');
+const money  = n => '$' + Number(n||0).toLocaleString('en-US');
+const fmtNum = n => Number(n||0).toLocaleString('en-US');
+function fmtPhone(d){
+  d = digits(d).slice(0,10);
+  if(d.length<4) return d;
+  if(d.length<7) return '(' + d.slice(0,3) + ') ' + d.slice(3);
+  return '(' + d.slice(0,3) + ') ' + d.slice(3,6) + '-' + d.slice(6);
+}
+function el(tag, cls, html){
+  const e=document.createElement(tag);
+  if(cls) e.className=cls;
+  if(html!=null) e.innerHTML=html;
+  return e;
+}
+function visibleSteps(){ return STEPS.filter(s=>!s.when || s.when(A)); }
+
+/* ================================================================
+   i18n — UI language follows the applicant's choice on screen 1.
+   Stored answers stay in ENGLISH so the CRM/email data is uniform.
+   ================================================================ */
+function LANG(){ return A.language==='Español' ? 'es' : 'en'; }
+function tx(v){ return (v && typeof v==='object' && (v.en!=null||v.es!=null)) ? (v[LANG()]!=null?v[LANG()]:v.en) : v; }
+function ui(k){ const L=UI[LANG()]; return (k in L) ? L[k] : UI.en[k]; }
+function optLabel(key,val){
+  const st = STEPS.find(s=>s.key===key);
+  const o = st && st.options && st.options.find(o=>o.v===val);
+  return o ? tx(o.lb||o.v) : val;
+}
+function timeGreeting(){ return ui('greet')(new Date().getHours()); }
+
+const UI = {
+en:{
+  next:'Next', confirm:'Confirm & continue',
+  badge3:'Takes about 3 minutes', badgeNC:'No credit check \u2022 No SSN needed', headerNC:'No credit check',
+  selectOne:'Please select an option to continue.',
+  statePH:'State',
+  errStreet:'Please enter a valid Address.', errCity:'Please enter your city.',
+  errState:'Please select your state.', errZip:'Please enter a valid 5-digit zip code.',
+  fine1:'For text messages, message and data rates may apply and message frequency varies. Reply STOP to unsubscribe or HELP for help.',
+  fine2:c=>'By providing your contact info and clicking "Confirm &amp; continue" below, you agree to our <a href="'+CONFIG.privacyUrl+'" target="_blank" rel="noopener">Privacy Policy</a> and <a href="'+CONFIG.termsUrl+'" target="_blank" rel="noopener">Terms of Use</a>. You also expressly consent to receive calls and texts about your inquiry — including via automated technology or prerecorded voice — from '+c+' at the number provided, even if it is on a do-not-call list. Agreement to receive such calls or texts is not a condition of purchasing goods or services from us.',
+  smsOK:'It\u2019s okay to text me updates about my application.',
+  eho:'Equal Housing Opportunity',
+  footer1:'Submitting this application will <b>never</b> trigger a credit check, and we never ask for your Social Security number or date of birth.',
+  footer2:'This application collects preliminary information only and is not a loan approval, commitment to lend, or rate quote.',
+  writeMsg:'Write a message...',
+  greet:h=>h<12?'Good morning':h<17?'Good afternoon':'Good evening',
+  chatPrivacy:u=>'This secure chat wraps up a few final details for your application. Learn more in our <a href="'+u+'" target="_blank" rel="noopener">Privacy Policy</a>.',
+  intro:"You're on the right track, and one step closer to the best options and savings. To finish personalizing your best loan options, we'll just need a few quick details.\n\nHow would you like to proceed?",
+  chipSelf:'Do it myself', chipAllSet:"I'm all set",
+  allSetSend:c=>'No problem — sending your details over to '+c+' now.',
+  preapproval:'Preapproval', taskOf:n=>'Task '+n+' of 4',
+  tBasic:'Basic information', tProp:'Purchase property information', tInc:'Income and assets',
+  qLegal:n=>"Just to make sure we're starting off right, is your legal full name "+n+'?',
+  chipYes:'Yes', chipNo:'No', chipNoType:'No, let me type it',
+  qLegal2:'Got it — what is your legal full name?', phLegal:'Your legal full name',
+  qMail:a=>'Is your mailing address the same as where you live right now — '+a+'?',
+  qMail2:'No problem. What address do you currently live at?', phAddr:'Street, city, state, zip',
+  qOwn:'Do you currently own your home, or are you renting?', chipOwnLb:'Own', chipRentLb:'Renting',
+  qRent:'About how much is your monthly rent?', phRent:'e.g. 1,650',
+  qMarital:'Got it. How would you describe your marital status?',
+  mSingle:'Single', mMarried:'Married', mDiv:'Divorced', mWid:'Widowed',
+  qSpouse:'Will your spouse be joining you on this loan?',
+  qCob:'Will anyone else be joining you on the loan — like a parent, sibling, or partner?',
+  cobYes:"Perfect. A co-borrower's income can raise how much you qualify for — we'll grab their details on our call.",
+  qArea:"What's the city and state or the 5-digit zip code of the property you're interested in?", phArea:'e.g. Houston, TX or 77070',
+  qSameProp:'Is the property being financed the same as your mailing address?',
+  qPropAddr:"What's the property address?",
+  qBest:"Last one — when's the best time for our team to reach you?",
+  bMorning:'Morning', bAfternoon:'Afternoon', bEvening:'Evening', bAny:'Anytime',
+  finalSend:c=>"Perfect — that's everything I need for now. I'm sending your application to "+c+' so a loan officer can put together your options.',
+  fail:'Hmm — something went wrong sending your application. Your answers are still here; tap below to try again.',
+  chipRetry:'Try again',
+  allSet:f=>'All set, '+f+'!',
+  sTitle:'Application received',
+  sBody:c=>'Our team at '+c+' will reach out shortly by phone or text to go over your options — keep an eye on your messages.',
+  rGoal:'Goal', rPrice:'Purchase price', rDown:'Down payment', rVal:'Home value', rBal:'Balance', rCash:'Cash out',
+  rInc:'Monthly income', rCredit:'Credit range', rPhone:'Phone', rEmail:'Email',
+  restart:'Start a new application',
+  cTitle:'Your estimated buying power', cSub:'Live estimate — adjust anything below and watch it update.',
+  cInc:'Monthly income', cDebt:'Monthly debts', cDown:'Down payment', cRate:'Interest rate',
+  pName:{fha:'FHA',conv:'Conventional',itin:'ITIN Home Loan'},
+  pTag:{fha:'3.5% min down',conv:'As low as 3% down',itin:'As low as 3% down'},
+  cPay:m=>'Est. payment '+m+'/mo incl. taxes &amp; insurance',
+  cZero:'Let\u2019s review this together on our call',
+  cDPA:'Assumes minimum down — down payment assistance may be available.',
+  cLim:'Limited by your down payment — ask us about down payment assistance.',
+  cITIN:r=>'Shown at +'+r+'% — ITIN rates run a bit higher.',
+  cNote:(t,i)=>'Assumes a 30-yr fixed loan, '+t+'% property tax and '+i+'% insurance (Texas estimates). Estimate only — not a preapproval, rate quote, or commitment to lend.',
+  perYear:a=>'\u2248 '+a+' per year',
+  ofPrice:p=>'\u2248 '+p+'% of the purchase price',
+  ltv:p=>'Estimated LTV: '+p+'%',
+  downLess:'Your down payment should be less than the purchase price.'
+},
+es:{
+  next:'Siguiente', confirm:'Confirmar y continuar',
+  badge3:'Toma unos 3 minutos', badgeNC:'Sin revisi\u00f3n de cr\u00e9dito \u2022 No se necesita SSN', headerNC:'Sin revisi\u00f3n de cr\u00e9dito',
+  selectOne:'Por favor seleccione una opci\u00f3n para continuar.',
+  statePH:'Estado',
+  errStreet:'Por favor ingrese una direcci\u00f3n v\u00e1lida.', errCity:'Por favor ingrese su ciudad.',
+  errState:'Por favor seleccione su estado.', errZip:'Por favor ingrese un c\u00f3digo postal de 5 d\u00edgitos.',
+  fine1:'Para mensajes de texto, pueden aplicar tarifas de mensajes y datos, y la frecuencia var\u00eda. Responda STOP para cancelar o HELP para ayuda.',
+  fine2:c=>'Al proporcionar su informaci\u00f3n de contacto y hacer clic en "Confirmar y continuar", usted acepta nuestra <a href="'+CONFIG.privacyUrl+'" target="_blank" rel="noopener">Pol\u00edtica de Privacidad</a> y <a href="'+CONFIG.termsUrl+'" target="_blank" rel="noopener">T\u00e9rminos de Uso</a>. Tambi\u00e9n da su consentimiento expreso para recibir llamadas y mensajes de texto sobre su solicitud — incluso mediante tecnolog\u00eda automatizada o voz pregrabada — de '+c+' al n\u00famero proporcionado, aunque est\u00e9 en una lista de no llamar. Aceptar estas llamadas o mensajes no es condici\u00f3n para comprar bienes o servicios.',
+  smsOK:'Est\u00e1 bien que me env\u00eden mensajes de texto con actualizaciones de mi solicitud.',
+  eho:'Igualdad de Oportunidades de Vivienda',
+  footer1:'Enviar esta solicitud <b>nunca</b> generar\u00e1 una revisi\u00f3n de cr\u00e9dito, y nunca pedimos su n\u00famero de Seguro Social ni su fecha de nacimiento.',
+  footer2:'Esta solicitud recopila informaci\u00f3n preliminar solamente y no es una aprobaci\u00f3n de pr\u00e9stamo, compromiso de prestar, ni cotizaci\u00f3n de tasa.',
+  writeMsg:'Escriba un mensaje...',
+  greet:h=>h<12?'Buenos d\u00edas':h<19?'Buenas tardes':'Buenas noches',
+  chatPrivacy:u=>'Este chat seguro completa unos \u00faltimos detalles de su solicitud. Conozca m\u00e1s en nuestra <a href="'+u+'" target="_blank" rel="noopener">Pol\u00edtica de Privacidad</a>.',
+  intro:'Va por muy buen camino, a un paso de las mejores opciones y ahorros. Para terminar de personalizar sus opciones de pr\u00e9stamo, solo necesitamos unos detalles r\u00e1pidos.\n\n\u00bfC\u00f3mo le gustar\u00eda continuar?',
+  chipSelf:'Contestar aqu\u00ed mismo', chipAllSet:'As\u00ed estoy bien',
+  allSetSend:c=>'Perfecto — enviando su informaci\u00f3n a '+c+' ahora mismo.',
+  preapproval:'Preaprobaci\u00f3n', taskOf:n=>'Tarea '+n+' de 4',
+  tBasic:'Informaci\u00f3n b\u00e1sica', tProp:'Informaci\u00f3n de la propiedad', tInc:'Ingresos y bienes',
+  qLegal:n=>'Solo para empezar bien, \u00bfsu nombre legal completo es '+n+'?',
+  chipYes:'S\u00ed', chipNo:'No', chipNoType:'No, d\u00e9jeme escribirlo',
+  qLegal2:'Entendido — \u00bfcu\u00e1l es su nombre legal completo?', phLegal:'Su nombre legal completo',
+  qMail:a=>'\u00bfSu direcci\u00f3n postal es la misma donde vive ahora — '+a+'?',
+  qMail2:'No hay problema. \u00bfEn qu\u00e9 direcci\u00f3n vive actualmente?', phAddr:'Calle, ciudad, estado, c\u00f3digo postal',
+  qOwn:'\u00bfActualmente es due\u00f1o de su casa o est\u00e1 rentando?', chipOwnLb:'Soy due\u00f1o', chipRentLb:'Rento',
+  qRent:'\u00bfAproximadamente cu\u00e1nto paga de renta al mes?', phRent:'ej. 1,650',
+  qMarital:'Entendido. \u00bfCu\u00e1l es su estado civil?',
+  mSingle:'Soltero(a)', mMarried:'Casado(a)', mDiv:'Divorciado(a)', mWid:'Viudo(a)',
+  qSpouse:'\u00bfSu c\u00f3nyuge estar\u00e1 en el pr\u00e9stamo con usted?',
+  qCob:'\u00bfAlguien m\u00e1s estar\u00e1 en el pr\u00e9stamo con usted — como un padre, hermano o pareja?',
+  cobYes:'Perfecto. El ingreso de un co-prestatario puede aumentar cu\u00e1nto califica — tomaremos sus datos en la llamada.',
+  qArea:'\u00bfCu\u00e1l es la ciudad y estado o el c\u00f3digo postal de 5 d\u00edgitos de la propiedad que le interesa?', phArea:'ej. Houston, TX o 77070',
+  qSameProp:'\u00bfLa propiedad a financiar es la misma que su direcci\u00f3n postal?',
+  qPropAddr:'\u00bfCu\u00e1l es la direcci\u00f3n de la propiedad?',
+  qBest:'\u00daltima pregunta — \u00bfcu\u00e1l es el mejor horario para que nuestro equipo le llame?',
+  bMorning:'En la ma\u00f1ana', bAfternoon:'En la tarde', bEvening:'En la noche', bAny:'A cualquier hora',
+  finalSend:c=>'Perfecto — eso es todo por ahora. Estoy enviando su solicitud a '+c+' para que un oficial de pr\u00e9stamos prepare sus opciones.',
+  fail:'Mmm — algo sali\u00f3 mal al enviar su solicitud. Sus respuestas siguen aqu\u00ed; toque abajo para intentar de nuevo.',
+  chipRetry:'Intentar de nuevo',
+  allSet:f=>'\u00a1Listo, '+f+'!',
+  sTitle:'Solicitud recibida',
+  sBody:c=>'Nuestro equipo de '+c+' le contactar\u00e1 pronto por llamada o mensaje de texto para revisar sus opciones — est\u00e9 pendiente de sus mensajes.',
+  rGoal:'Meta', rPrice:'Precio de compra', rDown:'Enganche', rVal:'Valor de la casa', rBal:'Saldo', rCash:'Efectivo',
+  rInc:'Ingreso mensual', rCredit:'Rango de cr\u00e9dito', rPhone:'Tel\u00e9fono', rEmail:'Correo',
+  restart:'Comenzar una nueva solicitud',
+  cTitle:'Su poder de compra estimado', cSub:'Estimado en vivo — ajuste lo que quiera y vea c\u00f3mo cambia.',
+  cInc:'Ingreso mensual', cDebt:'Deudas mensuales', cDown:'Enganche', cRate:'Tasa de inter\u00e9s',
+  pName:{fha:'FHA',conv:'Convencional',itin:'Pr\u00e9stamo ITIN'},
+  pTag:{fha:'Enganche m\u00edn. 3.5%',conv:'Enganche desde 3%',itin:'Enganche desde 3%'},
+  cPay:m=>'Pago est. '+m+'/mes incl. impuestos y seguro',
+  cZero:'Revisemos esto juntos en la llamada',
+  cDPA:'Asume el enganche m\u00ednimo — puede haber asistencia para el enganche.',
+  cLim:'Limitado por su enganche — preg\u00fantenos sobre asistencia para el enganche.',
+  cITIN:r=>'Mostrado con +'+r+'% — las tasas ITIN suelen ser un poco m\u00e1s altas.',
+  cNote:(t,i)=>'Asume pr\u00e9stamo fijo a 30 a\u00f1os, '+t+'% de impuesto predial y '+i+'% de seguro (estimados de Texas). Solo un estimado — no es una preaprobaci\u00f3n, cotizaci\u00f3n de tasa, ni compromiso de prestar.',
+  perYear:a=>'\u2248 '+a+' al a\u00f1o',
+  ofPrice:p=>'\u2248 '+p+'% del precio de compra',
+  ltv:p=>'LTV estimado: '+p+'%',
+  downLess:'Su enganche debe ser menor que el precio de compra.'
+}};
+
+/* header + footer text follow the language too */
+function applyChrome(){
+  document.querySelector('.hbadge span').textContent = ui('headerNC');
+  document.getElementById('legalFoot').innerHTML =
+    CONFIG.companyName + ' &nbsp;|&nbsp; ' + CONFIG.nmls + ' &nbsp;|&nbsp; ' + ui('eho') + '<br>' +
+    ui('footer1') + '<br>' + ui('footer2');
+}
+
+/* ================================================================
+   WIZARD RENDERER
+   ================================================================ */
+function renderStep(){
+  const steps = visibleSteps();
+  if(idx >= steps.length) idx = steps.length-1;
+  const s = steps[idx];
+
+  // progress
+  if(idx===0){ progWrap.classList.add('hiddenv'); }
+  else{
+    progWrap.classList.remove('hiddenv');
+    const pct = Math.max(3, Math.round(idx/steps.length*90));
+    fill.style.width = pct+'%'; pctEl.textContent = pct+'%';
+    backBtn.style.visibility='visible';
+  }
+
+  const wrap = el('div','step');
+  if(s.badge){
+    const row = el('div','badges');
+    row.appendChild(el('div','badge', IC.clock + '<span>'+ui('badge3')+'</span>'));
+    row.appendChild(el('div','badge ok', IC.shield + '<span>'+ui('badgeNC')+'</span>'));
+    wrap.appendChild(row);
+  }
+  wrap.appendChild(el('h1','title', tx(s.title)));
+  if(s.question) wrap.appendChild(el('p','question', tx(s.question)));
+  if(s.hint) wrap.appendChild(el('p','hint', tx(s.hint)));
+
+  let validate = ()=>true;
+
+  /* ---------- single / multi choice ---------- */
+  if(s.type==='single' || s.type==='multi'){
+    const list = el('div');
+    const msg = el('p','msg', ui('selectOne'));
+    const note = el('div','notecard', IC.shield + '<span></span>');
+    function refreshNote(){
+      const t = s.notes && s.notes[A[s.key]];
+      if(t){ note.querySelector('span').textContent = tx(t); note.classList.add('show'); }
+      else note.classList.remove('show');
+    }
+    s.options.forEach(o=>{
+      const card = el('div','opt');
+      card.tabIndex = 0;
+      card.setAttribute('role', s.type==='single'?'radio':'checkbox');
+      card.innerHTML = (o.icon?'<span class="ic">'+o.icon+'</span>':'') +
+                       '<span class="lb">'+tx(o.lb||o.v)+'</span><span class="circ"></span>';
+      const selNow = s.type==='single'
+        ? A[s.key]===o.v
+        : Array.isArray(A[s.key]) && A[s.key].indexOf(o.v)>-1;
+      if(selNow) card.classList.add('sel');
+      function toggle(){
+        if(s.type==='single'){
+          A[s.key]=o.v;
+          list.querySelectorAll('.opt').forEach(c=>c.classList.remove('sel'));
+          card.classList.add('sel');
+        }else{
+          A[s.key]=Array.isArray(A[s.key])?A[s.key]:[];
+          const i=A[s.key].indexOf(o.v);
+          i>-1 ? A[s.key].splice(i,1) : A[s.key].push(o.v);
+          card.classList.toggle('sel');
+        }
+        msg.classList.remove('show');
+        card.setAttribute('aria-checked', card.classList.contains('sel'));
+        refreshNote();
+        if(s.key==='language') applyChrome();
+      }
+      card.addEventListener('click',toggle);
+      card.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){e.preventDefault();e.stopPropagation();toggle();} });
+      list.appendChild(card);
+    });
+    wrap.appendChild(list); wrap.appendChild(note); wrap.appendChild(msg);
+    refreshNote();
+    validate = ()=>{
+      if(s.type==='multi') return true;                 // multi-select is optional
+      if(!A[s.key]){ msg.classList.add('show'); return false; }
+      return true;
+    };
+  }
+
+  /* ---------- currency ---------- */
+  if(s.type==='currency'){
+    const f = el('div','field');
+    f.innerHTML = '<label>'+tx(s.label)+'</label><div class="inrow"><span class="pre">$</span>'+
+                  '<input inputmode="numeric" autocomplete="off" placeholder="'+tx(s.ph)+'"></div>';
+    const inp = f.querySelector('input');
+    const msg = el('p','msg', tx(s.err));
+    const help = el('p','helper','');
+    if(A[s.key]!=null && A[s.key]!=='') inp.value = fmtNum(A[s.key]);
+    function refreshHelp(){ if(s.helper) help.textContent = s.helper(A)||''; }
+    inp.addEventListener('input',()=>{
+      const d = digits(inp.value).slice(0,9);
+      A[s.key] = d===''?'':d;
+      inp.value = d===''?'':fmtNum(d);
+      f.classList.remove('err'); msg.classList.remove('show');
+      refreshHelp();
+    });
+    refreshHelp();
+    wrap.appendChild(f); wrap.appendChild(msg); wrap.appendChild(help);
+    validate = ()=>{
+      let bad=false, text=tx(s.err);
+      if(s.validate){
+        const r=s.validate(A);
+        if(r!==true){ bad=true; text=tx(r); }
+      }else{
+        const v = A[s.key];
+        const ok = s.allowZero ? (v!=='' && v!=null && +v>=0) : (+v>0);
+        if(!ok) bad=true;
+      }
+      if(bad){ msg.textContent=text; msg.classList.add('show'); f.classList.add('err'); inp.focus(); return false; }
+      return true;
+    };
+  }
+
+  /* ---------- name group ---------- */
+  if(s.type==='group'){
+    const parts = s.fields.map(fd=>{
+      const f = el('div','field');
+      f.innerHTML = '<label>'+tx(fd.label)+'</label><input autocomplete="off" placeholder="'+tx(fd.ph)+'">';
+      const inp=f.querySelector('input');
+      inp.value = A[fd.key]||'';
+      const msg = el('p','msg', tx(fd.err));
+      inp.addEventListener('input',()=>{
+        A[fd.key]=inp.value;
+        f.classList.remove('err'); msg.classList.remove('show');
+      });
+      wrap.appendChild(f); wrap.appendChild(msg);
+      return {f,msg,inp,fd};
+    });
+    validate = ()=>{
+      for(const p of parts){
+        if(!String(A[p.fd.key]||'').trim()){
+          p.msg.classList.add('show'); p.f.classList.add('err'); p.inp.focus(); return false;
+        }
+      }
+      return true;
+    };
+  }
+
+  /* ---------- phone (with consent) ---------- */
+  if(s.type==='phone'){
+    const f = el('div','field');
+    f.innerHTML = '<label>'+tx(s.label)+'</label><input inputmode="tel" autocomplete="tel" placeholder="'+tx(s.ph)+'">';
+    const inp=f.querySelector('input');
+    inp.value = fmtPhone(A.phone||'');
+    const msg = el('p','msg', tx(s.err));
+    inp.addEventListener('input',()=>{
+      inp.value = fmtPhone(inp.value);
+      A.phone = digits(inp.value);
+      f.classList.remove('err'); msg.classList.remove('show');
+    });
+    wrap.appendChild(f); wrap.appendChild(msg);
+
+    const fine = el('div','fineprint');
+    fine.innerHTML = '<p>'+ui('fine1')+'</p><p>'+ui('fine2')(CONFIG.companyName)+'</p>';
+    const consent = el('label','consent',
+      '<input type="checkbox" id="smsOK"'+(A.smsConsent?' checked':'')+'>'+
+      '<span>'+ui('smsOK')+'</span>');
+    fine.appendChild(consent);
+    wrap.appendChild(fine);
+    consent.querySelector('input').addEventListener('change',e=>{ A.smsConsent = e.target.checked; });
+
+    validate = ()=>{
+      if(digits(A.phone||'').length!==10){ msg.classList.add('show'); f.classList.add('err'); inp.focus(); return false; }
+      return true;
+    };
+  }
+
+  /* ---------- email ---------- */
+  if(s.type==='email'){
+    const f = el('div','field');
+    f.innerHTML = '<label>'+tx(s.label)+'</label><input type="email" autocomplete="email" placeholder="'+tx(s.ph)+'">';
+    const inp=f.querySelector('input');
+    inp.value = A.email||'';
+    const msg = el('p','msg', tx(s.err));
+    inp.addEventListener('input',()=>{ A.email=inp.value.trim(); f.classList.remove('err'); msg.classList.remove('show'); });
+    wrap.appendChild(f); wrap.appendChild(msg);
+    validate = ()=>{
+      const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(A.email||'');
+      if(!ok){ msg.classList.add('show'); f.classList.add('err'); inp.focus(); return false; }
+      return true;
+    };
+  }
+
+  /* ---------- address ---------- */
+  if(s.type==='address'){
+    function mkField(key,label,ph,autoc){
+      const f = el('div','field');
+      f.innerHTML = '<label>'+tx(label)+'</label><input autocomplete="'+(autoc||'off')+'" placeholder="'+tx(ph)+'">';
+      const inp=f.querySelector('input');
+      inp.value = A[key]||'';
+      inp.addEventListener('input',()=>{ A[key]=inp.value; f.classList.remove('err'); });
+      return {f,inp};
+    }
+    const street = mkField('street',{en:'Address',es:'Direcci\u00f3n'},{en:'Street Address',es:'Calle y n\u00famero'},'address-line1');
+    const streetMsg = el('p','msg', ui('errStreet'));
+    street.inp.addEventListener('input',()=>streetMsg.classList.remove('show'));
+    const apt = mkField('apt',{en:'Apt. suite unit (optional)',es:'Apto., unidad (opcional)'},{en:'Apt. suite, unit',es:'Apto., unidad'},'address-line2');
+    const city = mkField('city',{en:'City',es:'Ciudad'},{en:'City',es:'Ciudad'},'address-level2');
+    const cityMsg = el('p','msg', ui('errCity'));
+    city.inp.addEventListener('input',()=>cityMsg.classList.remove('show'));
+
+    const stField = el('div','field');
+    stField.innerHTML = '<label>'+ui('statePH')+'</label><select><option value="" disabled '+(A.state?'':'selected')+'>'+ui('statePH')+'</option>'+
+      US_STATES.map(st=>'<option'+(A.state===st?' selected':'')+'>'+st+'</option>').join('')+
+      '</select><span class="chev">'+IC.chev+'</span>';
+    const stSel = stField.querySelector('select');
+    const stMsg = el('p','msg', ui('errState'));
+    stSel.addEventListener('change',()=>{ A.state=stSel.value; stField.classList.remove('err'); stMsg.classList.remove('show'); });
+
+    const zip = mkField('zip',{en:'Zip code',es:'C\u00f3digo postal'},{en:'Zip code',es:'C\u00f3digo postal'},'postal-code');
+    zip.inp.inputMode='numeric';
+    const zipMsg = el('p','msg', ui('errZip'));
+    zip.inp.addEventListener('input',()=>{
+      zip.inp.value = digits(zip.inp.value).slice(0,5);
+      A.zip = zip.inp.value; zipMsg.classList.remove('show');
+    });
+
+    [street.f,streetMsg,apt.f,city.f,cityMsg,stField,stMsg,zip.f,zipMsg].forEach(n=>wrap.appendChild(n));
+
+    validate = ()=>{
+      let ok=true;
+      if(String(A.street||'').trim().length<4){ street.f.classList.add('err'); streetMsg.classList.add('show'); ok=false; }
+      if(!String(A.city||'').trim()){ city.f.classList.add('err'); cityMsg.classList.add('show'); ok=false; }
+      if(!A.state){ stField.classList.add('err'); stMsg.classList.add('show'); ok=false; }
+      if(digits(A.zip||'').length!==5){ zip.f.classList.add('err'); zipMsg.classList.add('show'); ok=false; }
+      return ok;
+    };
+  }
+
+  /* ---------- next ---------- */
+  const btn = el('button','next', s.button==='confirm' ? ui('confirm') : ui('next'));
+  btn.id='nextBtn';
+  btn.addEventListener('click',()=>{
+    if(!validate()) return;
+    const steps2 = visibleSteps();
+    if(idx >= steps2.length-1){ startChat(); }
+    else{ idx++; renderStep(); window.scrollTo({top:0,behavior:'smooth'}); }
+  });
+  wrap.appendChild(btn);
+
+  stage.classList.remove('chat-mode');
+  stage.replaceChildren(wrap);
+  const firstInput = wrap.querySelector('input,select');
+  if(firstInput && window.innerWidth>640) firstInput.focus();
+}
+
+backBtn.addEventListener('click',()=>{
+  if(stage.classList.contains('chat-mode')){   // leaving the chat hand-off → back to last wizard screen
+    idx = visibleSteps().length-1;
+    renderStep();
+    return;
+  }
+  if(idx>0){ idx--; renderStep(); }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  const nb = document.getElementById('nextBtn');
+  if(nb && !nb.disabled && document.activeElement.tagName!=='BUTTON') { e.preventDefault(); nb.click(); }
+});
+
+/* ================================================================
+   CHAT PHASE  (mimics the guided assistant hand-off)
+   ================================================================ */
+let scrollBox=null, barInput=null, barSend=null;
+
+function startChat(){
+  progWrap.classList.remove('hiddenv');
+  fill.style.width='93%'; pctEl.textContent='93%';
+  backBtn.style.visibility='visible';
+
+  stage.classList.add('chat-mode');
+  const card = el('div','chatcard');
+  scrollBox = el('div','chatscroll');
+  const greet = el('div','greet',
+    HOUSE_ART +
+    '<h2>'+timeGreeting()+', '+esc(A.first)+'</h2>'+
+    '<p>'+ui('chatPrivacy')(CONFIG.privacyUrl)+'</p>');
+  scrollBox.appendChild(greet);
+
+  const bar = el('div','chatbar');
+  barInput = document.createElement('input');
+  barInput.placeholder=ui('writeMsg');
+  barInput.disabled=true;
+  barSend = el('button','send', IC.sendUp);
+  barSend.disabled=true;
+  bar.appendChild(barInput); bar.appendChild(barSend);
+
+  card.appendChild(scrollBox); card.appendChild(bar);
+  stage.replaceChildren(card);
+
+  chatFlow().catch(console.error);
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toBottom(){ scrollBox.scrollTop = scrollBox.scrollHeight; }
+function addBot(text){ scrollBox.appendChild(el('div','bub bot',esc(text))); toBottom(); }
+function addUser(text){ scrollBox.appendChild(el('div','bub user',esc(text))); toBottom(); }
+async function typing(ms){
+  const t = el('div','typing','<i></i><i></i><i></i>');
+  scrollBox.appendChild(t); toBottom();
+  await sleep(ms); t.remove();
+}
+function addTask(n, doneCount){
+  const items=[ui('tBasic'),ui('tProp'),ui('tInc')];
+  const rows = items.map((it,i)=>{
+    const done = i<doneCount;
+    return '<div class="trow '+(done?'done':'dim')+'">'+(done?IC.check:IC.spinC)+'<span>'+it+'</span></div>';
+  }).join('');
+  scrollBox.appendChild(el('div','task','<h4>'+ui('preapproval')+' <span>'+ui('taskOf')(n)+'</span></h4>'+rows));
+  toBottom();
+}
+function askChips(opts){
+  // opts: array of strings or {v, lb} — lb is shown, v is stored (canonical English)
+  return new Promise(res=>{
+    const box = el('div','chips');
+    opts.forEach(o=>{
+      const val = (typeof o==='object') ? o.v : o;
+      const lab = (typeof o==='object') ? (o.lb!=null?o.lb:o.v) : o;
+      const c = el('button','chip', esc(lab));
+      c.addEventListener('click',()=>{ box.remove(); addUser(lab); res(val); });
+      box.appendChild(c);
+    });
+    scrollBox.appendChild(box); toBottom();
+  });
+}
+const YN = ()=>[{v:'Yes',lb:ui('chipYes')},{v:'No',lb:ui('chipNo')}];
+function askInput(placeholder, validator){
+  return new Promise(res=>{
+    barInput.disabled=false; barSend.disabled=false;
+    barInput.placeholder=placeholder; barInput.value='';
+    barInput.focus();
+    function done(){
+      const v = barInput.value.trim();
+      if(!v) return;
+      if(validator && !validator(v)) { barInput.select(); return; }
+      barInput.value=''; barInput.placeholder=ui('writeMsg');
+      barInput.disabled=true; barSend.disabled=true;
+      barInput.removeEventListener('keydown',onKey);
+      barSend.removeEventListener('click',done);
+      addUser(v); res(v);
+    }
+    function onKey(e){ if(e.key==='Enter'){ e.preventDefault(); done(); } }
+    barInput.addEventListener('keydown',onKey);
+    barSend.addEventListener('click',done);
+  });
+}
+
+async function chatFlow(){
+  const fullName = (A.first+' '+A.last).trim();
+  const mail = A.street + (A.apt?', '+A.apt:'') + ', ' + A.city + ', ' + A.state + ' ' + A.zip;
+
+  await typing(900);
+  addBot(ui('intro'));
+  const proceed = await askChips([
+    {v:'Do it myself', lb:ui('chipSelf')},
+    {v:"I'm all set",  lb:ui('chipAllSet')}
+  ]);
+
+  if(proceed==="I'm all set"){
+    CHAT.completedChat='No — submitted early';
+    await typing(700);
+    addBot(ui('allSetSend')(CONFIG.companyName));
+    await submitAll();
+    return;
+  }
+  CHAT.completedChat='Yes';
+
+  addTask(1,0);
+  await typing(800);
+  addBot(ui('qLegal')(fullName));
+  const nameOk = await askChips([{v:'Yes',lb:ui('chipYes')},{v:'No',lb:ui('chipNoType')}]);
+  if(nameOk==='Yes'){ CHAT.legalName=fullName; }
+  else{
+    await typing(500);
+    addBot(ui('qLegal2'));
+    CHAT.legalName = await askInput(ui('phLegal'));
+  }
+
+  await typing(700);
+  addBot(ui('qMail')(mail));
+  CHAT.mailingSame = await askChips(YN());
+  if(CHAT.mailingSame==='No'){
+    await typing(500);
+    addBot(ui('qMail2'));
+    CHAT.livingAddress = await askInput(ui('phAddr'));
+  }
+
+  await typing(700);
+  addBot(ui('qOwn'));
+  CHAT.ownRent = await askChips([{v:'Own',lb:ui('chipOwnLb')},{v:'Renting',lb:ui('chipRentLb')}]);
+
+  if(CHAT.ownRent==='Renting'){
+    await typing(550);
+    addBot(ui('qRent'));
+    const r = await askInput(ui('phRent'));
+    const rd = digits(r);
+    CHAT.rent = rd ? money(rd) : r;
+  }
+
+  await typing(650);
+  addBot(ui('qMarital'));
+  CHAT.marital = await askChips([
+    {v:'Single',lb:ui('mSingle')},{v:'Married',lb:ui('mMarried')},
+    {v:'Divorced',lb:ui('mDiv')},{v:'Widowed',lb:ui('mWid')}
+  ]);
+
+  if(CHAT.marital==='Married'){
+    await typing(600);
+    addBot(ui('qSpouse'));
+    CHAT.spouseOnLoan = await askChips(YN());
+  }
+
+  if(!(CHAT.marital==='Married' && CHAT.spouseOnLoan==='Yes')){
+    await typing(600);
+    addBot(ui('qCob'));
+    CHAT.coBorrower = await askChips(YN());
+    if(CHAT.coBorrower==='Yes'){
+      await typing(550);
+      addBot(ui('cobYes'));
+    }
+  }
+
+  addTask(2,1);
+  await typing(750);
+  if(isBuy(A)){
+    addBot(ui('qArea'));
+    CHAT.propertyArea = await askInput(ui('phArea'));
+  }else{
+    addBot(ui('qSameProp'));
+    const same = await askChips(YN());
+    if(same==='Yes'){ CHAT.propertyAddress = 'Same as mailing address'; }
+    else{
+      await typing(500);
+      addBot(ui('qPropAddr'));
+      CHAT.propertyAddress = await askInput(ui('phAddr'));
+    }
+  }
+
+  await typing(650);
+  addBot(ui('qBest'));
+  CHAT.bestTime = await askChips([
+    {v:'Morning',lb:ui('bMorning')},{v:'Afternoon',lb:ui('bAfternoon')},
+    {v:'Evening',lb:ui('bEvening')},{v:'Anytime',lb:ui('bAny')}
+  ]);
+
+  await typing(900);
+  addBot(ui('finalSend')(CONFIG.companyName));
+  await submitAll();
+}
+
+/* ================================================================
+   SUBMISSION  (Web3Forms + optional webhook)
+   ================================================================ */
+function buildPayload(){
+  const p = {
+    access_key: CONFIG.accessKey,
+    subject: CONFIG.subjectPrefix + ' — ' + A.first + ' ' + A.last + ' (' + (A.goal||'') + ')',
+    from_name: CONFIG.companyName + ' Application',
+    botcheck: '',
+
+    'Loan Goal': A.goal || '',
+    'Qualifying With': A.status || '',
+    'Preferred Language': A.language || '',
+    'First Name': A.first || '',
+    'Last Name': A.last || '',
+    'Phone': fmtPhone(A.phone||''),
+    'Email': A.email || '',
+    'Mailing Address': [A.street, A.apt, A.city, A.state, A.zip].filter(Boolean).join(', '),
+    'Credit Range (self-reported)': A.credit || '',
+    'Work Status': A.work || '',
+    'Gross Monthly Income': money(A.income),
+    'Monthly Debt Payments': money(A.debts),
+    'Bankruptcy (past 3 yrs)': A.bk || '',
+    'Property Type': A.propertyType || '',
+    'Property Use': A.propertyUse || '',
+    'SMS Consent': A.smsConsent ? 'Yes' : 'No',
+    'Submitted At': new Date().toLocaleString('en-US'),
+    'Source Page': location.href
+  };
+  // work history
+  if(A.work==='Employed'){ p['Employer'] = A.employer||''; p['Job Title'] = A.jobTitle||''; }
+  if(A.work==='Self-employed'){ p['Business Name'] = A.businessName||''; p['Business Type'] = A.businessType||''; }
+  if(A.tenure) p['Time at Job/Business'] = A.tenure;
+  if(A.incomeDoc) p['Income Documentation'] = A.incomeDoc;
+
+  if(isBuy(A)){
+    p['Loan Options'] = (A.loanOptions&&A.loanOptions.length)?A.loanOptions.join('; '):'None selected';
+    p['Buying Stage'] = A.stage || '';
+    p['Timeline to Buy'] = A.timeline || '';
+    p['Working With Agent'] = A.agent || '';
+    p['Purchase Price'] = money(A.price);
+    p['Down Payment'] = money(A.down);
+    if(+A.price>0) p['Down Payment %'] = (+A.down/+A.price*100).toFixed(1)+'%';
+    p['Comfortable Monthly Payment'] = money(A.comfortPay);
+    // buying-power estimates at the default rate — pre-work for the loan officer
+    programsFor(A.status).forEach(pr=>{
+      const r = calcProgram(pr, +A.income||0, +A.debts||0, +A.down||0, CONFIG.CALC.rateDefault);
+      p['Est. Buying Power ('+pr.name+')'] = r.price>0 ? money(r.price) : 'Needs review';
+    });
+  }else{
+    p['Estimated Home Value'] = money(A.homeValue);
+    p['Remaining Balance'] = money(A.balance);
+    if(+A.homeValue>0) p['Estimated LTV'] = (+A.balance/+A.homeValue*100).toFixed(1)+'%';
+    if(isEquity(A)) p['Desired Cash Out'] = money(A.cashOut);
+  }
+  // chat-phase extras
+  if(CHAT.completedChat) p['Chat Details Completed'] = CHAT.completedChat;
+  if(CHAT.legalName) p['Legal Full Name'] = CHAT.legalName;
+  if(CHAT.mailingSame) p['Mailing = Current Residence'] = CHAT.mailingSame;
+  if(CHAT.livingAddress) p['Current Living Address'] = CHAT.livingAddress;
+  if(CHAT.ownRent) p['Own or Rent'] = CHAT.ownRent;
+  if(CHAT.rent) p['Current Monthly Rent'] = CHAT.rent;
+  if(CHAT.marital) p['Marital Status'] = CHAT.marital;
+  if(CHAT.spouseOnLoan) p['Spouse on Loan'] = CHAT.spouseOnLoan;
+  if(CHAT.coBorrower) p['Co-borrower Possible'] = CHAT.coBorrower;
+  if(CHAT.propertyArea) p['Property Area of Interest'] = CHAT.propertyArea;
+  if(CHAT.propertyAddress) p['Property Address'] = CHAT.propertyAddress;
+  if(CHAT.bestTime) p['Best Time to Call'] = CHAT.bestTime;
+  return p;
+}
+
+async function submitAll(){
+  await typing(1200);
+  const payload = buildPayload();
+
+  // optional side-channel copy (n8n / GHL inbound webhook)
+  if(CONFIG.webhookUrl){
+    try{ fetch(CONFIG.webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }catch(e){}
+  }
+
+  let ok=false;
+  try{
+    const res = await fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    ok = !!data.success;
+  }catch(e){ ok=false; }
+
+  if(!ok){
+    addBot(ui('fail'));
+    const retry = await askChips([{v:'retry',lb:ui('chipRetry')}]);
+    if(retry) return submitAll();
+    return;
+  }
+
+  fill.style.width='100%'; pctEl.textContent='100%';
+  addBot(ui('allSet')(A.first));
+
+  const rows = [];
+  rows.push([ui('rGoal'), optLabel('goal', A.goal)]);
+  if(isBuy(A)){
+    rows.push([ui('rPrice'), money(A.price)]);
+    rows.push([ui('rDown'), money(A.down)]);
+  }else{
+    rows.push([ui('rVal'), money(A.homeValue)]);
+    rows.push([ui('rBal'), money(A.balance)]);
+    if(isEquity(A)) rows.push([ui('rCash'), money(A.cashOut)]);
+  }
+  rows.push([ui('rInc'), money(A.income)]);
+  rows.push([ui('rCredit'), optLabel('credit', A.credit)]);
+  rows.push([ui('rPhone'), fmtPhone(A.phone)]);
+  rows.push([ui('rEmail'), A.email]);
+
+  const box = el('div','success',
+    '<div class="ok-ic">'+IC.check+'</div>'+
+    '<h3>'+ui('sTitle')+'</h3>'+
+    '<p>'+esc(ui('sBody')(CONFIG.companyName))+'</p>'+
+    '<div class="recap">'+rows.map(r=>'<div><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>').join('')+'</div>');
+  scrollBox.appendChild(box);
+
+  if(isBuy(A)) scrollBox.appendChild(buildCalculator());
+
+  const again = el('button','next restart', ui('restart'));
+  again.style.alignSelf='center';
+  again.addEventListener('click',()=>location.reload());
+  scrollBox.appendChild(again); toBottom();
+}
+
+/* ================================================================
+   BUYING-POWER CALCULATOR (FHA / Conventional / ITIN)
+   ================================================================ */
+function programsFor(status){
+  if(status==='ITIN (Tax ID number)'){
+    return [{id:'itin', name:'ITIN Home Loan', tag:'As low as 3% down',
+             minDown:0.03, dti:0.45, mi:0, ufmip:0, rateAdd:CONFIG.CALC.itinRateAdd}];
+  }
+  return [
+    {id:'fha',  name:'FHA',          tag:'3.5% min down',    minDown:0.035, dti:0.55, mi:0.0055, ufmip:0.0175, rateAdd:0},
+    {id:'conv', name:'Conventional', tag:'As low as 3% down', minDown:0.03,  dti:0.50, mi:0.006,  ufmip:0,      rateAdd:0}
+  ];
+}
+
+/* Solve max price P where  (P−D)·(1+ufmip)·pf + (P−D)·mi/12 + P·carry = DTI·income − debts */
+function calcProgram(pr, income, debts, down, ratePct){
+  const carry = (CONFIG.CALC.taxPct + CONFIG.CALC.insPct)/100/12;   // taxes + insurance per $1 of price, monthly
+  const budget = pr.dti*income - debts;
+  if(budget<=0 || income<=0) return {price:0, pay:0, limited:false, dpa:false};
+
+  function solve(mi){
+    const r = (ratePct + pr.rateAdd)/100/12;
+    const pf = r/(1-Math.pow(1+r,-360));                            // P&I per $1 of loan
+    const k  = (1+pr.ufmip)*pf + mi/12;
+    return (budget + down*k)/(k + carry);
+  }
+  let mi = pr.mi;
+  let priceInc = solve(mi);
+  if(pr.id==='conv' && down>0 && down/priceInc>=0.20){ mi=0; priceInc=solve(0); }  // 20%+ down → no PMI
+
+  const cashCap = down>0 ? down/pr.minDown : Infinity;
+  let price = Math.min(priceInc, cashCap);
+  const limited = down>0 && cashCap < priceInc;
+  const dpa = down<=0;
+  price = Math.max(0, Math.floor(price/1000)*1000);
+
+  // estimated all-in payment at that price
+  const r = (ratePct + pr.rateAdd)/100/12;
+  const pf = r/(1-Math.pow(1+r,-360));
+  const loan = Math.max(0, price-down);
+  const pay = Math.round(loan*(1+pr.ufmip)*pf + loan*mi/12 + price*carry);
+  return {price, pay, limited, dpa};
+}
+
+function buildCalculator(){
+  const c = el('div','calc');
+  c.innerHTML =
+    '<h4>'+ui('cTitle')+'</h4>'+
+    '<p class="csub">'+ui('cSub')+'</p>'+
+    '<div class="cgrid">'+
+      '<div class="field"><label>'+ui('cInc')+'</label><div class="inrow"><span class="pre">$</span><input inputmode="numeric" data-k="income"></div></div>'+
+      '<div class="field"><label>'+ui('cDebt')+'</label><div class="inrow"><span class="pre">$</span><input inputmode="numeric" data-k="debts"></div></div>'+
+      '<div class="field"><label>'+ui('cDown')+'</label><div class="inrow"><span class="pre">$</span><input inputmode="numeric" data-k="down"></div></div>'+
+    '</div>'+
+    '<div class="rate-row"><span>'+ui('cRate')+'</span><input type="range" min="5" max="9" step="0.125" value="'+CONFIG.CALC.rateDefault+'"><output>'+CONFIG.CALC.rateDefault.toFixed(2)+'%</output></div>'+
+    '<div class="pgrid"></div>'+
+    '<p class="cnote">'+ui('cNote')(CONFIG.CALC.taxPct, CONFIG.CALC.insPct)+'</p>';
+
+  const vals = { income:+A.income||0, debts:+A.debts||0, down:+A.down||0 };
+  const inputs = c.querySelectorAll('.cgrid input');
+  const slider = c.querySelector('input[type=range]');
+  const out = c.querySelector('output');
+  const grid = c.querySelector('.pgrid');
+  const progs = programsFor(A.status);
+
+  function paint(){
+    const rate = +slider.value;
+    out.textContent = rate.toFixed(2)+'%';
+    grid.innerHTML = progs.map(pr=>{
+      const r = calcProgram(pr, vals.income, vals.debts, vals.down, rate);
+      let sub = r.price>0 ? ui('cPay')(money(r.pay)) : ui('cZero');
+      let lim = '';
+      if(r.dpa) lim = ui('cDPA');
+      else if(r.limited) lim = ui('cLim');
+      if(pr.id==='itin') lim = (lim?lim+' ':'')+ui('cITIN')(CONFIG.CALC.itinRateAdd);
+      return '<div class="pcard"><div class="pname"><span>'+ui('pName')[pr.id]+'</span><span class="ptag">'+ui('pTag')[pr.id]+'</span></div>'+
+             '<div class="pamt">'+(r.price>0?money(r.price):'\u2014')+'</div>'+
+             '<div class="ppay">'+sub+'</div>'+(lim?'<div class="plim">'+lim+'</div>':'')+'</div>';
+    }).join('');
+  }
+  inputs.forEach(inp=>{
+    inp.value = fmtNum(vals[inp.dataset.k]);
+    inp.addEventListener('input',()=>{
+      const d = digits(inp.value).slice(0,9);
+      vals[inp.dataset.k] = +d||0;
+      inp.value = d===''?'':fmtNum(d);
+      paint();
+    });
+  });
+  slider.addEventListener('input',paint);
+  paint();
+  return c;
+}
+
+/* boot */
+try{ if(new URLSearchParams(location.search).get('lang')==='es') A.language='Espa\u00f1ol'; }catch(e){}
+applyChrome();
+renderStep();
+</script>
+</body>
+</html>
