@@ -6,6 +6,8 @@
 <title>Apply Online | Home Loan Application</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -43,6 +45,10 @@ header.site{
   padding:26px 48px;
 }
 .logo{display:flex;align-items:center;gap:11px;font-weight:700;font-size:20px;letter-spacing:-.02em;line-height:1.05}
+.lock{display:flex;flex-direction:column;line-height:1}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:#6a6972;text-transform:uppercase}
+.lock b{font-size:24px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--accent);padding-top:3px}
 .logo svg{color:var(--accent);width:34px;height:34px;flex:0 0 34px}
 .logo small{display:block;font-weight:500;font-size:11px;color:#8a8992;letter-spacing:.04em;text-transform:uppercase}
 .hbadge{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--ok);background:#e9f5ec;padding:9px 16px;border-radius:99px}
@@ -229,9 +235,8 @@ footer.legal{max-width:900px;margin:24px auto 46px;padding:0 24px;text-align:cen
 <body>
 
 <header class="site">
-  <a class="logo" id="logoBox" href="index.html" style="text-decoration:none;color:inherit" aria-label="Jason Aguirre Group home">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M10 20v-5.5h4V20"/></svg>
-    <div><span id="logoName">Home Loans</span><small id="logoTag">Apply online</small></div>
+  <a class="logo" id="logoBox" href="index.html" style="text-decoration:none;color:inherit" aria-label="JAG Real Estate home">
+    <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Home Loans</i></span>
   </a>
   <div class="hbadge">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5v-6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg>
@@ -278,8 +283,6 @@ const CONFIG = {
 
 /* ---------------- boot header from config (footer + badge text are set by applyChrome, per language) ---------------- */
 document.title = "Apply Online | " + CONFIG.companyName;
-document.getElementById('logoName').textContent = CONFIG.companyName;
-document.getElementById('logoTag').textContent = CONFIG.tagline;
 
 /* ================================================================
    ICONS

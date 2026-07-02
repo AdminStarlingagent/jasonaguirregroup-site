@@ -20,6 +20,8 @@
    Buyer email subject "New Buyer Offer: …"; seller "New Seller Lead: …".
   ============================================================================
 -->
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{
   --ink:#17161c;--primary:#17161c;--primary-d:#000000;--primary-l:#f0f0f3;
@@ -36,6 +38,10 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI"
 .brandbar .logo{width:40px;height:40px;border-radius:10px;font-size:.95rem;background:linear-gradient(135deg,var(--primary),var(--primary-d));
   display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.15rem}
 .brandbar b{font-size:1.02rem;letter-spacing:-.01em}
+.lock{display:flex;flex-direction:column;line-height:1;color:var(--ink)}
+.lock small{font-size:7px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:21px;font-weight:800;letter-spacing:-.04em;margin:1px 0}
+.lock i{font-style:normal;font-size:7.5px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--accent);padding-top:2px}
 .brandbar small{display:block;color:var(--muted);font-size:.78rem;font-weight:500}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
 [data-screen][hidden]{display:none}
@@ -120,8 +126,8 @@ textarea{min-height:84px;resize:vertical}
 <body>
 <div class="shell">
   <a class="brandbar" href="index.html" style="text-decoration:none;color:inherit">
-    <div class="logo">JAG</div>
-    <div><b>Jason Aguirre Group</b><small>eXp Realty &middot; Buying or selling? Start here</small></div>
+    <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span>
+    <div style="margin-left:4px"><small style="color:var(--muted);font-weight:500">eXp Realty &middot; Buying or selling? Start here</small></div>
   </a>
 
   <div class="card">

@@ -3,15 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Jason Aguirre Group — Make an Offer on Any Home | Houston Real Estate</title>
-<meta name="description" content="Make an offer on any home — even before you're prequalified. Get an instant home value. Get qualified with JAG Home Loans: no credit check, ITIN OK. English y español.">
+<title>JAG Real Estate — Make an Offer on Any Home</title>
+<meta name="description" content="Make an offer on any home — even before you're prequalified. Get an instant home value. Get qualified with JAG Home Loans: no credit check, ITIN OK.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jasonaguirregroup.company/">
+<meta property="og:title" content="JAG Real Estate — Make an offer on any home">
+<meta property="og:description" content="Even before you're prequalified. Instant home values. Get qualified in 3 minutes — no credit check. English y español.">
+<meta property="og:image" content="https://jasonaguirregroup.company/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#17161c; --paper:#ffffff; --card:#f5f5f7; --line:#e8e8ec;
-  --accent:#c8102e; --accent-d:#a30d26;
+  --accent:#c8102e;
+  --buy:#c8102e;  --buy-d:#a30d26;  --buy-t:#fdecef;
+  --sell:#0f8a4d; --sell-d:#0b6b3b; --sell-t:#e7f5ee;
+  --loan:#2653d9; --loan-d:#1c41b3; --loan-t:#eaf0ff;
   --ok:#1a5c31; --ok-bg:#e9f5ec;
   --muted:#6a6972; --soft:#8a8992;
   --r:16px;
@@ -26,70 +37,81 @@ a{color:inherit}
 
 /* ---------------- header ---------------- */
 header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.hin{max-width:1060px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:18px}
-.logo{display:flex;align-items:center;gap:11px;text-decoration:none}
-.jmark{width:36px;height:36px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px;letter-spacing:-.02em}
-.jmark span{color:var(--accent)}
-.lname{font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.15}
-.lname small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:.02em}
-nav{display:flex;gap:22px;margin-left:auto;align-items:center}
+.hin{max-width:1060px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.lock{display:flex;flex-direction:column;line-height:1}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:25px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--accent);padding-top:3px}
+.brok{font-size:11px;color:var(--muted);font-weight:600;border-left:1px solid var(--line);padding-left:12px}
+nav{display:flex;gap:20px;margin-left:auto;align-items:center}
 nav a{font-size:14px;font-weight:600;color:#37363e;text-decoration:none}
 nav a:hover{color:var(--ink)}
-nav a.jag{color:var(--accent-d)}
-.langs{display:flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-left:6px}
-.langs button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;padding:7px 12px;cursor:pointer;color:var(--muted)}
+nav a.jag{color:var(--loan-d)}
+.langs{display:flex;border:2px solid var(--ink);border-radius:99px;overflow:hidden;margin-left:auto}
+nav ~ .langs, nav .langs{margin-left:6px}
+.langs button{border:0;background:transparent;font:inherit;font-size:13px;font-weight:800;padding:8px 14px;cursor:pointer;color:var(--ink);letter-spacing:.02em}
 .langs button.on{background:var(--ink);color:#fff}
-.applybtn{background:var(--ink);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 22px;border-radius:99px;transition:transform .12s ease, background .12s}
-.applybtn:hover{background:#000;transform:translateY(-1px)}
-.burger{display:none;margin-left:auto;background:none;border:0;padding:6px;cursor:pointer}
+.applybtn{background:var(--loan);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 22px;border-radius:99px;transition:transform .12s ease, background .12s;box-shadow:0 4px 14px rgba(38,83,217,.25)}
+.applybtn:hover{background:var(--loan-d);transform:translateY(-1px)}
+.burger{display:none;background:none;border:0;padding:6px;cursor:pointer}
 .burger svg{width:26px;height:26px;stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round}
 .mnav{display:none}
-@media(max-width:860px){
+@media(max-width:900px){
   nav{display:none}
+  .brok{display:none}
   .burger{display:block}
-  .applybtn.hdr{display:none}
+  .langs{margin-left:auto}
   .mnav.open{display:flex;flex-direction:column;gap:4px;padding:10px 22px 18px;border-bottom:1px solid var(--line);background:#fff}
-  .mnav a{padding:11px 4px;font-weight:600;text-decoration:none;font-size:15.5px;border-bottom:1px solid var(--card)}
-  .mnav .rowend{display:flex;align-items:center;justify-content:space-between;padding-top:12px}
+  .mnav a{padding:12px 4px;font-weight:600;text-decoration:none;font-size:15.5px;border-bottom:1px solid var(--card)}
+  .mnav .applybtn{border-bottom:0;text-align:center;margin-top:10px}
 }
 
 /* ---------------- hero ---------------- */
-.hero{padding:58px 0 30px}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
-.eyebrow i{width:7px;height:7px;border-radius:99px;background:var(--accent);display:inline-block}
+.hero{padding:34px 0 30px}
+.langhero{display:inline-flex;align-items:center;gap:9px;background:var(--card);border:2px solid var(--ink);border-radius:99px;padding:10px 18px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:26px;transition:background .12s,transform .12s}
+.langhero:hover{background:#ec022e0d;transform:translateY(-1px)}
+.langhero svg{width:17px;height:17px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round}
 h1{font-size:clamp(34px,5.4vw,58px);line-height:1.04;letter-spacing:-.035em;font-weight:800;margin:0 0 16px;max-width:760px}
 h1 em{font-style:normal;position:relative;white-space:nowrap}
 h1 em::after{content:"";position:absolute;left:0;right:0;bottom:.04em;height:.16em;background:var(--accent);opacity:.22;border-radius:3px}
-.sub{font-size:18px;color:#44434b;max-width:560px;margin:0 0 26px}
+.sub{font-size:18px;color:#3d3c45;max-width:600px;margin:0 0 24px;font-weight:500}
 .badges{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 30px}
-.badge{display:inline-flex;align-items:center;gap:8px;background:var(--card);color:#3b3a44;padding:8px 14px;border-radius:99px;font-size:13.5px;font-weight:600}
-.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--ok-bg);color:var(--ok);padding:8px 14px;border-radius:99px;font-size:13.5px;font-weight:700}
 .badge svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-/* the path picker — homepage opens like step 0 of the application */
+/* path picker — color-coded actions */
 .paths{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 12px}
-@media(max-width:860px){.paths{grid-template-columns:1fr}}
-.path{position:relative;display:block;text-decoration:none;background:var(--card);border:2px solid var(--card);border-radius:var(--r);padding:22px 20px 20px;transition:border-color .14s, transform .14s, background .14s;cursor:pointer}
-.path:hover{border-color:var(--ink);background:#f0f0f3;transform:translateY(-2px)}
-.path .tag{position:absolute;top:16px;right:16px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-d);background:#fdecef;padding:4px 9px;border-radius:99px}
-.path .ic{width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.path .ic svg{width:24px;height:24px;stroke:var(--ink);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:900px){.paths{grid-template-columns:1fr}}
+.path{position:relative;display:flex;flex-direction:column;text-decoration:none;background:var(--card);border:2px solid var(--card);border-radius:var(--r);padding:22px 20px 20px;transition:border-color .14s, transform .14s;cursor:pointer}
+.path:hover{transform:translateY(-3px)}
+.path.buy:hover{border-color:var(--buy)} .path.sell:hover{border-color:var(--sell)} .path.loan:hover{border-color:var(--loan)}
+.path .tag{position:absolute;top:16px;right:16px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:99px}
+.path.loan .tag{color:var(--loan-d);background:var(--loan-t)}
+.path .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;margin-bottom:14px}
+.path.buy .ic{background:var(--buy-t)} .path.sell .ic{background:var(--sell-t)} .path.loan .ic{background:var(--loan-t)}
+.path .ic svg{width:24px;height:24px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.path.buy .ic svg{stroke:var(--buy)} .path.sell .ic svg{stroke:var(--sell)} .path.loan .ic svg{stroke:var(--loan)}
 .path b{display:block;font-size:18.5px;letter-spacing:-.015em;margin-bottom:5px}
-.path p{margin:0;font-size:14px;color:var(--muted);line-height:1.5;padding-right:8px}
-.path .go{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:14px;font-weight:700;color:var(--ink)}
-.path .go svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .14s}
-.path:hover .go svg{transform:translateX(3px)}
+.path p{margin:0 0 16px;font-size:14px;color:var(--muted);line-height:1.5;padding-right:8px}
+.pbtn{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:#fff;font-size:14.5px;font-weight:700;padding:13px 18px;border-radius:99px;transition:transform .12s,filter .12s}
+.path.buy .pbtn{background:var(--buy);box-shadow:0 4px 14px rgba(200,16,46,.28)}
+.path.sell .pbtn{background:var(--sell);box-shadow:0 4px 14px rgba(15,138,77,.28)}
+.path.loan .pbtn{background:var(--loan);box-shadow:0 4px 14px rgba(38,83,217,.28)}
+.path:hover .pbtn{filter:brightness(.92)}
+.pbtn svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .14s}
+.path:hover .pbtn svg{transform:translateX(3px)}
 .heronote{font-size:12.5px;color:var(--soft);margin:14px 2px 0}
 
 /* ---------------- sections ---------------- */
 section{padding:64px 0}
-.sechead{max-width:620px;margin-bottom:34px}
+.sechead{max-width:640px;margin-bottom:34px}
 h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.03em;line-height:1.1;font-weight:800;margin:0 0 12px}
 .sechead p{color:var(--muted);font-size:16.5px;margin:0}
 
 /* how it works */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:860px){.steps{grid-template-columns:1fr}}
+@media(max-width:900px){.steps{grid-template-columns:1fr}}
 .stepc{background:var(--card);border-radius:var(--r);padding:24px 22px}
 .stepc .n{width:34px;height:34px;border-radius:99px;background:var(--ink);color:#fff;font-weight:800;font-size:14.5px;display:grid;place-items:center;margin-bottom:16px}
 .stepc b{display:block;font-size:17px;letter-spacing:-.01em;margin-bottom:6px}
@@ -97,16 +119,16 @@ h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.03em;line-height:1.1;font-w
 
 /* JAG Home Loans band */
 .jagband{background:var(--ink);color:#fff;border-radius:22px;padding:52px 46px;display:grid;grid-template-columns:1.15fr .85fr;gap:44px;align-items:center}
-@media(max-width:860px){.jagband{grid-template-columns:1fr;padding:36px 26px}}
-.jagband .kick{display:inline-flex;align-items:center;gap:9px;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#f1b3bd;margin-bottom:14px}
+@media(max-width:900px){.jagband{grid-template-columns:1fr;padding:36px 26px}}
+.jagband .kick{display:inline-flex;align-items:center;gap:9px;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9db4f5;margin-bottom:14px}
 .jagband h2{color:#fff;margin-bottom:14px}
-.jagband .jl{margin:0 0 22px;font-size:16px;color:#c9c8d1;max-width:460px}
+.jagband .jl{margin:0 0 22px;font-size:16px;color:#c9c8d1;max-width:470px}
 .jchecks{list-style:none;margin:0 0 26px;padding:0;display:grid;gap:11px}
 .jchecks li{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;font-weight:600}
 .jchecks svg{width:20px;height:20px;flex:0 0 20px;stroke:#5fd68a;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
 .jcta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.wpill{background:#fff;color:var(--ink);text-decoration:none;font-weight:800;font-size:15.5px;padding:15px 30px;border-radius:99px;transition:transform .12s}
-.wpill:hover{transform:translateY(-1px)}
+.wpill{background:var(--loan);color:#fff;text-decoration:none;font-weight:800;font-size:15.5px;padding:15px 30px;border-radius:99px;transition:transform .12s,background .12s;box-shadow:0 6px 18px rgba(38,83,217,.4)}
+.wpill:hover{background:var(--loan-d);transform:translateY(-1px)}
 .jmin{font-size:13px;color:#a9a8b3;font-weight:600}
 .notecard{background:var(--ok-bg);color:var(--ok);border-radius:16px;padding:20px 22px;font-size:15.5px;line-height:1.55;font-weight:600;display:flex;gap:12px;align-items:flex-start}
 .notecard svg{width:22px;height:22px;flex:0 0 22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
@@ -117,21 +139,20 @@ h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.03em;line-height:1.1;font-w
 
 /* sell band */
 .sellband{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
-@media(max-width:860px){.sellband{grid-template-columns:1fr;gap:24px}}
+@media(max-width:900px){.sellband{grid-template-columns:1fr;gap:24px}}
 .sellcard{background:var(--card);border-radius:22px;padding:34px 30px}
 .sellcard .row{display:flex;justify-content:space-between;padding:13px 2px;border-bottom:1px solid var(--line);font-size:14.5px;font-weight:600}
 .sellcard .row:last-child{border-bottom:0}
 .sellcard .row span{color:var(--muted);font-weight:500}
-.inkpill{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 28px;border-radius:99px;margin-top:8px;transition:transform .12s}
-.inkpill:hover{transform:translateY(-1px)}
+.sellpill{display:inline-block;background:var(--sell);color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 28px;border-radius:99px;margin-top:8px;transition:transform .12s,background .12s;box-shadow:0 4px 14px rgba(15,138,77,.3)}
+.sellpill:hover{background:var(--sell-d);transform:translateY(-1px)}
 
 /* about */
 .about{display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center;background:var(--card);border-radius:22px;padding:36px 34px}
-@media(max-width:700px){.about{grid-template-columns:1fr;text-align:left}}
-.jaava{width:86px;height:86px;border-radius:24px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:26px}
-.jaava span{color:var(--accent)}
+@media(max-width:700px){.about{grid-template-columns:1fr}}
+.jaava{width:86px;height:86px;border-radius:24px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:26px;letter-spacing:-.03em}
 .about h3{margin:0 0 6px;font-size:21px;letter-spacing:-.02em}
-.about .role{font-size:13.5px;font-weight:700;color:var(--accent-d);margin-bottom:10px}
+.about .role{font-size:13.5px;font-weight:700;color:var(--buy-d);margin-bottom:10px}
 .about p{margin:0;color:#44434b;font-size:15.5px;max-width:640px}
 
 /* faq */
@@ -148,8 +169,8 @@ details p{margin:0;padding:0 34px 20px 2px;color:var(--muted);font-size:15px}
 .final h2{margin-bottom:10px}
 .final p{color:var(--muted);margin:0 0 26px}
 .finalbtns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.ghost{display:inline-block;border:2px solid var(--ink);color:var(--ink);text-decoration:none;font-weight:700;font-size:15px;padding:13px 26px;border-radius:99px}
-.ghost:hover{background:var(--ink);color:#fff}
+.redpill{display:inline-block;background:var(--buy);color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 28px;border-radius:99px;transition:transform .12s,background .12s;box-shadow:0 4px 14px rgba(200,16,46,.28)}
+.redpill:hover{background:var(--buy-d);transform:translateY(-1px)}
 
 /* footer */
 footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color:var(--soft)}
@@ -158,10 +179,13 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
 .fgrid a:hover{color:var(--ink)}
 .flinks{display:flex;gap:18px;flex-wrap:wrap}
 .legal{margin-top:18px;line-height:1.7;max-width:840px}
+.flock{margin-bottom:8px}
+.flock .lock b{font-size:20px}
 
 /* motion */
 .rev{opacity:0;transform:translateY(14px);transition:opacity .5s ease, transform .5s ease}
 .rev.in{opacity:1;transform:none}
+:focus-visible{outline:3px solid var(--loan);outline-offset:2px;border-radius:6px}
 @media(prefers-reduced-motion:reduce){
   .rev{opacity:1;transform:none;transition:none}
   html{scroll-behavior:auto}
@@ -172,9 +196,9 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
 
 <header>
   <div class="hin">
-    <a class="logo" href="index.html" aria-label="Jason Aguirre Group home">
-      <span class="jmark">JA<span>G</span></span>
-      <span class="lname">Jason Aguirre Group<small>eXp Realty &middot; Houston, TX</small></span>
+    <a class="logo" href="index.html" aria-label="JAG Real Estate home">
+      <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span>
+      <span class="brok">eXp Realty</span>
     </a>
     <nav>
       <a href="#how" data-t="nav_how"></a>
@@ -182,11 +206,11 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
       <a href="value.html" data-t="nav_sell"></a>
       <a class="jag" href="#jag">JAG Home Loans</a>
       <a href="#faq" data-t="nav_faq"></a>
-      <span class="langs" role="group" aria-label="Language">
-        <button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button>
-      </span>
-      <a class="applybtn hdr" href="apply.html" data-t="nav_apply"></a>
+      <a class="applybtn" href="apply.html" data-t="nav_apply"></a>
     </nav>
+    <span class="langs" role="group" aria-label="Language / Idioma">
+      <button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button>
+    </span>
     <button class="burger" aria-label="Menu" aria-expanded="false">
       <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
@@ -197,45 +221,45 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
     <a href="value.html" data-t="nav_sell"></a>
     <a href="#jag">JAG Home Loans</a>
     <a href="#faq" data-t="nav_faq"></a>
-    <div class="rowend">
-      <span class="langs"><button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button></span>
-      <a class="applybtn" href="apply.html" data-t="nav_apply"></a>
-    </div>
+    <a class="applybtn" href="apply.html" data-t="nav_apply"></a>
   </div>
 </header>
 
 <main>
   <!-- ================= HERO ================= -->
   <div class="wrap hero">
-    <div class="eyebrow"><i></i><span data-t="eyebrow"></span></div>
+    <button type="button" class="langhero" data-switch>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <span></span>
+    </button>
     <h1><span data-t="h1a"></span> <em data-t="h1b"></em><span data-t="h1c"></span></h1>
     <p class="sub" data-t="sub"></p>
 
     <div class="badges">
-      <span class="badge ok"><svg viewBox="0 0 24 24"><path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5v-6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg><span data-t="b_credit"></span></span>
-      <span class="badge ok"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.2 12.3 2.5 2.5 5.1-5.4"/></svg><span data-t="b_itin"></span></span>
-      <span class="badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span data-t="b_lang"></span></span>
+      <span class="badge"><svg viewBox="0 0 24 24"><path d="M12 2.5 4.5 5.5v6c0 4.6 3.2 8.3 7.5 9.5 4.3-1.2 7.5-4.9 7.5-9.5v-6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg><span data-t="b_credit"></span></span>
+      <span class="badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.2 12.3 2.5 2.5 5.1-5.4"/></svg><span data-t="b_itin"></span></span>
+      <span class="badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="6.5" r="0"/><ellipse cx="12" cy="6.5" rx="6.5" ry="2.6"/><path d="M5.5 6.5v5c0 1.4 2.9 2.6 6.5 2.6s6.5-1.2 6.5-2.6v-5"/><path d="M5.5 11.5v5c0 1.4 2.9 2.6 6.5 2.6s6.5-1.2 6.5-2.6v-5"/></svg><span data-t="b_down"></span></span>
     </div>
 
     <div class="paths">
-      <a class="path rev" href="offer-listing-intake.html">
+      <a class="path buy rev" href="offer-listing-intake.html">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M3.5 11.5 12 4.5l8.5 7"/><path d="M5.8 10v9.5h12.4V10"/><path d="M10 19.5v-5h4v5"/></svg></span>
         <b data-t="p1_t"></b>
         <p data-t="p1_s"></p>
-        <span class="go"><span data-t="p1_go"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="pbtn"><span data-t="p1_go"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
-      <a class="path rev" href="value.html">
+      <a class="path sell rev" href="value.html">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M6 16.5 10.5 12l3 3L20 8.5"/><path d="M15.5 8.5H20V13"/></svg></span>
         <b data-t="p2_t"></b>
         <p data-t="p2_s"></p>
-        <span class="go"><span data-t="p2_go"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="pbtn"><span data-t="p2_go"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
-      <a class="path rev" href="apply.html">
+      <a class="path loan rev" href="apply.html">
         <span class="tag">JAG Home Loans</span>
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4"/><path d="M10 12.5h5M10 15.5h3"/></svg></span>
         <b data-t="p3_t"></b>
         <p data-t="p3_s"></p>
-        <span class="go"><span data-t="p3_go"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="pbtn"><span data-t="p3_go"></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
     </div>
     <p class="heronote" data-t="heronote"></p>
@@ -292,7 +316,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
           <h2 data-t="sell_h"></h2>
           <p data-t="sell_s"></p>
         </div>
-        <a class="inkpill" href="value.html" data-t="sell_cta"></a>
+        <a class="sellpill" href="value.html" data-t="sell_cta"></a>
       </div>
       <div class="sellcard rev">
         <div class="row"><span data-t="sr1"></span><b data-t="sr1v"></b></div>
@@ -306,7 +330,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
   <section style="padding-top:14px">
     <div class="wrap">
       <div class="about rev">
-        <div class="jaava">JA<span>G</span></div>
+        <div class="jaava">JAG</div>
         <div>
           <h3>Jason Aguirre</h3>
           <div class="role" data-t="ab_role"></div>
@@ -336,7 +360,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
     <p data-t="fin_s"></p>
     <div class="finalbtns">
       <a class="applybtn" href="apply.html" style="font-size:15.5px;padding:14px 30px" data-t="fin_apply"></a>
-      <a class="ghost" href="offer-listing-intake.html" data-t="fin_offer"></a>
+      <a class="redpill" href="offer-listing-intake.html" data-t="fin_offer"></a>
     </div>
   </div>
 </main>
@@ -345,7 +369,8 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
   <div class="wrap">
     <div class="fgrid">
       <div>
-        <b style="color:var(--ink)">Jason Aguirre Group</b> &middot; eXp Realty<br>
+        <div class="flock"><span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span></div>
+        Jason Aguirre Group &middot; eXp Realty<br>
         <a href="https://www.google.com/maps/search/?api=1&amp;query=5373+W+Alabama+St+Suite+448+Houston+TX+77056" target="_blank" rel="noopener">5373 W Alabama St, Suite 448 &middot; Houston, TX 77056</a><br>
         <a href="tel:+18327023574">(832) 702-3574</a>
       </div>
@@ -365,18 +390,18 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
 var T = {
 en:{
   nav_how:'How it works', nav_buy:'Make an offer', nav_sell:'Home value', nav_faq:'FAQ', nav_apply:'Apply',
-  eyebrow:'Houston, TX \u00b7 English y espa\u00f1ol',
+  switch_hint:'\u00bfPrefiere espa\u00f1ol? \u00b7 Ver el sitio en espa\u00f1ol',
   h1a:'Make an offer on', h1b:'any home', h1c:'.',
-  sub:"Even before you're prequalified. Offer on a house today, find out what yours is worth, or get qualified in about 3 minutes \u2014 no credit check to apply.",
-  b_credit:'No credit check to apply', b_itin:'ITIN buyers welcome', b_lang:'Hablamos espa\u00f1ol',
-  p1_t:'Make an offer', p1_s:"Found a home you love? We'll draft your offer \u2014 prequalified or not.", p1_go:'Start my offer',
-  p2_t:"What's my home worth?", p2_s:'Instant estimate from recent nearby sales, then a full valuation from Jason.', p2_go:'Get my estimate',
+  sub:'Start today \u2014 even before you\u2019re prequalified. Make an offer on a house, find out what yours is worth, or start your qualification in just 3 minutes. No credit check to get started.',
+  b_credit:'No credit check to apply', b_itin:'ITIN buyers welcome', b_down:'Down payments as low as 3%',
+  p1_t:'Make an offer', p1_s:'Found a home you love? We\u2019ll draft your offer \u2014 prequalified or not.', p1_go:'Start my offer',
+  p2_t:'What\u2019s my home worth?', p2_s:'Instant estimate from recent nearby sales, then a full valuation from Jason.', p2_go:'Get my estimate',
   p3_t:'Get qualified', p3_s:'3-minute application. No credit check, no SSN needed \u2014 ITIN OK.', p3_go:'Apply now',
   heronote:'No cost, no commitment, and your credit is never pulled to get started.',
   how_h:'From \u201cI love this house\u201d to keys in hand.',
   how_s:'One team handles the offer, the financing, and the closing \u2014 in your language.',
   s1_t:'Tell us the home', s1_s:'Pick any house on the market \u2014 from Zillow, a yard sign, or a drive-by. We take it from there.',
-  s2_t:'We draft your offer', s2_s:"Jason's team writes it up, walks you through every term, and submits it for you.",
+  s2_t:'We draft your offer', s2_s:'Jason\u2019s team writes it up, walks you through every term, and submits it for you.',
   s3_t:'Get qualified along the way', s3_s:'JAG Home Loans works your financing in parallel \u2014 ITIN, work permit, or credit-path buyers welcome.',
   jag_h:'Financing that meets you where you are.',
   jag_s:'A quick application built for real life \u2014 cash income, ITIN, new credit, first-time buyers. See your estimated buying power the moment you finish.',
@@ -390,12 +415,12 @@ en:{
   jag_note:'We help ITIN buyers qualify every day \u2014 enganche desde el 3%, no SSN needed.',
   sell_h:'Selling? Know your number first.',
   sell_s:'Get an instant estimate built from recent sales near you, then a full valuation from Jason \u2014 free, no obligation.',
-  sell_cta:"What's my home worth?",
+  sell_cta:'What\u2019s my home worth?',
   sr1:'Instant estimate', sr1v:'~60 seconds',
   sr2:'Full valuation by Jason', sr2v:'Within 24 hours',
   sr3:'Cost', sr3v:'Free',
   ab_role:'REALTOR\u00ae \u00b7 Team Lead \u00b7 eXp Realty',
-  ab_p:'Jason leads a bilingual Houston team that specializes in first-time buyers, ITIN and credit-path clients, and families told \u201cnot yet\u201d by other lenders. Hundreds of local families served \u2014 in English y en espa\u00f1ol.',
+  ab_p:'Jason leads a bilingual team that specializes in first-time buyers, ITIN and credit-path clients, and families told \u201cnot yet\u201d by other lenders. Hundreds of local families served \u2014 in English y en espa\u00f1ol.',
   faq_h:'Questions, answered.',
   q1:'Can I really make an offer before I\u2019m prequalified?',
   a1:'Yes. Tell us the home and we\u2019ll draft the offer while JAG Home Loans works your qualification in parallel. Sellers see a serious, well-prepared offer \u2014 and you don\u2019t lose the house while you wait.',
@@ -415,51 +440,51 @@ en:{
 },
 es:{
   nav_how:'C\u00f3mo funciona', nav_buy:'Hacer una oferta', nav_sell:'Valor de su casa', nav_faq:'Preguntas', nav_apply:'Aplicar',
-  eyebrow:'Houston, TX \u00b7 English y espa\u00f1ol',
+  switch_hint:'Prefer English? \u00b7 View site in English',
   h1a:'Haga una oferta en', h1b:'cualquier casa', h1c:'.',
-  sub:'Incluso antes de estar precalificado. Haga una oferta hoy, descubra cu\u00e1nto vale su casa, o califique en unos 3 minutos \u2014 sin revisi\u00f3n de cr\u00e9dito para aplicar.',
-  b_credit:'Sin revisi\u00f3n de cr\u00e9dito', b_itin:'Compradores con ITIN bienvenidos', b_lang:'Hablamos espa\u00f1ol',
-  p1_t:'Hacer una oferta', p1_s:'\u00bfEncontr\u00f3 una casa que le encanta? Preparamos su oferta \u2014 precalificado o no.', p1_go:'Comenzar mi oferta',
-  p2_t:'\u00bfCu\u00e1nto vale mi casa?', p2_s:'Estimado instant\u00e1neo con ventas recientes cercanas, y luego una valuaci\u00f3n completa de Jason.', p2_go:'Obtener mi estimado',
-  p3_t:'Calificar para un pr\u00e9stamo', p3_s:'Solicitud de 3 minutos. Sin revisi\u00f3n de cr\u00e9dito, sin SSN \u2014 ITIN OK.', p3_go:'Aplicar ahora',
-  heronote:'Sin costo, sin compromiso, y nunca revisamos su cr\u00e9dito para comenzar.',
-  how_h:'De \u201cme encanta esta casa\u201d a las llaves en mano.',
-  how_s:'Un solo equipo maneja la oferta, el financiamiento y el cierre \u2014 en su idioma.',
-  s1_t:'D\u00edganos cu\u00e1l casa', s1_s:'Elija cualquier casa en el mercado \u2014 de Zillow, un letrero, o pasando por la calle. Nosotros nos encargamos.',
+  sub:'\u00a1Empiece hoy mismo! Incluso antes de obtener su precalificaci\u00f3n, puede hacer una oferta, descubrir cu\u00e1nto vale su casa o iniciar su calificaci\u00f3n en tan solo 3 minutos, sin revisi\u00f3n de cr\u00e9dito para comenzar.',
+  b_credit:'Sin revisi\u00f3n de cr\u00e9dito', b_itin:'Compradores con ITIN bienvenidos', b_down:'Enganche desde el 3%',
+  p1_t:'Hacer una oferta', p1_s:'\u00bfYa encontr\u00f3 una casa que le gusta? Nosotros preparamos su oferta, aunque todav\u00eda no est\u00e9 precalificado.', p1_go:'Comenzar mi oferta',
+  p2_t:'\u00bfCu\u00e1nto vale mi casa?', p2_s:'Reciba al instante un estimado del valor de su casa, y despu\u00e9s una valuaci\u00f3n completa de Jason.', p2_go:'Ver cu\u00e1nto vale',
+  p3_t:'Califique para su pr\u00e9stamo', p3_s:'Solicitud de solo 3 minutos. Sin revisi\u00f3n de cr\u00e9dito ni SSN \u2014 aceptamos ITIN.', p3_go:'Aplicar ahora',
+  heronote:'Todo es gratis y sin compromiso \u2014 y nunca revisamos su cr\u00e9dito para empezar.',
+  how_h:'De encontrar la casa perfecta a recibir sus llaves.',
+  how_s:'Un solo equipo se encarga de todo: la oferta, el financiamiento y el cierre \u2014 siempre en su idioma.',
+  s1_t:'D\u00edganos qu\u00e9 casa le gusta', s1_s:'Puede ser cualquier casa en venta: la vio en Zillow, en un letrero o pasando por la calle. Nosotros nos encargamos del resto.',
   s2_t:'Preparamos su oferta', s2_s:'El equipo de Jason la redacta, le explica cada t\u00e9rmino y la presenta por usted.',
-  s3_t:'Califique en el camino', s3_s:'JAG Home Loans trabaja su financiamiento en paralelo \u2014 ITIN, permiso de trabajo, o cr\u00e9dito en construcci\u00f3n.',
+  s3_t:'Su pr\u00e9stamo avanza al mismo tiempo', s3_s:'Mientras tanto, JAG Home Loans trabaja en su financiamiento \u2014 con ITIN, permiso de trabajo o cr\u00e9dito en construcci\u00f3n.',
   jag_h:'Financiamiento que se adapta a su realidad.',
-  jag_s:'Una solicitud r\u00e1pida hecha para la vida real \u2014 ingresos en efectivo, ITIN, cr\u00e9dito nuevo, compradores por primera vez. Vea su poder de compra estimado al terminar.',
-  jc1:'Sin revisi\u00f3n de cr\u00e9dito, sin SSN para aplicar',
-  jc2:'ITIN, permiso de trabajo (EAD) y green card bienvenidos',
+  jag_s:'Una solicitud sencilla y r\u00e1pida, pensada para personas reales: le pagan en efectivo, tiene ITIN, apenas est\u00e1 construyendo su cr\u00e9dito o va a comprar su primera casa. Al terminar, ver\u00e1 al instante para cu\u00e1nto podr\u00eda calificar.',
+  jc1:'Aplique sin revisi\u00f3n de cr\u00e9dito y sin SSN',
+  jc2:'Aceptamos ITIN, permiso de trabajo (EAD) y green card',
   jc3:'Enganche desde el 3%',
-  jc4:'Estimado instant\u00e1neo FHA, Convencional e ITIN',
+  jc4:'Vea al instante su estimado FHA, Convencional o ITIN',
   jag_cta:'Comenzar mi solicitud', jag_min:'Toma unos 3 minutos',
-  js1_b:'3 min', js1_s:'Tiempo promedio para aplicar',
+  js1_b:'3 min', js1_s:'Lo que tarda la solicitud',
   js2_b:'3%', js2_s:'Enganche desde',
-  jag_note:'Ayudamos a compradores con ITIN todos los d\u00edas \u2014 enganche desde el 3%, sin SSN.',
-  sell_h:'\u00bfVende? Conozca su n\u00famero primero.',
-  sell_s:'Reciba un estimado instant\u00e1neo con ventas recientes cerca de usted, y luego una valuaci\u00f3n completa de Jason \u2014 gratis, sin compromiso.',
+  jag_note:'Todos los d\u00edas ayudamos a familias con ITIN a comprar casa \u2014 con enganche desde el 3% y sin necesidad de SSN.',
+  sell_h:'\u00bfEst\u00e1 pensando en vender su casa?',
+  sell_s:'Descubra gratis cu\u00e1nto vale. Le damos un estimado al instante con las ventas recientes de su zona, y despu\u00e9s Jason le prepara una valuaci\u00f3n completa \u2014 sin costo y sin compromiso.',
   sell_cta:'\u00bfCu\u00e1nto vale mi casa?',
   sr1:'Estimado instant\u00e1neo', sr1v:'~60 segundos',
-  sr2:'Valuaci\u00f3n completa de Jason', sr2v:'Dentro de 24 horas',
+  sr2:'Valuaci\u00f3n completa de Jason', sr2v:'En menos de 24 horas',
   sr3:'Costo', sr3v:'Gratis',
   ab_role:'REALTOR\u00ae \u00b7 L\u00edder de Equipo \u00b7 eXp Realty',
-  ab_p:'Jason lidera un equipo biling\u00fce en Houston especializado en compradores por primera vez, clientes con ITIN o cr\u00e9dito en construcci\u00f3n, y familias a las que otros prestamistas les dijeron \u201ctodav\u00eda no\u201d. Cientos de familias locales atendidas \u2014 en ingl\u00e9s y en espa\u00f1ol.',
-  faq_h:'Preguntas, respondidas.',
+  ab_p:'Jason dirige un equipo biling\u00fce especializado en compradores de primera casa, clientes con ITIN o cr\u00e9dito en construcci\u00f3n, y familias a las que otros les dijeron que \u201ctodav\u00eda no\u201d. Cientos de familias ya compraron o vendieron con nosotros \u2014 en ingl\u00e9s y en espa\u00f1ol.',
+  faq_h:'Preguntas frecuentes',
   q1:'\u00bfDe verdad puedo hacer una oferta antes de estar precalificado?',
-  a1:'S\u00ed. D\u00edganos cu\u00e1l casa y preparamos la oferta mientras JAG Home Loans trabaja su calificaci\u00f3n en paralelo. Los vendedores ven una oferta seria y bien preparada \u2014 y usted no pierde la casa mientras espera.',
+  a1:'S\u00ed. D\u00edganos qu\u00e9 casa le gusta y nosotros preparamos la oferta mientras JAG Home Loans trabaja su calificaci\u00f3n al mismo tiempo. El vendedor recibe una oferta seria y bien preparada \u2014 y usted no pierde la casa por esperar.',
   q2:'\u00bfVan a revisar mi cr\u00e9dito?',
-  a2:'No para comenzar. La solicitud nunca pide su SSN ni su fecha de nacimiento y nunca genera una revisi\u00f3n de cr\u00e9dito. Un oficial de pr\u00e9stamos licenciado solo avanza despu\u00e9s de hablar con usted.',
-  q3:'Tengo ITIN, no n\u00famero de Seguro Social. \u00bfPuedo comprar?',
-  a3:'S\u00ed \u2014 ayudamos a compradores con ITIN todos los d\u00edas, con enganche desde el 3%. Los permisos de trabajo (EAD) y las green cards tambi\u00e9n funcionan.',
+  a2:'No para comenzar. La solicitud nunca le pide su n\u00famero de Seguro Social ni su fecha de nacimiento, y nunca genera una revisi\u00f3n de cr\u00e9dito. Un oficial de pr\u00e9stamos con licencia solo contin\u00faa despu\u00e9s de hablar con usted.',
+  q3:'Tengo ITIN, no n\u00famero de Seguro Social. \u00bfPuedo comprar casa?',
+  a3:'S\u00ed \u2014 todos los d\u00edas ayudamos a compradores con ITIN, con enganche desde el 3%. Tambi\u00e9n aceptamos permiso de trabajo (EAD) y green card.',
   q4:'Do you speak English?',
   a4:'Yes. The whole process \u2014 application, calls, and closing \u2014 can be fully in English. Tap \u201cEN\u201d above to switch the site.',
   q5:'\u00bfCu\u00e1nto cuesta todo esto?',
-  a5:'Nada por aplicar, recibir un estimado, o preparar una oferta. Sin cargos, sin compromiso \u2014 usted decide si avanza y cu\u00e1ndo.',
+  a5:'Nada. Aplicar, recibir su estimado o preparar una oferta no cuesta nada y no lo compromete a nada \u2014 usted decide si avanza y cu\u00e1ndo.',
   fin_h:'Listos cuando usted lo est\u00e9.',
   fin_s:'Tres minutos. Sin revisi\u00f3n de cr\u00e9dito. En su idioma.',
-  fin_apply:'Aplicar con JAG Home Loans', fin_offer:'Mejor hacer una oferta',
+  fin_apply:'Aplicar con JAG Home Loans', fin_offer:'Prefiero hacer una oferta',
   f_priv:'Privacidad y T\u00e9rminos',
   f_legal:'Igualdad de Oportunidades de Vivienda. Jason Aguirre Group \u00b7 eXp Realty. La solicitud de JAG Home Loans recopila informaci\u00f3n preliminar solamente y no es una aprobaci\u00f3n de pr\u00e9stamo, compromiso de prestar, ni cotizaci\u00f3n de tasa. Enviar una solicitud nunca generar\u00e1 una revisi\u00f3n de cr\u00e9dito.'
 }};
@@ -479,15 +504,23 @@ function applyLang(){
     var k = nodes[i].getAttribute('data-t');
     if(d[k]!=null) nodes[i].textContent = d[k];
   }
+  var sw = document.querySelectorAll('[data-switch] span');
+  for(var s=0;s<sw.length;s++) sw[s].textContent = d.switch_hint;
   var bs = document.querySelectorAll('.langs button');
   for(var j=0;j<bs.length;j++) bs[j].classList.toggle('on', bs[j].getAttribute('data-lang')===lang);
-  // apply page follows the same choice
   var links = document.querySelectorAll('a[href^="apply.html"]');
   for(var m=0;m<links.length;m++) links[m].setAttribute('href','apply.html'+(lang==='es'?'?lang=es':''));
 }
+function setLang(l){
+  lang = l;
+  try{ localStorage.setItem('jag_lang', lang); }catch(err){}
+  applyLang();
+}
 document.addEventListener('click',function(e){
   var b = e.target.closest ? e.target.closest('.langs button') : null;
-  if(b){ lang = b.getAttribute('data-lang'); try{localStorage.setItem('jag_lang',lang);}catch(err){} applyLang(); }
+  if(b){ setLang(b.getAttribute('data-lang')); return; }
+  var sw = e.target.closest ? e.target.closest('[data-switch]') : null;
+  if(sw){ setLang(lang==='es' ? 'en' : 'es'); }
 });
 applyLang();
 

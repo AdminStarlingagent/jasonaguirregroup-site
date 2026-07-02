@@ -7,6 +7,8 @@
 <meta name="description" content="Get an instant estimate of your home's value from recent nearby sales, then get a full valuation from Jason Aguirre.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--green:#c8102e;--green-d:#a30d26;--ink:#17161c;--muted:#6a6972;--line:#e8e8ec;--bg:#ffffff;--card:#f5f5f7}
@@ -21,6 +23,10 @@
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
   .ja{width:32px;height:32px;border-radius:9px;background:var(--ink);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
   .brand-nm{font-weight:600;font-size:15px}
+  .lock{display:flex;flex-direction:column;line-height:1;color:var(--ink)}
+  .lock small{font-size:7px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .lock b{font-size:21px;font-weight:800;letter-spacing:-.04em;margin:1px 0;font-family:'Plus Jakarta Sans',sans-serif}
+  .lock i{font-style:normal;font-size:7.5px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--green);padding-top:2px}
   .back{font-size:14px;font-weight:600;color:var(--green-d);text-decoration:none}
   /* hero */
   .hero{padding:34px 0 8px;text-align:center}
@@ -79,7 +85,7 @@
 <body>
   <header class="bar">
     <div class="bar-in">
-      <a class="brand" href="index.html"><span class="ja">JA</span><span class="brand-nm">Jason Aguirre Group</span></a>
+      <a class="brand" href="index.html"><span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span></a>
       <a class="back" href="index.html">&larr; Home</a>
     </div>
   </header>
