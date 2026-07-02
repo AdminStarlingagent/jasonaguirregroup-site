@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Get Started — Jason Aguirre Group LLC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Get Started — Jason Aguirre Group | eXp Realty</title>
 <!--
   ============================================================================
   COMBINED CLIENT INTAKE  →  one link, routes to Buyer Offer OR Seller Listing.
@@ -19,18 +22,18 @@
 -->
 <style>
 :root{
-  --ink:#0d1b2a;--primary:#0e7c7b;--primary-d:#0a5a59;--primary-l:#e6f3f2;
-  --accent:#ef8354;--bg:#eef2f4;--card:#fff;--muted:#5c6b7a;--line:#dbe3e9;--line-d:#c3cfd8;
+  --ink:#17161c;--primary:#17161c;--primary-d:#000000;--primary-l:#f0f0f3;
+  --accent:#c8102e;--bg:#f5f5f7;--card:#fff;--muted:#6a6972;--line:#e8e8ec;--line-d:#d6d6dd;
   --green:#10987a;--green-l:#e4f5ef;--red:#d8553f;--amber-l:#fbf3df;--amber-b:#f0dca8;--amber-t:#7a5a12;
   --shadow:0 10px 40px rgba(13,27,42,.10);
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   background:var(--bg);color:var(--ink);line-height:1.55;padding:20px;-webkit-font-smoothing:antialiased}
 .shell{max-width:600px;margin:18px auto}
 .brandbar{display:flex;align-items:center;gap:11px;margin-bottom:14px;padding-left:4px}
-.brandbar .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-d));
+.brandbar .logo{width:40px;height:40px;border-radius:10px;font-size:.95rem;background:linear-gradient(135deg,var(--primary),var(--primary-d));
   display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.15rem}
 .brandbar b{font-size:1.02rem;letter-spacing:-.01em}
 .brandbar small{display:block;color:var(--muted);font-size:.78rem;font-weight:500}
@@ -38,7 +41,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 [data-screen][hidden]{display:none}
 .draft{background:var(--accent);color:#fff;text-align:center;font-size:.72rem;font-weight:700;
   letter-spacing:.05em;text-transform:uppercase;padding:7px}
-.prog{height:6px;background:#dfe8ea}
+.prog{height:6px;background:#e6e6ea}
 .prog span{display:block;height:100%;width:14%;background:var(--accent);transition:width .3s}
 .inner{padding:26px 26px 22px}
 .stepcount{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);margin-bottom:6px}
@@ -60,7 +63,7 @@ textarea{min-height:84px;resize:vertical}
 @media(max-width:460px){.two{flex-direction:column;gap:0}}
 .hint{font-size:.76rem;color:var(--muted);margin-top:4px}
 .err{display:none;color:var(--red);font-size:.78rem;font-weight:600;margin-top:4px}
-.fg.invalid input,.fg.invalid select{border-color:var(--red);box-shadow:0 0 0 3px #f9e3de}
+.fg.invalid input,.fg.invalid select{border-color:var(--red);box-shadow:0 0 0 3px #fbdfe4}
 .fg.invalid .err{display:block}
 .choices{display:flex;gap:10px;flex-wrap:wrap}
 .choice{flex:1;min-width:110px;position:relative}
@@ -102,7 +105,7 @@ textarea{min-height:84px;resize:vertical}
   border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px;margin-right:7px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .footnote{text-align:center;color:var(--muted);font-size:.76rem;margin:14px 8px 0}
-.cfgwarn{display:none;background:#fbeae6;border:1px solid #f3c4b8;color:#9c3a28;border-radius:10px;
+.cfgwarn{display:none;background:#fdecef;border:1px solid #f3c2cb;color:#9c3a28;border-radius:10px;
   padding:10px 13px;font-size:.8rem;margin:0 0 16px}
 /* landing */
 .picks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
@@ -116,10 +119,10 @@ textarea{min-height:84px;resize:vertical}
 </head>
 <body>
 <div class="shell">
-  <div class="brandbar">
-    <div class="logo">JA</div>
-    <div><b>Jason Aguirre Group LLC</b><small>Buying or selling? Start here</small></div>
-  </div>
+  <a class="brandbar" href="index.html" style="text-decoration:none;color:inherit">
+    <div class="logo">JAG</div>
+    <div><b>Jason Aguirre Group</b><small>eXp Realty &middot; Buying or selling? Start here</small></div>
+  </a>
 
   <div class="card">
 
