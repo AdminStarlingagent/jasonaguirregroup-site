@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>JAG Admin — Inquiries</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="jag-capture.js"></script>
+<style>
+:root{
+  --ink:#17161c; --paper:#ffffff; --card:#f5f5f7; --line:#e8e8ec;
+  --buy:#c8102e; --buy-t:#fdecef; --sell:#0f8a4d; --sell-t:#e7f5ee;
+  --loan:#2653d9; --loan-t:#eaf0ff; --teal:#0e7c7b; --teal-t:#e6f3f2;
+  --amber:#b45309; --amber-t:#fdf1e2; --muted:#6a6972; --soft:#8a8992;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fafafb;color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hin{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+.lock{display:flex;flex-direction:column;line-height:1;text-decoration:none;color:var(--ink)}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:23px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--buy);padding-top:3px}
+.hin .who{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600}
+.ghostbtn{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer}
+.ghostbtn:hover{border-color:var(--ink)}
+
+/* ---- auth / setup ---- */
+.center{min-height:calc(100vh - 120px);display:grid;place-items:center;padding:30px 0}
+.authcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:34px 32px;width:min(420px,92vw);box-shadow:0 20px 60px rgba(23,22,28,.06)}
+.authcard h1{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+.authcard .sub{margin:0 0 22px;color:var(--muted);font-size:14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font-size:15px;outline:none;background:#fff}
+.field input:focus{border-color:var(--ink)}
+.solid{width:100%;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:14px;font-weight:800;font-size:15px;cursor:pointer;transition:transform .1s}
+.solid:hover{transform:translateY(-1px)}
+.solid[disabled]{opacity:.55;cursor:default;transform:none}
+.autherr{display:none;color:var(--buy);font-size:13.5px;font-weight:600;margin:10px 2px 0}
+.autherr.show{display:block}
+.setup{width:min(680px,94vw)}
+.setup ol{padding-left:20px;margin:0 0 16px}
+.setup li{margin-bottom:10px;font-size:14.5px}
+.setup code{background:var(--card);padding:2px 7px;border-radius:6px;font-size:12.5px}
+
+/* ---- app ---- */
+.app{display:none;padding:26px 0 60px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.stat b{display:block;font-size:24px;letter-spacing:-.02em}
+.stat span{font-size:12.5px;color:var(--muted);font-weight:600}
+.stat i{display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:7px;font-style:normal}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.search{flex:1;min-width:220px;display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);border-radius:99px;padding:10px 16px}
+.search svg{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
+.search input{border:0;outline:none;flex:1;font-size:14.5px;background:transparent}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:8px 15px;font-size:13px;font-weight:700;cursor:pointer;color:#3f3e47}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+select.chip{appearance:auto;padding:8px 12px}
+
+.tablecard{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);font-weight:800;text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);background:#fcfcfd}
+td{padding:14px 16px;border-bottom:1px solid #f1f1f4;font-size:14px;vertical-align:middle}
+tr.lead{cursor:pointer}
+tr.lead:hover td{background:#fafafc}
+td .nm{font-weight:700;display:block}
+td .em{font-size:12.5px;color:var(--muted)}
+.typechip{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.03em;padding:5px 10px;border-radius:99px;white-space:nowrap}
+.t-loan{background:var(--loan-t);color:var(--loan)} .t-buy{background:var(--buy-t);color:var(--buy)}
+.t-sell{background:var(--teal-t);color:var(--teal)} .t-val{background:var(--sell-t);color:var(--sell)}
+.statussel{border:1.5px solid var(--line);border-radius:99px;padding:6px 10px;font-size:12.5px;font-weight:700;background:#fff;cursor:pointer}
+.s-New{color:var(--loan)} .s-Contacted{color:var(--amber)} .s-Working{color:#7c3aed} .s-Won{color:var(--sell)} .s-Lost{color:var(--soft)}
+.dt{white-space:nowrap;color:var(--muted);font-size:13px}
+.figure{font-weight:700;white-space:nowrap}
+.empty{padding:54px 20px;text-align:center;color:var(--muted)}
+.morebar{padding:14px;text-align:center;border-top:1px solid var(--line)}
+.linkbtn{background:none;border:0;color:var(--loan);font-weight:800;cursor:pointer;font-size:14px}
+
+/* ---- drawer ---- */
+.scrim{display:none;position:fixed;inset:0;background:rgba(23,22,28,.35);z-index:60}
+.scrim.open{display:block}
+.drawer{position:fixed;top:0;right:-560px;width:min(560px,96vw);height:100vh;background:#fff;z-index:70;box-shadow:-24px 0 60px rgba(23,22,28,.15);transition:right .22s ease;display:flex;flex-direction:column}
+.drawer.open{right:0}
+.dhead{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
+.dhead h2{margin:0;font-size:19px;letter-spacing:-.02em}
+.dhead .meta{font-size:12.5px;color:var(--muted);margin-top:3px}
+.dclose{margin-left:auto;background:var(--card);border:0;width:34px;height:34px;border-radius:99px;cursor:pointer;font-size:16px;font-weight:800}
+.dbody{overflow-y:auto;padding:20px 24px;flex:1}
+.quick{display:flex;gap:9px;margin-bottom:18px;flex-wrap:wrap}
+.qbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:13px;font-weight:800;padding:10px 16px;border-radius:99px;color:#fff}
+.q-call{background:var(--sell)} .q-text{background:var(--loan)} .q-mail{background:var(--ink)}
+.sect{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);font-weight:800;margin:20px 0 8px}
+.kv{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.kv div{display:flex;justify-content:space-between;gap:16px;padding:10px 14px;border-bottom:1px solid #f1f1f4;font-size:13.5px}
+.kv div:last-child{border-bottom:0}
+.kv span{color:var(--muted);flex:0 0 42%}
+.kv b{text-align:right;word-break:break-word;font-weight:600}
+.noteta{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;min-height:90px;resize:vertical;outline:none}
+.noteta:focus{border-color:var(--ink)}
+.saverow{display:flex;align-items:center;gap:12px;margin-top:10px}
+.savebtn{background:var(--ink);color:#fff;border:0;border-radius:99px;padding:11px 22px;font-weight:800;cursor:pointer}
+.saved{font-size:13px;color:var(--sell);font-weight:700;opacity:0;transition:opacity .2s}
+.saved.show{opacity:1}
+@media(max-width:760px){
+  th:nth-child(4),td:nth-child(4),th:nth-child(6),td:nth-child(6){display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hin">
+    <a class="lock" href="index.html"><small>Est. 2018</small><b>JAG</b><i>Admin</i></a>
+    <span class="who" id="who"></span>
+    <button class="ghostbtn" id="refresh" style="display:none">Refresh</button>
+    <button class="ghostbtn" id="exportcsv" style="display:none">Export CSV</button>
+    <button class="ghostbtn" id="signout" style="display:none">Sign out</button>
+  </div>
+</header>
+
+<!-- setup (shown when Supabase keys are missing) -->
+<div class="center" id="setupview" style="display:none">
+  <div class="authcard setup">
+    <h1>One-time setup: connect your inquiry database</h1>
+    <p class="sub">This admin panel reads from a free Supabase database. Three steps, about 5 minutes:</p>
+    <ol>
+      <li>Create a free project at <b>supabase.com</b> (name it <code>jag-crm</code>).</li>
+      <li>Open <b>SQL Editor</b> and run the script in <code>supabase-setup.sql</code> (it's in this website's repo). Then add your login under <b>Authentication → Users → Add user</b>.</li>
+      <li>Copy <b>Project URL</b> and the <b>anon public</b> key from <i>Project Settings → API</i> into the top of <code>jag-capture.js</code> in the repo.</li>
+    </ol>
+    <p class="sub" style="margin:0">Reload this page after — the sign-in screen appears and every form on the site starts logging here automatically.</p>
+  </div>
+</div>
+
+<!-- login -->
+<div class="center" id="loginview" style="display:none">
+  <div class="authcard">
+    <h1>Sign in</h1>
+    <p class="sub">JAG inquiries dashboard — team access only.</p>
+    <div class="field"><label>Email</label><input type="email" id="li-email" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input type="password" id="li-pass" autocomplete="current-password"></div>
+    <button class="solid" id="li-btn">Sign in</button>
+    <p class="autherr" id="li-err">Wrong email or password — try again.</p>
+  </div>
+</div>
+
+<!-- app -->
+<div class="app wrap" id="app">
+  <div class="stats" id="stats"></div>
+  <div class="toolbar">
+    <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>
+      <input id="q" placeholder="Search name, phone, email, address…"></label>
+    <div class="chips" id="typechips">
+      <button class="chip on" data-type="">All</button>
+      <button class="chip" data-type="Mortgage Application">Mortgage apps</button>
+      <button class="chip" data-type="Buyer Offer">Offers</button>
+      <button class="chip" data-type="Seller Listing">Seller leads</button>
+      <button class="chip" data-type="Home Value">Home values</button>
+    </div>
+    <select class="chip" id="statusfilter">
+      <option value="">Any status</option>
+      <option>New</option><option>Contacted</option><option>Working</option><option>Won</option><option>Lost</option>
+    </select>
+  </div>
+
+  <div class="tablecard">
+    <table>
+      <thead><tr><th>Received</th><th>Lead</th><th>Type</th><th>Phone</th><th>Key figure</th><th>Lang</th><th>Status</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">No inquiries match — new submissions land here automatically.</div>
+    <div class="morebar" id="morebar" style="display:none"><button class="linkbtn" id="more">Load older inquiries</button></div>
+  </div>
+</div>
+
+<!-- drawer -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dhead">
+    <div><h2 id="d-name"></h2><div class="meta" id="d-meta"></div></div>
+    <button class="dclose" id="d-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="dbody">
+    <div class="quick" id="d-quick"></div>
+    <div class="sect">Status</div>
+    <select class="statussel" id="d-status">
+      <option>New</option><option>Contacted</option><option>Working</option><option>Won</option><option>Lost</option>
+    </select>
+    <div class="sect">Everything they submitted</div>
+    <div class="kv" id="d-kv"></div>
+    <div class="sect">Team notes</div>
+    <textarea class="noteta" id="d-notes" placeholder="e.g. Called 7/2 — wants to see homes in Katy this weekend…"></textarea>
+    <div class="saverow">
+      <button class="savebtn" id="d-save">Save notes</button>
+      <span class="saved" id="d-saved">Saved ✓</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+(function(){
+'use strict';
+var CRM = window.JAG_CRM || {url:'',anonKey:''};
+var PAGE = 200;
+var state = { token:null, email:null, rows:[], offset:0, type:'', status:'', q:'', open:null, done:false };
+
+var $ = function(id){ return document.getElementById(id); };
+function base(){ return (CRM.url||'').replace(/\/+$/,''); }
+function hdrs(){ return { apikey:CRM.anonKey, Authorization:'Bearer '+state.token, 'Content-Type':'application/json' }; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function fmtDate(iso){
+  var d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+function typeClass(t){
+  return t==='Mortgage Application'?'t-loan': t==='Buyer Offer'?'t-buy': t==='Seller Listing'?'t-sell':'t-val';
+}
+function typeShort(t){
+  return t==='Mortgage Application'?'Mortgage app': t==='Buyer Offer'?'Offer': t==='Seller Listing'?'Seller lead':'Home value';
+}
+function keyFigure(r){
+  var p=r.payload||{};
+  return p['Est. Buying Power (FHA)']||p['Est. Buying Power (ITIN Home Loan)']||p['Purchase Price']||
+         p.offerPrice||p.price||p['Automated Estimate']||p.estimate||'—';
+}
+function prettyKey(k){
+  if(/^[a-z]/.test(k) && !/\s/.test(k)){ k=k.replace(/([A-Z])/g,' $1'); k=k.charAt(0).toUpperCase()+k.slice(1); }
+  return k;
+}
+
+/* ---------------- views ---------------- */
+function show(view){
+  $('setupview').style.display = view==='setup'?'grid':'none';
+  $('loginview').style.display = view==='login'?'grid':'none';
+  $('app').style.display       = view==='app'?'block':'none';
+  var on = view==='app';
+  ['refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
+  $('who').textContent = on ? (state.email||'') : '';
+}
+
+/* ---------------- auth ---------------- */
+function signIn(){
+  var email=$('li-email').value.trim(), pass=$('li-pass').value;
+  if(!email||!pass) return;
+  $('li-btn').disabled=true; $('li-err').classList.remove('show');
+  fetch(base()+'/auth/v1/token?grant_type=password',{
+    method:'POST', headers:{apikey:CRM.anonKey,'Content-Type':'application/json'},
+    body:JSON.stringify({email:email,password:pass})
+  }).then(function(r){return r.json();}).then(function(j){
+    $('li-btn').disabled=false;
+    if(j && j.access_token){
+      state.token=j.access_token; state.email=email;
+      try{ sessionStorage.setItem('jag_admin', JSON.stringify({t:j.access_token,e:email})); }catch(e){}
+      show('app'); resetAndLoad();
+    }else{ $('li-err').classList.add('show'); }
+  }).catch(function(){ $('li-btn').disabled=false; $('li-err').classList.add('show'); });
+}
+function signOut(){
+  state.token=null; state.email=null; state.rows=[];
+  try{ sessionStorage.removeItem('jag_admin'); }catch(e){}
+  show('login');
+}
+
+/* ---------------- data ---------------- */
+function resetAndLoad(){ state.rows=[]; state.offset=0; state.done=false; load(); }
+function load(){
+  fetch(base()+'/rest/v1/jag_leads?select=*&order=created_at.desc&limit='+PAGE+'&offset='+state.offset,{headers:hdrs()})
+  .then(function(r){ if(r.status===401){signOut();throw 0;} return r.json(); })
+  .then(function(rows){
+    if(!Array.isArray(rows)) rows=[];
+    state.rows = state.rows.concat(rows);
+    state.offset += rows.length;
+    state.done = rows.length < PAGE;
+    render();
+  }).catch(function(){});
+}
+function patch(id, body, cb){
+  fetch(base()+'/rest/v1/jag_leads?id=eq.'+encodeURIComponent(id),{
+    method:'PATCH', headers:Object.assign({Prefer:'return=minimal'},hdrs()), body:JSON.stringify(body)
+  }).then(function(r){ if(cb) cb(r.ok); }).catch(function(){ if(cb) cb(false); });
+}
+
+/* ---------------- render ---------------- */
+function filtered(){
+  var q=state.q.toLowerCase();
+  return state.rows.filter(function(r){
+    if(state.type && r.type!==state.type) return false;
+    if(state.status && r.status!==state.status) return false;
+    if(q){
+      var hay=(r.name||'')+' '+(r.email||'')+' '+(r.phone||'')+' '+JSON.stringify(r.payload||{});
+      if(hay.toLowerCase().indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+}
+function render(){
+  var rows=filtered();
+  /* stats over everything loaded */
+  var week=Date.now()-7*864e5, c={all:state.rows.length,nw:0,ma:0,bo:0,sl:0,hv:0};
+  state.rows.forEach(function(r){
+    if(new Date(r.created_at).getTime()>week) c.nw++;
+    if(r.type==='Mortgage Application')c.ma++; else if(r.type==='Buyer Offer')c.bo++;
+    else if(r.type==='Seller Listing')c.sl++; else c.hv++;
+  });
+  $('stats').innerHTML =
+    '<div class="stat"><b>'+c.all+'</b><span>Total inquiries</span></div>'+
+    '<div class="stat"><b>'+c.nw+'</b><span>New this week</span></div>'+
+    '<div class="stat"><b><i style="background:var(--loan)"></i>'+c.ma+'</b><span>Mortgage apps</span></div>'+
+    '<div class="stat"><b><i style="background:var(--buy)"></i>'+c.bo+'</b><span>Offers</span></div>'+
+    '<div class="stat"><b><i style="background:var(--teal)"></i>'+c.sl+'</b><span>Seller leads</span></div>'+
+    '<div class="stat"><b><i style="background:var(--sell)"></i>'+c.hv+'</b><span>Home values</span></div>';
+
+  var tb=$('rows'); tb.innerHTML='';
+  rows.forEach(function(r){
+    var tr=document.createElement('tr'); tr.className='lead'; tr.dataset.id=r.id;
+    tr.innerHTML =
+      '<td class="dt">'+esc(fmtDate(r.created_at))+'</td>'+
+      '<td><span class="nm">'+esc(r.name||'(no name)')+'</span><span class="em">'+esc(r.email||'')+'</span></td>'+
+      '<td><span class="typechip '+typeClass(r.type)+'">'+esc(typeShort(r.type))+'</span></td>'+
+      '<td>'+esc(r.phone||'—')+'</td>'+
+      '<td class="figure">'+esc(keyFigure(r))+'</td>'+
+      '<td>'+esc(r.lang||'—')+'</td>'+
+      '<td><select class="statussel s-'+esc(r.status)+'" data-status>'+
+        ['New','Contacted','Working','Won','Lost'].map(function(s){return '<option'+(s===r.status?' selected':'')+'>'+s+'</option>';}).join('')+
+      '</select></td>';
+    tb.appendChild(tr);
+  });
+  $('empty').style.display = rows.length? 'none':'block';
+  $('morebar').style.display = state.done? 'none':'block';
+}
+
+/* ---------------- drawer ---------------- */
+function openDrawer(id){
+  var r = state.rows.filter(function(x){return x.id===id;})[0];
+  if(!r) return;
+  state.open = r;
+  $('d-name').textContent = r.name||'(no name)';
+  $('d-meta').textContent = typeShort(r.type)+' · '+fmtDate(r.created_at)+(r.source?(' · '+r.source):'');
+  var q=[];
+  if(r.phone){ q.push('<a class="qbtn q-call" href="tel:'+esc(r.phone)+'">Call</a>');
+               q.push('<a class="qbtn q-text" href="sms:'+esc(r.phone)+'">Text</a>'); }
+  if(r.email){ q.push('<a class="qbtn q-mail" href="mailto:'+esc(r.email)+'">Email</a>'); }
+  $('d-quick').innerHTML = q.join('');
+  $('d-status').value = r.status;
+  var kv=$('d-kv'); kv.innerHTML='';
+  var p=r.payload||{};
+  Object.keys(p).forEach(function(k){
+    if(k==='access_key'||k==='botcheck'||k==='from_name'||k==='subject'||k==='__name') return;
+    var v=p[k]; if(v==null||v==='') return;
+    if(typeof v==='object') v=JSON.stringify(v);
+    kv.innerHTML += '<div><span>'+esc(prettyKey(k))+'</span><b>'+esc(v)+'</b></div>';
+  });
+  $('d-notes').value = r.notes||'';
+  $('d-saved').classList.remove('show');
+  $('drawer').classList.add('open'); $('scrim').classList.add('open');
+  $('drawer').setAttribute('aria-hidden','false');
+}
+function closeDrawer(){
+  state.open=null;
+  $('drawer').classList.remove('open'); $('scrim').classList.remove('open');
+  $('drawer').setAttribute('aria-hidden','true');
+}
+
+/* ---------------- csv ---------------- */
+function exportCSV(){
+  var rows=filtered();
+  var keys={};
+  rows.forEach(function(r){ Object.keys(r.payload||{}).forEach(function(k){ if(k!=='access_key'&&k!=='botcheck') keys[k]=1; }); });
+  var pk=Object.keys(keys).sort();
+  var head=['Received','Type','Name','Email','Phone','Lang','Status','Notes','Source'].concat(pk);
+  function cell(v){ v=v==null?'':String(v); return '"'+v.replace(/"/g,'""')+'"'; }
+  var lines=[head.map(cell).join(',')];
+  rows.forEach(function(r){
+    var row=[r.created_at,r.type,r.name,r.email,r.phone,r.lang,r.status,r.notes,r.source]
+      .concat(pk.map(function(k){var v=(r.payload||{})[k]; return typeof v==='object'?JSON.stringify(v):v;}));
+    lines.push(row.map(cell).join(','));
+  });
+  var blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='jag-inquiries-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------------- events ---------------- */
+$('li-btn').addEventListener('click', signIn);
+$('li-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') signIn(); });
+$('signout').addEventListener('click', signOut);
+$('refresh').addEventListener('click', resetAndLoad);
+$('exportcsv').addEventListener('click', exportCSV);
+$('more').addEventListener('click', load);
+$('q').addEventListener('input', function(){ state.q=this.value; render(); });
+$('statusfilter').addEventListener('change', function(){ state.status=this.value; render(); });
+$('typechips').addEventListener('click', function(e){
+  var b=e.target.closest('.chip'); if(!b) return;
+  this.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});
+  b.classList.add('on'); state.type=b.dataset.type; render();
+});
+$('rows').addEventListener('click', function(e){
+  var sel=e.target.closest('[data-status]');
+  var tr=e.target.closest('tr.lead'); if(!tr) return;
+  if(sel) return; /* handled on change */
+  openDrawer(tr.dataset.id);
+});
+$('rows').addEventListener('change', function(e){
+  var sel=e.target.closest('[data-status]'); if(!sel) return;
+  var tr=e.target.closest('tr.lead'); var id=tr.dataset.id; var v=sel.value;
+  sel.className='statussel s-'+v;
+  state.rows.forEach(function(r){ if(r.id===id) r.status=v; });
+  patch(id,{status:v});
+});
+$('d-status').addEventListener('change', function(){
+  if(!state.open) return;
+  var v=this.value; state.open.status=v;
+  patch(state.open.id,{status:v},function(){ render(); });
+});
+$('d-save').addEventListener('click', function(){
+  if(!state.open) return;
+  var v=$('d-notes').value; state.open.notes=v;
+  patch(state.open.id,{notes:v},function(ok){ if(ok){ $('d-saved').classList.add('show'); setTimeout(function(){$('d-saved').classList.remove('show');},1600); } });
+});
+$('d-close').addEventListener('click', closeDrawer);
+$('scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDrawer(); });
+
+/* ---------------- boot ---------------- */
+if(!CRM.url || !CRM.anonKey){ show('setup'); }
+else{
+  var saved=null;
+  try{ saved=JSON.parse(sessionStorage.getItem('jag_admin')||'null'); }catch(e){}
+  if(saved && saved.t){ state.token=saved.t; state.email=saved.e; show('app'); resetAndLoad(); }
+  else show('login');
+}
+})();
+</script>
+</body>
+</html>

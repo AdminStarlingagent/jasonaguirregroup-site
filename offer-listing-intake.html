@@ -22,6 +22,7 @@
 -->
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="jag-capture.js"></script>
 <style>
 :root{
   --ink:#17161c;--primary:#17161c;--primary-d:#000000;--primary-l:#f0f0f3;
@@ -390,7 +391,7 @@ textarea{min-height:84px;resize:vertical}
   /* ===== CONFIG — fill in EITHER or BOTH ===== */
   var WEB3FORMS_ACCESS_KEY = "0c030dec-75ac-44a3-8a41-3dca53bb4529"; // email-to-inbox (free). Leave blank "" to skip email.
   var GHL_WEBHOOK_URL = "";  // optional: paste your GoHighLevel Inbound Webhook URL to also send into your CRM
-  var DELIVER_TO_NAME = "Jason Aguirre Group LLC";   // email "from" name
+  var DELIVER_TO_NAME = "Jason Aguirre Group \u2014 eXp Realty";   // email "from" name
   /* =========================================== */
   var WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
   var emailRe = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -484,6 +485,8 @@ textarea{min-height:84px;resize:vertical}
         alert('Setup needed: add your free Web3Forms access key (email) and/or your GoHighLevel Inbound Webhook URL near the top of this file. Your entered data is in the console.');
         submitBtn.disabled=false; submitBtn.textContent=cfg.submitLabel; return;
       }
+      // 0) Log a copy to the JAG admin CRM (fire-and-forget)
+      try{ if(window.jagCapture) window.jagCapture(d.formType==='Buyer Offer'?'Buyer Offer':'Seller Listing', d); }catch(e){}
       // 1) Send into GoHighLevel CRM (fire-and-forget; opaque cross-origin response)
       if(ghlOn){
         try{ fetch(GHL_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(d)}); }catch(e){}

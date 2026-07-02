@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<script src="jag-capture.js"></script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1276,6 +1277,9 @@ function buildPayload(){
 async function submitAll(){
   await typing(1200);
   const payload = buildPayload();
+
+  // log a copy to the JAG admin CRM (fire-and-forget; never blocks the email)
+  try{ if(window.jagCapture) window.jagCapture('Mortgage Application', payload); }catch(e){}
 
   // optional side-channel copy (n8n / GHL inbound webhook)
   if(CONFIG.webhookUrl){

@@ -1,0 +1,39 @@
+/* ============================================================
+   JAG lead capture → Supabase (feeds the /admin.html CRM).
+   Safe no-op until configured: paste your two Supabase values
+   below and every form on the site starts logging inquiries.
+   The Web3Forms email path is never blocked by this.
+   ============================================================ */
+window.JAG_CRM = {
+  url: "",      /* e.g. https://abcd1234.supabase.co  (Project Settings → API → Project URL) */
+  anonKey: ""   /* Supabase "anon public" key          (Project Settings → API → anon public) */
+};
+
+window.jagCapture = function(type, data){
+  try{
+    var c = window.JAG_CRM || {};
+    if(!c.url || !c.anonKey || !data) return;
+    var name = data.__name || data['Legal Full Name'] ||
+      [ (data['First Name']||data.firstName||''), (data['Last Name']||data.lastName||'') ].join(' ').trim() ||
+      data.name || null;
+    var body = {
+      type: type,
+      name: name || null,
+      email: data.Email || data.email || null,
+      phone: data.Phone || data.phone || null,
+      lang: data['Preferred Language'] || data.language || null,
+      source: location.pathname + location.search,
+      payload: data
+    };
+    fetch(c.url.replace(/\/+$/,'') + '/rest/v1/jag_leads', {
+      method: 'POST',
+      headers: {
+        apikey: c.anonKey,
+        Authorization: 'Bearer ' + c.anonKey,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify(body)
+    }).catch(function(){});
+  }catch(e){}
+};

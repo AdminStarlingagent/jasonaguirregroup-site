@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="jag-capture.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--green:#c8102e;--green-d:#a30d26;--ink:#17161c;--muted:#6a6972;--line:#e8e8ec;--bg:#ffffff;--card:#f5f5f7}
@@ -248,6 +249,7 @@
       + 'Name: ' + name + '\nEmail: ' + email + '\nPhone: ' + phone + '\n\n'
       + 'Property: ' + (lastAddr || '(not entered)') + '\n'
       + 'Automated estimate: ' + (lastPrice ? money(lastPrice) : 'n/a') + '\n';
+    try{ if(window.jagCapture) window.jagCapture('Home Value', { name:name, email:email, phone:phone, 'Property':(lastAddr||''), 'Automated Estimate':(lastPrice?money(lastPrice):'') }); }catch(e){}
     fetch('https://api.web3forms.com/submit', {
       method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
       body: JSON.stringify({ access_key: WEB3FORMS_KEY, subject:'New Home-Value Lead — ' + name, from_name:'Jason Aguirre Group — Website', replyto: email, botcheck:false, message: msg })
