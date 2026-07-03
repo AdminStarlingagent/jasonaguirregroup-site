@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>What's my home worth? — Jason Aguirre Group</title>
-<meta name="description" content="Get an instant estimate of your home's value from recent nearby sales, then get a full valuation from Jason Aguirre.">
+<meta name="description" content="Get an instant estimate of your home's value, refine it with your home's upgrades, and unlock nearby comps plus Jason's full valuation.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -12,52 +12,65 @@
 <script src="jag-capture.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{--green:#c8102e;--green-d:#a30d26;--ink:#17161c;--muted:#6a6972;--line:#e8e8ec;--bg:#ffffff;--card:#f5f5f7}
+  :root{--red:#c8102e;--red-d:#a30d26;--ink:#17161c;--muted:#6a6972;--line:#e8e8ec;--bg:#ffffff;--card:#f5f5f7;--ok:#0f8a4d;--ok-t:#e7f5ee}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
-  h1,h2,h3,.brand-nm,.cta{font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em}
-  a{color:var(--green-d)}
+  h1,h2,h3,.cta{letter-spacing:-.02em}
+  a{color:var(--red-d)}
   .wrap{max-width:760px;margin:0 auto;padding:0 20px}
-  /* top bar */
-  header.bar{position:sticky;top:0;z-index:30;background:rgba(247,245,240,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  header.bar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   .bar-in{max-width:760px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-  .ja{width:32px;height:32px;border-radius:9px;background:var(--ink);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
-  .brand-nm{font-weight:600;font-size:15px}
   .lock{display:flex;flex-direction:column;line-height:1;color:var(--ink)}
   .lock small{font-size:7px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
-  .lock b{font-size:21px;font-weight:800;letter-spacing:-.04em;margin:1px 0;font-family:'Plus Jakarta Sans',sans-serif}
-  .lock i{font-style:normal;font-size:7.5px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--green);padding-top:2px}
-  .back{font-size:14px;font-weight:600;color:var(--green-d);text-decoration:none}
-  /* hero */
+  .lock b{font-size:21px;font-weight:800;letter-spacing:-.04em;margin:1px 0}
+  .lock i{font-style:normal;font-size:7.5px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--red);padding-top:2px}
+  .back{font-size:14px;font-weight:600;color:var(--red-d);text-decoration:none}
   .hero{padding:34px 0 8px;text-align:center}
-  .pill{display:inline-block;background:#fdecef;color:var(--green-d);font-weight:600;font-size:12.5px;padding:5px 13px;border-radius:999px;margin-bottom:14px}
+  .pill{display:inline-block;background:#fdecef;color:var(--red-d);font-weight:600;font-size:12.5px;padding:5px 13px;border-radius:999px;margin-bottom:14px}
   h1{font-size:30px;line-height:1.12;margin:0 0 10px}
-  h1 .g{color:var(--green)}
+  h1 .g{color:var(--red)}
   .lede{color:#44434b;font-size:16px;max-width:540px;margin:0 auto 4px}
-  /* card / form */
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:18px 0;box-shadow:0 1px 0 rgba(0,0,0,.02)}
   label{display:block;font-weight:600;font-size:13px;color:var(--muted);margin:0 0 6px}
   .field{position:relative;margin-bottom:12px}
   input[type=text],input[type=email],input[type=tel]{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px 15px;font-size:16px;background:#fff;color:var(--ink);font-weight:500;outline:none;font-family:inherit}
-  input:focus{border-color:var(--green)}
+  input:focus{border-color:var(--red)}
   .suggest{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;margin-top:6px;box-shadow:0 12px 34px rgba(0,0,0,.14);z-index:60;max-height:250px;overflow-y:auto}
   .suggest .opt{padding:12px 14px;font-size:14.5px;cursor:pointer;border-bottom:1px solid var(--line);line-height:1.35}
   .suggest .opt:last-child{border-bottom:0}
   .suggest .opt:hover{background:#f5f5f7}
-  .cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:none;cursor:pointer;background:var(--green);color:#fff;font-weight:600;font-size:16px;padding:15px 22px;border-radius:12px;box-shadow:0 4px 0 var(--green-d);transition:transform .08s ease,box-shadow .08s ease;text-decoration:none}
-  .cta:active{transform:translateY(4px);box-shadow:0 0 0 var(--green-d)}
+  .cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:none;cursor:pointer;background:var(--red);color:#fff;font-weight:700;font-size:16px;padding:15px 22px;border-radius:12px;box-shadow:0 4px 0 var(--red-d);transition:transform .08s ease,box-shadow .08s ease;text-decoration:none;font-family:inherit}
+  .cta:active{transform:translateY(4px);box-shadow:0 0 0 var(--red-d)}
   .cta.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
   .cta svg{width:19px;height:19px}
   .cta[disabled]{opacity:.6;cursor:default}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  /* result */
-  .result{background:linear-gradient(135deg,var(--green),var(--green-d));border-radius:18px;padding:24px;color:#fff;text-align:center;margin-bottom:16px}
+  /* estimate */
+  .result{background:linear-gradient(135deg,var(--red),var(--red-d));border-radius:18px;padding:24px;color:#fff;text-align:center;margin-bottom:16px}
   .result .lbl{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.9;font-weight:700}
-  .result .big{font-size:40px;font-weight:700;line-height:1.05;margin:6px 0 2px;font-family:'Space Grotesk',sans-serif}
+  .result .big{font-size:40px;font-weight:800;line-height:1.05;margin:6px 0 2px;font-variant-numeric:tabular-nums}
   .result .note{font-size:13.5px;opacity:.92}
+  .adjrow{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px}
+  .adj{font-size:12px;font-weight:700;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:4px 11px}
   .prop-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-  .prop-tag{font-size:12.5px;font-weight:600;background:#f5f5f7;border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+  .prop-tag{font-size:12.5px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+  /* quiz */
+  .quiz .qh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:4px}
+  .quiz .qt{font-weight:700;font-size:16.5px}
+  .quiz .qn{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
+  .quiz .qsub{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .qopts{display:flex;flex-wrap:wrap;gap:9px}
+  .qopt{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:inherit;transition:border-color .12s,transform .12s}
+  .qopt:hover{border-color:var(--ink);transform:translateY(-1px)}
+  .qbar{height:5px;background:#e9e9ee;border-radius:99px;margin-top:16px;overflow:hidden}
+  .qbar i{display:block;height:100%;width:0;background:var(--red);border-radius:99px;transition:width .25s}
+  .qdone{display:none;text-align:center}
+  .qdone .chk{width:44px;height:44px;border-radius:99px;background:var(--ok-t);color:var(--ok);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .qdone .chk svg{width:22px;height:22px;stroke:var(--ok);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .qdone b{display:block;font-size:16.5px;margin-bottom:4px}
+  .qdone p{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  /* comps + gate */
   .cmp .cmp-h{font-weight:700;font-size:15px;margin:0 0 3px}
   .cmp .cmp-sub2{color:var(--muted);font-size:12.5px;margin:0 0 14px}
   .cmp-item{margin-bottom:13px}
@@ -66,18 +79,40 @@
   .cmp-a{font-size:13.5px;font-weight:600;line-height:1.25}
   .cmp-meta{font-size:12px;color:var(--muted);margin-top:2px}
   .cmp-p{font-size:14px;font-weight:700;white-space:nowrap}
-  .cmp-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:6px;background:#fdecef;color:var(--green-d);vertical-align:1px}
+  .cmp-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:6px;background:#fdecef;color:var(--red-d);vertical-align:1px}
   .cmp-track{height:8px;background:#efeff2;border-radius:6px;overflow:hidden}
   .cmp-fill{height:100%;background:#CDBA9B;border-radius:6px}
-  .cmp-item.est .cmp-fill{background:var(--green)}
-  .cmp-item.est .cmp-a,.cmp-item.est .cmp-p{color:var(--green-d)}
+  .cmp-item.est .cmp-fill{background:var(--red)}
+  .cmp-item.est .cmp-a,.cmp-item.est .cmp-p{color:var(--red-d)}
+  .gate{position:relative}
+  .gate .gbody{filter:blur(9px);pointer-events:none;user-select:none}
+  .gate.open .gbody{filter:none;pointer-events:auto;user-select:auto}
+  .gate .gcover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:6px}
+  .gate.open .gcover{display:none}
+  .gcover .lockic{width:46px;height:46px;border-radius:99px;background:#fff;box-shadow:0 6px 20px rgba(23,22,28,.14);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+  .gcover .lockic svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .gcover b{font-size:16px}
+  .gcover p{margin:0 0 10px;font-size:13.5px;color:var(--muted);max-width:340px}
+  .gcover button{border:none;background:var(--ink);color:#fff;font-weight:800;font-size:14px;padding:12px 24px;border-radius:999px;cursor:pointer;font-family:inherit}
+  /* ROI */
+  .roi .roi-h{font-weight:700;font-size:16.5px;margin:0 0 3px}
+  .roi .roi-sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .roi-item{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
+  .roi-item:last-child{border-bottom:0}
+  .roi-item .rn{font-weight:700;font-size:14.5px}
+  .roi-item .rd{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .roi-item .rv{font-weight:800;white-space:nowrap;color:var(--ok);font-size:14.5px}
+  .opflag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;background:#fdecef;color:var(--red-d);border-radius:999px;padding:2px 8px;margin-left:7px;vertical-align:1px}
   .disc{color:var(--muted);font-size:12.5px;line-height:1.5;margin:2px 2px 16px}
   .h-sub{font-weight:700;font-size:18px;margin:0 0 4px}
   .h-note{color:var(--muted);font-size:13.5px;margin:0 0 14px}
-  .ok{background:#fdecef;border:1px solid #f3c2cb;color:var(--green-d);border-radius:14px;padding:16px;text-align:center;font-weight:600}
+  .unlocklist{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px}
+  .unlocklist li{display:flex;gap:9px;align-items:flex-start;font-size:14px;font-weight:600}
+  .unlocklist svg{width:18px;height:18px;flex:0 0 18px;stroke:var(--ok);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;margin-top:2px}
+  .ok{background:var(--ok-t);border:1px solid #bfe6cf;color:#0b6b3b;border-radius:14px;padding:16px;text-align:center;font-weight:600}
   .err{color:#C0392B;font-size:12.5px;margin-top:-6px;margin-bottom:8px}
   footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 0 36px;color:var(--muted);font-size:12.5px;text-align:center}
-  footer a{color:var(--green-d);text-decoration:none;font-weight:600}
+  footer a{color:var(--red-d);text-decoration:none;font-weight:600}
   .foot-links{margin:8px 0}
   .hide{display:none}
   @media(max-width:560px){h1{font-size:25px}.result .big{font-size:34px}}
@@ -93,9 +128,9 @@
 
   <div class="wrap">
     <section class="hero">
-      <span class="pill">● For sellers</span>
+      <span class="pill">&#9679; For sellers</span>
       <h1>What's my <span class="g">home worth?</span></h1>
-      <p class="lede">Get an instant estimate from recent nearby sales — then Jason follows up with a full, personalized valuation.</p>
+      <p class="lede">Get an instant estimate, answer 7 quick questions to sharpen it, and unlock nearby comps plus your home's biggest value opportunities.</p>
     </section>
 
     <div class="card">
@@ -112,10 +147,15 @@
 
     <div id="hv-result"></div>
 
-    <!-- lead capture -->
+    <!-- unlock / lead capture -->
     <div class="card hide" id="lead-card">
-      <div class="h-sub">Get Jason's full valuation</div>
-      <p class="h-note">An automated estimate is a starting point. Tell Jason where to send your detailed, personalized valuation — no obligation.</p>
+      <div class="h-sub" id="lead-title">Unlock your full report</div>
+      <p class="h-note" id="lead-note">Tell us where to send it and everything below opens instantly &mdash; free, no obligation.</p>
+      <ul class="unlocklist" id="unlock-list">
+        <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.2 12.3 2.5 2.5 5.1-5.4"/></svg>The nearby comps your estimate is based on</li>
+        <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.2 12.3 2.5 2.5 5.1-5.4"/></svg>Your top value-add opportunities, ranked by typical return</li>
+        <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.2 12.3 2.5 2.5 5.1-5.4"/></svg>Jason's full, personalized valuation within 24 hours</li>
+      </ul>
       <div id="lead-form">
         <div class="field"><label for="ld-name">Your name</label><input type="text" id="ld-name" placeholder="First and last name"></div>
         <div class="err hide" id="err-name">Please enter your name.</div>
@@ -125,19 +165,19 @@
         </div>
         <div class="err hide" id="err-contact">Please add a valid email and phone.</div>
         <button class="cta" id="ld-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Send my request to Jason
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          Unlock my full report
         </button>
       </div>
-      <div class="ok hide" id="lead-ok">Thanks! Jason got your request and will follow up with your full valuation shortly.</div>
-      <div style="margin-top:10px"><a class="cta ghost" href="tel:+18327023574"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call Jason — (832) 702-3574</a></div>
+      <div class="ok hide" id="lead-ok">Unlocked! Your comps and value report are below &mdash; and Jason will follow up with your full valuation within 24 hours.</div>
+      <div style="margin-top:10px"><a class="cta ghost" href="tel:+18327023574"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call Jason &mdash; (832) 702-3574</a></div>
     </div>
   </div>
 
   <footer>
     <div class="wrap">
       <div>Jason Aguirre &middot; Licensed Texas Real Estate Agent &middot; eXp Realty, LLC</div>
-      <div class="foot-links"><a href="index.html">Home</a> &nbsp;·&nbsp; <a href="privacy-terms.html">Privacy &amp; Terms</a> &nbsp;·&nbsp; <a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></div>
+      <div class="foot-links"><a href="index.html">Home</a> &nbsp;&middot;&nbsp; <a href="privacy-terms.html">Privacy &amp; Terms</a> &nbsp;&middot;&nbsp; <a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></div>
       <div>Each office is independently owned and operated. Estimates are automated and not an appraisal. &copy; 2026 Jason Aguirre Group, LLC.</div>
     </div>
   </footer>
@@ -145,26 +185,132 @@
 <script>
   var VALUE_PROXY = 'https://lucky-lake-acf9rentcast-proxy.jason-aguirre.workers.dev/';
   var WEB3FORMS_KEY = '0c030dec-75ac-44a3-8a41-3dca53bb4529';
+
+  /* ---- refine-quiz tuning: % adjustment applied to the base estimate ---- */
+  var QUESTIONS = [
+    { k:'Pool',        t:'Does your home have a pool?',            opts:[{lb:'Yes, in-ground',v:'In-ground pool',p:4},{lb:'Above-ground',v:'Above-ground pool',p:1},{lb:'No pool',v:'No',p:0}] },
+    { k:'Kitchen',     t:'How would you describe your kitchen?',   opts:[{lb:'Fully remodeled',v:'Fully remodeled',p:5},{lb:'Partially updated',v:'Partially updated',p:2.5},{lb:'Original',v:'Original',p:0}] },
+    { k:'Bathrooms',   t:'And your bathrooms?',                    opts:[{lb:'All updated',v:'All updated',p:3},{lb:'Some updated',v:'Some updated',p:1.5},{lb:'Original',v:'Original',p:0}] },
+    { k:'Roof Age',    t:'How old is your roof?',                  opts:[{lb:'0\u20135 years',v:'0-5 years',p:2},{lb:'6\u201315 years',v:'6-15 years',p:0},{lb:'16+ years',v:'16+ years',p:-2.5}] },
+    { k:'A/C Age',     t:'How old is your A/C system?',            opts:[{lb:'0\u20135 years',v:'0-5 years',p:1.5},{lb:'6\u201310 years',v:'6-10 years',p:0},{lb:'11+ years',v:'11+ years',p:-1.5}] },
+    { k:'Flooring',    t:'What shape is your flooring in?',        opts:[{lb:'Mostly new',v:'Mostly new',p:1.5},{lb:'Mixed',v:'Mixed',p:0},{lb:'Original / worn',v:'Original or worn',p:-1}] },
+    { k:'Condition',   t:'Overall, how would a buyer see it?',     opts:[{lb:'Move-in ready',v:'Move-in ready',p:2.5},{lb:'Average',v:'Average',p:0},{lb:'Needs some work',v:'Needs work',p:-6}] }
+  ];
+  var ADJ_CAP = 15; /* max total swing, +/- % */
+
+  /* ---- value-add playbook (typical resale ROI ranges, national remodeling cost-vs-value data) ---- */
+  var ROI = [
+    { n:'Garage door replacement',        v:'~190%', d:'The highest-return project in the country, year after year.', flag:null },
+    { n:'Fresh interior paint + declutter', v:'~100%+', d:'Cheapest way to raise offers and photos.', flag:null },
+    { n:'Landscaping & curb appeal',      v:'~100%', d:'First impressions set the anchor price in a buyer\u2019s head.', flag:null },
+    { n:'Minor kitchen refresh',          v:'85\u201395%', d:'Cabinet fronts, counters and hardware \u2014 not a gut job.', flag:function(a){return a['Kitchen']!=='Fully remodeled';} },
+    { n:'Bathroom updates',               v:'~74%', d:'Vanities, fixtures and re-grout go a long way.', flag:function(a){return a['Bathrooms']==='Original';} },
+    { n:'New roof',                       v:'~57%', d:'Rarely profits by itself \u2014 but an old roof kills deals and appraisals.', flag:function(a){return a['Roof Age']==='16+ years';} },
+    { n:'HVAC replacement',               v:'~55%', d:'Buyers discount aging systems more than they cost to replace.', flag:function(a){return a['A/C Age']==='11+ years';} }
+  ];
+
   var $ = function(id){ return document.getElementById(id); };
   function money(n){ return '$' + Math.round(n).toLocaleString('en-US'); }
   function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
-  var lastAddr = '', lastPrice = 0;
 
-  // ---- comparables chart ----
+  var lastAddr = '', basePrice = 0, baseLow = 0, baseHigh = 0;
+  var refined = 0, answers = {}, adjChips = [], qi = 0, unlocked = false;
+
+  /* ---------------- estimate card ---------------- */
+  function estimateCard(){
+    return '<div class="result"><div class="lbl" id="est-lbl">Estimated value</div><div class="big" id="est-big">' + money(refined||basePrice) + '</div>'
+      + '<div class="note" id="est-note">' + rangeNote() + '</div><div class="adjrow" id="adj-row"></div></div>';
+  }
+  function rangeNote(){
+    if(!baseLow || !baseHigh) return '';
+    var f = (refined||basePrice) / basePrice;
+    return 'Likely range ' + money(baseLow*f) + ' \u2013 ' + money(baseHigh*f);
+  }
+  function totalPct(){
+    var t = 0;
+    QUESTIONS.forEach(function(q){
+      var v = answers[q.k];
+      if(v==null) return;
+      q.opts.forEach(function(o){ if(o.v===v) t += o.p; });
+    });
+    return Math.max(-ADJ_CAP, Math.min(ADJ_CAP, t));
+  }
+  function recompute(){
+    refined = Math.round(basePrice * (1 + totalPct()/100) / 500) * 500;
+    animateTo($('est-big'), refined);
+    $('est-note').textContent = rangeNote();
+    $('adj-row').innerHTML = adjChips.map(function(c){ return '<span class="adj">' + esc(c) + '</span>'; }).join('');
+  }
+  function animateTo(el, target){
+    if(!el) return;
+    var from = parseInt(el.textContent.replace(/[^0-9]/g,''),10) || target;
+    var t0 = null, dur = 450;
+    function step(ts){
+      if(!t0) t0 = ts;
+      var k = Math.min(1,(ts-t0)/dur);
+      el.textContent = money(from + (target-from)*(1-Math.pow(1-k,3)));
+      if(k<1) requestAnimationFrame(step); else el.textContent = money(target);
+    }
+    if(typeof requestAnimationFrame==='function') requestAnimationFrame(step);
+    else el.textContent = money(target);
+  }
+
+  /* ---------------- quiz ---------------- */
+  function quizCard(){
+    return '<div class="card quiz" id="quiz-card">'
+      + '<div id="quiz-live"></div>'
+      + '<div class="qdone" id="quiz-done"><span class="chk"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>'
+      + '<b>Refined estimate ready</b><p>Your answers are factored in above. One step left \u2014 unlock the comps and your value report.</p>'
+      + '<button class="cta" id="quiz-unlock-btn" style="max-width:340px;margin:0 auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Unlock my full report</button></div>'
+      + '<div class="qbar"><i id="qbar-fill"></i></div></div>';
+  }
+  function renderQuestion(){
+    var live = $('quiz-live');
+    if(qi >= QUESTIONS.length){
+      live.innerHTML = '';
+      $('quiz-done').style.display = 'block';
+      $('qbar-fill').style.width = '100%';
+      $('est-lbl').textContent = 'Refined estimate';
+      $('quiz-unlock-btn').addEventListener('click', function(){ $('lead-card').scrollIntoView({behavior:'smooth',block:'start'}); $('ld-name').focus(); });
+      return;
+    }
+    var q = QUESTIONS[qi];
+    live.innerHTML = '<div class="qh"><div class="qt">' + esc(q.t) + '</div><div class="qn">' + (qi+1) + ' of ' + QUESTIONS.length + '</div></div>'
+      + '<p class="qsub">Each answer sharpens your number \u2014 watch it update above.</p>'
+      + '<div class="qopts">' + q.opts.map(function(o,ix){ return '<button type="button" class="qopt" data-ix="'+ix+'">'+esc(o.lb)+'</button>'; }).join('') + '</div>';
+    $('qbar-fill').style.width = Math.round(qi/QUESTIONS.length*100) + '%';
+    Array.prototype.forEach.call(live.querySelectorAll('.qopt'), function(btn){
+      btn.addEventListener('click', function(){
+        var o = q.opts[+btn.getAttribute('data-ix')];
+        answers[q.k] = o.v;
+        if(o.p){
+          var delta = Math.round(basePrice * o.p/100 / 500) * 500;
+          adjChips.push((o.p>0?'+':'\u2212') + money(Math.abs(delta)).slice(1).replace(/^/,'$') + ' \u00b7 ' + q.k);
+        }
+        recompute();
+        qi++; renderQuestion();
+      });
+    });
+  }
+
+  /* ---------------- comps (gated) ---------------- */
   function compsHtml(data){
     var comps = ((data && data.comparables) || []).filter(function(c){ return c && +c.price > 0; }).slice(0,6);
     if(!comps.length) return '';
     var est = +data.price || 0;
     var maxP = Math.max.apply(null, [est].concat(comps.map(function(c){ return +c.price; }))) || 1;
     function bar(pct){ return '<div class="cmp-track"><div class="cmp-fill" style="width:' + Math.max(8, Math.round(pct)) + '%"></div></div>'; }
-    var h = '<div class="card cmp"><div class="cmp-h">How your estimate compares</div><div class="cmp-sub2">The nearby homes this estimate is measured against.</div>';
-    h += '<div class="cmp-item est"><div class="cmp-top"><div class="cmp-a">Your home (estimate)</div><div class="cmp-p">' + money(est) + '</div></div>' + bar(est/maxP*100) + '</div>';
+    var body = '<div class="cmp-item est"><div class="cmp-top"><div class="cmp-a">Your home (estimate)</div><div class="cmp-p">' + money(est) + '</div></div>' + bar(est/maxP*100) + '</div>';
     comps.forEach(function(c){
-      var meta = [(c.bedrooms!=null?c.bedrooms+' bd':''),(c.bathrooms!=null?c.bathrooms+' ba':''),(c.squareFootage?(+c.squareFootage).toLocaleString()+' sqft':''),(c.distance!=null?(+c.distance).toFixed(1)+' mi away':'')].filter(Boolean).join(' · ');
+      var meta = [(c.bedrooms!=null?c.bedrooms+' bd':''),(c.bathrooms!=null?c.bathrooms+' ba':''),(c.squareFootage?(+c.squareFootage).toLocaleString()+' sqft':''),(c.distance!=null?(+c.distance).toFixed(1)+' mi away':'')].filter(Boolean).join(' \u00b7 ');
       var badge = (c.status==='Active') ? '<span class="cmp-badge">For sale</span>' : '';
-      h += '<div class="cmp-item"><div class="cmp-top"><div><div class="cmp-a">' + esc(c.formattedAddress||c.addressLine1||'Nearby home') + badge + '</div>' + (meta?'<div class="cmp-meta">'+esc(meta)+'</div>':'') + '</div><div class="cmp-p">' + money(+c.price) + '</div></div>' + bar((+c.price)/maxP*100) + '</div>';
+      body += '<div class="cmp-item"><div class="cmp-top"><div><div class="cmp-a">' + esc(c.formattedAddress||c.addressLine1||'Nearby home') + badge + '</div>' + (meta?'<div class="cmp-meta">'+esc(meta)+'</div>':'') + '</div><div class="cmp-p">' + money(+c.price) + '</div></div>' + bar((+c.price)/maxP*100) + '</div>';
     });
-    return h + '</div>';
+    return '<div class="card cmp gate" id="comps-gate"><div class="cmp-h">How your home compares</div><div class="cmp-sub2">' + comps.length + ' nearby homes your estimate is measured against.</div>'
+      + '<div class="gbody">' + body + '</div>'
+      + '<div class="gcover"><span class="lockic"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>'
+      + '<b>' + comps.length + ' nearby comps found</b><p>See exactly which homes set your value \u2014 addresses, prices and how yours stacks up.</p>'
+      + '<button type="button" id="gate-btn">Unlock comps</button></div></div>';
   }
   function propHtml(sp, addr){
     if(!sp) return '';
@@ -173,35 +319,57 @@
     if(!addrLine && !det.length) return '';
     return '<div class="card"><div style="font-weight:700">' + addrLine + '</div>' + (det.length?'<div class="prop-grid">'+det.map(function(d){return '<span class="prop-tag">'+esc(d)+'</span>';}).join('')+'</div>':'') + '</div>';
   }
+
+  /* ---------------- ROI report (renders after unlock) ---------------- */
+  function roiHtml(){
+    var items = ROI.map(function(r){
+      var op = r.flag && r.flag(answers);
+      return { n:r.n, v:r.v, d:r.d, op:!!op };
+    }).sort(function(a,b){ return (b.op?1:0)-(a.op?1:0); });
+    var rows = items.map(function(r){
+      return '<div class="roi-item"><div><span class="rn">' + esc(r.n) + '</span>' + (r.op?'<span class="opflag">Your biggest opportunity</span>':'') + '<div class="rd">' + esc(r.d) + '</div></div><div class="rv">' + esc(r.v) + '</div></div>';
+    }).join('');
+    return '<div class="card roi" id="roi-card"><div class="roi-h">Where your home can gain the most</div>'
+      + '<div class="roi-sub">Typical resale return ranges from national remodeling cost-vs-value data \u2014 Jason will tailor these to your neighborhood in your full valuation.</div>'
+      + rows + '</div>';
+  }
+
+  /* ---------------- render + fetch ---------------- */
   function renderEstimate(data, addr){
+    basePrice = +data.price || 0; baseLow = +data.priceRangeLow || 0; baseHigh = +data.priceRangeHigh || 0;
+    refined = basePrice; answers = {}; adjChips = []; qi = 0; unlocked = false; window.__compsData = data;
     var box = $('hv-result');
-    box.innerHTML = '<div class="result"><div class="lbl">Estimated value</div><div class="big">' + money(data.price) + '</div>' + (data.priceRangeLow&&data.priceRangeHigh?'<div class="note">Likely range ' + money(data.priceRangeLow) + ' – ' + money(data.priceRangeHigh) + '</div>':'') + '</div>'
-      + propHtml(data.subjectProperty, addr)
-      + compsHtml(data)
-      + '<p class="disc">This is an automated estimate from recent nearby sales — not an appraisal or formal market analysis. For an accurate, personalized valuation, request Jason’s full report below.</p>';
+    box.innerHTML = estimateCard() + propHtml(data.subjectProperty, addr) + quizCard() + compsHtml(data)
+      + '<p class="disc">This is an automated estimate from recent nearby sales \u2014 not an appraisal or formal market analysis. Your full report includes Jason\u2019s personalized valuation.</p>';
     lastAddr = (data.subjectProperty && data.subjectProperty.formattedAddress) ? data.subjectProperty.formattedAddress : addr;
-    lastPrice = data.price || 0;
+    renderQuestion();
+    var gb = $('gate-btn');
+    if(gb) gb.addEventListener('click', function(){ $('lead-card').scrollIntoView({behavior:'smooth',block:'start'}); $('ld-name').focus(); });
     $('lead-card').classList.remove('hide');
-    $('lead-card').scrollIntoView({ behavior:'smooth', block:'start' });
+    $('quiz-card').scrollIntoView({ behavior:'smooth', block:'center' });
   }
   function getEstimate(){
     var addr = $('hv-address').value.trim(), box = $('hv-result');
     if(!addr){ box.innerHTML = '<p class="disc" style="text-align:center">Enter your address above to get started.</p>'; return; }
     $('hv-btn').disabled = true;
-    box.innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">Estimating your home’s value…</div>';
+    box.innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">Estimating your home\u2019s value\u2026</div>';
     fetch(VALUE_PROXY + '?address=' + encodeURIComponent(addr))
       .then(function(r){ return r.json().catch(function(){ return null; }).then(function(data){ return { ok:r.ok, data:data }; }); })
       .then(function(res){
         if(!res.ok || !res.data || !res.data.price){
-          box.innerHTML = '<div class="card">We couldn’t pull an automated estimate for that address — double-check it, or have Jason run a full valuation for you below.</div>';
-          lastAddr = addr; lastPrice = 0; $('lead-card').classList.remove('hide');
+          box.innerHTML = '<div class="card">We couldn\u2019t pull an automated estimate for that address \u2014 double-check it, or have Jason run a full valuation for you below.</div>';
+          lastAddr = addr; basePrice = 0; refined = 0;
+          $('lead-title').textContent = "Get Jason's full valuation";
+          $('lead-note').textContent = 'Tell Jason where to send your detailed, personalized valuation \u2014 free, no obligation.';
+          $('unlock-list').classList.add('hide');
+          $('lead-card').classList.remove('hide');
         } else {
           renderEstimate(res.data, addr);
         }
       })
       .catch(function(){
-        box.innerHTML = '<div class="card">Couldn’t reach the estimate service — check your connection and try again. You can still request a full valuation from Jason below.</div>';
-        lastAddr = addr; lastPrice = 0; $('lead-card').classList.remove('hide');
+        box.innerHTML = '<div class="card">Couldn\u2019t reach the estimate service \u2014 check your connection and try again. You can still request a full valuation from Jason below.</div>';
+        lastAddr = addr; basePrice = 0; refined = 0; $('lead-card').classList.remove('hide');
       })
       .then(function(){ $('hv-btn').disabled = false; });
   }
@@ -236,8 +404,20 @@
   }
   $('hv-address').addEventListener('blur', function(){ setTimeout(hideSuggest, 200); });
 
-  // ---- lead capture (Web3Forms -> Jason's inbox) ----
+  // ---- unlock: lead capture (Web3Forms + JAG CRM) ----
   function emailOk(v){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((v||'').trim()); }
+  function quizLines(){
+    return QUESTIONS.map(function(q){ return q.k + ': ' + (answers[q.k] || '(skipped)'); }).join('\n');
+  }
+  function unlockReport(){
+    unlocked = true;
+    var g = $('comps-gate');
+    if(g){
+      g.classList.add('open');
+      g.insertAdjacentHTML('afterend', roiHtml());
+      g.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  }
   $('ld-btn').addEventListener('click', function(){
     var name = $('ld-name').value.trim(), email = $('ld-email').value.trim(), phone = $('ld-phone').value.trim();
     var nameOk = name.length > 0, contactOk = emailOk(email) && phone.replace(/[^0-9]/g,'').length >= 7;
@@ -245,18 +425,33 @@
     $('err-contact').classList.toggle('hide', contactOk);
     if(!nameOk || !contactOk) return;
     $('ld-btn').disabled = true;
+    var adj = totalPct();
     var msg = 'NEW SELLER / HOME-VALUE LEAD (via website)\n----------------------------------------\n'
       + 'Name: ' + name + '\nEmail: ' + email + '\nPhone: ' + phone + '\n\n'
       + 'Property: ' + (lastAddr || '(not entered)') + '\n'
-      + 'Automated estimate: ' + (lastPrice ? money(lastPrice) : 'n/a') + '\n';
-    try{ if(window.jagCapture) window.jagCapture('Home Value', { name:name, email:email, phone:phone, 'Property':(lastAddr||''), 'Automated Estimate':(lastPrice?money(lastPrice):'') }); }catch(e){}
+      + 'Base estimate: ' + (basePrice ? money(basePrice) : 'n/a') + '\n'
+      + 'Refined estimate: ' + (refined ? money(refined) : 'n/a') + (basePrice? '  (' + (adj>=0?'+':'') + adj + '% from home details)':'') + '\n\n'
+      + 'HOME DETAILS QUIZ\n' + quizLines() + '\n';
+    try{
+      if(window.jagCapture){
+        var cap = { name:name, email:email, phone:phone,
+          'Property':(lastAddr||''),
+          'Automated Estimate':(refined?money(refined):''),
+          'Base Estimate':(basePrice?money(basePrice):''),
+          'Value Adjustment':(basePrice?((adj>=0?'+':'')+adj+'%'):''),
+          'Report Unlocked':'Yes' };
+        QUESTIONS.forEach(function(q){ cap[q.k] = answers[q.k] || '(skipped)'; });
+        window.jagCapture('Home Value', cap);
+      }
+    }catch(e){}
     fetch('https://api.web3forms.com/submit', {
       method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify({ access_key: WEB3FORMS_KEY, subject:'New Home-Value Lead — ' + name, from_name:'Jason Aguirre Group — Website', replyto: email, botcheck:false, message: msg })
+      body: JSON.stringify({ access_key: WEB3FORMS_KEY, subject:'New Home-Value Lead \u2014 ' + name + (refined?(' ('+money(refined)+')'):''), from_name:'Jason Aguirre Group \u2014 eXp Realty', replyto: email, botcheck:false, message: msg })
     }).then(function(){
       $('lead-form').classList.add('hide'); $('lead-ok').classList.remove('hide');
+      unlockReport();
     }).catch(function(){
-      $('ld-btn').disabled = false; $('err-contact').textContent = 'Something went wrong — please call or text Jason instead.'; $('err-contact').classList.remove('hide');
+      $('ld-btn').disabled = false; $('err-contact').textContent = 'Something went wrong \u2014 please call or text Jason instead.'; $('err-contact').classList.remove('hide');
     });
   });
 </script>
