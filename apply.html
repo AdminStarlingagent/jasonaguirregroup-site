@@ -533,9 +533,9 @@ const STEPS = [
     ]},
 
   { id:'income', type:'currency', key:'income',
-    title:{en:"What's your total monthly household income?", es:'\u00bfCu\u00e1l es el ingreso mensual total de su hogar?'},
-    hint:{en:'Before taxes \u2014 include all jobs, plus any pension or Social Security income.',
-          es:'Antes de impuestos \u2014 incluya todos los trabajos, m\u00e1s pensi\u00f3n o Seguro Social.'},
+    title:{en:"What's your gross monthly income?", es:'\u00bfCu\u00e1l es su ingreso mensual bruto?'},
+    hint:{en:'Before taxes \u2014 just yours: all your jobs, plus any pension or Social Security.',
+          es:'Antes de impuestos \u2014 solo el suyo: todos sus trabajos, m\u00e1s pensi\u00f3n o Seguro Social.'},
     label:{en:'Gross monthly income', es:'Ingreso mensual bruto'}, ph:'e.g. 6,500',
     err:{en:'Please enter your monthly household income.', es:'Por favor ingrese el ingreso mensual de su hogar.'},
     helper:function(a){
@@ -550,6 +550,90 @@ const STEPS = [
           es:'Pagos de carro, tarjetas de cr\u00e9dito, pr\u00e9stamos estudiantiles o personales \u2014 no incluya renta ni servicios.'},
     label:{en:'Monthly debt payments', es:'Pagos mensuales de deudas'}, ph:'e.g. 800',
     err:{en:'Enter your total monthly debts \u2014 0 is okay.', es:'Ingrese el total de sus deudas mensuales \u2014 0 est\u00e1 bien.'}},
+
+  { id:'hasCoB', type:'single', key:'hasCoBorrower',
+    title:{en:'Will anyone else be on the loan with you?', es:'\u00bfAlguien m\u00e1s estar\u00e1 en el pr\u00e9stamo con usted?'},
+    hint:{en:'A co-borrower\u2019s income can raise how much you qualify for \u2014 a spouse, parent, sibling, or partner.',
+          es:'El ingreso de un co-prestatario puede aumentar cu\u00e1nto califica \u2014 su c\u00f3nyuge, un padre, hermano o pareja.'},
+    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No, just me',es:'No, solo yo'}}],
+    notes:{ 'Yes':{en:'Great \u2014 their income counts toward your qualification. A few quick questions about them next.',
+                   es:'Perfecto \u2014 su ingreso cuenta para la calificaci\u00f3n. Le haremos unas preguntas r\u00e1pidas sobre esa persona.'} }},
+
+  { id:'coName', type:'group', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'Who is your co-borrower?', es:'\u00bfQui\u00e9n es su co-prestatario?'},
+    fields:[
+      {key:'coFirst', label:{en:'Their first name',es:'Su nombre'}, ph:{en:'e.g. Ana',es:'ej. Ana'},
+       err:{en:'Please enter their first name.', es:'Por favor ingrese su nombre.'}},
+      {key:'coLast', label:{en:'Their last name',es:'Su apellido'}, ph:{en:'e.g. Soto',es:'ej. Soto'},
+       err:{en:'Please enter their last name.', es:'Por favor ingrese su apellido.'}}
+    ]},
+
+  { id:'coRelation', type:'single', key:'coRelation', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'What\u2019s their relationship to you?', es:'\u00bfQu\u00e9 relaci\u00f3n tiene con usted?'},
+    options:[
+      {v:'Spouse/Partner', lb:{en:'Spouse / partner', es:'C\u00f3nyuge / pareja'}},
+      {v:'Parent',         lb:{en:'Parent',           es:'Padre o madre'}},
+      {v:'Sibling',        lb:{en:'Sibling',          es:'Hermano(a)'}},
+      {v:'Other family',   lb:{en:'Other family',     es:'Otro familiar'}},
+      {v:'Friend',         lb:{en:'Friend',           es:'Amigo(a)'}}
+    ]},
+
+  { id:'coStatus', type:'single', key:'coStatus', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'How will they be qualifying?', es:'\u00bfCon qu\u00e9 va a calificar esa persona?'},
+    hint:{en:'Same as before \u2014 no SSN or credit check needed for this application.',
+          es:'Igual que antes \u2014 no se necesita SSN ni revisi\u00f3n de cr\u00e9dito para esta solicitud.'},
+    options:[
+      {v:'Social Security Number (SSN)',   lb:{en:'Social Security Number (SSN)',   es:'N\u00famero de Seguro Social (SSN)'}},
+      {v:'Work Permit (EAD)',              lb:{en:'Work Permit (EAD)',              es:'Permiso de trabajo (EAD)'}},
+      {v:'Permanent Resident / Green Card',lb:{en:'Permanent Resident / Green Card',es:'Residente permanente / Green Card'}},
+      {v:'ITIN (Tax ID number)',           lb:{en:'ITIN (Tax ID number)',           es:'ITIN (N\u00famero de identificaci\u00f3n fiscal)'}}
+    ],
+    notes:{
+      'ITIN (Tax ID number)':{
+        en:'No problem \u2014 we work with ITIN co-borrowers every day.',
+        es:'No hay problema \u2014 trabajamos con co-prestatarios con ITIN todos los d\u00edas.'},
+      'Work Permit (EAD)':{
+        en:'Work-permit co-borrowers qualify for great programs too.',
+        es:'Los co-prestatarios con permiso de trabajo tambi\u00e9n califican para excelentes programas.'}
+    }},
+
+  { id:'coWork', type:'single', key:'coWork', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'What\u2019s their work status?', es:'\u00bfCu\u00e1l es su situaci\u00f3n laboral?'},
+    options:[
+      {v:'Employed',      lb:{en:'Employed',      es:'Empleado(a)'}},
+      {v:'Self-employed', lb:{en:'Self-employed', es:'Trabaja por su cuenta'}},
+      {v:'Retired',       lb:{en:'Retired',       es:'Jubilado(a)'}},
+      {v:'Not employed',  lb:{en:'Not employed',  es:'Sin empleo'}}
+    ]},
+
+  { id:'coIncome', type:'currency', key:'coIncome', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'What\u2019s their gross monthly income?', es:'\u00bfCu\u00e1l es su ingreso mensual bruto?'},
+    hint:{en:'Before taxes \u2014 their income adds to yours for qualifying.',
+          es:'Antes de impuestos \u2014 su ingreso se suma al suyo para calificar.'},
+    label:{en:'Co-borrower monthly income', es:'Ingreso mensual del co-prestatario'}, ph:'e.g. 4,000',
+    err:{en:'Please enter their monthly income \u2014 your best guess is fine.',
+         es:'Por favor ingrese su ingreso mensual \u2014 un estimado est\u00e1 bien.'},
+    helper:function(a){
+      var v=+a.coIncome||0;
+      return v>0 ? ui('perYear')(money(v*12)) : '';
+    }},
+
+  { id:'coDebts', type:'currency', key:'coDebts', allowZero:true, when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'And their monthly debt payments?', es:'\u00bfY sus pagos mensuales de deudas?'},
+    hint:{en:'Car payments, credit cards, loans \u2014 0 is okay.',
+          es:'Pagos de carro, tarjetas, pr\u00e9stamos \u2014 0 est\u00e1 bien.'},
+    label:{en:'Co-borrower monthly debts', es:'Deudas mensuales del co-prestatario'}, ph:'e.g. 300',
+    err:{en:'Enter their monthly debts \u2014 0 is okay.', es:'Ingrese sus deudas mensuales \u2014 0 est\u00e1 bien.'}},
+
+  { id:'coCredit', type:'single', key:'coCredit', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'Their credit profile', es:'Su perfil de cr\u00e9dito'},
+    hint:{en:'Best guess is fine \u2014 we never run a credit check on this application.',
+          es:'Un estimado est\u00e1 bien \u2014 nunca revisamos el cr\u00e9dito en esta solicitud.'},
+    options:[
+      {v:'720+'},{v:'660-719'},{v:'620-659'},{v:'580-619'},
+      {v:'579 or below', lb:{en:'579 or below', es:'579 o menos'}},
+      {v:'Not sure', lb:{en:'Not sure', es:'No estoy seguro(a)'}}
+    ]},
 
   { id:'bk', type:'single', key:'bk',
     title:{en:'Any bankruptcies in the past 3 years?', es:'\u00bfAlguna bancarrota en los \u00faltimos 3 a\u00f1os?'},
@@ -665,7 +749,8 @@ en:{
   sTitle:'Application received',
   sBody:c=>'Our team at '+c+' will reach out shortly by phone or text to go over your options — keep an eye on your messages.',
   rGoal:'Goal', rPrice:'Purchase price', rDown:'Down payment', rVal:'Home value', rBal:'Balance', rCash:'Cash out',
-  rInc:'Monthly income', rCredit:'Credit range', rPhone:'Phone', rEmail:'Email',
+  rInc:'Monthly income', rIncC:'Combined income', rCoB:'Co-borrower', rCredit:'Credit range', rPhone:'Phone', rEmail:'Email',
+  cbInc:'Includes your co-borrower\u2019s income and debts.',
   restart:'Start a new application',
   cTitle:'Your estimated buying power', cSub:'Live estimate — adjust anything below and watch it update.',
   cInc:'Monthly income', cDebt:'Monthly debts', cDown:'Down payment', cRate:'Interest rate',
@@ -727,7 +812,8 @@ es:{
   sTitle:'Solicitud recibida',
   sBody:c=>'Nuestro equipo de '+c+' le contactar\u00e1 pronto por llamada o mensaje de texto para revisar sus opciones — est\u00e9 pendiente de sus mensajes.',
   rGoal:'Meta', rPrice:'Precio de compra', rDown:'Enganche', rVal:'Valor de la casa', rBal:'Saldo', rCash:'Efectivo',
-  rInc:'Ingreso mensual', rCredit:'Rango de cr\u00e9dito', rPhone:'Tel\u00e9fono', rEmail:'Correo',
+  rInc:'Ingreso mensual', rIncC:'Ingreso combinado', rCoB:'Co-prestatario', rCredit:'Rango de cr\u00e9dito', rPhone:'Tel\u00e9fono', rEmail:'Correo',
+  cbInc:'Incluye el ingreso y las deudas de su co-prestatario.',
   restart:'Comenzar una nueva solicitud',
   cTitle:'Su poder de compra estimado', cSub:'Estimado en vivo — ajuste lo que quiera y vea c\u00f3mo cambia.',
   cInc:'Ingreso mensual', cDebt:'Deudas mensuales', cDown:'Enganche', cRate:'Tasa de inter\u00e9s',
@@ -1160,18 +1246,12 @@ async function chatFlow(){
   ]);
 
   if(CHAT.marital==='Married'){
-    await typing(600);
-    addBot(ui('qSpouse'));
-    CHAT.spouseOnLoan = await askChips(YN());
-  }
-
-  if(!(CHAT.marital==='Married' && CHAT.spouseOnLoan==='Yes')){
-    await typing(600);
-    addBot(ui('qCob'));
-    CHAT.coBorrower = await askChips(YN());
-    if(CHAT.coBorrower==='Yes'){
-      await typing(550);
-      addBot(ui('cobYes'));
+    if(A.hasCoBorrower==='Yes' && A.coRelation==='Spouse/Partner'){
+      CHAT.spouseOnLoan = 'Yes';
+    }else{
+      await typing(600);
+      addBot(ui('qSpouse'));
+      CHAT.spouseOnLoan = await askChips(YN());
     }
   }
 
@@ -1237,6 +1317,19 @@ function buildPayload(){
   if(A.work==='Self-employed'){ p['Business Name'] = A.businessName||''; p['Business Type'] = A.businessType||''; }
   if(A.tenure) p['Time at Job/Business'] = A.tenure;
   if(A.incomeDoc) p['Income Documentation'] = A.incomeDoc;
+  // co-borrower
+  p['Co-borrower'] = A.hasCoBorrower || '';
+  if(A.hasCoBorrower==='Yes'){
+    p['Co-borrower Name'] = ((A.coFirst||'')+' '+(A.coLast||'')).trim();
+    p['Co-borrower Relationship'] = A.coRelation || '';
+    p['Co-borrower Qualifying With'] = A.coStatus || '';
+    p['Co-borrower Work Status'] = A.coWork || '';
+    p['Co-borrower Monthly Income'] = money(A.coIncome);
+    p['Co-borrower Monthly Debts'] = money(A.coDebts);
+    p['Co-borrower Credit Range'] = A.coCredit || '';
+    p['Combined Monthly Income'] = money(totalIncome());
+    p['Combined Monthly Debts'] = money(totalDebts());
+  }
 
   if(isBuy(A)){
     p['Loan Options'] = (A.loanOptions&&A.loanOptions.length)?A.loanOptions.join('; '):'None selected';
@@ -1249,7 +1342,7 @@ function buildPayload(){
     p['Comfortable Monthly Payment'] = money(A.comfortPay);
     // buying-power estimates at the default rate — pre-work for the loan officer
     programsFor(A.status).forEach(pr=>{
-      const r = calcProgram(pr, +A.income||0, +A.debts||0, +A.down||0, CONFIG.CALC.rateDefault);
+      const r = calcProgram(pr, totalIncome(), totalDebts(), +A.down||0, CONFIG.CALC.rateDefault);
       p['Est. Buying Power ('+pr.name+')'] = r.price>0 ? money(r.price) : 'Needs review';
     });
   }else{
@@ -1267,7 +1360,6 @@ function buildPayload(){
   if(CHAT.rent) p['Current Monthly Rent'] = CHAT.rent;
   if(CHAT.marital) p['Marital Status'] = CHAT.marital;
   if(CHAT.spouseOnLoan) p['Spouse on Loan'] = CHAT.spouseOnLoan;
-  if(CHAT.coBorrower) p['Co-borrower Possible'] = CHAT.coBorrower;
   if(CHAT.propertyArea) p['Property Area of Interest'] = CHAT.propertyArea;
   if(CHAT.propertyAddress) p['Property Address'] = CHAT.propertyAddress;
   if(CHAT.bestTime) p['Best Time to Call'] = CHAT.bestTime;
@@ -1317,7 +1409,12 @@ async function submitAll(){
     rows.push([ui('rBal'), money(A.balance)]);
     if(isEquity(A)) rows.push([ui('rCash'), money(A.cashOut)]);
   }
-  rows.push([ui('rInc'), money(A.income)]);
+  if(A.hasCoBorrower==='Yes'){
+    rows.push([ui('rCoB'), ((A.coFirst||'')+' '+(A.coLast||'')).trim()]);
+    rows.push([ui('rIncC'), money(totalIncome())]);
+  }else{
+    rows.push([ui('rInc'), money(A.income)]);
+  }
   rows.push([ui('rCredit'), optLabel('credit', A.credit)]);
   rows.push([ui('rPhone'), fmtPhone(A.phone)]);
   rows.push([ui('rEmail'), A.email]);
@@ -1340,6 +1437,9 @@ async function submitAll(){
 /* ================================================================
    BUYING-POWER CALCULATOR (FHA / Conventional / ITIN)
    ================================================================ */
+function totalIncome(){ return (+A.income||0) + (A.hasCoBorrower==='Yes' ? (+A.coIncome||0) : 0); }
+function totalDebts(){ return (+A.debts||0) + (A.hasCoBorrower==='Yes' ? (+A.coDebts||0) : 0); }
+
 function programsFor(status){
   if(status==='ITIN (Tax ID number)'){
     return [{id:'itin', name:'ITIN Home Loan', tag:'As low as 3% down',
@@ -1395,7 +1495,11 @@ function buildCalculator(){
     '<div class="pgrid"></div>'+
     '<p class="cnote">'+ui('cNote')(CONFIG.CALC.taxPct, CONFIG.CALC.insPct)+'</p>';
 
-  const vals = { income:+A.income||0, debts:+A.debts||0, down:+A.down||0 };
+  const vals = { income:totalIncome(), debts:totalDebts(), down:+A.down||0 };
+  if(A.hasCoBorrower==='Yes'){
+    const sub = c.querySelector('.csub');
+    sub.textContent = sub.textContent + ' ' + ui('cbInc');
+  }
   const inputs = c.querySelectorAll('.cgrid input');
   const slider = c.querySelector('input[type=range]');
   const out = c.querySelector('output');
