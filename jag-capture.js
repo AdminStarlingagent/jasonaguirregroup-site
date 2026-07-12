@@ -5,8 +5,8 @@
    The Web3Forms email path is never blocked by this.
    ============================================================ */
 window.JAG_CRM = {
-  url: "",      /* e.g. https://abcd1234.supabase.co  (Project Settings → API → Project URL) */
-  anonKey: ""   /* Supabase "anon public" key          (Project Settings → API → anon public) */
+  url: "https://nyaxywghbpphjhwcmspd.supabase.co",  /* jag-crm  (Project Settings → API → Project URL) */
+  anonKey: "sb_publishable_a3LN_l283LN8J-bJTEO8hQ_U40t09eh"  /* Supabase publishable key          (Project Settings → API → anon public) */
 };
 
 window.jagCapture = function(type, data){
