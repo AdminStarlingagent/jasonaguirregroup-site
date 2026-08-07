@@ -370,6 +370,32 @@ function openDrawer(id){
     if(typeof v==='object') v=JSON.stringify(v);
     kv.innerHTML += '<div><span>'+esc(prettyKey(k))+'</span><b>'+esc(v)+'</b></div>';
   });
+  /* encrypted tax ids: offer a reveal button per stored id */
+  var reveal = [];
+  ['SSN','ITIN'].forEach(function(k){ if(/encrypted on file/.test(String(p[k]||''))) reveal.push(['borrower', k]); });
+  ['Co-borrower SSN','Co-borrower ITIN'].forEach(function(k){ if(/encrypted on file/.test(String(p[k]||''))) reveal.push(['coborrower', k]); });
+  reveal.forEach(function(pair){
+    var row = document.createElement('div');
+    row.innerHTML = '<span>'+esc(pair[1])+' (full)</span><b><button class="linkbtn" style="font-size:13px">Reveal</button></b>';
+    row.querySelector('button').addEventListener('click', function(){
+      var btn = this;
+      btn.textContent = '\u2026';
+      fetch(base()+'/rest/v1/rpc/jag_get_tax_id', {
+        method:'POST', headers:hdrs(),
+        body: JSON.stringify({ p_lead_id: r.id, p_which: pair[0] })
+      }).then(function(res){ return res.json(); }).then(function(v){
+        if(typeof v==='string' && v.length===9){
+          var pretty = v.slice(0,3)+'-'+v.slice(3,5)+'-'+v.slice(5);
+          btn.parentNode.textContent = pretty;
+          setTimeout(function(){ if(btn.parentNode) row.querySelector('b').innerHTML = '<button class="linkbtn" style="font-size:13px">Reveal</button>'; openDrawer(r.id); }, 45000);
+        }else{
+          btn.textContent = 'Unavailable';
+        }
+      }).catch(function(){ btn.textContent = 'Error'; });
+    });
+    kv.appendChild(row);
+  });
+
   $('d-notes').value = r.notes||'';
   $('d-saved').classList.remove('show');
   $('drawer').classList.add('open'); $('scrim').classList.add('open');
