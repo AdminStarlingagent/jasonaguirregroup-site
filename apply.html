@@ -453,6 +453,8 @@ const STEPS = [
 
   { id:'down', type:'currency', key:'down', when:isBuy,
     title:{en:'How much do you plan to use for a down payment?', es:'\u00bfCu\u00e1nto planea dar de enganche?'},
+    hint:{en:'Just what you have today \u2014 down payment assistance programs exist, and we\u2019ll show you options on our call.',
+          es:'Solo lo que tiene hoy \u2014 existen programas de ayuda para el enganche y le mostraremos opciones en la llamada.'},
     label:{en:'Down payment amount', es:'Monto del enganche'}, ph:'e.g. 10,000',
     err:{en:'Please enter your estimated down payment.', es:'Por favor ingrese su enganche estimado.'},
     helper:function(a){
@@ -544,6 +546,19 @@ const STEPS = [
       {v:'1-2 years',        lb:{en:'1-2 years',        es:'1-2 a\u00f1os'}},
       {v:'2-5 years',        lb:{en:'2-5 years',        es:'2-5 a\u00f1os'}},
       {v:'5+ years',         lb:{en:'5+ years',         es:'5+ a\u00f1os'}}
+    ]},
+
+  { id:'prevEmployer', type:'group', when:a=>{
+      if(a.work!=='Employed'||!a.startYear||a.startYear==='Before 1985') return false;
+      return (+a.startYear) >= (new Date().getFullYear()-1);
+    },
+    title:{en:'Where did you work before this job?', es:'\u00bfD\u00f3nde trabajaba antes de este trabajo?'},
+    hint:{en:'Lenders like to see 2 years of work history. If you had time off (injury, maternity, between jobs), that\u2019s normal \u2014 just mention it.',
+          es:'El prestamista quiere ver 2 a\u00f1os de historial de trabajo. Si tuvo tiempo sin trabajar (lesi\u00f3n, maternidad, entre trabajos), es normal \u2014 solo menci\u00f3nelo.'},
+    fields:[
+      {key:'prevEmployer', label:{en:'Previous job and about how long',es:'Trabajo anterior y cu\u00e1nto tiempo'},
+       ph:{en:'e.g. Houston Oil Metering \u2014 10 months',es:'ej. Houston Oil Metering \u2014 10 meses'},
+       err:{en:'Please tell us where you worked before \u2014 or write "time off".', es:'Por favor d\u00edganos d\u00f3nde trabajaba antes \u2014 o escriba "sin trabajar".'}}
     ]},
 
   { id:'incomeDoc', type:'single', key:'incomeDoc', when:a=>a.work==='Employed'||a.work==='Self-employed',
@@ -783,6 +798,21 @@ const STEPS = [
   { id:'bk', type:'single', key:'bk',
     title:{en:'Any bankruptcies in the past 3 years?', es:'\u00bfAlguna bancarrota en los \u00faltimos 3 a\u00f1os?'},
     options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
+
+  { id:'softPull', type:'single', key:'softPull',
+    title:{en:'One more thing \u2014 is a SOFT credit check okay?', es:'Una cosa m\u00e1s \u2014 \u00bfautoriza una revisi\u00f3n SUAVE de cr\u00e9dito?'},
+    hint:{en:'A soft check does NOT touch your score \u2014 it just lets our lender match you to real programs faster.',
+          es:'La revisi\u00f3n suave NO afecta su puntaje para nada \u2014 solo ayuda a que el prestamista le d\u00e9 opciones reales m\u00e1s r\u00e1pido.'},
+    options:[
+      {v:'Yes, a soft check is okay', lb:{en:'Yes, that\u2019s fine', es:'S\u00ed, est\u00e1 bien'}},
+      {v:'Not yet — call me first',   lb:{en:'Not yet \u2014 call me first', es:'Todav\u00eda no \u2014 ll\u00e1menme primero'}}
+    ],
+    notes:{
+      'Yes, a soft check is okay':{en:'Perfect \u2014 soft only. Your score will not change.',
+                                   es:'Perfecto \u2014 solo revisi\u00f3n suave. Su puntaje no cambia.'},
+      'Not yet — call me first':{en:'No problem \u2014 we\u2019ll go over everything by phone first.',
+                                 es:'No hay problema \u2014 primero lo revisamos todo por tel\u00e9fono.'}
+    }},
 
   { id:'name', type:'group',
     title:{en:"What's your name?", es:'\u00bfCu\u00e1l es su nombre?'},
@@ -1629,6 +1659,7 @@ function buildPayload(){
     'Property Type': A.propertyType || '',
     'Property Use': A.propertyUse || '',
     'SMS Consent': A.smsConsent ? 'Yes' : 'No',
+    'Soft Credit Check OK': A.softPull || '',
     'Submitted At': new Date().toLocaleString('en-US'),
     'Source Page': location.href
   };
@@ -1643,6 +1674,7 @@ function buildPayload(){
     p['Employer'] = A.employer||''; p['Job Title'] = A.jobTitle||'';
     p['Employer City'] = A.employerCity||'';
     if(A.startYear) p['Job Start Year'] = A.startYear;
+    if(A.prevEmployer) p['Previous Employer'] = A.prevEmployer;
     if(A.payType){
       p['Pay Type'] = A.payType;
       if(A.payType==='By the hour'){ p['Pay Rate'] = '$'+(A.payRate||'')+'/hr'; p['Hours per Week'] = A.hoursWeek||''; }
