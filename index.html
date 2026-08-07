@@ -191,6 +191,15 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
   html{scroll-behavior:auto}
 }
 </style>
+<script>
+/* Password-recovery link detector: forward to reset-password.html with the token hash */
+(function(){
+  var h = location.hash || '';
+  if(h.indexOf('type=recovery') > -1 || h.indexOf('error_code=otp_expired') > -1){
+    location.replace('reset-password.html' + h);
+  }
+})();
+</script>
 </head>
 <body>
 
