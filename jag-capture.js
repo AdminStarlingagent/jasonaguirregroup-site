@@ -57,18 +57,24 @@ window.jagCaptureSecure = function(type, data, secure){
       payload: data
     };
     var base = c.url.replace(/\/+$/,'');
+    /* Generate the lead id HERE — the anon key can insert but (correctly) cannot
+       read rows back, so asking for the inserted row rejects the whole insert. */
+    var id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(ch){
+          var r=Math.random()*16|0, v=ch==='x'?r:(r&0x3|0x8); return v.toString(16);
+        });
+    body.id = id;
     fetch(base + '/rest/v1/jag_leads', {
       method: 'POST',
       headers: {
         apikey: c.anonKey,
         Authorization: 'Bearer ' + c.anonKey,
         'Content-Type': 'application/json',
-        Prefer: 'return=representation'
+        Prefer: 'return=minimal'
       },
       body: JSON.stringify(body)
-    }).then(function(r){ return r.json(); }).then(function(rows){
-      var id = rows && rows[0] && rows[0].id;
-      if(!id || !secure) return;
+    }).then(function(r){
+      if(!r.ok || !secure) return;
       Object.keys(secure).forEach(function(which){
         fetch(base + '/rest/v1/rpc/jag_store_tax_id', {
           method: 'POST',
