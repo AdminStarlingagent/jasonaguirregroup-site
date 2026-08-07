@@ -132,6 +132,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   <div class="hin">
     <a class="lock" href="index.html"><small>Est. 2018</small><b>JAG</b><i>Admin</i></a>
     <span class="who" id="who"></span>
+    <button class="ghostbtn" id="copyapply" style="display:none" title="Copy the application link to send to a client">&#128279; Copy application link</button>
     <button class="ghostbtn" id="refresh" style="display:none">Refresh</button>
     <button class="ghostbtn" id="exportcsv" style="display:none">Export CSV</button>
     <button class="ghostbtn" id="signout" style="display:none">Sign out</button>
@@ -254,7 +255,7 @@ function show(view){
   $('loginview').style.display = view==='login'?'grid':'none';
   $('app').style.display       = view==='app'?'block':'none';
   var on = view==='app';
-  ['refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
+  ['copyapply','refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
   $('who').textContent = on ? (state.email||'') : '';
 }
 
@@ -432,6 +433,28 @@ function exportCSV(){
 $('li-btn').addEventListener('click', signIn);
 $('li-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') signIn(); });
 $('signout').addEventListener('click', signOut);
+var APPLY_LINK = 'https://jasonaguirregroup.company/apply.html';
+$('copyapply').addEventListener('click', function(){
+  var btn = document.getElementById('copyapply');
+  function done(ok){
+    btn.textContent = ok ? '\u2713 Link copied \u2014 paste it to your client' : 'Copy failed \u2014 link: '+APPLY_LINK;
+    setTimeout(function(){ btn.innerHTML = '&#128279; Copy application link'; }, 2200);
+  }
+  function fallback(){
+    try{
+      var t = document.createElement('textarea');
+      t.value = APPLY_LINK; t.style.position='fixed'; t.style.opacity='0';
+      document.body.appendChild(t); t.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(t);
+      done(ok);
+    }catch(e){ done(false); }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(APPLY_LINK).then(function(){ done(true); }, fallback);
+  }else{ fallback(); }
+});
+
 $('refresh').addEventListener('click', resetAndLoad);
 $('exportcsv').addEventListener('click', exportCSV);
 $('more').addEventListener('click', load);
