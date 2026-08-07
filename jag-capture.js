@@ -37,3 +37,49 @@ window.jagCapture = function(type, data){
     }).catch(function(){});
   }catch(e){}
 };
+
+/* Secure variant: inserts the lead, gets its id back, then stores tax IDs
+   through the encrypted vault RPC. The full number never rides in payload. */
+window.jagCaptureSecure = function(type, data, secure){
+  try{
+    var c = window.JAG_CRM || {};
+    if(!c.url || !c.anonKey || !data) return;
+    var name = data.__name || data['Legal Full Name'] ||
+      [ (data['First Name']||data.firstName||''), (data['Last Name']||data.lastName||'') ].join(' ').trim() ||
+      data.name || null;
+    var body = {
+      type: type,
+      name: name || null,
+      email: data.Email || data.email || null,
+      phone: data.Phone || data.phone || null,
+      lang: data['Preferred Language'] || data.language || null,
+      source: location.pathname + location.search,
+      payload: data
+    };
+    var base = c.url.replace(/\/+$/,'');
+    fetch(base + '/rest/v1/jag_leads', {
+      method: 'POST',
+      headers: {
+        apikey: c.anonKey,
+        Authorization: 'Bearer ' + c.anonKey,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify(body)
+    }).then(function(r){ return r.json(); }).then(function(rows){
+      var id = rows && rows[0] && rows[0].id;
+      if(!id || !secure) return;
+      Object.keys(secure).forEach(function(which){
+        fetch(base + '/rest/v1/rpc/jag_store_tax_id', {
+          method: 'POST',
+          headers: {
+            apikey: c.anonKey,
+            Authorization: 'Bearer ' + c.anonKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ p_lead_id: id, p_which: which, p_value: secure[which] })
+        }).catch(function(){});
+      });
+    }).catch(function(){});
+  }catch(e){}
+};
