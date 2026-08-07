@@ -145,6 +145,7 @@ h1.title{font-size:clamp(28px,4.8vw,36px);font-weight:600;letter-spacing:-.015em
 .done-card{text-align:center;padding-top:26px}
 .done-check{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:#e7f5ee;display:grid;place-items:center;color:#0f8a4d}
 .done-check svg{width:30px;height:30px}
+.call-btn{display:flex;align-items:center;justify-content:center;text-decoration:none;max-width:420px;margin-left:auto;margin-right:auto}
 .msg{display:none;color:var(--warn);font-size:14.5px;font-weight:500;margin:-6px 0 16px 20px}
 .msg.show{display:block}
 .helper{font-size:14px;color:#5b5a63;margin:-6px 0 16px 20px;min-height:18px}
@@ -347,6 +348,19 @@ const isRefi   = a => a.goal === 'Refinance';
 const isEquity = a => a.goal === 'Use my equity';
 
 const US_STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+
+/* Who is the co-borrower? Returns the right way to say it, based on their answer. */
+function cap(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
+function coRef(a){
+  var map = {
+    'Spouse/Partner': {en:'your spouse',        es:'su esposo(a)'},
+    'Parent':         {en:'your parent',        es:'su padre o madre'},
+    'Sibling':        {en:'your sibling',       es:'su hermano(a)'},
+    'Other family':   {en:'your family member', es:'su familiar'},
+    'Friend':         {en:'your friend',        es:'su amigo(a)'}
+  };
+  return map[a.coRelation] || {en:'your co-borrower', es:'su co-prestatario'};
+}
 
 const STEPS = [
   /* -------- 1) language (kept per Jason) -------- */
@@ -608,7 +622,7 @@ const STEPS = [
 
   /* -------- 8) "ahora necesito la información de su esposo(a)" — the co-borrower, Kat's exact list -------- */
   { id:'coName', type:'group', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'Now their information \u2014 what\u2019s their full name?', es:'Ahora la informaci\u00f3n de esa persona \u2014 \u00bfcu\u00e1l es su nombre completo?'},
+    titleFn:function(a){ var r=coRef(a); return {en:'Now let\u2019s add '+r.en+' \u2014 what\u2019s their full name?', es:'Ahora la informaci\u00f3n de '+r.es+' \u2014 \u00bfcu\u00e1l es su nombre completo?'}; },
     fields:[
       {key:'coFirst', label:{en:'Their first name',es:'Su nombre'}, ph:{en:'e.g. Ana',es:'ej. Melisa'},
        err:{en:'Please enter their first name.', es:'Por favor ingrese su nombre.'}},
@@ -617,15 +631,15 @@ const STEPS = [
     ]},
 
   { id:'coDob', type:'dob', key:'coDob', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'When is their birthday?', es:'\u00bfCu\u00e1l es su fecha de nacimiento?'}},
+    titleFn:function(a){ var r=coRef(a); return {en:'When is '+r.en+'\u2019s birthday?', es:'\u00bfCu\u00e1l es la fecha de nacimiento de '+r.es+'?'}; }},
 
   { id:'coPhone', type:'tel', key:'coPhone', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'What\u2019s their phone number?', es:'\u00bfCu\u00e1l es su n\u00famero de tel\u00e9fono?'},
+    titleFn:function(a){ var r=coRef(a); return {en:'What\u2019s '+r.en+'\u2019s phone number?', es:'\u00bfCu\u00e1l es el n\u00famero de tel\u00e9fono de '+r.es+'?'}; },
     label:{en:'Their phone number', es:'Su n\u00famero de tel\u00e9fono'}, ph:'(555) 555-5555',
     err:{en:'Please enter their phone number.', es:'Por favor ingrese su n\u00famero de tel\u00e9fono.'}},
 
   { id:'coStatus', type:'single', key:'coStatus', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'Do they have a Social Security number or an ITIN?', es:'\u00bfEsa persona tiene n\u00famero de Seguro Social o ITIN?'},
+    titleFn:function(a){ var r=coRef(a); return {en:'Does '+r.en+' have a Social Security number or an ITIN?', es:'\u00bf'+cap(r.es)+' tiene n\u00famero de Seguro Social o ITIN?'}; },
     options:[
       {v:'Social Security Number (SSN)',   lb:{en:'Social Security Number (SSN)',   es:'N\u00famero de Seguro Social (SSN)'}},
       {v:'Work Permit (EAD)',              lb:{en:'Work Permit (EAD)',              es:'Permiso de trabajo (EAD)'}},
@@ -639,14 +653,14 @@ const STEPS = [
     }},
 
   { id:'coTaxId', type:'taxid', key:'coTaxId', which:'coborrower', when:a=>a.hasCoBorrower==='Yes',
-    titleFn:function(a){ return a.coStatus==='ITIN (Tax ID number)'
-      ? {en:'What is their ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
-      : {en:'What is their Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
+    titleFn:function(a){ var r=coRef(a); return a.coStatus==='ITIN (Tax ID number)'
+      ? {en:'What is '+r.en+'\u2019s ITIN number?', es:'\u00bfCu\u00e1l es el n\u00famero de ITIN de '+r.es+'?'}
+      : {en:'What is '+r.en+'\u2019s Social Security number?', es:'\u00bfCu\u00e1l es el n\u00famero de Seguro Social de '+r.es+'?'}; },
     hint:{en:'Stored encrypted \u2014 only your loan team can see it. Sharing by phone later is okay too.',
           es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Tambi\u00e9n puede darlo por tel\u00e9fono despu\u00e9s.'}},
 
   { id:'coWork', type:'single', key:'coWork', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'Are they working?', es:'\u00bfEsa persona trabaja?'},
+    titleFn:function(a){ var r=coRef(a); return {en:'Does '+r.en+' work?', es:'\u00bf'+cap(r.es)+' trabaja?'}; },
     options:[
       {v:'Employed',      lb:{en:'Yes, they have a job', es:'S\u00ed, tiene trabajo'}},
       {v:'Self-employed', lb:{en:'They work for themselves', es:'Trabaja por su cuenta'}},
@@ -655,7 +669,7 @@ const STEPS = [
     ]},
 
   { id:'coEmployer', type:'group', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed',
-    title:{en:'Where do they work?', es:'\u00bfD\u00f3nde trabaja esa persona?'},
+    titleFn:function(a){ var r=coRef(a); return {en:'Where does '+r.en+' work?', es:'\u00bfD\u00f3nde trabaja '+r.es+'?'}; },
     fields:[
       {key:'coEmployer', label:{en:'Their employer',es:'Su empleador'}, ph:{en:'e.g. Twin Peaks',es:'ej. Twin Peaks'},
        err:{en:'Please enter their employer\u2019s name.', es:'Por favor ingrese el nombre de su empleador.'}}
@@ -665,7 +679,7 @@ const STEPS = [
     title:{en:'What year did they start there?', es:'\u00bfEn qu\u00e9 a\u00f1o comenz\u00f3 a trabajar ah\u00ed?'}},
 
   { id:'coPayType', type:'single', key:'coPayType', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed',
-    title:{en:'How do they get paid?', es:'\u00bfC\u00f3mo le pagan a esa persona?'},
+    titleFn:function(a){ var r=coRef(a); return {en:'How does '+r.en+' get paid?', es:'\u00bfC\u00f3mo le pagan a '+r.es+'?'}; },
     options:[
       {v:'By the hour', lb:{en:'By the hour', es:'Por hora'}},
       {v:'Salary',      lb:{en:'A salary',    es:'Salario fijo'}},
@@ -711,7 +725,7 @@ const STEPS = [
 
   { id:'coIncome', type:'currency', key:'coIncome',
     when:a=>a.hasCoBorrower==='Yes'&&!(a.coWork==='Employed'&&(a.coPayType==='By the hour'||a.coPayType==='Salary')),
-    title:{en:'About how much do they make each month?', es:'\u00bfComo cu\u00e1nto gana esa persona al mes?'},
+    titleFn:function(a){ var r=coRef(a); return {en:'About how much does '+r.en+' make each month?', es:'\u00bfComo cu\u00e1nto gana '+r.es+' al mes?'}; },
     hint:{en:'Before taxes \u2014 their income adds to yours for qualifying.',
           es:'Antes de impuestos \u2014 su ingreso se suma al suyo para calificar.'},
     label:{en:'Co-borrower monthly income', es:'Ingreso mensual del co-prestatario'}, ph:'e.g. 4,000',
@@ -1599,9 +1613,8 @@ async function finishAll(){
   done.innerHTML = '<div class="done-check">'+IC.shield+'</div>'
     + '<h1 class="title" style="text-align:center">'+ui('doneTitle')+'</h1>'
     + '<p class="hint" style="text-align:center">'+ui('doneBody')(A.first||'')+'</p>';
-  const call = el('a','next', ui('doneCall'));
+  const call = el('a','next call-btn', ui('doneCall'));
   call.href = 'tel:' + CONFIG.phoneTel;
-  call.style.textDecoration='none'; call.style.textAlign='center'; call.style.display='block';
   done.appendChild(call);
   stage.replaceChildren(done);
   window.scrollTo({top:0,behavior:'smooth'});
