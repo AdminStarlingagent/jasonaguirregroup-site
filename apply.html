@@ -138,6 +138,10 @@ h1.title{font-size:clamp(28px,4.8vw,36px);font-weight:600;letter-spacing:-.015em
 .field.err{background:#fff;box-shadow:inset 0 0 0 1.5px var(--warn-bd)}
 .field select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:26px}
 .field .chev{position:absolute;right:16px;top:50%;transform:translateY(-25%);pointer-events:none;color:#6a6972;width:18px;height:18px}
+.dobrow{display:grid;grid-template-columns:1.4fr 1fr 1.2fr;gap:10px}
+.dobrow .field{margin-bottom:0}
+.skipbtn{display:block;margin:14px auto 0;background:none;border:none;color:#6a6972;font-weight:700;font-size:14px;cursor:pointer;text-decoration:underline;font-family:inherit}
+.skipbtn:hover{color:#17161c}
 .msg{display:none;color:var(--warn);font-size:14.5px;font-weight:500;margin:-6px 0 16px 20px}
 .msg.show{display:block}
 .helper{font-size:14px;color:#5b5a63;margin:-6px 0 16px 20px;min-height:18px}
@@ -375,6 +379,20 @@ const STEPS = [
         es:'Las personas con permiso de trabajo califican para excelentes programas \u2014 est\u00e1 en el lugar correcto.'}
     }},
 
+  { id:'permitValid', type:'single', key:'permitValid', when:a=>a.status==='Work Permit (EAD)',
+    title:{en:'Is your work permit current?', es:'\u00bfSu permiso de trabajo est\u00e1 vigente?'},
+    options:[
+      {v:'Yes, current',   lb:{en:'Yes, it\u2019s current', es:'S\u00ed, est\u00e1 vigente'}},
+      {v:'Being renewed',  lb:{en:'It\u2019s being renewed', es:'Est\u00e1 en renovaci\u00f3n'}},
+      {v:'Expired',        lb:{en:'It expired',          es:'Ya se venci\u00f3'}}
+    ],
+    notes:{
+      'Being renewed':{en:'That\u2019s okay \u2014 renewals are normal. Keep your receipt notice handy.',
+                       es:'Est\u00e1 bien \u2014 las renovaciones son normales. Tenga a la mano su recibo de renovaci\u00f3n.'},
+      'Expired':{en:'No problem \u2014 we can still plan ahead together while you renew.',
+                 es:'No hay problema \u2014 podemos planear juntos mientras lo renueva.'}
+    }},
+
   { id:'loanOptions', type:'multi', key:'loanOptions', when:isBuy,
     title:{en:"Let's customize your loan options and savings",
            es:'Personalicemos sus opciones de pr\u00e9stamo y ahorros'},
@@ -499,7 +517,9 @@ const STEPS = [
       {key:'employer', label:{en:'Employer name',es:'Nombre del empleador'}, ph:{en:'e.g. HEB',es:'ej. HEB'},
        err:{en:'Please enter your employer\u2019s name.', es:'Por favor ingrese el nombre de su empleador.'}},
       {key:'jobTitle', label:{en:'Job title',es:'Puesto'}, ph:{en:'e.g. Site supervisor',es:'ej. Supervisor de obra'},
-       err:{en:'Please enter your job title.', es:'Por favor ingrese su puesto.'}}
+       err:{en:'Please enter your job title.', es:'Por favor ingrese su puesto.'}},
+      {key:'employerCity', label:{en:'City where you work',es:'Ciudad donde trabaja'}, ph:{en:'e.g. Houston',es:'ej. Houston'},
+       err:{en:'Please enter the city where you work.', es:'Por favor ingrese la ciudad donde trabaja.'}}
     ]},
 
   { id:'employerSE', type:'group', when:a=>a.work==='Self-employed',
@@ -511,9 +531,14 @@ const STEPS = [
        err:{en:'Please tell us what you do.', es:'Por favor d\u00edganos a qu\u00e9 se dedica.'}}
     ]},
 
-  { id:'tenure', type:'single', key:'tenure', when:a=>a.work==='Employed'||a.work==='Self-employed',
-    title:{en:'How long have you been at your current job or business?',
-           es:'\u00bfCu\u00e1nto tiempo lleva en su trabajo o negocio actual?'},
+  { id:'startYear', type:'yearsel', key:'startYear', when:a=>a.work==='Employed',
+    title:{en:'What year did you start working there?', es:'\u00bfEn qu\u00e9 a\u00f1o comenz\u00f3 a trabajar ah\u00ed?'},
+    hint:{en:"Your best guess is fine \u2014 the year is all we need.",
+          es:'Un estimado est\u00e1 bien \u2014 solo necesitamos el a\u00f1o.'}},
+
+  { id:'tenure', type:'single', key:'tenure', when:a=>a.work==='Self-employed',
+    title:{en:'How long have you had your business?',
+           es:'\u00bfCu\u00e1nto tiempo tiene su negocio?'},
     options:[
       {v:'Less than 1 year', lb:{en:'Less than 1 year', es:'Menos de 1 a\u00f1o'}},
       {v:'1-2 years',        lb:{en:'1-2 years',        es:'1-2 a\u00f1os'}},
@@ -532,12 +557,61 @@ const STEPS = [
       {v:'Cash or bank statements',       lb:{en:'Cash or bank statements',       es:'Efectivo o estados de cuenta'}}
     ]},
 
+  { id:'payType', type:'single', key:'payType', when:a=>a.work==='Employed',
+    title:{en:'How do you get paid?', es:'\u00bfC\u00f3mo le pagan?'},
+    hint:{en:'Pick the one that sounds like your job.', es:'Elija la que suena como su trabajo.'},
+    options:[
+      {v:'By the hour', lb:{en:'By the hour', es:'Por hora'}},
+      {v:'Salary',      lb:{en:'A salary',    es:'Salario fijo'}},
+      {v:'Cash',        lb:{en:'Cash',        es:'En efectivo'}}
+    ]},
+
+  { id:'payRate', type:'currency', key:'payRate', decimal:true, when:a=>a.work==='Employed'&&a.payType==='By the hour',
+    title:{en:'How much do you make per hour?', es:'\u00bfCu\u00e1nto le pagan por hora?'},
+    label:{en:'Pay per hour', es:'Pago por hora'}, ph:'e.g. 17.50',
+    err:{en:'Please enter your pay per hour.', es:'Por favor ingrese su pago por hora.'}},
+
+  { id:'hoursWeek', type:'currency', key:'hoursWeek', noDollar:true, when:a=>a.work==='Employed'&&a.payType==='By the hour',
+    title:{en:'How many hours do you work in a week?', es:'\u00bfCu\u00e1ntas horas trabaja por semana?'},
+    hint:{en:'Most full-time jobs are about 40.', es:'La mayor\u00eda de trabajos de tiempo completo son como 40.'},
+    label:{en:'Hours per week', es:'Horas por semana'}, ph:'e.g. 40',
+    err:{en:'Please enter your hours per week.', es:'Por favor ingrese sus horas por semana.'},
+    helper:function(a){
+      var r=parseFloat(a.payRate)||0, h=+a.hoursWeek||0;
+      if(r>0&&h>0) return ui('perMonthApprox')(money(Math.round(r*h*52/12)));
+      return '';
+    },
+    validate:function(a){
+      var h=+a.hoursWeek||0;
+      if(!(h>0&&h<=100)) return {en:'Please enter your hours per week (1-100).', es:'Por favor ingrese sus horas por semana (1-100).'};
+      return true;
+    },
+    onNext:function(a){ a.income = String(Math.round((parseFloat(a.payRate)||0)*(+a.hoursWeek||0)*52/12)); a.incomeComputed=true; }},
+
+  { id:'salaryAmt', type:'currency', key:'salaryAmt', when:a=>a.work==='Employed'&&a.payType==='Salary',
+    title:{en:'How much is your salary?', es:'\u00bfDe cu\u00e1nto es su salario?'},
+    label:{en:'Salary amount', es:'Monto del salario'}, ph:'e.g. 55,000',
+    err:{en:'Please enter your salary.', es:'Por favor ingrese su salario.'}},
+
+  { id:'salaryPer', type:'single', key:'salaryPer', when:a=>a.work==='Employed'&&a.payType==='Salary',
+    title:{en:'Is that per year or per month?', es:'\u00bfEso es al a\u00f1o o al mes?'},
+    options:[
+      {v:'Per year',  lb:{en:'Per year',  es:'Al a\u00f1o'}},
+      {v:'Per month', lb:{en:'Per month', es:'Al mes'}}
+    ],
+    onNext:function(a){
+      var v=+a.salaryAmt||0;
+      a.income = String(a.salaryPer==='Per year' ? Math.round(v/12) : v);
+      a.incomeComputed=true;
+    }},
+
   { id:'income', type:'currency', key:'income',
-    title:{en:"What's your gross monthly income?", es:'\u00bfCu\u00e1l es su ingreso mensual bruto?'},
-    hint:{en:'Before taxes \u2014 just yours: all your jobs, plus any pension or Social Security.',
-          es:'Antes de impuestos \u2014 solo el suyo: todos sus trabajos, m\u00e1s pensi\u00f3n o Seguro Social.'},
-    label:{en:'Gross monthly income', es:'Ingreso mensual bruto'}, ph:'e.g. 6,500',
-    err:{en:'Please enter your monthly household income.', es:'Por favor ingrese el ingreso mensual de su hogar.'},
+    when:a=>!(a.work==='Employed'&&(a.payType==='By the hour'||a.payType==='Salary')),
+    title:{en:"About how much do you make each month?", es:'\u00bfComo cu\u00e1nto gana al mes, m\u00e1s o menos?'},
+    hint:{en:'Before taxes \u2014 your best guess is fine. Include pension or Social Security if you get it.',
+          es:'Antes de impuestos \u2014 un estimado est\u00e1 bien. Incluya pensi\u00f3n o Seguro Social si lo recibe.'},
+    label:{en:'Monthly income', es:'Ingreso mensual'}, ph:'e.g. 3,200',
+    err:{en:'Please enter about how much you make each month.', es:'Por favor ingrese como cu\u00e1nto gana al mes.'},
     helper:function(a){
       var v=+a.income||0;
       return v>0 ? ui('perYear')(money(v*12)) : '';
@@ -567,6 +641,14 @@ const STEPS = [
       {key:'coLast', label:{en:'Their last name',es:'Su apellido'}, ph:{en:'e.g. Soto',es:'ej. Soto'},
        err:{en:'Please enter their last name.', es:'Por favor ingrese su apellido.'}}
     ]},
+
+  { id:'coDob', type:'dob', key:'coDob', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'When is their birthday?', es:'\u00bfCu\u00e1l es la fecha de nacimiento de esa persona?'}},
+
+  { id:'coPhone', type:'tel', key:'coPhone', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'What\u2019s their phone number?', es:'\u00bfCu\u00e1l es su n\u00famero de tel\u00e9fono?'},
+    label:{en:'Their phone number', es:'Su n\u00famero de tel\u00e9fono'}, ph:'(555) 555-5555',
+    err:{en:'Please enter their phone number.', es:'Por favor ingrese su n\u00famero de tel\u00e9fono.'}},
 
   { id:'coRelation', type:'single', key:'coRelation', when:a=>a.hasCoBorrower==='Yes',
     title:{en:'What\u2019s their relationship to you?', es:'\u00bfQu\u00e9 relaci\u00f3n tiene con usted?'},
@@ -606,8 +688,64 @@ const STEPS = [
       {v:'Not employed',  lb:{en:'Not employed',  es:'Sin empleo'}}
     ]},
 
-  { id:'coIncome', type:'currency', key:'coIncome', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'What\u2019s their gross monthly income?', es:'\u00bfCu\u00e1l es su ingreso mensual bruto?'},
+  { id:'coEmployer', type:'group', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed',
+    title:{en:'Where do they work?', es:'\u00bfD\u00f3nde trabaja esa persona?'},
+    fields:[
+      {key:'coEmployer', label:{en:'Their employer',es:'Su empleador'}, ph:{en:'e.g. Twin Peaks',es:'ej. Twin Peaks'},
+       err:{en:'Please enter their employer\u2019s name.', es:'Por favor ingrese el nombre de su empleador.'}}
+    ]},
+
+  { id:'coStartYear', type:'yearsel', key:'coStartYear', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed',
+    title:{en:'What year did they start there?', es:'\u00bfEn qu\u00e9 a\u00f1o comenz\u00f3 a trabajar ah\u00ed?'}},
+
+  { id:'coPayType', type:'single', key:'coPayType', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed',
+    title:{en:'How do they get paid?', es:'\u00bfC\u00f3mo le pagan a esa persona?'},
+    options:[
+      {v:'By the hour', lb:{en:'By the hour', es:'Por hora'}},
+      {v:'Salary',      lb:{en:'A salary',    es:'Salario fijo'}},
+      {v:'Cash',        lb:{en:'Cash',        es:'En efectivo'}}
+    ]},
+
+  { id:'coPayRate', type:'currency', key:'coPayRate', decimal:true, when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed'&&a.coPayType==='By the hour',
+    title:{en:'How much do they make per hour?', es:'\u00bfCu\u00e1nto le pagan por hora?'},
+    label:{en:'Their pay per hour', es:'Su pago por hora'}, ph:'e.g. 8.50',
+    err:{en:'Please enter their pay per hour.', es:'Por favor ingrese su pago por hora.'}},
+
+  { id:'coHoursWeek', type:'currency', key:'coHoursWeek', noDollar:true, when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed'&&a.coPayType==='By the hour',
+    title:{en:'How many hours a week do they work?', es:'\u00bfCu\u00e1ntas horas trabaja por semana?'},
+    label:{en:'Their hours per week', es:'Sus horas por semana'}, ph:'e.g. 35',
+    err:{en:'Please enter their hours per week.', es:'Por favor ingrese sus horas por semana.'},
+    helper:function(a){
+      var r=parseFloat(a.coPayRate)||0, h=+a.coHoursWeek||0;
+      if(r>0&&h>0) return ui('perMonthApprox')(money(Math.round(r*h*52/12)));
+      return '';
+    },
+    validate:function(a){
+      var h=+a.coHoursWeek||0;
+      if(!(h>0&&h<=100)) return {en:'Please enter their hours per week (1-100).', es:'Por favor ingrese sus horas por semana (1-100).'};
+      return true;
+    },
+    onNext:function(a){ a.coIncome = String(Math.round((parseFloat(a.coPayRate)||0)*(+a.coHoursWeek||0)*52/12)); }},
+
+  { id:'coSalaryAmt', type:'currency', key:'coSalaryAmt', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed'&&a.coPayType==='Salary',
+    title:{en:'How much is their salary?', es:'\u00bfDe cu\u00e1nto es su salario?'},
+    label:{en:'Their salary', es:'Su salario'}, ph:'e.g. 48,000',
+    err:{en:'Please enter their salary.', es:'Por favor ingrese su salario.'}},
+
+  { id:'coSalaryPer', type:'single', key:'coSalaryPer', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed'&&a.coPayType==='Salary',
+    title:{en:'Per year or per month?', es:'\u00bfAl a\u00f1o o al mes?'},
+    options:[
+      {v:'Per year',  lb:{en:'Per year',  es:'Al a\u00f1o'}},
+      {v:'Per month', lb:{en:'Per month', es:'Al mes'}}
+    ],
+    onNext:function(a){
+      var v=+a.coSalaryAmt||0;
+      a.coIncome = String(a.coSalaryPer==='Per year' ? Math.round(v/12) : v);
+    }},
+
+  { id:'coIncome', type:'currency', key:'coIncome',
+    when:a=>a.hasCoBorrower==='Yes'&&!(a.coWork==='Employed'&&(a.coPayType==='By the hour'||a.coPayType==='Salary')),
+    title:{en:'About how much do they make each month?', es:'\u00bfComo cu\u00e1nto gana esa persona al mes?'},
     hint:{en:'Before taxes \u2014 their income adds to yours for qualifying.',
           es:'Antes de impuestos \u2014 su ingreso se suma al suyo para calificar.'},
     label:{en:'Co-borrower monthly income', es:'Ingreso mensual del co-prestatario'}, ph:'e.g. 4,000',
@@ -635,6 +773,13 @@ const STEPS = [
       {v:'Not sure', lb:{en:'Not sure', es:'No estoy seguro(a)'}}
     ]},
 
+  { id:'coTaxId', type:'taxid', key:'coTaxId', which:'coborrower', when:a=>a.hasCoBorrower==='Yes',
+    titleFn:function(a){ return a.coStatus==='ITIN (Tax ID number)'
+      ? {en:'What is their ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
+      : {en:'What is their Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
+    hint:{en:'Stored encrypted \u2014 only your loan team can see it. Sharing by phone later is okay too.',
+          es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Tambi\u00e9n puede darlo por tel\u00e9fono despu\u00e9s.'}},
+
   { id:'bk', type:'single', key:'bk',
     title:{en:'Any bankruptcies in the past 3 years?', es:'\u00bfAlguna bancarrota en los \u00faltimos 3 a\u00f1os?'},
     options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
@@ -642,9 +787,11 @@ const STEPS = [
   { id:'name', type:'group',
     title:{en:"What's your name?", es:'\u00bfCu\u00e1l es su nombre?'},
     fields:[
-      {key:'first', label:{en:'First name',es:'Nombre'},   ph:{en:'e.g. Jennifer',es:'ej. Mar\u00eda'},
+      {key:'first', label:{en:'First name',es:'Nombre'},   ph:{en:'e.g. Jennifer',es:'ej. Roberto'},
        err:{en:'Please enter your first name.', es:'Por favor ingrese su nombre.'}},
-      {key:'last',  label:{en:'Last name',es:'Apellido'},  ph:{en:'e.g. Smith',es:'ej. Garc\u00eda'},
+      {key:'middle', optional:true, label:{en:'Middle name (optional)',es:'Segundo nombre (opcional)'}, ph:{en:'e.g. Ann',es:'ej. Alexander'},
+       err:{en:'', es:''}},
+      {key:'last',  label:{en:'Last name(s)',es:'Apellido(s)'},  ph:{en:'e.g. Smith',es:'ej. Monterrosa Rosales'},
        err:{en:'Please enter your last name.', es:'Por favor ingrese su apellido.'}}
     ]},
 
@@ -659,9 +806,39 @@ const STEPS = [
     label:{en:'Email address', es:'Correo electr\u00f3nico'}, ph:'example@email.com',
     err:{en:'Please enter your email address.', es:'Por favor ingrese su correo electr\u00f3nico.'}},
 
+  { id:'dob', type:'dob', key:'dob',
+    title:{en:'When is your birthday?', es:'\u00bfCu\u00e1l es su fecha de nacimiento?'},
+    hint:{en:'Lenders need this to check your credit later \u2014 never for this application.',
+          es:'El prestamista la necesita despu\u00e9s para revisar su cr\u00e9dito \u2014 nunca para esta solicitud.'}},
+
   { id:'address', type:'address',
     title:{en:'Current mailing address', es:'Direcci\u00f3n postal actual'},
-    button:'confirm'}
+    button:'confirm'},
+
+  { id:'addrYears', type:'single', key:'addrYears',
+    title:{en:'How long have you lived there?', es:'\u00bfCu\u00e1nto tiempo tiene viviendo ah\u00ed?'},
+    options:[
+      {v:'Less than 2 years', lb:{en:'Less than 2 years', es:'Menos de 2 a\u00f1os'}},
+      {v:'2-5 years',         lb:{en:'2-5 years',         es:'2-5 a\u00f1os'}},
+      {v:'5+ years',          lb:{en:'5+ years',          es:'M\u00e1s de 5 a\u00f1os'}}
+    ]},
+
+  { id:'prevAddress', type:'group', when:a=>a.addrYears==='Less than 2 years',
+    title:{en:'What was your address before that?', es:'\u00bfCu\u00e1l era su direcci\u00f3n anterior?'},
+    hint:{en:'Street and city is enough \u2014 lenders like to see 2 years of address history.',
+          es:'Calle y ciudad es suficiente \u2014 el prestamista quiere ver 2 a\u00f1os de historial.'},
+    fields:[
+      {key:'prevAddress', label:{en:'Previous address',es:'Direcci\u00f3n anterior'},
+       ph:{en:'e.g. 4802 Main St, Houston TX',es:'ej. 4802 Main St, Houston TX'},
+       err:{en:'Please enter your previous address.', es:'Por favor ingrese su direcci\u00f3n anterior.'}}
+    ]},
+
+  { id:'taxId', type:'taxid', key:'taxId', which:'borrower',
+    titleFn:function(a){ return a.status==='ITIN (Tax ID number)'
+      ? {en:'What is your ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
+      : {en:'What is your Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
+    hint:{en:'This is stored encrypted and only your loan team can see it. If you\u2019d rather say it by phone, that\u2019s okay too.',
+          es:'Se guarda cifrado y solo su equipo de pr\u00e9stamo puede verlo. Si prefiere darlo por tel\u00e9fono, tambi\u00e9n est\u00e1 bien.'}}
 ];
 
 /* ================================================================
@@ -763,6 +940,15 @@ en:{
   cITIN:r=>'Shown at +'+r+'% — ITIN rates run a bit higher.',
   cNote:(t,i)=>'Assumes a 30-yr fixed loan, '+t+'% property tax and '+i+'% insurance (Texas estimates). Estimate only — not a preapproval, rate quote, or commitment to lend.',
   perYear:a=>'\u2248 '+a+' per year',
+  perMonthApprox:a=>'\u2248 '+a+' a month \u2014 we did the math for you',
+  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+  dobMonth:'Month', dobDay:'Day', dobYear:'Year',
+  dobErr:'Please pick the month, day, and year.',
+  yearPH:'Pick the year', before1985:'Before 1985',
+  yearErr:'Please pick the year.',
+  taxLabel:'Number', taxErr:'Please enter all 9 digits \u2014 or tap the phone option below.',
+  taxLock:'Encrypted and private \u2014 only your loan team can see this.',
+  taxSkip:"I'd rather share it by phone \u2192",
   ofPrice:p=>'\u2248 '+p+'% of the purchase price',
   ltv:p=>'Estimated LTV: '+p+'%',
   downLess:'Your down payment should be less than the purchase price.'
@@ -826,6 +1012,15 @@ es:{
   cITIN:r=>'Mostrado con +'+r+'% — las tasas ITIN suelen ser un poco m\u00e1s altas.',
   cNote:(t,i)=>'Asume pr\u00e9stamo fijo a 30 a\u00f1os, '+t+'% de impuesto predial y '+i+'% de seguro (estimados de Texas). Solo un estimado — no es una preaprobaci\u00f3n, cotizaci\u00f3n de tasa, ni compromiso de prestar.',
   perYear:a=>'\u2248 '+a+' al a\u00f1o',
+  perMonthApprox:a=>'\u2248 '+a+' al mes \u2014 nosotros hicimos la cuenta por usted',
+  months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+  dobMonth:'Mes', dobDay:'D\u00eda', dobYear:'A\u00f1o',
+  dobErr:'Por favor elija el mes, el d\u00eda y el a\u00f1o.',
+  yearPH:'Elija el a\u00f1o', before1985:'Antes de 1985',
+  yearErr:'Por favor elija el a\u00f1o.',
+  taxLabel:'N\u00famero', taxErr:'Por favor ingrese los 9 d\u00edgitos \u2014 o toque la opci\u00f3n de tel\u00e9fono abajo.',
+  taxLock:'Cifrado y privado \u2014 solo su equipo de pr\u00e9stamo puede verlo.',
+  taxSkip:'Prefiero darlo por tel\u00e9fono \u2192',
   ofPrice:p=>'\u2248 '+p+'% del precio de compra',
   ltv:p=>'LTV estimado: '+p+'%',
   downLess:'Su enganche debe ser menor que el precio de compra.'
@@ -863,7 +1058,7 @@ function renderStep(){
     row.appendChild(el('div','badge ok', IC.shield + '<span>'+ui('badgeNC')+'</span>'));
     wrap.appendChild(row);
   }
-  wrap.appendChild(el('h1','title', tx(s.title)));
+  wrap.appendChild(el('h1','title', tx(s.titleFn ? s.titleFn(A) : s.title)));
   if(s.question) wrap.appendChild(el('p','question', tx(s.question)));
   if(s.hint) wrap.appendChild(el('p','hint', tx(s.hint)));
 
@@ -921,17 +1116,25 @@ function renderStep(){
   /* ---------- currency ---------- */
   if(s.type==='currency'){
     const f = el('div','field');
-    f.innerHTML = '<label>'+tx(s.label)+'</label><div class="inrow"><span class="pre">$</span>'+
-                  '<input inputmode="numeric" autocomplete="off" placeholder="'+tx(s.ph)+'"></div>';
+    f.innerHTML = '<label>'+tx(s.label)+'</label><div class="inrow">'+(s.noDollar?'':'<span class="pre">$</span>')+
+                  '<input inputmode="'+(s.decimal?'decimal':'numeric')+'" autocomplete="off" placeholder="'+tx(s.ph)+'"></div>';
     const inp = f.querySelector('input');
     const msg = el('p','msg', tx(s.err));
     const help = el('p','helper','');
-    if(A[s.key]!=null && A[s.key]!=='') inp.value = fmtNum(A[s.key]);
+    if(A[s.key]!=null && A[s.key]!=='') inp.value = s.decimal ? A[s.key] : fmtNum(A[s.key]);
     function refreshHelp(){ if(s.helper) help.textContent = s.helper(A)||''; }
     inp.addEventListener('input',()=>{
-      const d = digits(inp.value).slice(0,9);
-      A[s.key] = d===''?'':d;
-      inp.value = d===''?'':fmtNum(d);
+      if(s.decimal){
+        let v = inp.value.replace(/[^0-9.]/g,'');
+        const dot = v.indexOf('.');
+        if(dot>-1) v = v.slice(0,dot+1) + v.slice(dot+1).replace(/\./g,'').slice(0,2);
+        v = v.slice(0,7);
+        A[s.key] = v; inp.value = v;
+      }else{
+        const d = digits(inp.value).slice(0,9);
+        A[s.key] = d===''?'':d;
+        inp.value = d===''?'':fmtNum(d);
+      }
       f.classList.remove('err'); msg.classList.remove('show');
       refreshHelp();
     });
@@ -969,10 +1172,123 @@ function renderStep(){
     });
     validate = ()=>{
       for(const p of parts){
+        if(p.fd.optional) continue;
         if(!String(A[p.fd.key]||'').trim()){
           p.msg.classList.add('show'); p.f.classList.add('err'); p.inp.focus(); return false;
         }
       }
+      return true;
+    };
+  }
+
+  /* ---------- date of birth: 3 dropdowns, no format confusion ---------- */
+  if(s.type==='dob'){
+    const months = ui('months');
+    function sel(opts, cur, phTxt){
+      const f = el('div','field');
+      f.innerHTML = '<select><option value="" disabled '+(cur?'':'selected')+'>'+phTxt+'</option>'+
+        opts.map(o=>'<option value="'+o.v+'"'+(String(cur)===String(o.v)?' selected':'')+'>'+o.lb+'</option>').join('')+
+        '</select><span class="chev">'+IC.chev+'</span>';
+      return f;
+    }
+    const now = new Date().getFullYear();
+    const mF = sel(months.map((m,i)=>({v:i+1,lb:m})), A[s.key+'M'], ui('dobMonth'));
+    const dF = sel(Array.from({length:31},(_,i)=>({v:i+1,lb:i+1})), A[s.key+'D'], ui('dobDay'));
+    const yF = sel(Array.from({length:now-17-1929},(_,i)=>({v:now-18-i,lb:now-18-i})), A[s.key+'Y'], ui('dobYear'));
+    const row = el('div','dobrow');
+    [mF,dF,yF].forEach(f=>row.appendChild(f));
+    const msg = el('p','msg', ui('dobErr'));
+    [mF,dF,yF].forEach((f,ix)=>{
+      f.querySelector('select').addEventListener('change',e=>{
+        A[s.key+(['M','D','Y'][ix])] = e.target.value;
+        f.classList.remove('err'); msg.classList.remove('show');
+      });
+    });
+    wrap.appendChild(row); wrap.appendChild(msg);
+    validate = ()=>{
+      const m=+A[s.key+'M'], d=+A[s.key+'D'], y=+A[s.key+'Y'];
+      let ok = m>=1&&m<=12&&d>=1&&d<=31&&y>1900;
+      if(ok){
+        const dt = new Date(y, m-1, d);
+        ok = dt.getMonth()===m-1 && dt.getDate()===d;
+      }
+      if(!ok){
+        [mF,dF,yF].forEach((f,ix)=>{ if(!A[s.key+(['M','D','Y'][ix])]) f.classList.add('err'); });
+        msg.classList.add('show'); return false;
+      }
+      A[s.key] = UI.en.months[m-1].slice(0,3)+' '+d+', '+y;
+      return true;
+    };
+  }
+
+  /* ---------- year select (job start year) ---------- */
+  if(s.type==='yearsel'){
+    const now = new Date().getFullYear();
+    const f = el('div','field');
+    f.innerHTML = '<select><option value="" disabled '+(A[s.key]?'':'selected')+'>'+ui('yearPH')+'</option>'+
+      Array.from({length:now-1984},(_,i)=>{ const y=now-i; return '<option'+(String(A[s.key])===String(y)?' selected':'')+'>'+y+'</option>'; }).join('')+
+      '<option'+(A[s.key]==='Before 1985'?' selected':'')+' value="Before 1985">'+ui('before1985')+'</option>'+
+      '</select><span class="chev">'+IC.chev+'</span>';
+    const msg = el('p','msg', ui('yearErr'));
+    f.querySelector('select').addEventListener('change',e=>{ A[s.key]=e.target.value; f.classList.remove('err'); msg.classList.remove('show'); });
+    wrap.appendChild(f); wrap.appendChild(msg);
+    validate = ()=>{
+      if(!A[s.key]){ f.classList.add('err'); msg.classList.add('show'); return false; }
+      return true;
+    };
+  }
+
+  /* ---------- simple tel (no consent block) ---------- */
+  if(s.type==='tel'){
+    const f = el('div','field');
+    f.innerHTML = '<label>'+tx(s.label)+'</label><input inputmode="tel" autocomplete="off" placeholder="'+tx(s.ph)+'">';
+    const inp=f.querySelector('input');
+    inp.value = fmtPhone(A[s.key]||'');
+    const msg = el('p','msg', tx(s.err));
+    inp.addEventListener('input',()=>{
+      inp.value = fmtPhone(inp.value);
+      A[s.key] = digits(inp.value);
+      f.classList.remove('err'); msg.classList.remove('show');
+    });
+    wrap.appendChild(f); wrap.appendChild(msg);
+    validate = ()=>{
+      if(digits(A[s.key]||'').length!==10){ msg.classList.add('show'); f.classList.add('err'); inp.focus(); return false; }
+      return true;
+    };
+  }
+
+  /* ---------- SSN / ITIN: encrypted, skippable ---------- */
+  if(s.type==='taxid'){
+    const f = el('div','field');
+    f.innerHTML = '<label>'+ui('taxLabel')+'</label><input inputmode="numeric" autocomplete="off" placeholder="000-00-0000">';
+    const inp=f.querySelector('input');
+    function fmtTax(d){ d=digits(d).slice(0,9);
+      if(d.length<4) return d;
+      if(d.length<6) return d.slice(0,3)+'-'+d.slice(3);
+      return d.slice(0,3)+'-'+d.slice(3,5)+'-'+d.slice(5); }
+    inp.value = fmtTax(A[s.key]||'');
+    const msg = el('p','msg', ui('taxErr'));
+    inp.addEventListener('input',()=>{
+      inp.value = fmtTax(inp.value);
+      A[s.key] = digits(inp.value);
+      A[s.key+'Skipped'] = false;
+      f.classList.remove('err'); msg.classList.remove('show');
+    });
+    const lock = el('p','helper', '\uD83D\uDD12 '+ui('taxLock'));
+    wrap.appendChild(f); wrap.appendChild(msg); wrap.appendChild(lock);
+
+    const skip = el('button','skipbtn', ui('taxSkip'));
+    skip.type='button';
+    skip.addEventListener('click',()=>{
+      A[s.key]=''; A[s.key+'Skipped']=true;
+      const steps2 = visibleSteps();
+      if(idx >= steps2.length-1){ startChat(); }
+      else{ idx++; renderStep(); window.scrollTo({top:0,behavior:'smooth'}); }
+    });
+    wrap.appendChild(skip);
+
+    validate = ()=>{
+      if(digits(A[s.key]||'').length!==9){ msg.classList.add('show'); f.classList.add('err'); inp.focus(); return false; }
       return true;
     };
   }
@@ -1073,6 +1389,7 @@ function renderStep(){
   btn.id='nextBtn';
   btn.addEventListener('click',()=>{
     if(!validate()) return;
+    try{ if(s.onNext) s.onNext(A); }catch(e){}
     const steps2 = visibleSteps();
     if(idx >= steps2.length-1){ startChat(); }
     else{ idx++; renderStep(); window.scrollTo({top:0,behavior:'smooth'}); }
@@ -1297,10 +1614,13 @@ function buildPayload(){
     'Qualifying With': A.status || '',
     'Preferred Language': A.language || '',
     'First Name': A.first || '',
+    'Middle Name': A.middle || '',
     'Last Name': A.last || '',
+    'Date of Birth': A.dob || '',
     'Phone': fmtPhone(A.phone||''),
     'Email': A.email || '',
     'Mailing Address': [A.street, A.apt, A.city, A.state, A.zip].filter(Boolean).join(', '),
+    'Years at Current Address': A.addrYears || '',
     'Credit Range (self-reported)': A.credit || '',
     'Work Status': A.work || '',
     'Gross Monthly Income': money(A.income),
@@ -1312,8 +1632,23 @@ function buildPayload(){
     'Submitted At': new Date().toLocaleString('en-US'),
     'Source Page': location.href
   };
+  if(A.addrYears==='Less than 2 years' && A.prevAddress) p['Previous Address'] = A.prevAddress;
+  if(A.status==='Work Permit (EAD)' && A.permitValid) p['Work Permit Status'] = A.permitValid;
+  // tax id: NEVER the full number here — email + CRM payload get a mask only
+  var tShape = A.status==='ITIN (Tax ID number)' ? 'ITIN' : 'SSN';
+  p[tShape] = digits(A.taxId||'').length===9 ? ('\u2022\u2022\u2022-\u2022\u2022-'+digits(A.taxId).slice(5)+' (encrypted on file)')
+             : (A.taxIdSkipped ? 'Will provide by phone' : 'Not provided');
   // work history
-  if(A.work==='Employed'){ p['Employer'] = A.employer||''; p['Job Title'] = A.jobTitle||''; }
+  if(A.work==='Employed'){
+    p['Employer'] = A.employer||''; p['Job Title'] = A.jobTitle||'';
+    p['Employer City'] = A.employerCity||'';
+    if(A.startYear) p['Job Start Year'] = A.startYear;
+    if(A.payType){
+      p['Pay Type'] = A.payType;
+      if(A.payType==='By the hour'){ p['Pay Rate'] = '$'+(A.payRate||'')+'/hr'; p['Hours per Week'] = A.hoursWeek||''; }
+      if(A.payType==='Salary'){ p['Salary'] = money(A.salaryAmt) + ' ' + (A.salaryPer||'').toLowerCase(); }
+    }
+  }
   if(A.work==='Self-employed'){ p['Business Name'] = A.businessName||''; p['Business Type'] = A.businessType||''; }
   if(A.tenure) p['Time at Job/Business'] = A.tenure;
   if(A.incomeDoc) p['Income Documentation'] = A.incomeDoc;
@@ -1321,9 +1656,19 @@ function buildPayload(){
   p['Co-borrower'] = A.hasCoBorrower || '';
   if(A.hasCoBorrower==='Yes'){
     p['Co-borrower Name'] = ((A.coFirst||'')+' '+(A.coLast||'')).trim();
+    p['Co-borrower DOB'] = A.coDob || '';
+    p['Co-borrower Phone'] = fmtPhone(A.coPhone||'');
     p['Co-borrower Relationship'] = A.coRelation || '';
     p['Co-borrower Qualifying With'] = A.coStatus || '';
     p['Co-borrower Work Status'] = A.coWork || '';
+    if(A.coWork==='Employed'){
+      p['Co-borrower Employer'] = A.coEmployer||'';
+      if(A.coStartYear) p['Co-borrower Job Start Year'] = A.coStartYear;
+      if(A.coPayType==='By the hour'){ p['Co-borrower Pay Rate'] = '$'+(A.coPayRate||'')+'/hr'; p['Co-borrower Hours per Week'] = A.coHoursWeek||''; }
+    }
+    var cShape = A.coStatus==='ITIN (Tax ID number)' ? 'Co-borrower ITIN' : 'Co-borrower SSN';
+    p[cShape] = digits(A.coTaxId||'').length===9 ? ('\u2022\u2022\u2022-\u2022\u2022-'+digits(A.coTaxId).slice(5)+' (encrypted on file)')
+               : (A.coTaxIdSkipped ? 'Will provide by phone' : 'Not provided');
     p['Co-borrower Monthly Income'] = money(A.coIncome);
     p['Co-borrower Monthly Debts'] = money(A.coDebts);
     p['Co-borrower Credit Range'] = A.coCredit || '';
@@ -1371,7 +1716,16 @@ async function submitAll(){
   const payload = buildPayload();
 
   // log a copy to the JAG admin CRM (fire-and-forget; never blocks the email)
-  try{ if(window.jagCapture) window.jagCapture('Mortgage Application', payload); }catch(e){}
+  try{
+    var secure = {};
+    if(digits(A.taxId||'').length===9) secure.borrower = digits(A.taxId);
+    if(digits(A.coTaxId||'').length===9) secure.coborrower = digits(A.coTaxId);
+    if(Object.keys(secure).length && window.jagCaptureSecure){
+      window.jagCaptureSecure('Mortgage Application', payload, secure);
+    }else if(window.jagCapture){
+      window.jagCapture('Mortgage Application', payload);
+    }
+  }catch(e){}
 
   // optional side-channel copy (n8n / GHL inbound webhook)
   if(CONFIG.webhookUrl){
