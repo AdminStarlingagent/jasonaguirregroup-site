@@ -142,6 +142,9 @@ h1.title{font-size:clamp(28px,4.8vw,36px);font-weight:600;letter-spacing:-.015em
 .dobrow .field{margin-bottom:0}
 .skipbtn{display:block;margin:14px auto 0;background:none;border:none;color:#6a6972;font-weight:700;font-size:14px;cursor:pointer;text-decoration:underline;font-family:inherit}
 .skipbtn:hover{color:#17161c}
+.done-card{text-align:center;padding-top:26px}
+.done-check{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:#e7f5ee;display:grid;place-items:center;color:#0f8a4d}
+.done-check svg{width:30px;height:30px}
 .msg{display:none;color:var(--warn);font-size:14.5px;font-weight:500;margin:-6px 0 16px 20px}
 .msg.show{display:block}
 .helper{font-size:14px;color:#5b5a63;margin:-6px 0 16px 20px;min-height:18px}
@@ -276,6 +279,8 @@ const CONFIG = {
   privacyUrl  : "privacy-terms.html",         // site privacy & terms page
   termsUrl    : "privacy-terms.html#terms",   // site privacy & terms page
   webhookUrl  : "",                           // OPTIONAL: n8n / GHL inbound-webhook URL for a JSON copy of the lead
+  phoneTel    : "8327023574",                 // click-to-call number on the success screen
+  phoneDisplay: "(832) 702-3574",
 
   /* Buying-power calculator assumptions (Texas defaults — tune per market) */
   CALC : {
@@ -344,36 +349,63 @@ const isEquity = a => a.goal === 'Use my equity';
 const US_STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
 
 const STEPS = [
-  /* -------- screen 1: language picker (bilingual by design) -------- */
+  /* -------- 1) language (kept per Jason) -------- */
   { id:'language', type:'single', key:'language',
     title:'Choose your language \u00b7 Elija su idioma',
     options:[{v:'English'},{v:'Espa\u00f1ol'}]},
 
+  /* -------- 2) goal — the one non-Kat tap, kept so refinance links still work -------- */
   { id:'goal', type:'single', key:'goal',
     badge:true,
-    title:{en:"We'll guide you to the best options and savings",
-           es:'Le guiaremos a las mejores opciones y ahorros'},
-    question:{en:"What's your goal?", es:'\u00bfCu\u00e1l es su meta?'},
+    title:{en:"What's your goal?", es:'\u00bfCu\u00e1l es su meta?'},
     options:[
-      {v:'Refinance',     lb:{en:'Refinance',     es:'Refinanciar'},        icon:IC.percent},
       {v:'Buy a home',    lb:{en:'Buy a home',    es:'Comprar una casa'},   icon:IC.house},
+      {v:'Refinance',     lb:{en:'Refinance',     es:'Refinanciar'},        icon:IC.percent},
       {v:'Use my equity', lb:{en:'Use my equity', es:'Usar mi plusval\u00eda'}, icon:IC.coins}
     ]},
 
+  /* -------- 3) contact info FIRST — like Kat starts every call -------- */
+  { id:'name', type:'group',
+    title:{en:"What's your full legal name?", es:'\u00bfCu\u00e1l es su nombre legal completo?'},
+    hint:{en:'Exactly like it appears on your ID.', es:'Tal como aparece en su identificaci\u00f3n.'},
+    fields:[
+      {key:'first', label:{en:'First name',es:'Nombre'},   ph:{en:'e.g. Jennifer',es:'ej. Roberto'},
+       err:{en:'Please enter your first name.', es:'Por favor ingrese su nombre.'}},
+      {key:'middle', optional:true, label:{en:'Middle name (optional)',es:'Segundo nombre (opcional)'}, ph:{en:'e.g. Ann',es:'ej. Alexander'},
+       err:{en:'', es:''}},
+      {key:'last',  label:{en:'Last name(s)',es:'Apellido(s)'},  ph:{en:'e.g. Smith',es:'ej. Monterrosa Rosales'},
+       err:{en:'Please enter your last name.', es:'Por favor ingrese su apellido.'}}
+    ]},
+
+  { id:'phone', type:'phone', key:'phone',
+    title:{en:"What's the best phone number for you?", es:'\u00bfCu\u00e1l es el mejor n\u00famero para llamarle?'},
+    label:{en:'Phone number', es:'N\u00famero de tel\u00e9fono'}, ph:'(555) 555-5555',
+    err:{en:'Please enter your phone number.', es:'Por favor ingrese su n\u00famero de tel\u00e9fono.'}},
+
+  { id:'email', type:'email', key:'email',
+    title:{en:'And your email?', es:'\u00bfY su correo electr\u00f3nico?'},
+    label:{en:'Email address', es:'Correo electr\u00f3nico'}, ph:'example@email.com',
+    err:{en:'Please enter your email address.', es:'Por favor ingrese su correo electr\u00f3nico.'}},
+
+  /* -------- 4) Kat's screening order: DOB → status → SSN -------- */
+  { id:'dob', type:'dob', key:'dob',
+    title:{en:'When is your birthday?', es:'\u00bfCu\u00e1l es su fecha de nacimiento?'},
+    hint:{en:'The lender needs this to check your credit later \u2014 never for this application.',
+          es:'El prestamista la necesita despu\u00e9s para revisar su cr\u00e9dito \u2014 nunca para esta solicitud.'}},
+
   { id:'status', type:'single', key:'status',
-    title:{en:'How will you be qualifying?', es:'\u00bfCon qu\u00e9 va a calificar?'},
-    hint:{en:'Choose what you have \u2014 no SSN or credit check is ever required to apply.',
-          es:'Elija lo que tiene \u2014 nunca se requiere SSN ni revisi\u00f3n de cr\u00e9dito para aplicar.'},
+    title:{en:'Are you a citizen, a resident, or do you have a work permit?',
+           es:'\u00bfEs ciudadano, residente, o tiene permiso de trabajo?'},
     options:[
-      {v:'Social Security Number (SSN)',   lb:{en:'Social Security Number (SSN)',   es:'N\u00famero de Seguro Social (SSN)'}},
-      {v:'Work Permit (EAD)',              lb:{en:'Work Permit (EAD)',              es:'Permiso de trabajo (EAD)'}},
-      {v:'Permanent Resident / Green Card',lb:{en:'Permanent Resident / Green Card',es:'Residente permanente / Green Card'}},
-      {v:'ITIN (Tax ID number)',           lb:{en:'ITIN (Tax ID number)',           es:'ITIN (N\u00famero de identificaci\u00f3n fiscal)'}}
+      {v:'Social Security Number (SSN)',   lb:{en:'U.S. citizen (SSN)',              es:'Ciudadano (SSN)'}},
+      {v:'Permanent Resident / Green Card',lb:{en:'Permanent resident / Green Card', es:'Residente permanente / Green Card'}},
+      {v:'Work Permit (EAD)',              lb:{en:'Work permit (EAD)',               es:'Permiso de trabajo (EAD)'}},
+      {v:'ITIN (Tax ID number)',           lb:{en:'ITIN (Tax ID number)',            es:'ITIN (N\u00famero de identificaci\u00f3n fiscal)'}}
     ],
     notes:{
       'ITIN (Tax ID number)':{
-        en:'Great news \u2014 we help ITIN buyers qualify every day, with as low as 3% down. No SSN needed.',
-        es:'\u00a1Excelente noticia! Ayudamos a compradores con ITIN todos los d\u00edas, con enganche desde el 3%. No se necesita SSN.'},
+        en:'Great news \u2014 we help ITIN buyers qualify every day. No SSN needed.',
+        es:'\u00a1Excelente noticia! Ayudamos a compradores con ITIN todos los d\u00edas. No se necesita SSN.'},
       'Work Permit (EAD)':{
         en:'Work-permit holders qualify for great loan programs \u2014 you\u2019re in the right place.',
         es:'Las personas con permiso de trabajo califican para excelentes programas \u2014 est\u00e1 en el lugar correcto.'}
@@ -393,132 +425,86 @@ const STEPS = [
                  es:'No hay problema \u2014 podemos planear juntos mientras lo renueva.'}
     }},
 
-  { id:'loanOptions', type:'multi', key:'loanOptions', when:isBuy,
-    title:{en:"Let's customize your loan options and savings",
-           es:'Personalicemos sus opciones de pr\u00e9stamo y ahorros'},
-    hint:{en:'Select all that apply to you', es:'Seleccione todo lo que aplique'},
+  { id:'taxId', type:'taxid', key:'taxId', which:'borrower',
+    titleFn:function(a){ return a.status==='ITIN (Tax ID number)'
+      ? {en:'What is your ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
+      : {en:'What is your Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
+    hint:{en:'Stored encrypted \u2014 only your loan team can see it. If you\u2019d rather say it by phone, that\u2019s okay too.',
+          es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Si prefiere darlo por tel\u00e9fono, tambi\u00e9n est\u00e1 bien.'}},
+
+  /* -------- 5) applying together? (Kat asks before going deeper) -------- */
+  { id:'hasCoB', type:'single', key:'hasCoBorrower',
+    title:{en:'Will you apply together with someone?', es:'\u00bfVa a aplicar junto con alguien?'},
+    hint:{en:'A spouse, parent, sibling, or partner \u2014 their income counts too.',
+          es:'Su esposo(a), un padre, hermano o pareja \u2014 su ingreso tambi\u00e9n cuenta.'},
+    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No, just me',es:'No, solo yo'}}]},
+
+  { id:'coRelation', type:'single', key:'coRelation', when:a=>a.hasCoBorrower==='Yes',
+    title:{en:'Who will apply with you?', es:'\u00bfQui\u00e9n va a aplicar con usted?'},
     options:[
-      {v:'Eligible for VA benefits',        lb:{en:'Eligible for VA benefits',        es:'Elegible para beneficios VA'}},
-      {v:'Wanting a lower down payment',    lb:{en:'Wanting a lower down payment',    es:'Busco un enganche m\u00e1s bajo'}},
-      {v:"Haven't owned a home in 3 years", lb:{en:"Haven't owned a home in 3 years", es:'No he sido due\u00f1o de casa en 3 a\u00f1os'}},
-      {v:'Needing a loan of $1M or more',   lb:{en:'Needing a loan of $1M or more',   es:'Necesito un pr\u00e9stamo de $1M o m\u00e1s'}}
+      {v:'Spouse/Partner', lb:{en:'My spouse / partner', es:'Mi esposo(a) / pareja'}},
+      {v:'Parent',         lb:{en:'My parent',           es:'Mi padre o madre'}},
+      {v:'Sibling',        lb:{en:'My sibling',          es:'Mi hermano(a)'}},
+      {v:'Other family',   lb:{en:'Other family',        es:'Otro familiar'}},
+      {v:'Friend',         lb:{en:'A friend',            es:'Un amigo(a)'}}
     ]},
 
-  { id:'propertyType', type:'single', key:'propertyType',
-    title:{en:"What's the property type?", es:'\u00bfQu\u00e9 tipo de propiedad es?'},
-    options:[
-      {v:'Single-family', lb:{en:'Single-family', es:'Casa unifamiliar'},   icon:IC.house},
-      {v:'Multifamily',   lb:{en:'Multifamily',   es:'Multifamiliar'},      icon:IC.multi},
-      {v:'Condo',         lb:{en:'Condo',         es:'Condominio'},         icon:IC.condo},
-      {v:'Manufactured',  lb:{en:'Manufactured',  es:'Casa manufacturada'}, icon:IC.mfg}
-    ]},
-
-  { id:'propertyUse', type:'single', key:'propertyUse',
-    title:{en:'How would you describe it?', es:'\u00bfC\u00f3mo la describir\u00eda?'},
-    options:[
-      {v:'Primary residence',   lb:{en:'Primary residence',   es:'Residencia principal'},   icon:IC.primary},
-      {v:'Vacation home',       lb:{en:'Vacation home',       es:'Casa vacacional'},        icon:IC.vacay},
-      {v:'Investment property', lb:{en:'Investment property', es:'Propiedad de inversi\u00f3n'}, icon:IC.invest}
-    ]},
-
-  { id:'stage', type:'single', key:'stage', when:isBuy,
-    title:{en:'Where in the home buying process are you?',
-           es:'\u00bfEn qu\u00e9 parte del proceso de compra est\u00e1?'},
-    options:[
-      {v:'Signed purchase agreement',  lb:{en:'Signed purchase agreement',  es:'Contrato de compra firmado'},      icon:IC.doc},
-      {v:'Just researching',           lb:{en:'Just researching',           es:'Apenas investigando'},             icon:IC.search},
-      {v:'Looking at homes & listings',lb:{en:'Looking at homes & listings',es:'Viendo casas y listados'},         icon:IC.photos},
-      {v:'Offer pending/found a house',lb:{en:'Offer pending/found a house',es:'Oferta pendiente / ya encontr\u00e9 casa'}, icon:IC.key}
-    ]},
-
-  { id:'timeline', type:'single', key:'timeline', when:isBuy,
-    title:{en:'How soon are you looking to buy?', es:'\u00bfQu\u00e9 tan pronto quiere comprar?'},
-    options:[
-      {v:'ASAP (0-3 months)',   lb:{en:'ASAP (0-3 months)',   es:'Lo antes posible (0-3 meses)'}},
-      {v:'3-6 months',          lb:{en:'3-6 months',          es:'3-6 meses'}},
-      {v:'6-12 months',         lb:{en:'6-12 months',         es:'6-12 meses'}},
-      {v:'Just planning ahead', lb:{en:'Just planning ahead', es:'Solo planeando a futuro'}}
-    ]},
-
-  { id:'agent', type:'single', key:'agent', when:isBuy,
-    title:{en:'Are you currently working with a real estate agent?',
-           es:'\u00bfEst\u00e1 trabajando con un agente de bienes ra\u00edces?'},
+  { id:'marital', type:'single', key:'marital', when:a=>a.hasCoBorrower==='Yes'&&a.coRelation==='Spouse/Partner',
+    title:{en:'Are you legally married?', es:'\u00bfEst\u00e1n legalmente casados?'},
     options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
 
-  { id:'price', type:'currency', key:'price', when:isBuy,
-    title:{en:'What purchase price do you have in mind?', es:'\u00bfQu\u00e9 precio de compra tiene en mente?'},
-    label:{en:'Purchase price', es:'Precio de compra'}, ph:'e.g. 250,000',
-    err:{en:'Please enter the purchase price of your new home.',
-         es:'Por favor ingrese el precio de compra de su nueva casa.'}},
+  /* -------- 6) where you live (address → time there → rent) -------- */
+  { id:'address', type:'address',
+    title:{en:'What\u2019s your current address?', es:'\u00bfCu\u00e1l es su direcci\u00f3n actual?'},
+    button:'confirm'},
 
-  { id:'down', type:'currency', key:'down', when:isBuy,
-    title:{en:'How much do you plan to use for a down payment?', es:'\u00bfCu\u00e1nto planea dar de enganche?'},
-    hint:{en:'Just what you have today \u2014 down payment assistance programs exist, and we\u2019ll show you options on our call.',
-          es:'Solo lo que tiene hoy \u2014 existen programas de ayuda para el enganche y le mostraremos opciones en la llamada.'},
-    label:{en:'Down payment amount', es:'Monto del enganche'}, ph:'e.g. 10,000',
-    err:{en:'Please enter your estimated down payment.', es:'Por favor ingrese su enganche estimado.'},
-    helper:function(a){
-      var p=+a.price||0, d=+a.down||0;
-      if(p>0 && d>0 && d<p) return ui('ofPrice')((d/p*100).toFixed(1).replace(/\.0$/,''));
-      return '';
-    },
-    validate:function(a){
-      if(!(+a.down>=0) || a.down==='' || a.down==null) return {en:'Please enter your estimated down payment.', es:'Por favor ingrese su enganche estimado.'};
-      if(+a.down >= +a.price) return ui('downLess');
-      return true;
-    }},
-
-  { id:'comfortPay', type:'currency', key:'comfortPay', when:isBuy,
-    title:{en:'What monthly payment feels comfortable to you?', es:'\u00bfQu\u00e9 pago mensual le parece c\u00f3modo?'},
-    label:{en:'Comfortable monthly payment', es:'Pago mensual c\u00f3modo'}, ph:'e.g. 2,200',
-    err:{en:'Give us your best guess \u2014 you can always change it later.',
-         es:'D\u00e9nos su mejor estimado \u2014 siempre puede cambiarlo despu\u00e9s.'}},
-
-  { id:'homeValue', type:'currency', key:'homeValue', when:a=>isRefi(a)||isEquity(a),
-    title:{en:"What's your home's estimated value?", es:'\u00bfCu\u00e1l es el valor estimado de su casa?'},
-    label:{en:'Estimated home value', es:'Valor estimado de la casa'}, ph:'e.g. 350,000',
-    err:{en:"Please enter your home's estimated value.", es:'Por favor ingrese el valor estimado de su casa.'}},
-
-  { id:'balance', type:'currency', key:'balance', when:a=>isRefi(a)||isEquity(a),
-    title:{en:"What's your remaining mortgage balance?", es:'\u00bfCu\u00e1nto debe todav\u00eda de su hipoteca?'},
-    label:{en:'Remaining balance', es:'Saldo restante'}, ph:'e.g. 180,000',
-    err:{en:'Please enter your remaining mortgage balance.', es:'Por favor ingrese el saldo de su hipoteca.'},
-    allowZero:true,
-    helper:function(a){
-      var v=+a.homeValue||0, b=+a.balance||0;
-      if(v>0 && b>=0 && b<=v) return ui('ltv')((b/v*100).toFixed(1).replace(/\.0$/,''));
-      return '';
-    }},
-
-  { id:'cashOut', type:'currency', key:'cashOut', when:isEquity,
-    title:{en:'How much cash would you like to access?', es:'\u00bfCu\u00e1nto efectivo le gustar\u00eda obtener?'},
-    label:{en:'Desired cash amount', es:'Monto de efectivo deseado'}, ph:'e.g. 50,000',
-    err:{en:"Please enter the amount you'd like to access.", es:'Por favor ingrese el monto que le gustar\u00eda obtener.'}},
-
-  { id:'credit', type:'single', key:'credit',
-    title:{en:'Your credit profile', es:'Su perfil de cr\u00e9dito'},
-    hint:{en:'Your best guess is just fine \u2014 we never run a credit check on this application.',
-          es:'Su mejor estimado est\u00e1 bien \u2014 nunca revisamos su cr\u00e9dito en esta solicitud.'},
+  { id:'addrYears', type:'single', key:'addrYears',
+    title:{en:'How long have you lived there?', es:'\u00bfCu\u00e1nto tiempo tiene viviendo ah\u00ed?'},
     options:[
-      {v:'720+'},{v:'660-719'},{v:'620-659'},{v:'580-619'},
-      {v:'579 or below', lb:{en:'579 or below', es:'579 o menos'}}
+      {v:'Less than 2 years', lb:{en:'Less than 2 years', es:'Menos de 2 a\u00f1os'}},
+      {v:'2-5 years',         lb:{en:'2-5 years',         es:'2-5 a\u00f1os'}},
+      {v:'5+ years',          lb:{en:'5+ years',          es:'M\u00e1s de 5 a\u00f1os'}}
     ]},
 
-  { id:'work', type:'single', key:'work',
-    title:{en:"What's your work status?", es:'\u00bfCu\u00e1l es su situaci\u00f3n laboral?'},
+  { id:'prevAddress', type:'group', when:a=>a.addrYears==='Less than 2 years',
+    title:{en:'What was your address before that?', es:'\u00bfCu\u00e1l era su direcci\u00f3n anterior?'},
+    hint:{en:'Street and city is enough \u2014 lenders like to see 2 years of history.',
+          es:'Calle y ciudad es suficiente \u2014 el prestamista quiere ver 2 a\u00f1os de historial.'},
+    fields:[
+      {key:'prevAddress', label:{en:'Previous address',es:'Direcci\u00f3n anterior'},
+       ph:{en:'e.g. 4802 Main St, Houston TX',es:'ej. 4802 Main St, Houston TX'},
+       err:{en:'Please enter your previous address.', es:'Por favor ingrese su direcci\u00f3n anterior.'}}
+    ]},
+
+  { id:'ownRent', type:'single', key:'ownRent',
+    title:{en:'Do you rent or own where you live?', es:'\u00bfRenta o es due\u00f1o donde vive?'},
     options:[
-      {v:'Employed',      lb:{en:'Employed',      es:'Empleado'},             icon:IC.brief},
-      {v:'Self-employed', lb:{en:'Self-employed', es:'Trabajo por mi cuenta'},icon:IC.person},
-      {v:'Retired',       lb:{en:'Retired',       es:'Jubilado'},             icon:IC.chair},
-      {v:'Not employed',  lb:{en:'Not employed',  es:'Sin empleo'},           icon:IC.clip}
+      {v:'Renting', lb:{en:'I rent', es:'Rento'}},
+      {v:'Own',     lb:{en:'I own it', es:'Soy due\u00f1o(a)'}},
+      {v:'Living with family', lb:{en:'Living with family', es:'Vivo con familia'}}
+    ]},
+
+  { id:'rentAmt', type:'currency', key:'rentAmt', when:a=>a.ownRent==='Renting',
+    title:{en:'How much do you pay in rent each month?', es:'\u00bfCu\u00e1nto paga de renta al mes?'},
+    label:{en:'Monthly rent', es:'Renta mensual'}, ph:'e.g. 1,200',
+    err:{en:'Please enter your monthly rent.', es:'Por favor ingrese su renta mensual.'}},
+
+  /* -------- 7) your work (employer → start year → pay, Kat's math) -------- */
+  { id:'work', type:'single', key:'work',
+    title:{en:'Are you working right now?', es:'\u00bfEst\u00e1 trabajando actualmente?'},
+    options:[
+      {v:'Employed',      lb:{en:'Yes, I have a job',     es:'S\u00ed, tengo trabajo'},          icon:IC.brief},
+      {v:'Self-employed', lb:{en:'I work for myself',     es:'Trabajo por mi cuenta'},        icon:IC.person},
+      {v:'Retired',       lb:{en:'I\u2019m retired',      es:'Estoy jubilado(a)'},            icon:IC.chair},
+      {v:'Not employed',  lb:{en:'Not working right now', es:'No estoy trabajando'},          icon:IC.clip}
     ]},
 
   { id:'employerW2', type:'group', when:a=>a.work==='Employed',
-    title:{en:'Tell us about your work', es:'Cu\u00e9ntenos sobre su trabajo'},
+    title:{en:'Where do you work?', es:'\u00bfD\u00f3nde trabaja?'},
     fields:[
-      {key:'employer', label:{en:'Employer name',es:'Nombre del empleador'}, ph:{en:'e.g. HEB',es:'ej. HEB'},
+      {key:'employer', label:{en:'Company name',es:'Nombre de la empresa'}, ph:{en:'e.g. HEB',es:'ej. Twin Peaks'},
        err:{en:'Please enter your employer\u2019s name.', es:'Por favor ingrese el nombre de su empleador.'}},
-      {key:'jobTitle', label:{en:'Job title',es:'Puesto'}, ph:{en:'e.g. Site supervisor',es:'ej. Supervisor de obra'},
+      {key:'jobTitle', label:{en:'What do you do there?',es:'\u00bfQu\u00e9 hace ah\u00ed?'}, ph:{en:'e.g. Site supervisor',es:'ej. Cocinero'},
        err:{en:'Please enter your job title.', es:'Por favor ingrese su puesto.'}},
       {key:'employerCity', label:{en:'City where you work',es:'Ciudad donde trabaja'}, ph:{en:'e.g. Houston',es:'ej. Houston'},
        err:{en:'Please enter the city where you work.', es:'Por favor ingrese la ciudad donde trabaja.'}}
@@ -535,18 +521,8 @@ const STEPS = [
 
   { id:'startYear', type:'yearsel', key:'startYear', when:a=>a.work==='Employed',
     title:{en:'What year did you start working there?', es:'\u00bfEn qu\u00e9 a\u00f1o comenz\u00f3 a trabajar ah\u00ed?'},
-    hint:{en:"Your best guess is fine \u2014 the year is all we need.",
+    hint:{en:'Your best guess is fine \u2014 the year is all we need.',
           es:'Un estimado est\u00e1 bien \u2014 solo necesitamos el a\u00f1o.'}},
-
-  { id:'tenure', type:'single', key:'tenure', when:a=>a.work==='Self-employed',
-    title:{en:'How long have you had your business?',
-           es:'\u00bfCu\u00e1nto tiempo tiene su negocio?'},
-    options:[
-      {v:'Less than 1 year', lb:{en:'Less than 1 year', es:'Menos de 1 a\u00f1o'}},
-      {v:'1-2 years',        lb:{en:'1-2 years',        es:'1-2 a\u00f1os'}},
-      {v:'2-5 years',        lb:{en:'2-5 years',        es:'2-5 a\u00f1os'}},
-      {v:'5+ years',         lb:{en:'5+ years',         es:'5+ a\u00f1os'}}
-    ]},
 
   { id:'prevEmployer', type:'group', when:a=>{
       if(a.work!=='Employed'||!a.startYear||a.startYear==='Before 1985') return false;
@@ -561,20 +537,18 @@ const STEPS = [
        err:{en:'Please tell us where you worked before \u2014 or write "time off".', es:'Por favor d\u00edganos d\u00f3nde trabajaba antes \u2014 o escriba "sin trabajar".'}}
     ]},
 
-  { id:'incomeDoc', type:'single', key:'incomeDoc', when:a=>a.work==='Employed'||a.work==='Self-employed',
-    title:{en:'How is your income paid?', es:'\u00bfC\u00f3mo recibe sus ingresos?'},
-    hint:{en:'This helps us match you to the right program \u2014 cash income can still work.',
-          es:'Esto nos ayuda a encontrar el programa correcto \u2014 el ingreso en efectivo tambi\u00e9n puede funcionar.'},
+  { id:'tenure', type:'single', key:'tenure', when:a=>a.work==='Self-employed',
+    title:{en:'How long have you had your business?',
+           es:'\u00bfCu\u00e1nto tiempo tiene su negocio?'},
     options:[
-      {v:'W-2 paycheck',                  lb:{en:'W-2 paycheck',                  es:'Cheque W-2'}},
-      {v:'1099 contractor',               lb:{en:'1099 contractor',               es:'Contratista 1099'}},
-      {v:'Self-employed (tax returns)',   lb:{en:'Self-employed (tax returns)',   es:'Por mi cuenta (declaraciones de impuestos)'}},
-      {v:'Cash or bank statements',       lb:{en:'Cash or bank statements',       es:'Efectivo o estados de cuenta'}}
+      {v:'Less than 1 year', lb:{en:'Less than 1 year', es:'Menos de 1 a\u00f1o'}},
+      {v:'1-2 years',        lb:{en:'1-2 years',        es:'1-2 a\u00f1os'}},
+      {v:'2-5 years',        lb:{en:'2-5 years',        es:'2-5 a\u00f1os'}},
+      {v:'5+ years',         lb:{en:'5+ years',         es:'5+ a\u00f1os'}}
     ]},
 
   { id:'payType', type:'single', key:'payType', when:a=>a.work==='Employed',
     title:{en:'How do you get paid?', es:'\u00bfC\u00f3mo le pagan?'},
-    hint:{en:'Pick the one that sounds like your job.', es:'Elija la que suena como su trabajo.'},
     options:[
       {v:'By the hour', lb:{en:'By the hour', es:'Por hora'}},
       {v:'Salary',      lb:{en:'A salary',    es:'Salario fijo'}},
@@ -632,53 +606,26 @@ const STEPS = [
       return v>0 ? ui('perYear')(money(v*12)) : '';
     }},
 
-  { id:'debts', type:'currency', key:'debts', allowZero:true,
-    title:{en:'About how much do you pay toward debts each month?',
-           es:'\u00bfAproximadamente cu\u00e1nto paga de deudas al mes?'},
-    hint:{en:"Car payments, credit cards, student or personal loans \u2014 don't include rent or utilities.",
-          es:'Pagos de carro, tarjetas de cr\u00e9dito, pr\u00e9stamos estudiantiles o personales \u2014 no incluya renta ni servicios.'},
-    label:{en:'Monthly debt payments', es:'Pagos mensuales de deudas'}, ph:'e.g. 800',
-    err:{en:'Enter your total monthly debts \u2014 0 is okay.', es:'Ingrese el total de sus deudas mensuales \u2014 0 est\u00e1 bien.'}},
-
-  { id:'hasCoB', type:'single', key:'hasCoBorrower',
-    title:{en:'Will anyone else be on the loan with you?', es:'\u00bfAlguien m\u00e1s estar\u00e1 en el pr\u00e9stamo con usted?'},
-    hint:{en:'A co-borrower\u2019s income can raise how much you qualify for \u2014 a spouse, parent, sibling, or partner.',
-          es:'El ingreso de un co-prestatario puede aumentar cu\u00e1nto califica \u2014 su c\u00f3nyuge, un padre, hermano o pareja.'},
-    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No, just me',es:'No, solo yo'}}],
-    notes:{ 'Yes':{en:'Great \u2014 their income counts toward your qualification. A few quick questions about them next.',
-                   es:'Perfecto \u2014 su ingreso cuenta para la calificaci\u00f3n. Le haremos unas preguntas r\u00e1pidas sobre esa persona.'} }},
-
+  /* -------- 8) "ahora necesito la información de su esposo(a)" — the co-borrower, Kat's exact list -------- */
   { id:'coName', type:'group', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'Who is your co-borrower?', es:'\u00bfQui\u00e9n es su co-prestatario?'},
+    title:{en:'Now their information \u2014 what\u2019s their full name?', es:'Ahora la informaci\u00f3n de esa persona \u2014 \u00bfcu\u00e1l es su nombre completo?'},
     fields:[
-      {key:'coFirst', label:{en:'Their first name',es:'Su nombre'}, ph:{en:'e.g. Ana',es:'ej. Ana'},
+      {key:'coFirst', label:{en:'Their first name',es:'Su nombre'}, ph:{en:'e.g. Ana',es:'ej. Melisa'},
        err:{en:'Please enter their first name.', es:'Por favor ingrese su nombre.'}},
-      {key:'coLast', label:{en:'Their last name',es:'Su apellido'}, ph:{en:'e.g. Soto',es:'ej. Soto'},
+      {key:'coLast', label:{en:'Their last name(s)',es:'Su(s) apellido(s)'}, ph:{en:'e.g. Soto',es:'ej. Jimenez Marin'},
        err:{en:'Please enter their last name.', es:'Por favor ingrese su apellido.'}}
     ]},
 
   { id:'coDob', type:'dob', key:'coDob', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'When is their birthday?', es:'\u00bfCu\u00e1l es la fecha de nacimiento de esa persona?'}},
+    title:{en:'When is their birthday?', es:'\u00bfCu\u00e1l es su fecha de nacimiento?'}},
 
   { id:'coPhone', type:'tel', key:'coPhone', when:a=>a.hasCoBorrower==='Yes',
     title:{en:'What\u2019s their phone number?', es:'\u00bfCu\u00e1l es su n\u00famero de tel\u00e9fono?'},
     label:{en:'Their phone number', es:'Su n\u00famero de tel\u00e9fono'}, ph:'(555) 555-5555',
     err:{en:'Please enter their phone number.', es:'Por favor ingrese su n\u00famero de tel\u00e9fono.'}},
 
-  { id:'coRelation', type:'single', key:'coRelation', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'What\u2019s their relationship to you?', es:'\u00bfQu\u00e9 relaci\u00f3n tiene con usted?'},
-    options:[
-      {v:'Spouse/Partner', lb:{en:'Spouse / partner', es:'C\u00f3nyuge / pareja'}},
-      {v:'Parent',         lb:{en:'Parent',           es:'Padre o madre'}},
-      {v:'Sibling',        lb:{en:'Sibling',          es:'Hermano(a)'}},
-      {v:'Other family',   lb:{en:'Other family',     es:'Otro familiar'}},
-      {v:'Friend',         lb:{en:'Friend',           es:'Amigo(a)'}}
-    ]},
-
   { id:'coStatus', type:'single', key:'coStatus', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'How will they be qualifying?', es:'\u00bfCon qu\u00e9 va a calificar esa persona?'},
-    hint:{en:'Same as before \u2014 no SSN or credit check needed for this application.',
-          es:'Igual que antes \u2014 no se necesita SSN ni revisi\u00f3n de cr\u00e9dito para esta solicitud.'},
+    title:{en:'Do they have a Social Security number or an ITIN?', es:'\u00bfEsa persona tiene n\u00famero de Seguro Social o ITIN?'},
     options:[
       {v:'Social Security Number (SSN)',   lb:{en:'Social Security Number (SSN)',   es:'N\u00famero de Seguro Social (SSN)'}},
       {v:'Work Permit (EAD)',              lb:{en:'Work Permit (EAD)',              es:'Permiso de trabajo (EAD)'}},
@@ -688,19 +635,23 @@ const STEPS = [
     notes:{
       'ITIN (Tax ID number)':{
         en:'No problem \u2014 we work with ITIN co-borrowers every day.',
-        es:'No hay problema \u2014 trabajamos con co-prestatarios con ITIN todos los d\u00edas.'},
-      'Work Permit (EAD)':{
-        en:'Work-permit co-borrowers qualify for great programs too.',
-        es:'Los co-prestatarios con permiso de trabajo tambi\u00e9n califican para excelentes programas.'}
+        es:'No hay problema \u2014 trabajamos con co-prestatarios con ITIN todos los d\u00edas.'}
     }},
 
+  { id:'coTaxId', type:'taxid', key:'coTaxId', which:'coborrower', when:a=>a.hasCoBorrower==='Yes',
+    titleFn:function(a){ return a.coStatus==='ITIN (Tax ID number)'
+      ? {en:'What is their ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
+      : {en:'What is their Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
+    hint:{en:'Stored encrypted \u2014 only your loan team can see it. Sharing by phone later is okay too.',
+          es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Tambi\u00e9n puede darlo por tel\u00e9fono despu\u00e9s.'}},
+
   { id:'coWork', type:'single', key:'coWork', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'What\u2019s their work status?', es:'\u00bfCu\u00e1l es su situaci\u00f3n laboral?'},
+    title:{en:'Are they working?', es:'\u00bfEsa persona trabaja?'},
     options:[
-      {v:'Employed',      lb:{en:'Employed',      es:'Empleado(a)'}},
-      {v:'Self-employed', lb:{en:'Self-employed', es:'Trabaja por su cuenta'}},
-      {v:'Retired',       lb:{en:'Retired',       es:'Jubilado(a)'}},
-      {v:'Not employed',  lb:{en:'Not employed',  es:'Sin empleo'}}
+      {v:'Employed',      lb:{en:'Yes, they have a job', es:'S\u00ed, tiene trabajo'}},
+      {v:'Self-employed', lb:{en:'They work for themselves', es:'Trabaja por su cuenta'}},
+      {v:'Retired',       lb:{en:'Retired',              es:'Jubilado(a)'}},
+      {v:'Not employed',  lb:{en:'Not working right now', es:'No est\u00e1 trabajando'}}
     ]},
 
   { id:'coEmployer', type:'group', when:a=>a.hasCoBorrower==='Yes'&&a.coWork==='Employed',
@@ -766,109 +717,7 @@ const STEPS = [
     label:{en:'Co-borrower monthly income', es:'Ingreso mensual del co-prestatario'}, ph:'e.g. 4,000',
     err:{en:'Please enter their monthly income \u2014 your best guess is fine.',
          es:'Por favor ingrese su ingreso mensual \u2014 un estimado est\u00e1 bien.'},
-    helper:function(a){
-      var v=+a.coIncome||0;
-      return v>0 ? ui('perYear')(money(v*12)) : '';
-    }},
-
-  { id:'coDebts', type:'currency', key:'coDebts', allowZero:true, when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'And their monthly debt payments?', es:'\u00bfY sus pagos mensuales de deudas?'},
-    hint:{en:'Car payments, credit cards, loans \u2014 0 is okay.',
-          es:'Pagos de carro, tarjetas, pr\u00e9stamos \u2014 0 est\u00e1 bien.'},
-    label:{en:'Co-borrower monthly debts', es:'Deudas mensuales del co-prestatario'}, ph:'e.g. 300',
-    err:{en:'Enter their monthly debts \u2014 0 is okay.', es:'Ingrese sus deudas mensuales \u2014 0 est\u00e1 bien.'}},
-
-  { id:'coCredit', type:'single', key:'coCredit', when:a=>a.hasCoBorrower==='Yes',
-    title:{en:'Their credit profile', es:'Su perfil de cr\u00e9dito'},
-    hint:{en:'Best guess is fine \u2014 we never run a credit check on this application.',
-          es:'Un estimado est\u00e1 bien \u2014 nunca revisamos el cr\u00e9dito en esta solicitud.'},
-    options:[
-      {v:'720+'},{v:'660-719'},{v:'620-659'},{v:'580-619'},
-      {v:'579 or below', lb:{en:'579 or below', es:'579 o menos'}},
-      {v:'Not sure', lb:{en:'Not sure', es:'No estoy seguro(a)'}}
-    ]},
-
-  { id:'coTaxId', type:'taxid', key:'coTaxId', which:'coborrower', when:a=>a.hasCoBorrower==='Yes',
-    titleFn:function(a){ return a.coStatus==='ITIN (Tax ID number)'
-      ? {en:'What is their ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
-      : {en:'What is their Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
-    hint:{en:'Stored encrypted \u2014 only your loan team can see it. Sharing by phone later is okay too.',
-          es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Tambi\u00e9n puede darlo por tel\u00e9fono despu\u00e9s.'}},
-
-  { id:'bk', type:'single', key:'bk',
-    title:{en:'Any bankruptcies in the past 3 years?', es:'\u00bfAlguna bancarrota en los \u00faltimos 3 a\u00f1os?'},
-    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
-
-  { id:'softPull', type:'single', key:'softPull',
-    title:{en:'One more thing \u2014 is a SOFT credit check okay?', es:'Una cosa m\u00e1s \u2014 \u00bfautoriza una revisi\u00f3n SUAVE de cr\u00e9dito?'},
-    hint:{en:'A soft check does NOT touch your score \u2014 it just lets our lender match you to real programs faster.',
-          es:'La revisi\u00f3n suave NO afecta su puntaje para nada \u2014 solo ayuda a que el prestamista le d\u00e9 opciones reales m\u00e1s r\u00e1pido.'},
-    options:[
-      {v:'Yes, a soft check is okay', lb:{en:'Yes, that\u2019s fine', es:'S\u00ed, est\u00e1 bien'}},
-      {v:'Not yet — call me first',   lb:{en:'Not yet \u2014 call me first', es:'Todav\u00eda no \u2014 ll\u00e1menme primero'}}
-    ],
-    notes:{
-      'Yes, a soft check is okay':{en:'Perfect \u2014 soft only. Your score will not change.',
-                                   es:'Perfecto \u2014 solo revisi\u00f3n suave. Su puntaje no cambia.'},
-      'Not yet — call me first':{en:'No problem \u2014 we\u2019ll go over everything by phone first.',
-                                 es:'No hay problema \u2014 primero lo revisamos todo por tel\u00e9fono.'}
-    }},
-
-  { id:'name', type:'group',
-    title:{en:"What's your name?", es:'\u00bfCu\u00e1l es su nombre?'},
-    fields:[
-      {key:'first', label:{en:'First name',es:'Nombre'},   ph:{en:'e.g. Jennifer',es:'ej. Roberto'},
-       err:{en:'Please enter your first name.', es:'Por favor ingrese su nombre.'}},
-      {key:'middle', optional:true, label:{en:'Middle name (optional)',es:'Segundo nombre (opcional)'}, ph:{en:'e.g. Ann',es:'ej. Alexander'},
-       err:{en:'', es:''}},
-      {key:'last',  label:{en:'Last name(s)',es:'Apellido(s)'},  ph:{en:'e.g. Smith',es:'ej. Monterrosa Rosales'},
-       err:{en:'Please enter your last name.', es:'Por favor ingrese su apellido.'}}
-    ]},
-
-  { id:'phone', type:'phone', key:'phone',
-    title:{en:'Phone number', es:'N\u00famero de tel\u00e9fono'},
-    label:{en:'Phone number', es:'N\u00famero de tel\u00e9fono'}, ph:'(555) 555-5555',
-    err:{en:'Please enter your phone number.', es:'Por favor ingrese su n\u00famero de tel\u00e9fono.'},
-    button:'confirm'},
-
-  { id:'email', type:'email', key:'email',
-    title:{en:'Email address', es:'Correo electr\u00f3nico'},
-    label:{en:'Email address', es:'Correo electr\u00f3nico'}, ph:'example@email.com',
-    err:{en:'Please enter your email address.', es:'Por favor ingrese su correo electr\u00f3nico.'}},
-
-  { id:'dob', type:'dob', key:'dob',
-    title:{en:'When is your birthday?', es:'\u00bfCu\u00e1l es su fecha de nacimiento?'},
-    hint:{en:'Lenders need this to check your credit later \u2014 never for this application.',
-          es:'El prestamista la necesita despu\u00e9s para revisar su cr\u00e9dito \u2014 nunca para esta solicitud.'}},
-
-  { id:'address', type:'address',
-    title:{en:'Current mailing address', es:'Direcci\u00f3n postal actual'},
-    button:'confirm'},
-
-  { id:'addrYears', type:'single', key:'addrYears',
-    title:{en:'How long have you lived there?', es:'\u00bfCu\u00e1nto tiempo tiene viviendo ah\u00ed?'},
-    options:[
-      {v:'Less than 2 years', lb:{en:'Less than 2 years', es:'Menos de 2 a\u00f1os'}},
-      {v:'2-5 years',         lb:{en:'2-5 years',         es:'2-5 a\u00f1os'}},
-      {v:'5+ years',          lb:{en:'5+ years',          es:'M\u00e1s de 5 a\u00f1os'}}
-    ]},
-
-  { id:'prevAddress', type:'group', when:a=>a.addrYears==='Less than 2 years',
-    title:{en:'What was your address before that?', es:'\u00bfCu\u00e1l era su direcci\u00f3n anterior?'},
-    hint:{en:'Street and city is enough \u2014 lenders like to see 2 years of address history.',
-          es:'Calle y ciudad es suficiente \u2014 el prestamista quiere ver 2 a\u00f1os de historial.'},
-    fields:[
-      {key:'prevAddress', label:{en:'Previous address',es:'Direcci\u00f3n anterior'},
-       ph:{en:'e.g. 4802 Main St, Houston TX',es:'ej. 4802 Main St, Houston TX'},
-       err:{en:'Please enter your previous address.', es:'Por favor ingrese su direcci\u00f3n anterior.'}}
-    ]},
-
-  { id:'taxId', type:'taxid', key:'taxId', which:'borrower',
-    titleFn:function(a){ return a.status==='ITIN (Tax ID number)'
-      ? {en:'What is your ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
-      : {en:'What is your Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
-    hint:{en:'This is stored encrypted and only your loan team can see it. If you\u2019d rather say it by phone, that\u2019s okay too.',
-          es:'Se guarda cifrado y solo su equipo de pr\u00e9stamo puede verlo. Si prefiere darlo por tel\u00e9fono, tambi\u00e9n est\u00e1 bien.'}}
+    button:'confirm'}
 ];
 
 /* ================================================================
@@ -979,6 +828,11 @@ en:{
   taxLabel:'Number', taxErr:'Please enter all 9 digits \u2014 or tap the phone option below.',
   taxLock:'Encrypted and private \u2014 only your loan team can see this.',
   taxSkip:"I'd rather share it by phone \u2192",
+  sendingTitle:'Sending your application\u2026',
+  sendingHint:'One moment \u2014 do not close this page.',
+  doneTitle:'Application received!',
+  doneBody:function(n){ return (n?n+', we':'We')+' have everything Kat and the team need. Someone from our team will call you today to go over your options. If it\u2019s easier, you can also call us right now.'; },
+  doneCall:'Call us now \u2014 (832) 702-3574',
   ofPrice:p=>'\u2248 '+p+'% of the purchase price',
   ltv:p=>'Estimated LTV: '+p+'%',
   downLess:'Your down payment should be less than the purchase price.'
@@ -1051,6 +905,11 @@ es:{
   taxLabel:'N\u00famero', taxErr:'Por favor ingrese los 9 d\u00edgitos \u2014 o toque la opci\u00f3n de tel\u00e9fono abajo.',
   taxLock:'Cifrado y privado \u2014 solo su equipo de pr\u00e9stamo puede verlo.',
   taxSkip:'Prefiero darlo por tel\u00e9fono \u2192',
+  sendingTitle:'Enviando su solicitud\u2026',
+  sendingHint:'Un momento \u2014 no cierre esta p\u00e1gina.',
+  doneTitle:'\u00a1Solicitud recibida!',
+  doneBody:function(n){ return (n?n+', ya':'Ya')+' tenemos todo lo que Kat y el equipo necesitan. Alguien de nuestro equipo le llamar\u00e1 hoy mismo para revisar sus opciones. Si le es m\u00e1s f\u00e1cil, tambi\u00e9n puede llamarnos ahora.'; },
+  doneCall:'Ll\u00e1menos ahora \u2014 (832) 702-3574',
   ofPrice:p=>'\u2248 '+p+'% del precio de compra',
   ltv:p=>'LTV estimado: '+p+'%',
   downLess:'Su enganche debe ser menor que el precio de compra.'
@@ -1312,7 +1171,7 @@ function renderStep(){
     skip.addEventListener('click',()=>{
       A[s.key]=''; A[s.key+'Skipped']=true;
       const steps2 = visibleSteps();
-      if(idx >= steps2.length-1){ startChat(); }
+      if(idx >= steps2.length-1){ finishAll(); }
       else{ idx++; renderStep(); window.scrollTo({top:0,behavior:'smooth'}); }
     });
     wrap.appendChild(skip);
@@ -1421,7 +1280,7 @@ function renderStep(){
     if(!validate()) return;
     try{ if(s.onNext) s.onNext(A); }catch(e){}
     const steps2 = visibleSteps();
-    if(idx >= steps2.length-1){ startChat(); }
+    if(idx >= steps2.length-1){ finishAll(); }
     else{ idx++; renderStep(); window.scrollTo({top:0,behavior:'smooth'}); }
   });
   wrap.appendChild(btn);
@@ -1651,19 +1510,16 @@ function buildPayload(){
     'Email': A.email || '',
     'Mailing Address': [A.street, A.apt, A.city, A.state, A.zip].filter(Boolean).join(', '),
     'Years at Current Address': A.addrYears || '',
-    'Credit Range (self-reported)': A.credit || '',
+    'Own or Rent': A.ownRent || '',
     'Work Status': A.work || '',
     'Gross Monthly Income': money(A.income),
-    'Monthly Debt Payments': money(A.debts),
-    'Bankruptcy (past 3 yrs)': A.bk || '',
-    'Property Type': A.propertyType || '',
-    'Property Use': A.propertyUse || '',
     'SMS Consent': A.smsConsent ? 'Yes' : 'No',
-    'Soft Credit Check OK': A.softPull || '',
     'Submitted At': new Date().toLocaleString('en-US'),
     'Source Page': location.href
   };
   if(A.addrYears==='Less than 2 years' && A.prevAddress) p['Previous Address'] = A.prevAddress;
+  if(A.ownRent==='Renting') p['Monthly Rent'] = money(A.rentAmt);
+  if(A.marital) p['Legally Married'] = A.marital;
   if(A.status==='Work Permit (EAD)' && A.permitValid) p['Work Permit Status'] = A.permitValid;
   // tax id: NEVER the full number here — email + CRM payload get a mask only
   var tShape = A.status==='ITIN (Tax ID number)' ? 'ITIN' : 'SSN';
@@ -1683,7 +1539,6 @@ function buildPayload(){
   }
   if(A.work==='Self-employed'){ p['Business Name'] = A.businessName||''; p['Business Type'] = A.businessType||''; }
   if(A.tenure) p['Time at Job/Business'] = A.tenure;
-  if(A.incomeDoc) p['Income Documentation'] = A.incomeDoc;
   // co-borrower
   p['Co-borrower'] = A.hasCoBorrower || '';
   if(A.hasCoBorrower==='Yes'){
@@ -1702,45 +1557,54 @@ function buildPayload(){
     p[cShape] = digits(A.coTaxId||'').length===9 ? ('\u2022\u2022\u2022-\u2022\u2022-'+digits(A.coTaxId).slice(5)+' (encrypted on file)')
                : (A.coTaxIdSkipped ? 'Will provide by phone' : 'Not provided');
     p['Co-borrower Monthly Income'] = money(A.coIncome);
-    p['Co-borrower Monthly Debts'] = money(A.coDebts);
-    p['Co-borrower Credit Range'] = A.coCredit || '';
     p['Combined Monthly Income'] = money(totalIncome());
-    p['Combined Monthly Debts'] = money(totalDebts());
   }
 
-  if(isBuy(A)){
-    p['Loan Options'] = (A.loanOptions&&A.loanOptions.length)?A.loanOptions.join('; '):'None selected';
-    p['Buying Stage'] = A.stage || '';
-    p['Timeline to Buy'] = A.timeline || '';
-    p['Working With Agent'] = A.agent || '';
-    p['Purchase Price'] = money(A.price);
-    p['Down Payment'] = money(A.down);
-    if(+A.price>0) p['Down Payment %'] = (+A.down/+A.price*100).toFixed(1)+'%';
-    p['Comfortable Monthly Payment'] = money(A.comfortPay);
-    // buying-power estimates at the default rate — pre-work for the loan officer
-    programsFor(A.status).forEach(pr=>{
-      const r = calcProgram(pr, totalIncome(), totalDebts(), +A.down||0, CONFIG.CALC.rateDefault);
-      p['Est. Buying Power ('+pr.name+')'] = r.price>0 ? money(r.price) : 'Needs review';
-    });
-  }else{
-    p['Estimated Home Value'] = money(A.homeValue);
-    p['Remaining Balance'] = money(A.balance);
-    if(+A.homeValue>0) p['Estimated LTV'] = (+A.balance/+A.homeValue*100).toFixed(1)+'%';
-    if(isEquity(A)) p['Desired Cash Out'] = money(A.cashOut);
-  }
-  // chat-phase extras
-  if(CHAT.completedChat) p['Chat Details Completed'] = CHAT.completedChat;
-  if(CHAT.legalName) p['Legal Full Name'] = CHAT.legalName;
-  if(CHAT.mailingSame) p['Mailing = Current Residence'] = CHAT.mailingSame;
-  if(CHAT.livingAddress) p['Current Living Address'] = CHAT.livingAddress;
-  if(CHAT.ownRent) p['Own or Rent'] = CHAT.ownRent;
-  if(CHAT.rent) p['Current Monthly Rent'] = CHAT.rent;
-  if(CHAT.marital) p['Marital Status'] = CHAT.marital;
-  if(CHAT.spouseOnLoan) p['Spouse on Loan'] = CHAT.spouseOnLoan;
-  if(CHAT.propertyArea) p['Property Area of Interest'] = CHAT.propertyArea;
-  if(CHAT.propertyAddress) p['Property Address'] = CHAT.propertyAddress;
-  if(CHAT.bestTime) p['Best Time to Call'] = CHAT.bestTime;
   return p;
+}
+
+let SUBMITTED = false;
+async function finishAll(){
+  if(SUBMITTED) return;
+  SUBMITTED = true;
+  progWrap.classList.remove('hiddenv');
+  fill.style.width='100%'; pctEl.textContent='100%';
+  backBtn.style.visibility='hidden';
+
+  const sending = el('div','step');
+  sending.appendChild(el('h1','title', ui('sendingTitle')));
+  sending.appendChild(el('p','hint', ui('sendingHint')));
+  stage.replaceChildren(sending);
+
+  const payload = buildPayload();
+  try{
+    var secure = {};
+    if(digits(A.taxId||'').length===9) secure.borrower = digits(A.taxId);
+    if(digits(A.coTaxId||'').length===9) secure.coborrower = digits(A.coTaxId);
+    if(Object.keys(secure).length && window.jagCaptureSecure){
+      window.jagCaptureSecure('Mortgage Application', payload, secure);
+    }else if(window.jagCapture){
+      window.jagCapture('Mortgage Application', payload);
+    }
+  }catch(e){}
+  try{
+    await fetch('https://api.web3forms.com/submit', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(payload)
+    });
+  }catch(e){}
+
+  const done = el('div','step done-card');
+  done.innerHTML = '<div class="done-check">'+IC.shield+'</div>'
+    + '<h1 class="title" style="text-align:center">'+ui('doneTitle')+'</h1>'
+    + '<p class="hint" style="text-align:center">'+ui('doneBody')(A.first||'')+'</p>';
+  const call = el('a','next', ui('doneCall'));
+  call.href = 'tel:' + CONFIG.phoneTel;
+  call.style.textDecoration='none'; call.style.textAlign='center'; call.style.display='block';
+  done.appendChild(call);
+  stage.replaceChildren(done);
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 async function submitAll(){
