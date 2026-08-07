@@ -10,6 +10,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js"></script>
+<script>
+/* If a password-recovery link lands here (Supabase's default is Site URL "/"),
+   forward to reset-password.html with the token hash intact so users can set a new password. */
+(function(){
+  var h = location.hash || '';
+  if(h.indexOf('type=recovery') > -1 || h.indexOf('error_code=otp_expired') > -1){
+    location.replace('reset-password.html' + h);
+  }
+})();
+</script>
 <style>
 :root{
   --ink:#17161c; --paper:#ffffff; --card:#f5f5f7; --line:#e8e8ec;
