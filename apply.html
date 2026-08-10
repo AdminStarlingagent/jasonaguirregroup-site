@@ -274,7 +274,7 @@ footer.legal{max-width:900px;margin:24px auto 46px;padding:0 24px;text-align:cen
 const CONFIG = {
   companyName : "JAG Home Loans",             // shown in header, consent copy, chat
   tagline     : "Jason Aguirre Group",
-  nmls        : "NMLS #000000",               // footer license line
+  nmls        : "Jason Aguirre Group \u00b7 eXp Realty, LLC",  // footer attribution (loans by licensed lending partners)
   accessKey   : "b54619e1-0734-4f77-a6f6-c192aa348fe4", // Web3Forms access key
   subjectPrefix: "New Mortgage Application",  // email subject prefix
   privacyUrl  : "privacy-terms.html",         // site privacy & terms page
@@ -785,7 +785,7 @@ en:{
   fine2:c=>'By providing your contact info and clicking "Confirm &amp; continue" below, you agree to our <a href="'+CONFIG.privacyUrl+'" target="_blank" rel="noopener">Privacy Policy</a> and <a href="'+CONFIG.termsUrl+'" target="_blank" rel="noopener">Terms of Use</a>. You also expressly consent to receive calls and texts about your inquiry — including via automated technology or prerecorded voice — from '+c+' at the number provided, even if it is on a do-not-call list. Agreement to receive such calls or texts is not a condition of purchasing goods or services from us.',
   smsOK:'It\u2019s okay to text me updates about my application.',
   eho:'Equal Housing Opportunity',
-  footer1:'Submitting this application will <b>never</b> trigger a credit check, and we never ask for your Social Security number or date of birth.',
+  footer1:'Submitting this application will <b>never</b> trigger a credit check. Your information is encrypted and shared only with our team and our licensed lending partners.',
   footer2:'This application collects preliminary information only and is not a loan approval, commitment to lend, or rate quote.',
   writeMsg:'Write a message...',
   greet:h=>h<12?'Good morning':h<17?'Good afternoon':'Good evening',
@@ -862,7 +862,7 @@ es:{
   fine2:c=>'Al proporcionar su informaci\u00f3n de contacto y hacer clic en "Confirmar y continuar", usted acepta nuestra <a href="'+CONFIG.privacyUrl+'" target="_blank" rel="noopener">Pol\u00edtica de Privacidad</a> y <a href="'+CONFIG.termsUrl+'" target="_blank" rel="noopener">T\u00e9rminos de Uso</a>. Tambi\u00e9n da su consentimiento expreso para recibir llamadas y mensajes de texto sobre su solicitud — incluso mediante tecnolog\u00eda automatizada o voz pregrabada — de '+c+' al n\u00famero proporcionado, aunque est\u00e9 en una lista de no llamar. Aceptar estas llamadas o mensajes no es condici\u00f3n para comprar bienes o servicios.',
   smsOK:'Est\u00e1 bien que me env\u00eden mensajes de texto con actualizaciones de mi solicitud.',
   eho:'Igualdad de Oportunidades de Vivienda',
-  footer1:'Enviar esta solicitud <b>nunca</b> generar\u00e1 una revisi\u00f3n de cr\u00e9dito, y nunca pedimos su n\u00famero de Seguro Social ni su fecha de nacimiento.',
+  footer1:'Enviar esta solicitud <b>nunca</b> generar\u00e1 una revisi\u00f3n de cr\u00e9dito. Su informaci\u00f3n va cifrada y solo se comparte con nuestro equipo y nuestros prestamistas asociados con licencia.',
   footer2:'Esta solicitud recopila informaci\u00f3n preliminar solamente y no es una aprobaci\u00f3n de pr\u00e9stamo, compromiso de prestar, ni cotizaci\u00f3n de tasa.',
   writeMsg:'Escriba un mensaje...',
   greet:h=>h<12?'Buenos d\u00edas':h<19?'Buenas tardes':'Buenas noches',
@@ -934,7 +934,10 @@ function applyChrome(){
   document.querySelector('.hbadge span').textContent = ui('headerNC');
   document.getElementById('legalFoot').innerHTML =
     CONFIG.companyName + ' &nbsp;|&nbsp; ' + CONFIG.nmls + ' &nbsp;|&nbsp; ' + ui('eho') + '<br>' +
-    ui('footer1') + '<br>' + ui('footer2');
+    ui('footer1') + '<br>' + ui('footer2') + '<br>' +
+    '<a href="iabs.html" style="color:#8a8992;text-decoration:underline">TREC Information About Brokerage Services</a> &nbsp;\u00b7&nbsp; ' +
+    '<a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener" style="color:#8a8992;text-decoration:underline">TREC Consumer Protection Notice</a> &nbsp;\u00b7&nbsp; ' +
+    '<a href="privacy-terms.html" style="color:#8a8992;text-decoration:underline">' + (LANG==='es'?'Privacidad y T\u00e9rminos':'Privacy & Terms') + '</a>';
 }
 
 /* ================================================================
