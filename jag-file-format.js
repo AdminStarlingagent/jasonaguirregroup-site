@@ -123,5 +123,94 @@ window.JAG_FILE = (function(){
     return L.join('\n');
   }
 
-  return { sections:sections, subject:subject, emailBody:emailBody, last4:last4, fmtDay:fmtDay };
+  /* ---------- branded HTML email ----------
+     Tables + inline styles only: this HTML is copied to the clipboard and pasted into Gmail,
+     then read in Gmail / Outlook / Apple Mail, all of which strip <style> blocks and classes. */
+  function escH(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function emailHtml(lead, opts){
+    opts = opts || {};
+    var p = lead.payload || {}, q = qualifier(p);
+    var idWord = q === 'ITIN' ? 'ITIN' : 'Social Security number';
+    var INK = '#17161c', RED = '#c8102e', MUTED = '#63626b', LINE = '#e4e4ea', HAIR = '#ececf1';
+    var F = "font-family:'Plus Jakarta Sans','Segoe UI',Helvetica,Arial,sans-serif;";
+    var T = '<table role="presentation" cellpadding="0" cellspacing="0" border="0" ';
+    var h = [];
+
+    var lang = lead.lang || p['Preferred Language'] || '';
+    var facts = [];
+    if(q) facts.push('Qualifying with ' + (q === 'SSN' ? 'a Social Security number' : q === 'ITIN' ? 'an ITIN' : 'a ' + q.toLowerCase()) + '.');
+    if(lang) facts.push('Prefers ' + lang + '.');
+    if(lead.created_at) facts.push('Applied ' + fmtDay(lead.created_at) + '.');
+
+    h.push(T + 'width="600" style="width:600px;max-width:100%;border-collapse:collapse;border:1px solid ' + LINE + ';background:#ffffff;' + F + '">');
+
+    /* header band with the JAG lockup */
+    h.push('<tr><td bgcolor="' + INK + '" style="background:' + INK + ';padding:20px 28px;">' +
+      T + 'width="100%"><tr>' +
+        '<td valign="bottom">' + T + '>' +
+          '<tr><td style="' + F + 'font-size:8px;line-height:10px;letter-spacing:3px;font-weight:700;color:#b9b8c2;">EST. 2018</td></tr>' +
+          '<tr><td style="' + F + 'font-size:27px;line-height:30px;letter-spacing:-1px;font-weight:800;color:#ffffff;padding:1px 0 3px;">JAG</td></tr>' +
+          '<tr><td style="' + F + 'font-size:8px;line-height:10px;letter-spacing:3.4px;font-weight:700;color:#ffffff;border-top:2px solid ' + RED + ';padding-top:4px;">HOME LOANS</td></tr>' +
+        '</table></td>' +
+        '<td align="right" valign="bottom" style="' + F + 'font-size:13px;line-height:18px;color:#b9b8c2;">New loan application</td>' +
+      '</tr></table></td></tr>');
+
+    /* who */
+    h.push('<tr><td style="padding:28px 28px 0;">' +
+      '<div style="' + F + 'font-size:26px;line-height:30px;letter-spacing:-.5px;font-weight:800;color:' + INK + ';">' + escH(lead.name || 'Client') + '</div>' +
+      (facts.length ? '<div style="' + F + 'font-size:14px;line-height:21px;color:' + MUTED + ';padding-top:6px;">' + escH(facts.join(' ')) + '</div>' : '') +
+      '</td></tr>');
+
+    /* secure file button */
+    if(opts.link){
+      h.push('<tr><td style="padding:20px 28px 0;">' +
+        T + '><tr><td bgcolor="' + RED + '" style="background:' + RED + ';border-radius:4px;">' +
+          '<a href="' + escH(opts.link) + '" target="_blank" style="display:inline-block;padding:13px 22px;' + F + 'font-size:15px;line-height:18px;font-weight:700;color:#ffffff;text-decoration:none;">Open the secure file</a>' +
+        '</td></tr></table>' +
+        '<div style="' + F + 'font-size:13px;line-height:20px;color:' + MUTED + ';padding-top:12px;">The full ' + idWord + ' is on the secure page. The link works until ' + escH(fmtDay(opts.expires_at)) +
+          ', and we will text you the 6-digit PIN that unlocks the number.</div>' +
+        '<div style="' + F + 'font-size:12px;line-height:18px;color:' + MUTED + ';padding-top:6px;word-break:break-all;">Button not opening? Use this link: <a href="' + escH(opts.link) + '" target="_blank" style="color:' + MUTED + ';word-break:break-all;">' + escH(opts.link) + '</a></div>' +
+        '</td></tr>');
+    }
+
+    /* note from the team */
+    if(has(opts.note)){
+      h.push('<tr><td style="padding:22px 28px 0;">' + T + 'width="100%"><tr>' +
+        '<td style="border-left:3px solid ' + RED + ';padding:2px 0 2px 14px;">' +
+          '<div style="' + F + 'font-size:12.5px;line-height:18px;font-weight:700;color:' + MUTED + ';">Note from our team</div>' +
+          '<div style="' + F + 'font-size:15px;line-height:23px;color:' + INK + ';">' + escH(String(opts.note).trim()).replace(/\n/g, '<br>') + '</div>' +
+        '</td></tr></table></td></tr>');
+    }
+
+    /* the file, grouped */
+    sections(p).forEach(function(sec){
+      h.push('<tr><td style="padding:26px 28px 0;">' + T + 'width="100%" style="border-collapse:collapse;">');
+      h.push('<tr><td colspan="2" style="' + F + 'font-size:15px;line-height:20px;font-weight:800;color:' + INK + ';padding:0 0 8px;border-bottom:1px solid ' + LINE + ';">' + escH(sec.title) + '</td></tr>');
+      sec.rows.forEach(function(r){
+        var v = escH(r.value);
+        if(r.tax && r.last4) v = 'Ending in ' + escH(r.last4) + ' <span style="font-weight:400;color:' + MUTED + ';">(full number on the secure page)</span>';
+        h.push('<tr>' +
+          '<td width="40%" valign="top" style="' + F + 'font-size:14px;line-height:20px;color:' + MUTED + ';padding:8px 12px 8px 0;border-bottom:1px solid ' + HAIR + ';">' + escH(r.label) + '</td>' +
+          '<td valign="top" style="' + F + 'font-size:14px;line-height:20px;font-weight:600;color:' + INK + ';padding:8px 0;border-bottom:1px solid ' + HAIR + ';">' + v + '</td>' +
+        '</tr>');
+      });
+      h.push('</table></td></tr>');
+    });
+
+    /* footer */
+    h.push('<tr><td style="padding:26px 28px 26px;">' + T + 'width="100%"><tr>' +
+      '<td style="border-top:1px solid ' + LINE + ';padding-top:16px;' + F + 'font-size:12.5px;line-height:19px;color:' + MUTED + ';">' +
+        '<strong style="color:' + INK + ';">Jason Aguirre Group</strong> at eXp Realty, (832) 702-3574<br>' +
+        'Confidential. This email contains a client&#39;s personal and financial information, shared at the client&#39;s request for loan pre-qualification only. If it reached you by mistake, please delete it and let us know.' +
+      '</td></tr></table></td></tr>');
+
+    h.push('</table><br>');
+    return h.join('');
+  }
+
+  return { sections:sections, subject:subject, emailBody:emailBody, emailHtml:emailHtml, last4:last4, fmtDay:fmtDay };
 })();

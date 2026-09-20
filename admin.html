@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js?v=3"></script>
-<script src="jag-file-format.js?v=1"></script>
+<script src="jag-file-format.js?v=2"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
    forward to reset-password.html with the token hash intact so users can set a new password. */
@@ -136,6 +136,9 @@ td .em{font-size:12.5px;color:var(--muted)}
 .lp-pin b{font-size:26px;letter-spacing:.14em;font-variant-numeric:tabular-nums;flex:1}
 .lp-pin button{background:#fff;color:var(--ink);border:0;border-radius:99px;padding:8px 14px;font-weight:800;font-size:12.5px;cursor:pointer}
 .lp-hint{font-size:13px;color:var(--muted);margin:10px 0 14px}
+.lp-next{background:var(--loan-t);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:0 0 12px}
+.lp-next:empty{display:none}
+.lp-next kbd{font:inherit;font-weight:800;background:#fff;border:1px solid #cfd9f7;border-radius:6px;padding:1px 6px;white-space:nowrap}
 .lp-acts{display:flex;gap:8px;flex-wrap:wrap}
 .lp-acts a,.lp-acts button{border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:99px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer;text-decoration:none}
 .lp-acts a:hover,.lp-acts button:hover{border-color:var(--ink)}
@@ -263,11 +266,13 @@ td .em{font-size:12.5px;color:var(--muted)}
       </div>
       <div class="lp-done" id="lp-done" hidden>
         <h3 id="lp-done-h">Secure link created</h3>
+        <p class="lp-next" id="lp-next"></p>
         <div class="lp-pin"><small>PIN for the lender</small><b id="lp-pin"></b><button type="button" id="lp-copy-pin">Copy PIN</button></div>
         <p class="lp-hint">Text or call the lender with this PIN. Keep it out of the email. The PIN is what protects the full SSN or ITIN.</p>
         <div class="lp-acts">
           <a class="pri" id="lp-gmail" target="_blank" rel="noopener">Open Gmail</a>
-          <button type="button" id="lp-copy-email">Copy email text</button>
+          <button type="button" id="lp-copy-html">Copy branded email</button>
+          <button type="button" id="lp-copy-email">Copy plain text</button>
           <button type="button" id="lp-copy-link">Copy link</button>
           <button type="button" id="lp-again">Send to another lender</button>
         </div>
@@ -350,6 +355,29 @@ function copyText(text, cb){
   if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(function(){ cb&&cb(true); }, fallback); }
   else fallback();
 }
+/* Copy formatted HTML (plus a plain-text twin). Gmail's compose link can only carry plain text,
+   so the branded email travels on the clipboard and is pasted into the draft. */
+function copyRich(html, text, cb){
+  var ok=false;
+  function onCopy(e){ try{ e.clipboardData.setData('text/html', html); e.clipboardData.setData('text/plain', text); e.preventDefault(); ok=true; }catch(x){} }
+  var t=document.createElement('textarea'); t.value=' '; t.setAttribute('readonly',''); t.style.position='fixed'; t.style.opacity='0';
+  document.body.appendChild(t); t.select();
+  document.addEventListener('copy', onCopy, true);
+  var res=false; try{ res=document.execCommand('copy'); }catch(x){ res=false; }
+  document.removeEventListener('copy', onCopy, true);
+  document.body.removeChild(t);
+  if(ok && res){ cb(true); return; }
+  try{
+    if(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem){
+      navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html],{type:'text/html'}), 'text/plain': new Blob([text],{type:'text/plain'}) })])
+      .then(function(){ cb(true); }, function(){ cb(false); });
+      return;
+    }
+  }catch(x){}
+  cb(false);
+}
+function pasteKeys(){ return /Mac|iPhone|iPad/i.test(navigator.platform||'') ? '\u2318V' : 'Ctrl+V'; }
 function flash(btn, text){ var old=btn.textContent; btn.textContent=text; setTimeout(function(){ btn.textContent=old; }, 1600); }
 function shortDay(iso){ var d=new Date(iso); return (d.getMonth()+1)+'/'+d.getDate(); }
 
@@ -566,7 +594,7 @@ function lenderEmail(r, share, to){
   var body=F.emailBody(r, opts);
   var ml=mailLink(to, su, body);
   if(ml.href.length>7000){ opts.compact=true; ml=mailLink(to, su, F.emailBody(r, opts)); } /* very long files: Gmail gets the short version, "Copy email text" still has everything */
-  return { subject:su, body:body, href:ml.href, target:ml.target };
+  return { subject:su, body:body, html:F.emailHtml(r, opts), href:ml.href, target:ml.target, bare:mailLink(to, su, '').href };
 }
 function createShare(){
   var r=state.open; if(!r) return;
@@ -575,27 +603,40 @@ function createShare(){
   if(bad.length){ $('lp-err').textContent='Check this email address: '+bad.join(', '); return; }
   var to=emails.join(', '), note=$('lp-note').value.trim(), days=parseInt($('lp-days').value,10)||14;
   $('lp-err').textContent=''; $('lp-go').disabled=true;
-  /* open the tab NOW (still inside the click) so the pop-up blocker allows it; point it at Gmail once the link exists */
-  var w=null; if(!isMobile()){ try{ w=window.open('', '_blank'); }catch(e){ w=null; } }
+  var w=null;
   fetch(base()+'/rest/v1/rpc/jag_create_lender_share',{ method:'POST', headers:hdrs(),
     body:JSON.stringify({ p_lead_id:r.id, p_lender_email:to||null, p_note:note||null, p_days:days }) })
   .then(function(res){
-    if(res.status===401){ if(w) w.close(); signOut(); throw 0; }
+    if(res.status===401){ signOut(); throw 0; }
     if(res.status===404){ throw new Error('Secure links are not switched on yet. Jason needs to run the one-time Supabase setup (supabase-lender-links.sql), then this button works.'); }
     return res.json().then(function(j){ if(!res.ok) throw new Error((j&&j.message)||'Could not create the link.'); return j; });
   })
   .then(function(j){
-    if(state.open!==r){ if(w) w.close(); return; }
+    if(state.open!==r) return;
     var share={ token:j.token, pin:j.pin, expires_at:j.expires_at, note:note };
     var mail=lenderEmail(r, share, to);
     lender.last={ share:share, mail:mail };
-    var opened=false;
-    if(w){ try{ w.opener=null; w.location.href=mail.href; opened=true; }catch(e){} }
     $('lp-form').hidden=true; $('lp-done').hidden=false;
-    $('lp-done-h').textContent = opened ? 'Secure link created. Gmail opened in a new tab.' : 'Secure link created.';
     $('lp-pin').textContent = j.pin.slice(0,3)+' '+j.pin.slice(3);
-    $('lp-gmail').href=mail.href; $('lp-gmail').target=mail.target;
-    $('lp-gmail').textContent = opened ? 'Open Gmail again' : 'Open Gmail';
+    /* 1) put the branded email on the clipboard  2) open Gmail with To + Subject filled in.
+       If the copy is refused (or on a phone), Gmail gets the plain-text version instead, as before. */
+    function finish(copied){
+      var href = copied ? mail.bare : mail.href, opened=false;
+      lender.last.copied = copied;
+      if(!isMobile()){ try{ w=window.open(href, '_blank'); if(w){ try{ w.opener=null; }catch(x){} opened=true; } }catch(x){ w=null; } }
+      $('lp-gmail').href=href; $('lp-gmail').target=mail.target;
+      $('lp-gmail').textContent = opened ? 'Open Gmail again' : 'Open Gmail';
+      $('lp-done-h').textContent = opened ? 'Secure link created. Gmail opened in a new tab.' : 'Secure link created.';
+      var nx=$('lp-next'); nx.innerHTML='';
+      if(copied){
+        nx.appendChild(document.createTextNode((opened?'In the Gmail tab, ':'Click Open Gmail, then ')+'click the message box and press '));
+        var k=document.createElement('kbd'); k.textContent=pasteKeys(); nx.appendChild(k);
+        nx.appendChild(document.createTextNode(' to paste the branded email.'));
+      }else if(!isMobile()){
+        nx.textContent='Gmail has the plain-text version. For the branded one, click Copy branded email and paste it over the text.';
+      }
+    }
+    if(isMobile()) finish(false); else copyRich(mail.html, mail.body, finish);
     /* log it where the whole team can see it */
     var line=shortDay(new Date().toISOString())+' \u2014 Secure file link sent to '+(to||'a lender')+' by '+(state.email||'team')+'. Works until '+shortDay(j.expires_at)+'.';
     var notes=$('d-notes').value.replace(/\s+$/,''); notes=(notes?notes+'\n':'')+line;
@@ -605,7 +646,6 @@ function createShare(){
     loadShares(r);
   })
   .catch(function(err){
-    if(w){ try{ w.close(); }catch(e){} }
     $('lp-go').disabled=false;
     if(err) $('lp-err').textContent = err.message || 'Could not create the link. Check your connection and try again.';
   });
@@ -701,6 +741,7 @@ $('copyapply').addEventListener('click', function(){
 $('lp-go').addEventListener('click', createShare);
 $('lp-copy-pin').addEventListener('click', function(){ var b=this; if(lender.last) copyText(lender.last.share.pin, function(ok){ flash(b, ok?'Copied':'Copy failed'); }); });
 $('lp-copy-link').addEventListener('click', function(){ var b=this; if(lender.last) copyText(lenderLink(lender.last.share.token), function(ok){ flash(b, ok?'Copied':'Copy failed'); }); });
+$('lp-copy-html').addEventListener('click', function(){ var b=this; if(lender.last) copyRich(lender.last.mail.html, lender.last.mail.body, function(ok){ flash(b, ok?'Copied. Paste it into Gmail':'Copy failed'); }); });
 $('lp-copy-email').addEventListener('click', function(){ var b=this; if(lender.last) copyText('Subject: '+lender.last.mail.subject+'\n\n'+lender.last.mail.body, function(ok){ flash(b, ok?'Copied':'Copy failed'); }); });
 $('lp-again').addEventListener('click', function(){ lenderReset(); $('d-lender').hidden=false; loadRecentLenders(); $('lp-to').focus(); });
 
