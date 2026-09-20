@@ -123,6 +123,16 @@ window.JAG_FILE = (function(){
     return L.join('\n');
   }
 
+  /* Short plain-text opener for the Gmail draft. The draft is never empty: even if nobody pastes
+     the branded block under it, the lender still gets the secure link. */
+  function emailIntro(lead, opts){
+    opts = opts || {};
+    var idWord = qualifier(lead.payload || {}) === 'ITIN' ? 'ITIN' : 'SSN';
+    return 'Hi,\n\nNew home loan application from the Jason Aguirre Group at eXp Realty for ' + (lead.name || 'our client') + '.\n' +
+           'Secure file: ' + (opts.link || '') + '\n' +
+           '(Link works until ' + fmtDay(opts.expires_at) + '. We will text you the 6-digit PIN that unlocks the full ' + idWord + '.)\n\n';
+  }
+
   /* ---------- branded HTML email ----------
      Tables + inline styles only: this HTML is copied to the clipboard and pasted into Gmail,
      then read in Gmail / Outlook / Apple Mail, all of which strip <style> blocks and classes. */
@@ -212,5 +222,5 @@ window.JAG_FILE = (function(){
     return h.join('');
   }
 
-  return { sections:sections, subject:subject, emailBody:emailBody, emailHtml:emailHtml, last4:last4, fmtDay:fmtDay };
+  return { sections:sections, subject:subject, emailBody:emailBody, emailIntro:emailIntro, emailHtml:emailHtml, last4:last4, fmtDay:fmtDay };
 })();

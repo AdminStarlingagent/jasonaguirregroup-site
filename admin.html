@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js?v=3"></script>
-<script src="jag-file-format.js?v=2"></script>
+<script src="jag-file-format.js?v=3"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
    forward to reset-password.html with the token hash intact so users can set a new password. */
@@ -594,7 +594,7 @@ function lenderEmail(r, share, to){
   var body=F.emailBody(r, opts);
   var ml=mailLink(to, su, body);
   if(ml.href.length>7000){ opts.compact=true; ml=mailLink(to, su, F.emailBody(r, opts)); } /* very long files: Gmail gets the short version, "Copy email text" still has everything */
-  return { subject:su, body:body, html:F.emailHtml(r, opts), href:ml.href, target:ml.target, bare:mailLink(to, su, '').href };
+  return { subject:su, body:body, html:F.emailHtml(r, opts), href:ml.href, target:ml.target, bare:mailLink(to, su, F.emailIntro(r, opts)).href };
 }
 function createShare(){
   var r=state.open; if(!r) return;
@@ -629,9 +629,9 @@ function createShare(){
       $('lp-done-h').textContent = opened ? 'Secure link created. Gmail opened in a new tab.' : 'Secure link created.';
       var nx=$('lp-next'); nx.innerHTML='';
       if(copied){
-        nx.appendChild(document.createTextNode((opened?'In the Gmail tab, ':'Click Open Gmail, then ')+'click the message box and press '));
+        nx.appendChild(document.createTextNode((opened?'The Gmail draft already has a short note and the secure link. ':'Click Open Gmail. The draft has a short note and the secure link. ')+'Click on the blank line under the note and press '));
         var k=document.createElement('kbd'); k.textContent=pasteKeys(); nx.appendChild(k);
-        nx.appendChild(document.createTextNode(' to paste the branded email.'));
+        nx.appendChild(document.createTextNode(' to drop in the branded application.'));
       }else if(!isMobile()){
         nx.textContent='Gmail has the plain-text version. For the branded one, click Copy branded email and paste it over the text.';
       }
