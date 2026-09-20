@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Secure loan file | Jason Aguirre Group</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="jag-capture.js?v=3"></script>
+<script src="jag-file-format.js?v=1"></script>
+<style>
+:root{
+  --ink:#17161c; --paper:#ffffff; --ground:#f3f3f5; --line:#e4e4ea;
+  --red:#c8102e; --muted:#63626b; --good:#0f8a4d;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #2653d9;outline-offset:2px}
+
+.sheet{max-width:760px;margin:28px auto;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:34px 40px 40px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.lock{display:flex;flex-direction:column;line-height:1}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:25px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--red);padding-top:3px}
+.top .kind{font-size:13px;font-weight:600;color:var(--muted)}
+
+.who{padding:26px 0 4px}
+.who h1{margin:0 0 8px;font-size:30px;line-height:1.13;letter-spacing:-.03em;font-weight:800}
+.who p{margin:0;color:var(--muted);font-size:14.5px;max-width:60ch}
+
+.note{margin:22px 0 0;padding:2px 0 2px 16px;border-left:3px solid var(--red)}
+.note h2{margin:0 0 2px;font-size:13px;font-weight:700;color:var(--muted)}
+.note p{margin:0;font-size:15.5px;white-space:pre-wrap}
+
+section{margin-top:30px}
+section h2{margin:0 0 6px;font-size:15px;font-weight:800;letter-spacing:-.01em}
+dl{margin:0;border-top:1px solid var(--line)}
+.row{display:flex;gap:18px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.row dt{flex:0 0 40%;color:var(--muted)}
+.row dd{margin:0;flex:1;font-weight:600;word-break:break-word}
+
+/* the one loud element: the protected number */
+.vault{margin:10px 0;background:var(--ink);color:#fff;border-radius:6px;padding:16px 18px}
+.vault .line{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.vault .lbl{font-size:13px;font-weight:600;color:#b9b8c2;flex:0 0 auto;min-width:118px}
+.vault .num{font-size:21px;font-weight:700;letter-spacing:.06em;font-variant-numeric:tabular-nums;flex:1;white-space:nowrap}
+.vault button{border:0;border-radius:4px;padding:9px 14px;font-weight:700;font-size:13.5px;cursor:pointer;background:#fff;color:var(--ink)}
+.vault button.quiet{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px #56555f}
+.vault button[disabled]{opacity:.5;cursor:default}
+.vault .pinrow{display:none;margin-top:14px;padding-top:14px;border-top:1px solid #34333c}
+.vault.asking .pinrow{display:block}
+.vault.asking .line button{display:none}
+.vault .pinrow label{display:block;font-size:13.5px;margin-bottom:8px;color:#dcdbe3}
+.vault .pinrow .f{display:flex;gap:10px;flex-wrap:wrap}
+.vault .pinrow input{width:168px;background:#fff;color:var(--ink);border:0;border-radius:4px;padding:9px 12px;font-size:19px;font-weight:700;letter-spacing:.28em;font-variant-numeric:tabular-nums}
+.vault .msg{margin:10px 0 0;font-size:13.5px;color:#ffb3bf;min-height:1px}
+.vault .msg.ok{color:#9be3bd}
+
+.foot{max-width:760px;margin:0 auto 40px;padding:0 40px;color:var(--muted);font-size:12.5px}
+.foot a{color:inherit}
+
+.state{padding:44px 0 10px;max-width:56ch}
+.state h1{margin:0 0 10px;font-size:26px;letter-spacing:-.025em;line-height:1.2}
+.state p{margin:0 0 8px;color:var(--muted)}
+.state a{color:var(--ink);font-weight:700}
+
+@media(max-width:620px){
+  .sheet{margin:0;border:0;border-radius:0;padding:24px 20px 32px}
+  .foot{padding:18px 20px 0}
+  .who h1{font-size:25px}
+  .row{flex-direction:column;gap:1px}
+  .row dt{flex:none;font-size:13px}
+  .vault .num{flex:1 0 100%;order:2}
+  .vault .lbl{min-width:0}
+  .vault .line button{order:3}
+}
+@media print{
+  body{background:#fff}
+  .sheet{border:0;margin:0;padding:0;max-width:none}
+  .vault{background:#fff;color:#000;border:1px solid #000}
+  .vault button,.vault .pinrow{display:none !important}
+  .vault .lbl{color:#000}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<main class="sheet" id="sheet">
+  <div class="top">
+    <div class="lock"><small>Est. 2018</small><b>JAG</b><i>Home Loans</i></div>
+    <div class="kind">Secure loan file</div>
+  </div>
+  <div id="view">
+    <div class="state"><h1>Opening the file&hellip;</h1></div>
+  </div>
+</main>
+<p class="foot" id="foot">
+  Confidential. This page holds a client&rsquo;s personal and financial information, shared at the client&rsquo;s request
+  for loan pre-qualification only. Every visit is logged. If you received this link by mistake, close this page and call
+  the Jason Aguirre Group at eXp Realty, <a href="tel:+18327023574">(832) 702-3574</a>.
+</p>
+
+<script>
+(function(){
+'use strict';
+var CRM = window.JAG_CRM || {url:'',anonKey:''};
+var F = window.JAG_FILE;
+var PHONE = '(832) 702-3574', TEL = 'tel:+18327023574';
+var HIDE_AFTER = 60; /* seconds a revealed number stays on screen */
+
+var token = (location.hash || '').replace(/^#/, '');
+if(!token){ var m = /[?&]t=([^&]+)/.exec(location.search); if(m) token = decodeURIComponent(m[1]); }
+var pinMemo = '';     /* a PIN that worked, kept in memory only, so the co-borrower row doesn't ask twice */
+var view = document.getElementById('view');
+
+function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function base(){ return (CRM.url||'').replace(/\/+$/,''); }
+function rpc(name, body){
+  return fetch(base()+'/rest/v1/rpc/'+name, {
+    method:'POST', cache:'no-store',
+    headers:{ apikey:CRM.anonKey, Authorization:'Bearer '+CRM.anonKey, 'Content-Type':'application/json' },
+    body:JSON.stringify(body)
+  }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); });
+}
+function dashes(n){ return n.slice(0,3)+'-'+n.slice(3,5)+'-'+n.slice(5); }
+
+function showState(title, lines){
+  view.innerHTML='';
+  var s = el('div','state');
+  s.appendChild(el('h1',null,title));
+  lines.forEach(function(t){ s.appendChild(el('p',null,t)); });
+  var p = el('p'); p.appendChild(document.createTextNode('Jason Aguirre Group at eXp Realty: '));
+  var a = el('a',null,PHONE); a.href = TEL; p.appendChild(a);
+  s.appendChild(p);
+  view.appendChild(s);
+}
+var STATES = {
+  not_found:['This link isn\u2019t valid', ['Check that the whole link was copied, including everything after the # sign. If it still won\u2019t open, ask our team to send a new one.']],
+  expired:  ['This link has expired', ['Links to client files stop working after a set number of days. Ask our team for a fresh one. It takes them a few seconds.']],
+  revoked:  ['This link was turned off', ['Our team switched this link off. If you still need the file, ask them for a new link.']],
+  network:  ['The file didn\u2019t load', ['Check your connection and reload the page. If it keeps happening, call us.']]
+};
+
+/* ---------- the protected number ---------- */
+function buildVault(row, locked){
+  var v = el('div','vault');
+  var line = el('div','line');
+  line.appendChild(el('span','lbl', row.label));
+  var masked = '\u2022\u2022\u2022-\u2022\u2022-' + row.last4;
+  var num = el('span','num', masked);
+  line.appendChild(num);
+  var btn = el('button',null,'Show full number'); btn.type='button';
+  var copy = el('button','quiet','Copy'); copy.type='button'; copy.style.display='none';
+  line.appendChild(btn); line.appendChild(copy);
+  v.appendChild(line);
+
+  var pr = el('div','pinrow');
+  var id = 'pin-'+row.tax;
+  var lab = el('label',null,'Enter the 6-digit PIN our team sent you by text or phone.'); lab.htmlFor = id;
+  var f = el('div','f');
+  var inp = el('input'); inp.id=id; inp.type='text'; inp.inputMode='numeric'; inp.autocomplete='one-time-code'; inp.maxLength=7; inp.setAttribute('aria-describedby', id+'-msg');
+  var go = el('button',null,'Unlock'); go.type='button';
+  f.appendChild(inp); f.appendChild(go);
+  pr.appendChild(lab); pr.appendChild(f);
+  v.appendChild(pr);
+  var msg = el('p','msg'); msg.id = id+'-msg'; msg.setAttribute('role','status');
+  v.appendChild(msg);
+
+  var timer = null, full = '';
+  function say(t, ok){ msg.textContent = t||''; msg.className = 'msg'+(ok?' ok':''); }
+  function hide(){
+    if(timer){ clearInterval(timer); timer=null; }
+    full=''; num.textContent = masked; copy.style.display='none';
+    btn.style.display=''; btn.textContent='Show full number'; say('');
+  }
+  function lock(){
+    v.classList.remove('asking'); btn.disabled = true; btn.textContent='Locked';
+    say('Too many wrong PINs, so this link is locked. Ask our team for a new link.');
+  }
+  function reveal(pin){
+    go.disabled = true; say('');
+    rpc('jag_lender_reveal', { p_token:token, p_pin:pin, p_which:row.tax }).then(function(j){
+      go.disabled = false;
+      if(j && j.ok && /^\d{9}$/.test(j.value||'')){
+        pinMemo = pin; full = j.value;
+        v.classList.remove('asking'); inp.value='';
+        num.textContent = dashes(full);
+        btn.style.display='none'; copy.style.display='';
+        var left = HIDE_AFTER;
+        say('Showing for '+left+' seconds.', true);
+        timer = setInterval(function(){ left--; if(left<=0){ hide(); } else { say('Showing for '+left+' seconds.', true); } }, 1000);
+        return;
+      }
+      var why = j && j.reason;
+      if(why==='bad_pin'){ pinMemo=''; v.classList.add('asking'); inp.select(); say('That PIN didn\u2019t match. '+j.tries_left+(j.tries_left===1?' try':' tries')+' left.'); }
+      else if(why==='locked'){ lock(); }
+      else if(why==='no_tax_id'){ v.classList.remove('asking'); say('The client chose to give this number by phone. Call our team for it.'); }
+      else if(STATES[why]){ showState(STATES[why][0], STATES[why][1]); }
+      else say('That didn\u2019t work. Reload the page and try again.');
+    }).catch(function(){ go.disabled=false; say('Connection problem. Try again.'); });
+  }
+  btn.addEventListener('click', function(){
+    if(pinMemo){ reveal(pinMemo); return; }
+    v.classList.add('asking'); inp.focus();
+  });
+  go.addEventListener('click', function(){
+    var pin = inp.value.replace(/\D/g,'');
+    if(pin.length!==6){ say('The PIN is 6 digits.'); inp.focus(); return; }
+    reveal(pin);
+  });
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); go.click(); } });
+  copy.addEventListener('click', function(){
+    if(!full) return;
+    var done = function(){ copy.textContent='Copied'; setTimeout(function(){ copy.textContent='Copy'; }, 1500); };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(dashes(full)).then(done, function(){}); }
+  });
+  if(locked) lock();
+  return v;
+}
+
+/* ---------- the file ---------- */
+function render(d){
+  view.innerHTML='';
+  document.title = (d.name||'Client') + ' | Secure loan file';
+  var who = el('div','who');
+  who.appendChild(el('h1',null,d.name||'Client'));
+  var bits = 'Home loan application received '+F.fmtDay(d.submitted_at)+'.';
+  if(d.sent_by) bits += ' Shared with you by '+d.sent_by+'.';
+  bits += ' This link works until '+F.fmtDay(d.expires_at)+'.';
+  who.appendChild(el('p',null,bits));
+  view.appendChild(who);
+
+  if(d.note){
+    var n = el('div','note');
+    n.appendChild(el('h2',null,'Note from our team'));
+    n.appendChild(el('p',null,d.note));
+    view.appendChild(n);
+  }
+
+  var stored = d.tax_ids || [];
+  F.sections(d.payload||{}).forEach(function(sec){
+    var s = el('section'); s.appendChild(el('h2',null,sec.title));
+    var dl = el('dl'); var vaults = [];
+    sec.rows.forEach(function(r){
+      if(r.tax && r.last4 && stored.indexOf(r.tax)>-1){ vaults.push(buildVault(r, d.locked)); return; }
+      var row = el('div','row');
+      row.appendChild(el('dt',null,r.label));
+      row.appendChild(el('dd',null,r.value));
+      dl.appendChild(row);
+    });
+    s.appendChild(dl);
+    vaults.forEach(function(v){ s.appendChild(v); });
+    view.appendChild(s);
+  });
+}
+
+if(!CRM.url || !CRM.anonKey || !token){ showState(STATES.not_found[0], STATES.not_found[1]); }
+else{
+  rpc('jag_lender_view', { p_token: token }).then(function(d){
+    if(d && d.ok){ render(d); }
+    else{ var s = STATES[(d&&d.reason)||'not_found'] || STATES.not_found; showState(s[0], s[1]); }
+  }).catch(function(){ showState(STATES.network[0], STATES.network[1]); });
+}
+})();
+</script>
+</body>
+</html>

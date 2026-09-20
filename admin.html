@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js?v=3"></script>
+<script src="jag-file-format.js?v=1"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
    forward to reset-password.html with the token hash intact so users can set a new password. */
@@ -109,6 +110,47 @@ td .em{font-size:12.5px;color:var(--muted)}
 .quick{display:flex;gap:9px;margin-bottom:18px;flex-wrap:wrap}
 .qbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:13px;font-weight:800;padding:10px 16px;border-radius:99px;color:#fff}
 .q-call{background:var(--sell)} .q-text{background:var(--loan)} .q-mail{background:var(--ink)}
+.q-lender{background:var(--buy);border:0;cursor:pointer;margin-left:auto}
+.q-lender[aria-expanded="true"]{background:#9d0c24}
+
+/* ---- send to lender ---- */
+.lpanel{border:1.5px solid var(--ink);border-radius:14px;padding:16px;margin:-4px 0 18px}
+.lpanel[hidden],.lp-form[hidden],.lp-done[hidden]{display:none}
+.lp-l{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 6px}
+.lpanel input[type=text],.lpanel textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;font-size:14.5px;outline:none;background:#fff}
+.lpanel input[type=text]:focus,.lpanel textarea:focus{border-color:var(--ink)}
+.lpanel textarea{min-height:64px;resize:vertical;margin-bottom:12px}
+.lp-recent{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+.lp-recent:empty{margin:0 0 12px}
+.lp-chip{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer;color:#3f3e47}
+.lp-chip:hover{border-color:var(--ink)}
+.lp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lp-row select{border:1.5px solid var(--line);border-radius:99px;padding:8px 10px;font-size:13px;font-weight:700;background:#fff}
+.lp-go{margin-left:auto;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:11px 18px;font-weight:800;font-size:13.5px;cursor:pointer}
+.lp-go[disabled]{opacity:.55;cursor:default}
+.lp-err{color:var(--buy);font-size:13px;font-weight:600;margin:10px 0 0}
+.lp-err:empty{display:none}
+.lp-done h3{margin:0 0 12px;font-size:15px;letter-spacing:-.01em}
+.lp-pin{background:var(--ink);color:#fff;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.lp-pin small{font-size:12.5px;font-weight:600;color:#b9b8c2;flex:0 0 100%}
+.lp-pin b{font-size:26px;letter-spacing:.14em;font-variant-numeric:tabular-nums;flex:1}
+.lp-pin button{background:#fff;color:var(--ink);border:0;border-radius:99px;padding:8px 14px;font-weight:800;font-size:12.5px;cursor:pointer}
+.lp-hint{font-size:13px;color:var(--muted);margin:10px 0 14px}
+.lp-acts{display:flex;gap:8px;flex-wrap:wrap}
+.lp-acts a,.lp-acts button{border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:99px;padding:8px 14px;font-weight:700;font-size:12.5px;cursor:pointer;text-decoration:none}
+.lp-acts a:hover,.lp-acts button:hover{border-color:var(--ink)}
+.lp-acts .pri{background:var(--ink);border-color:var(--ink);color:#fff}
+.shares:empty{display:none}
+.share{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;font-size:13px}
+.share .r1{display:flex;gap:10px;align-items:baseline;justify-content:space-between}
+.share .to{font-weight:700;font-size:13.5px;word-break:break-word}
+.share .st{font-weight:800;font-size:11.5px;white-space:nowrap}
+.share .st.on{color:var(--sell)} .share .st.off{color:var(--soft)} .share .st.bad{color:var(--buy)}
+.share .r2{color:var(--muted);margin:3px 0 8px}
+.share .r3{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.share .pin{font-weight:800;letter-spacing:.08em;font-variant-numeric:tabular-nums;margin-right:auto}
+.share .r3 button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:5px 11px;font-weight:700;font-size:12px;cursor:pointer}
+.share .r3 button:hover{border-color:var(--ink)}
 .sect{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);font-weight:800;margin:20px 0 8px}
 .kv{border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .kv div{display:flex;justify-content:space-between;gap:16px;padding:10px 14px;border-bottom:1px solid #f1f1f4;font-size:13.5px}
@@ -203,6 +245,35 @@ td .em{font-size:12.5px;color:var(--muted)}
   </div>
   <div class="dbody">
     <div class="quick" id="d-quick"></div>
+
+    <!-- send to lender -->
+    <div class="lpanel" id="d-lender" hidden>
+      <div class="lp-form" id="lp-form">
+        <label class="lp-l" for="lp-to">Lender email</label>
+        <input type="text" id="lp-to" inputmode="email" autocomplete="off" placeholder="name@lender.com (two lenders? separate with a comma)">
+        <div class="lp-recent" id="lp-recent"></div>
+        <label class="lp-l" for="lp-note">Note to the lender (optional)</label>
+        <textarea id="lp-note" placeholder="e.g. Please call me. She wants to close before December."></textarea>
+        <div class="lp-row">
+          <label class="lp-l" for="lp-days" style="margin:0">Link works for</label>
+          <select id="lp-days"><option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option></select>
+          <button type="button" class="lp-go" id="lp-go">Create secure link and open Gmail</button>
+        </div>
+        <p class="lp-err" id="lp-err" role="alert"></p>
+      </div>
+      <div class="lp-done" id="lp-done" hidden>
+        <h3 id="lp-done-h">Secure link created</h3>
+        <div class="lp-pin"><small>PIN for the lender</small><b id="lp-pin"></b><button type="button" id="lp-copy-pin">Copy PIN</button></div>
+        <p class="lp-hint">Text or call the lender with this PIN. Keep it out of the email. The PIN is what protects the full SSN or ITIN.</p>
+        <div class="lp-acts">
+          <a class="pri" id="lp-gmail" target="_blank" rel="noopener">Open Gmail</a>
+          <button type="button" id="lp-copy-email">Copy email text</button>
+          <button type="button" id="lp-copy-link">Copy link</button>
+          <button type="button" id="lp-again">Send to another lender</button>
+        </div>
+      </div>
+    </div>
+    <div class="shares" id="d-shares"></div>
     <div class="sect">Status</div>
     <select class="statussel" id="d-status">
       <option>New</option><option>Contacted</option><option>Working</option><option>Won</option><option>Lost</option>
@@ -248,6 +319,39 @@ function prettyKey(k){
   if(/^[a-z]/.test(k) && !/\s/.test(k)){ k=k.replace(/([A-Z])/g,' $1'); k=k.charAt(0).toUpperCase()+k.slice(1); }
   return k;
 }
+
+/* ---------------- email + clipboard helpers ---------------- */
+var LENDER_PAGE = 'https://jasonaguirregroup.company/lender.html';
+function isMobile(){ return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent||''); }
+/* Gmail compose in its OWN tab. A bare mailto: inside the Starling iframe makes Chrome load
+   Gmail inside the frame, which Google blocks ("refused to connect"). */
+function gmailUrl(to, su, body){
+  var u = 'https://mail.google.com/mail/?view=cm&fs=1&tf=1';
+  if(/@jasonhoustonrealty\.com$/i.test(state.email||'')) u += '&authuser='+encodeURIComponent(state.email);
+  u += '&to='+encodeURIComponent(to||'');
+  if(su)   u += '&su='+encodeURIComponent(su);
+  if(body) u += '&body='+encodeURIComponent(body);
+  return u;
+}
+function mailtoUrl(to, su, body){
+  var q=[]; if(su) q.push('subject='+encodeURIComponent(su)); if(body) q.push('body='+encodeURIComponent(body));
+  return 'mailto:'+String(to||'').replace(/\s+/g,'')+(q.length?('?'+q.join('&')):'');
+}
+function mailLink(to, su, body){
+  return isMobile() ? { href:mailtoUrl(to,su,body), target:'_top' } : { href:gmailUrl(to,su,body), target:'_blank' };
+}
+function copyText(text, cb){
+  function fallback(){
+    try{
+      var t=document.createElement('textarea'); t.value=text; t.style.position='fixed'; t.style.opacity='0';
+      document.body.appendChild(t); t.select(); var ok=document.execCommand('copy'); document.body.removeChild(t); cb&&cb(ok);
+    }catch(e){ cb&&cb(false); }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(function(){ cb&&cb(true); }, fallback); }
+  else fallback();
+}
+function flash(btn, text){ var old=btn.textContent; btn.textContent=text; setTimeout(function(){ btn.textContent=old; }, 1600); }
+function shortDay(iso){ var d=new Date(iso); return (d.getMonth()+1)+'/'+d.getDate(); }
 
 /* ---------------- views ---------------- */
 function show(view){
@@ -360,8 +464,21 @@ function openDrawer(id){
   var q=[];
   if(r.phone){ q.push('<a class="qbtn q-call" href="tel:'+esc(r.phone)+'">Call</a>');
                q.push('<a class="qbtn q-text" href="sms:'+esc(r.phone)+'">Text</a>'); }
-  if(r.email){ q.push('<a class="qbtn q-mail" href="mailto:'+esc(r.email)+'">Email</a>'); }
+  if(r.email){ var ml = mailLink(r.email);
+               q.push('<a class="qbtn q-mail" href="'+esc(ml.href)+'" target="'+ml.target+'" rel="noopener">Email</a>'); }
+  if(r.type==='Mortgage Application'){
+    q.push('<button type="button" class="qbtn q-lender" id="d-lender-btn" aria-expanded="false" aria-controls="d-lender">Send to lender</button>');
+  }
   $('d-quick').innerHTML = q.join('');
+  lenderReset(); $('d-shares').innerHTML='';
+  if(r.type==='Mortgage Application'){
+    $('d-lender-btn').addEventListener('click', function(){
+      var open = $('d-lender').hidden;
+      $('d-lender').hidden = !open; this.setAttribute('aria-expanded', open?'true':'false');
+      if(open){ loadRecentLenders(); $('lp-to').focus(); }
+    });
+    loadShares(r);
+  }
   $('d-status').value = r.status;
   var kv=$('d-kv'); kv.innerHTML='';
   var p=r.payload||{};
@@ -406,6 +523,132 @@ function closeDrawer(){
   state.open=null;
   $('drawer').classList.remove('open'); $('scrim').classList.remove('open');
   $('drawer').setAttribute('aria-hidden','true');
+}
+
+/* ---------------- send to lender ---------------- */
+var lender = { last:null, recent:null };
+function lenderReset(){
+  lender.last=null;
+  $('d-lender').hidden=true; $('lp-form').hidden=false; $('lp-done').hidden=true;
+  $('lp-to').value=''; $('lp-note').value=''; $('lp-days').value='14'; $('lp-err').textContent='';
+  $('lp-go').disabled=false;
+}
+function parseEmails(v){
+  return String(v||'').split(/[,;\s]+/).map(function(x){return x.trim();}).filter(Boolean);
+}
+function loadRecentLenders(){
+  if(lender.recent){ drawRecent(); return; }
+  fetch(base()+'/rest/v1/jag_lender_shares?select=lender_email&order=created_at.desc&limit=150',{headers:hdrs()})
+  .then(function(r){ return r.ok ? r.json() : []; })
+  .then(function(rows){
+    var seen={}, out=[];
+    (Array.isArray(rows)?rows:[]).forEach(function(x){ parseEmails(x.lender_email).forEach(function(e){
+      var k=e.toLowerCase(); if(!seen[k] && out.length<6){ seen[k]=1; out.push(e); } }); });
+    lender.recent=out; drawRecent();
+  }).catch(function(){});
+}
+function drawRecent(){
+  var box=$('lp-recent'); box.innerHTML='';
+  (lender.recent||[]).forEach(function(e){
+    var b=document.createElement('button'); b.type='button'; b.className='lp-chip'; b.textContent=e;
+    b.addEventListener('click', function(){
+      var cur=parseEmails($('lp-to').value);
+      if(cur.map(function(x){return x.toLowerCase();}).indexOf(e.toLowerCase())===-1) cur.push(e);
+      $('lp-to').value=cur.join(', ');
+    });
+    box.appendChild(b);
+  });
+}
+function lenderLink(token){ return LENDER_PAGE+'#'+token; }
+function lenderEmail(r, share, to){
+  var F=window.JAG_FILE, su=F.subject(r);
+  var opts={ link:lenderLink(share.token), expires_at:share.expires_at, note:share.note };
+  var body=F.emailBody(r, opts);
+  var ml=mailLink(to, su, body);
+  if(ml.href.length>7000){ opts.compact=true; ml=mailLink(to, su, F.emailBody(r, opts)); } /* very long files: Gmail gets the short version, "Copy email text" still has everything */
+  return { subject:su, body:body, href:ml.href, target:ml.target };
+}
+function createShare(){
+  var r=state.open; if(!r) return;
+  var emails=parseEmails($('lp-to').value);
+  var bad=emails.filter(function(e){ return !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); });
+  if(bad.length){ $('lp-err').textContent='Check this email address: '+bad.join(', '); return; }
+  var to=emails.join(', '), note=$('lp-note').value.trim(), days=parseInt($('lp-days').value,10)||14;
+  $('lp-err').textContent=''; $('lp-go').disabled=true;
+  /* open the tab NOW (still inside the click) so the pop-up blocker allows it; point it at Gmail once the link exists */
+  var w=null; if(!isMobile()){ try{ w=window.open('', '_blank'); }catch(e){ w=null; } }
+  fetch(base()+'/rest/v1/rpc/jag_create_lender_share',{ method:'POST', headers:hdrs(),
+    body:JSON.stringify({ p_lead_id:r.id, p_lender_email:to||null, p_note:note||null, p_days:days }) })
+  .then(function(res){
+    if(res.status===401){ if(w) w.close(); signOut(); throw 0; }
+    if(res.status===404){ throw new Error('Secure links are not switched on yet. Jason needs to run the one-time Supabase setup (supabase-lender-links.sql), then this button works.'); }
+    return res.json().then(function(j){ if(!res.ok) throw new Error((j&&j.message)||'Could not create the link.'); return j; });
+  })
+  .then(function(j){
+    if(state.open!==r){ if(w) w.close(); return; }
+    var share={ token:j.token, pin:j.pin, expires_at:j.expires_at, note:note };
+    var mail=lenderEmail(r, share, to);
+    lender.last={ share:share, mail:mail };
+    var opened=false;
+    if(w){ try{ w.opener=null; w.location.href=mail.href; opened=true; }catch(e){} }
+    $('lp-form').hidden=true; $('lp-done').hidden=false;
+    $('lp-done-h').textContent = opened ? 'Secure link created. Gmail opened in a new tab.' : 'Secure link created.';
+    $('lp-pin').textContent = j.pin.slice(0,3)+' '+j.pin.slice(3);
+    $('lp-gmail').href=mail.href; $('lp-gmail').target=mail.target;
+    $('lp-gmail').textContent = opened ? 'Open Gmail again' : 'Open Gmail';
+    /* log it where the whole team can see it */
+    var line=shortDay(new Date().toISOString())+' \u2014 Secure file link sent to '+(to||'a lender')+' by '+(state.email||'team')+'. Works until '+shortDay(j.expires_at)+'.';
+    var notes=$('d-notes').value.replace(/\s+$/,''); notes=(notes?notes+'\n':'')+line;
+    $('d-notes').value=notes; r.notes=notes; patch(r.id,{notes:notes});
+    if(to && lender.recent){ emails.slice().reverse().forEach(function(e){
+      lender.recent=[e].concat(lender.recent.filter(function(x){return x.toLowerCase()!==e.toLowerCase();})).slice(0,6); }); }
+    loadShares(r);
+  })
+  .catch(function(err){
+    if(w){ try{ w.close(); }catch(e){} }
+    $('lp-go').disabled=false;
+    if(err) $('lp-err').textContent = err.message || 'Could not create the link. Check your connection and try again.';
+  });
+}
+function loadShares(r){
+  fetch(base()+'/rest/v1/jag_lender_shares?lead_id=eq.'+encodeURIComponent(r.id)+'&select=*&order=created_at.desc',{headers:hdrs()})
+  .then(function(res){ return res.ok ? res.json() : []; })
+  .then(function(rows){ if(state.open===r) renderShares(r, Array.isArray(rows)?rows:[]); })
+  .catch(function(){});
+}
+function plural(n, one, many){ return n+' '+(n===1?one:many); }
+function renderShares(r, rows){
+  var box=$('d-shares'); box.innerHTML='';
+  if(!rows.length) return;
+  var h=document.createElement('div'); h.className='sect'; h.style.marginTop='0'; h.textContent='Links sent to lenders'; box.appendChild(h);
+  rows.forEach(function(sh){
+    var now=Date.now(), st='Active', cls='on';
+    if(sh.revoked_at){ st='Turned off'; cls='off'; }
+    else if(new Date(sh.expires_at).getTime()<now){ st='Expired'; cls='off'; }
+    else if(sh.failed_pins>=5){ st='Locked: 5 wrong PINs'; cls='bad'; }
+    var d=document.createElement('div'); d.className='share';
+    d.innerHTML =
+      '<div class="r1"><span class="to">'+esc(sh.lender_email||'No email entered')+'</span><span class="st '+cls+'">'+esc(st)+'</span></div>'+
+      '<div class="r2">Sent '+esc(shortDay(sh.created_at))+(sh.created_by?(' by '+esc(sh.created_by)):'')+
+        '. Works until '+esc(shortDay(sh.expires_at))+'. Opened '+plural(sh.view_count,'time','times')+
+        ', full number shown '+plural(sh.reveal_count,'time','times')+'.</div>'+
+      '<div class="r3"><span class="pin">PIN '+esc(String(sh.pin).slice(0,3)+' '+String(sh.pin).slice(3))+'</span></div>';
+    var r3=d.querySelector('.r3');
+    if(cls!=='off'){
+      var c=document.createElement('button'); c.type='button'; c.textContent='Copy link';
+      c.addEventListener('click', function(){ copyText(lenderLink(sh.token), function(ok){ flash(c, ok?'Copied':'Copy failed'); }); });
+      var x=document.createElement('button'); x.type='button'; x.textContent='Turn off link';
+      x.addEventListener('click', function(){
+        if(!confirm('Turn off this link? The lender will no longer be able to open the file.')) return;
+        x.disabled=true;
+        fetch(base()+'/rest/v1/jag_lender_shares?id=eq.'+encodeURIComponent(sh.id),{
+          method:'PATCH', headers:Object.assign({Prefer:'return=minimal'},hdrs()), body:JSON.stringify({revoked_at:new Date().toISOString()})
+        }).then(function(){ loadShares(r); }).catch(function(){ x.disabled=false; });
+      });
+      r3.appendChild(c); r3.appendChild(x);
+    }
+    box.appendChild(d);
+  });
 }
 
 /* ---------------- csv ---------------- */
@@ -454,6 +697,12 @@ $('copyapply').addEventListener('click', function(){
     navigator.clipboard.writeText(APPLY_LINK).then(function(){ done(true); }, fallback);
   }else{ fallback(); }
 });
+
+$('lp-go').addEventListener('click', createShare);
+$('lp-copy-pin').addEventListener('click', function(){ var b=this; if(lender.last) copyText(lender.last.share.pin, function(ok){ flash(b, ok?'Copied':'Copy failed'); }); });
+$('lp-copy-link').addEventListener('click', function(){ var b=this; if(lender.last) copyText(lenderLink(lender.last.share.token), function(ok){ flash(b, ok?'Copied':'Copy failed'); }); });
+$('lp-copy-email').addEventListener('click', function(){ var b=this; if(lender.last) copyText('Subject: '+lender.last.mail.subject+'\n\n'+lender.last.mail.body, function(ok){ flash(b, ok?'Copied':'Copy failed'); }); });
+$('lp-again').addEventListener('click', function(){ lenderReset(); $('d-lender').hidden=false; loadRecentLenders(); $('lp-to').focus(); });
 
 $('refresh').addEventListener('click', resetAndLoad);
 $('exportcsv').addEventListener('click', exportCSV);
