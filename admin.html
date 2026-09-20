@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js?v=3"></script>
-<script src="jag-file-format.js?v=3"></script>
+<script src="jag-file-format.js?v=4"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
    forward to reset-password.html with the token hash intact so users can set a new password. */
@@ -239,6 +239,8 @@ td .em{font-size:12.5px;color:var(--muted)}
   </div>
 </div>
 
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-09-20.4</p>
+
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
@@ -271,7 +273,7 @@ td .em{font-size:12.5px;color:var(--muted)}
         <p class="lp-hint">Text or call the lender with this PIN. Keep it out of the email. The PIN is what protects the full SSN or ITIN.</p>
         <div class="lp-acts">
           <a class="pri" id="lp-gmail" target="_blank" rel="noopener">Open Gmail</a>
-          <button type="button" id="lp-copy-html">Copy branded email</button>
+          <button type="button" id="lp-copy-html" title="Optional. Copies the designed version so you can paste it into the Gmail draft in place of the text.">Copy branded email</button>
           <button type="button" id="lp-copy-email">Copy plain text</button>
           <button type="button" id="lp-copy-link">Copy link</button>
           <button type="button" id="lp-again">Send to another lender</button>
@@ -594,7 +596,7 @@ function lenderEmail(r, share, to){
   var body=F.emailBody(r, opts);
   var ml=mailLink(to, su, body);
   if(ml.href.length>7000){ opts.compact=true; ml=mailLink(to, su, F.emailBody(r, opts)); } /* very long files: Gmail gets the short version, "Copy email text" still has everything */
-  return { subject:su, body:body, html:F.emailHtml(r, opts), href:ml.href, target:ml.target, bare:mailLink(to, su, F.emailIntro(r, opts)).href };
+  return { subject:su, body:body, html:F.emailHtml(r, opts), href:ml.href, target:ml.target };
 }
 function createShare(){
   var r=state.open; if(!r) return;
@@ -603,40 +605,32 @@ function createShare(){
   if(bad.length){ $('lp-err').textContent='Check this email address: '+bad.join(', '); return; }
   var to=emails.join(', '), note=$('lp-note').value.trim(), days=parseInt($('lp-days').value,10)||14;
   $('lp-err').textContent=''; $('lp-go').disabled=true;
-  var w=null;
+  /* open the tab NOW (still inside the click) so the pop-up blocker allows it; point it at Gmail once the link exists */
+  var w=null; if(!isMobile()){ try{ w=window.open('', '_blank'); }catch(e){ w=null; } }
   fetch(base()+'/rest/v1/rpc/jag_create_lender_share',{ method:'POST', headers:hdrs(),
     body:JSON.stringify({ p_lead_id:r.id, p_lender_email:to||null, p_note:note||null, p_days:days }) })
   .then(function(res){
-    if(res.status===401){ signOut(); throw 0; }
+    if(res.status===401){ if(w){ try{ w.close(); }catch(e){} w=null; } signOut(); throw 0; }
     if(res.status===404){ throw new Error('Secure links are not switched on yet. Jason needs to run the one-time Supabase setup (supabase-lender-links.sql), then this button works.'); }
     return res.json().then(function(j){ if(!res.ok) throw new Error((j&&j.message)||'Could not create the link.'); return j; });
   })
   .then(function(j){
-    if(state.open!==r) return;
+    if(state.open!==r){ if(w){ try{ w.close(); }catch(e){} w=null; } return; }
     var share={ token:j.token, pin:j.pin, expires_at:j.expires_at, note:note };
     var mail=lenderEmail(r, share, to);
     lender.last={ share:share, mail:mail };
     $('lp-form').hidden=true; $('lp-done').hidden=false;
     $('lp-pin').textContent = j.pin.slice(0,3)+' '+j.pin.slice(3);
-    /* 1) put the branded email on the clipboard  2) open Gmail with To + Subject filled in.
-       If the copy is refused (or on a phone), Gmail gets the plain-text version instead, as before. */
-    function finish(copied){
-      var href = copied ? mail.bare : mail.href, opened=false;
-      lender.last.copied = copied;
-      if(!isMobile()){ try{ w=window.open(href, '_blank'); if(w){ try{ w.opener=null; }catch(x){} opened=true; } }catch(x){ w=null; } }
-      $('lp-gmail').href=href; $('lp-gmail').target=mail.target;
-      $('lp-gmail').textContent = opened ? 'Open Gmail again' : 'Open Gmail';
-      $('lp-done-h').textContent = opened ? 'Secure link created. Gmail opened in a new tab.' : 'Secure link created.';
-      var nx=$('lp-next'); nx.innerHTML='';
-      if(copied){
-        nx.appendChild(document.createTextNode((opened?'The Gmail draft already has a short note and the secure link. ':'Click Open Gmail. The draft has a short note and the secure link. ')+'Click on the blank line under the note and press '));
-        var k=document.createElement('kbd'); k.textContent=pasteKeys(); nx.appendChild(k);
-        nx.appendChild(document.createTextNode(' to drop in the branded application.'));
-      }else if(!isMobile()){
-        nx.textContent='Gmail has the plain-text version. For the branded one, click Copy branded email and paste it over the text.';
-      }
-    }
-    if(isMobile()) finish(false); else copyRich(mail.html, mail.body, finish);
+    /* Gmail opens with the whole application already typed in. Nothing to paste, nothing on the clipboard.
+       (Gmail's compose link only accepts plain text; the designed version stays available under "Copy branded email".) */
+    var opened=false;
+    if(w){ try{ w.opener=null; w.location.href=mail.href; opened=true; }catch(e){} w=null; }
+    $('lp-gmail').href=mail.href; $('lp-gmail').target=mail.target;
+    $('lp-gmail').textContent = opened ? 'Open Gmail again' : 'Open Gmail';
+    $('lp-done-h').textContent = 'Secure link created.';
+    $('lp-next').textContent = opened
+      ? 'Gmail opened in a new tab with the application already filled in. Look it over and press Send.'
+      : 'Click Open Gmail. The email opens with the application already filled in.';
     /* log it where the whole team can see it */
     var line=shortDay(new Date().toISOString())+' \u2014 Secure file link sent to '+(to||'a lender')+' by '+(state.email||'team')+'. Works until '+shortDay(j.expires_at)+'.';
     var notes=$('d-notes').value.replace(/\s+$/,''); notes=(notes?notes+'\n':'')+line;
@@ -646,6 +640,7 @@ function createShare(){
     loadShares(r);
   })
   .catch(function(err){
+    if(w){ try{ w.close(); }catch(e){} }
     $('lp-go').disabled=false;
     if(err) $('lp-err').textContent = err.message || 'Could not create the link. Check your connection and try again.';
   });
