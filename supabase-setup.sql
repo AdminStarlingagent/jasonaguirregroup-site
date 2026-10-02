@@ -14,7 +14,7 @@ create table if not exists public.jag_leads (
   phone       text,
   lang        text,
   source      text,
-  status      text not null default 'New',   -- New | Contacted | Working | Won | Lost
+  status      text not null default 'New',   -- New | Contacted | Working | Credit | Won | Lost
   notes       text,
   payload     jsonb not null default '{}'::jsonb
 );

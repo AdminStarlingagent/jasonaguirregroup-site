@@ -90,7 +90,17 @@ td .em{font-size:12.5px;color:var(--muted)}
 .t-loan{background:var(--loan-t);color:var(--loan)} .t-buy{background:var(--buy-t);color:var(--buy)}
 .t-sell{background:var(--teal-t);color:var(--teal)} .t-val{background:var(--sell-t);color:var(--sell)}
 .statussel{border:1.5px solid var(--line);border-radius:99px;padding:6px 10px;font-size:12.5px;font-weight:700;background:#fff;cursor:pointer}
-.s-New{color:var(--loan)} .s-Contacted{color:var(--amber)} .s-Working{color:#7c3aed} .s-Won{color:var(--sell)} .s-Lost{color:var(--soft)}
+.s-New{color:var(--loan)} .s-Contacted{color:var(--amber)} .s-Working{color:#7c3aed} .s-Credit{color:#0d9488} .s-Won{color:var(--sell)} .s-Lost{color:var(--soft)}
+.figsub{display:block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)}
+.estbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.estrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.estrow .dollar{font-weight:800;font-size:17px}
+.estrow input{flex:1;min-width:120px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:17px;font-weight:800;outline:none;background:#fff}
+.estrow input:focus{border-color:var(--ink)}
+.estnote{font-size:12px;color:var(--muted);margin:8px 0 0;line-height:1.45}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:min(560px,92vw);background:#b3261e;color:#fff;font-weight:700;font-size:14px;line-height:1.4;padding:13px 18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:9999;display:none;cursor:pointer}
+#toast.ok{background:#0f8a4d}
+#toast.show{display:block}
 .dt{white-space:nowrap;color:var(--muted);font-size:13px}
 .figure{font-weight:700;white-space:nowrap}
 .empty{padding:54px 20px;text-align:center;color:var(--muted)}
@@ -225,7 +235,7 @@ td .em{font-size:12.5px;color:var(--muted)}
     </div>
     <select class="chip" id="statusfilter">
       <option value="">Any status</option>
-      <option>New</option><option>Contacted</option><option>Working</option><option>Won</option><option>Lost</option>
+      <option>New</option><option>Contacted</option><option>Working</option><option>Credit</option><option>Won</option><option>Lost</option>
     </select>
   </div>
 
@@ -239,7 +249,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-09-20.4</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-02.2</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -283,8 +293,20 @@ td .em{font-size:12.5px;color:var(--muted)}
     <div class="shares" id="d-shares"></div>
     <div class="sect">Status</div>
     <select class="statussel" id="d-status">
-      <option>New</option><option>Contacted</option><option>Working</option><option>Won</option><option>Lost</option>
+      <option>New</option><option>Contacted</option><option>Working</option><option>Credit</option><option>Won</option><option>Lost</option>
     </select>
+    <div id="d-estwrap" hidden>
+      <div class="sect">Estimated qualifying amount</div>
+      <div class="estbox">
+        <div class="estrow">
+          <span class="dollar">$</span>
+          <input type="text" inputmode="numeric" id="d-est" autocomplete="off" aria-label="Estimated qualifying amount in dollars">
+          <button type="button" class="savebtn" id="d-est-save">Save</button>
+          <button type="button" class="linkbtn" id="d-est-auto" style="font-size:13px">Use auto estimate</button>
+        </div>
+        <p class="estnote" id="d-est-note"></p>
+      </div>
+    </div>
     <div class="sect">Everything they submitted</div>
     <div class="kv" id="d-kv"></div>
     <div class="sect">Team notes</div>
@@ -295,13 +317,14 @@ td .em{font-size:12.5px;color:var(--muted)}
     </div>
   </div>
 </aside>
+<div id="toast" role="alert"></div>
 
 <script>
 (function(){
 'use strict';
 var CRM = window.JAG_CRM || {url:'',anonKey:''};
 var PAGE = 200;
-var state = { token:null, email:null, rows:[], offset:0, type:'', status:'', q:'', open:null, done:false };
+var state = { token:null, refresh:null, exp:0, email:null, rows:[], offset:0, type:'', status:'', q:'', open:null, done:false };
 
 var $ = function(id){ return document.getElementById(id); };
 function base(){ return (CRM.url||'').replace(/\/+$/,''); }
@@ -321,6 +344,55 @@ function keyFigure(r){
   var p=r.payload||{};
   return p['Est. Buying Power (FHA)']||p['Est. Buying Power (ITIN Home Loan)']||p['Purchase Price']||
          p.offerPrice||p.price||p['Automated Estimate']||p.estimate||'—';
+}
+/* ---------------- estimated qualifying amount ----------------
+   Rough number from what the application collects (income + SSN/ITIN path). The application does
+   not ask for debts, credit score or down payment, so this is a starting point for the call,
+   not a pre-approval. Change the assumptions here. */
+var EST = {
+  rate:6.75,        /* interest rate, % (same default as the calculator settings in apply.html) */
+  taxPct:2.2,       /* yearly property tax, % of price */
+  insPct:0.6,       /* yearly home insurance, % of price */
+  itinRateAdd:1.0,  /* ITIN loans priced this much above the rate, % */
+  debtHold:0.10     /* share of income held back for car/card payments, since debts are unknown */
+};
+function num(v){ var n=parseFloat(String(v==null?'':v).replace(/[^0-9.]/g,'')); return isFinite(n)?n:0; }
+function fmtMoney(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+function leadIncome(p){
+  var inc = num(p['Combined Monthly Income']) || num(p['Gross Monthly Income']);
+  if(!inc){
+    inc = num(p['Pay Rate'])*num(p['Hours per Week'])*52/12;
+    if(!inc && p['Salary']){ inc = num(p['Salary']); if(/year/i.test(p['Salary'])) inc = inc/12; }
+    inc += num(p['Co-borrower Monthly Income']) || (num(p['Co-borrower Pay Rate'])*num(p['Co-borrower Hours per Week'])*52/12);
+  }
+  return inc;
+}
+function autoEstimate(r){
+  if(r.type!=='Mortgage Application') return null;
+  var p=r.payload||{}, income=leadIncome(p);
+  if(!(income>0)) return null;
+  var itin = /ITIN/i.test(String(p['Qualifying With']||''));
+  var pr = itin ? {name:'ITIN', down:0.03,  dti:0.45, mi:0,      ufmip:0,      rateAdd:EST.itinRateAdd}
+                : {name:'FHA',  down:0.035, dti:0.55, mi:0.0055, ufmip:0.0175, rateAdd:0};
+  var share = pr.dti-EST.debtHold;
+  var budget = share*income;                                   /* monthly housing payment they can carry */
+  var rm = (EST.rate+pr.rateAdd)/100/12;
+  var pf = rm/(1-Math.pow(1+rm,-360));                         /* principal + interest per $1 of loan */
+  var perDollar = (1-pr.down)*((1+pr.ufmip)*pf + pr.mi/12) + (EST.taxPct+EST.insPct)/100/12;
+  var price = Math.floor(budget/perDollar/1000)*1000;
+  if(!(price>0)) return null;
+  return { amount:price, program:pr.name, income:income, payment:budget, share:share, rate:EST.rate+pr.rateAdd };
+}
+function savedEstimate(r){ var n=(r.est_amount==null||r.est_amount==='')?NaN:Number(r.est_amount); return n>0?n:null; }
+/* what the Key figure column shows: {text, sub} */
+function figureFor(r){
+  if(r.type==='Mortgage Application'){
+    var saved=savedEstimate(r);
+    if(saved) return { text:fmtMoney(saved), sub:'Edited' };
+    var a=autoEstimate(r);
+    if(a) return { text:fmtMoney(a.amount), sub:'Est. '+a.program };
+  }
+  return { text:keyFigure(r), sub:'' };
 }
 function prettyKey(k){
   if(/^[a-z]/.test(k) && !/\s/.test(k)){ k=k.replace(/([A-Z])/g,' $1'); k=k.charAt(0).toUpperCase()+k.slice(1); }
@@ -404,14 +476,67 @@ function signIn(){
   }).then(function(r){return r.json();}).then(function(j){
     $('li-btn').disabled=false;
     if(j && j.access_token){
-      state.token=j.access_token; state.email=email;
-      try{ sessionStorage.setItem('jag_admin', JSON.stringify({t:j.access_token,e:email})); }catch(e){}
+      setSession(j, email);
       show('app'); resetAndLoad();
     }else{ $('li-err').classList.add('show'); }
   }).catch(function(){ $('li-btn').disabled=false; $('li-err').classList.add('show'); });
 }
+/* The login token only lasts about an hour. Before this build the page never renewed it, so a tab
+   left open kept showing changes on screen while the database rejected them. Now the token renews
+   itself in the background and again right before any request that needs it. */
+var refreshing=null, refreshTimer=null;
+function saveSession(){
+  try{ sessionStorage.setItem('jag_admin', JSON.stringify({t:state.token,e:state.email,r:state.refresh,x:state.exp})); }catch(e){}
+}
+function setSession(j, email){
+  state.token = j.access_token;
+  if(j.refresh_token) state.refresh = j.refresh_token;
+  state.exp = j.expires_at ? j.expires_at*1000 : Date.now()+((j.expires_in||3600)*1000);
+  if(email) state.email = email;
+  saveSession(); scheduleRefresh();
+}
+function refreshSession(){
+  if(refreshing) return refreshing;
+  if(!state.refresh) return Promise.resolve(false);
+  refreshing = fetch(base()+'/auth/v1/token?grant_type=refresh_token',{
+    method:'POST', headers:{apikey:CRM.anonKey,'Content-Type':'application/json'},
+    body:JSON.stringify({refresh_token:state.refresh})
+  }).then(function(r){ return r.json(); }).then(function(j){
+    refreshing=null;
+    if(j && j.access_token){ setSession(j); return true; }
+    return false;
+  }).catch(function(){ refreshing=null; return false; });
+  return refreshing;
+}
+function scheduleRefresh(){
+  clearTimeout(refreshTimer);
+  if(!state.refresh || !state.exp) return;
+  refreshTimer = setTimeout(refreshSession, Math.max(5000, state.exp-Date.now()-5*60*1000));
+}
+function freshToken(){
+  if(state.refresh && state.exp && state.exp-Date.now()<60000) return refreshSession();
+  return Promise.resolve(true);
+}
+/* every database call goes through here: renew first if needed, and retry once on a 401 */
+function api(path, opts){
+  opts=opts||{};
+  function go(){
+    return fetch(base()+path, { method:opts.method||'GET', headers:Object.assign({}, hdrs(), opts.headers||{}), body:opts.body });
+  }
+  return freshToken().then(go).then(function(res){
+    if(res.status!==401) return res;
+    return refreshSession().then(function(ok){ return ok ? go() : res; });
+  });
+}
+var toastTimer=null;
+function toast(msg, ok){
+  var t=$('toast'); t.textContent=msg; t.className = ok ? 'ok show' : 'show';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ t.className=''; }, ok?1800:12000);
+}
 function signOut(){
-  state.token=null; state.email=null; state.rows=[];
+  clearTimeout(refreshTimer);
+  state.token=null; state.refresh=null; state.exp=0; state.email=null; state.rows=[];
   try{ sessionStorage.removeItem('jag_admin'); }catch(e){}
   show('login');
 }
@@ -419,7 +544,7 @@ function signOut(){
 /* ---------------- data ---------------- */
 function resetAndLoad(){ state.rows=[]; state.offset=0; state.done=false; load(); }
 function load(){
-  fetch(base()+'/rest/v1/jag_leads?select=*&order=created_at.desc&limit='+PAGE+'&offset='+state.offset,{headers:hdrs()})
+  api('/rest/v1/jag_leads?select=*&order=created_at.desc&limit='+PAGE+'&offset='+state.offset)
   .then(function(r){ if(r.status===401){signOut();throw 0;} return r.json(); })
   .then(function(rows){
     if(!Array.isArray(rows)) rows=[];
@@ -429,10 +554,29 @@ function load(){
     render();
   }).catch(function(){});
 }
+/* Saves a change and CONFIRMS the database kept it. cb(true,row) only when a row really came back.
+   Anything else shows a red message and cb(false) so the screen can put the old value back. */
 function patch(id, body, cb){
-  fetch(base()+'/rest/v1/jag_leads?id=eq.'+encodeURIComponent(id),{
-    method:'PATCH', headers:Object.assign({Prefer:'return=minimal'},hdrs()), body:JSON.stringify(body)
-  }).then(function(r){ if(cb) cb(r.ok); }).catch(function(){ if(cb) cb(false); });
+  api('/rest/v1/jag_leads?id=eq.'+encodeURIComponent(id), {
+    method:'PATCH', headers:{Prefer:'return=representation'}, body:JSON.stringify(body)
+  }).then(function(res){
+    return res.text().then(function(t){
+      var j=null; try{ j=JSON.parse(t); }catch(e){}
+      if(res.ok && Array.isArray(j) && j.length){ if(cb) cb(true, j[0]); return; }
+      var detail = j ? String((j.message||'')+' '+(j.details||'')+' '+(j.hint||'')) : '';
+      var why;
+      if(res.status===401) why='Your login expired. Sign in again and redo that change.';
+      else if(/est_amount/.test(detail)) why='The estimate column is not set up yet. Jason needs to run supabase-admin-fix.sql once in Supabase.';
+      else if(res.ok || res.status===403 || /permission|policy/i.test(detail)) why='The database blocked the change for this login. Jason needs to run supabase-admin-fix.sql once in Supabase.';
+      else why='Database error '+res.status+(detail.trim()?(': '+detail.trim()):'')+'.';
+      toast('NOT saved. '+why);
+      if(cb) cb(false);
+      if(res.status===401) signOut();
+    });
+  }).catch(function(){
+    toast('NOT saved. Could not reach the database. Check your connection and try again.');
+    if(cb) cb(false);
+  });
 }
 
 /* ---------------- render ---------------- */
@@ -473,10 +617,11 @@ function render(){
       '<td><span class="nm">'+esc(r.name||'(no name)')+'</span><span class="em">'+esc(r.email||'')+'</span></td>'+
       '<td><span class="typechip '+typeClass(r.type)+'">'+esc(typeShort(r.type))+'</span></td>'+
       '<td>'+esc(r.phone||'—')+'</td>'+
-      '<td class="figure">'+esc(keyFigure(r))+'</td>'+
+      '<td class="figure" data-fig title="'+(r.type==='Mortgage Application'?'Click to edit this amount':'')+'">'+
+        (function(f){ return esc(f.text)+(f.sub?('<span class="figsub">'+esc(f.sub)+'</span>'):''); })(figureFor(r))+'</td>'+
       '<td>'+esc(r.lang||'—')+'</td>'+
       '<td><select class="statussel s-'+esc(r.status)+'" data-status>'+
-        ['New','Contacted','Working','Won','Lost'].map(function(s){return '<option'+(s===r.status?' selected':'')+'>'+s+'</option>';}).join('')+
+        ['New','Contacted','Working','Credit','Won','Lost'].map(function(s){return '<option'+(s===r.status?' selected':'')+'>'+s+'</option>';}).join('')+
       '</select></td>';
     tb.appendChild(tr);
   });
@@ -510,6 +655,7 @@ function openDrawer(id){
     loadShares(r);
   }
   $('d-status').value = r.status;
+  fillEstimate(r);
   var kv=$('d-kv'); kv.innerHTML='';
   var p=r.payload||{};
   Object.keys(p).forEach(function(k){
@@ -548,6 +694,35 @@ function openDrawer(id){
   $('d-saved').classList.remove('show');
   $('drawer').classList.add('open'); $('scrim').classList.add('open');
   $('drawer').setAttribute('aria-hidden','false');
+}
+function fillEstimate(r){
+  var isApp = r.type==='Mortgage Application';
+  $('d-estwrap').hidden = !isApp;
+  if(!isApp) return;
+  var saved=savedEstimate(r), a=autoEstimate(r);
+  var shown = saved || (a && a.amount) || '';
+  $('d-est').value = shown ? Math.round(shown).toLocaleString('en-US') : '';
+  $('d-est-auto').style.display = saved ? '' : 'none';
+  var note;
+  if(a){
+    note = 'Auto estimate: '+fmtMoney(a.amount)+' ('+a.program+'). Based on '+fmtMoney(a.income)+' a month income, a house payment up to '+
+      fmtMoney(a.payment)+' ('+Math.round(a.share*100)+'% of income), '+a.rate.toFixed(2)+'% rate, minimum down payment, Texas taxes and insurance. '+
+      'Debts, credit score and down payment are not on the application, so confirm with the lender.';
+    if(saved) note = 'Showing the amount your team entered. '+note;
+  }else{
+    note = 'No income on this application, so there is no auto estimate. Type an amount and save it.';
+  }
+  $('d-est-note').textContent = note;
+}
+function saveEstimate(value){
+  if(!state.open) return;
+  var r=state.open, prev=r.est_amount;
+  r.est_amount = value;
+  patch(r.id, {est_amount:value}, function(ok){
+    if(!ok) r.est_amount = prev; else toast(value==null?'Back to the auto estimate':'Estimate saved', true);
+    if(state.open===r) fillEstimate(r);
+    render();
+  });
 }
 function closeDrawer(){
   state.open=null;
@@ -692,11 +867,11 @@ function exportCSV(){
   var keys={};
   rows.forEach(function(r){ Object.keys(r.payload||{}).forEach(function(k){ if(k!=='access_key'&&k!=='botcheck') keys[k]=1; }); });
   var pk=Object.keys(keys).sort();
-  var head=['Received','Type','Name','Email','Phone','Lang','Status','Notes','Source'].concat(pk);
+  var head=['Received','Type','Name','Email','Phone','Lang','Status','Est. Qualifying Amount','Notes','Source'].concat(pk);
   function cell(v){ v=v==null?'':String(v); return '"'+v.replace(/"/g,'""')+'"'; }
   var lines=[head.map(cell).join(',')];
   rows.forEach(function(r){
-    var row=[r.created_at,r.type,r.name,r.email,r.phone,r.lang,r.status,r.notes,r.source]
+    var row=[r.created_at,r.type,r.name,r.email,r.phone,r.lang,r.status,(function(f){return r.type==='Mortgage Application'&&f.text!=='\u2014'?f.text:'';})(figureFor(r)),r.notes,r.source]
       .concat(pk.map(function(k){var v=(r.payload||{})[k]; return typeof v==='object'?JSON.stringify(v):v;}));
     lines.push(row.map(cell).join(','));
   });
@@ -755,19 +930,38 @@ $('rows').addEventListener('click', function(e){
   var tr=e.target.closest('tr.lead'); if(!tr) return;
   if(sel) return; /* handled on change */
   openDrawer(tr.dataset.id);
+  if(e.target.closest('[data-fig]') && !$('d-estwrap').hidden){ var f=$('d-est'); f.focus(); f.select(); }
 });
 $('rows').addEventListener('change', function(e){
   var sel=e.target.closest('[data-status]'); if(!sel) return;
   var tr=e.target.closest('tr.lead'); var id=tr.dataset.id; var v=sel.value;
-  sel.className='statussel s-'+v;
-  state.rows.forEach(function(r){ if(r.id===id) r.status=v; });
-  patch(id,{status:v});
+  var row=state.rows.filter(function(r){ return r.id===id; })[0]; if(!row) return;
+  var prev=row.status;
+  sel.className='statussel s-'+v; row.status=v;
+  patch(id,{status:v},function(ok){
+    if(ok){ toast('Status saved: '+v, true); if(state.open===row) $('d-status').value=v; }
+    else { row.status=prev; render(); if(state.open===row) $('d-status').value=prev; }
+  });
 });
 $('d-status').addEventListener('change', function(){
   if(!state.open) return;
-  var v=this.value; state.open.status=v;
-  patch(state.open.id,{status:v},function(){ render(); });
+  var row=state.open, v=this.value, prev=row.status, box=this;
+  row.status=v;
+  patch(row.id,{status:v},function(ok){
+    if(ok) toast('Status saved: '+v, true);
+    else { row.status=prev; if(state.open===row) box.value=prev; }
+    render();
+  });
 });
+$('d-est-save').addEventListener('click', function(){
+  var n=Math.round(num($('d-est').value));
+  if(!(n>0)){ toast('Type a dollar amount first, like 250000.'); return; }
+  saveEstimate(n);
+});
+$('d-est').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); $('d-est-save').click(); } });
+$('d-est-auto').addEventListener('click', function(){ saveEstimate(null); });
+$('toast').addEventListener('click', function(){ this.className=''; });
+document.addEventListener('visibilitychange', function(){ if(!document.hidden && state.token) freshToken(); });
 $('d-save').addEventListener('click', function(){
   if(!state.open) return;
   var v=$('d-notes').value; state.open.notes=v;
@@ -782,7 +976,10 @@ if(!CRM.url || !CRM.anonKey){ show('setup'); }
 else{
   var saved=null;
   try{ saved=JSON.parse(sessionStorage.getItem('jag_admin')||'null'); }catch(e){}
-  if(saved && saved.t){ state.token=saved.t; state.email=saved.e; show('app'); resetAndLoad(); }
+  if(saved && saved.t){
+    state.token=saved.t; state.email=saved.e; state.refresh=saved.r||null; state.exp=saved.x||0;
+    scheduleRefresh(); show('app'); resetAndLoad();
+  }
   else show('login');
 }
 })();
