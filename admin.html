@@ -170,6 +170,12 @@ td .em{font-size:12.5px;color:var(--muted)}
 .kv div:last-child{border-bottom:0}
 .kv span{color:var(--muted);flex:0 0 42%}
 .kv b{text-align:right;word-break:break-word;font-weight:600}
+.kv .hl b{font-size:15px;font-weight:800}
+.delbtn{background:#fff;color:#b3261e;border:1.5px solid #f0c9c6;border-radius:99px;padding:10px 18px;font-weight:800;cursor:pointer;font-size:13.5px}
+.delbtn.solid{background:#b3261e;color:#fff;border-color:#b3261e}
+.delbtn:disabled{opacity:.6;cursor:default}
+.delconfirm{border:1.5px solid #f0c9c6;background:#fdf3f2;border-radius:14px;padding:12px 14px;margin-top:10px}
+.delconfirm p{margin:0;font-size:13.5px;line-height:1.45;font-weight:600}
 .noteta{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;min-height:90px;resize:vertical;outline:none}
 .noteta:focus{border-color:var(--ink)}
 .saverow{display:flex;align-items:center;gap:12px;margin-top:10px}
@@ -249,7 +255,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-02.2</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-02.3</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -307,13 +313,23 @@ td .em{font-size:12.5px;color:var(--muted)}
         <p class="estnote" id="d-est-note"></p>
       </div>
     </div>
-    <div class="sect">Everything they submitted</div>
-    <div class="kv" id="d-kv"></div>
+    <div id="d-kv"></div>
     <div class="sect">Team notes</div>
     <textarea class="noteta" id="d-notes" placeholder="e.g. Called 7/2 — wants to see homes in Katy this weekend…"></textarea>
     <div class="saverow">
       <button class="savebtn" id="d-save">Save notes</button>
       <span class="saved" id="d-saved">Saved ✓</span>
+    </div>
+    <div id="d-delwrap" hidden>
+      <div class="sect">Delete</div>
+      <button type="button" class="delbtn" id="d-del">Delete this client</button>
+      <div class="delconfirm" id="d-delconfirm" hidden>
+        <p id="d-deltext"></p>
+        <div class="saverow">
+          <button type="button" class="delbtn solid" id="d-del-yes">Yes, delete forever</button>
+          <button type="button" class="linkbtn" id="d-del-no">Cancel</button>
+        </div>
+      </div>
     </div>
   </div>
 </aside>
@@ -656,44 +672,99 @@ function openDrawer(id){
   }
   $('d-status').value = r.status;
   fillEstimate(r);
-  var kv=$('d-kv'); kv.innerHTML='';
-  var p=r.payload||{};
-  Object.keys(p).forEach(function(k){
-    if(k==='access_key'||k==='botcheck'||k==='from_name'||k==='subject'||k==='__name') return;
-    var v=p[k]; if(v==null||v==='') return;
-    if(typeof v==='object') v=JSON.stringify(v);
-    kv.innerHTML += '<div><span>'+esc(prettyKey(k))+'</span><b>'+esc(v)+'</b></div>';
-  });
-  /* encrypted tax ids: offer a reveal button per stored id */
-  var reveal = [];
-  ['SSN','ITIN'].forEach(function(k){ if(/encrypted on file/.test(String(p[k]||''))) reveal.push(['borrower', k]); });
-  ['Co-borrower SSN','Co-borrower ITIN'].forEach(function(k){ if(/encrypted on file/.test(String(p[k]||''))) reveal.push(['coborrower', k]); });
-  reveal.forEach(function(pair){
-    var row = document.createElement('div');
-    row.innerHTML = '<span>'+esc(pair[1])+' (full)</span><b><button class="linkbtn" style="font-size:13px">Reveal</button></b>';
-    row.querySelector('button').addEventListener('click', function(){
-      var btn = this;
-      btn.textContent = '\u2026';
-      fetch(base()+'/rest/v1/rpc/jag_get_tax_id', {
-        method:'POST', headers:hdrs(),
-        body: JSON.stringify({ p_lead_id: r.id, p_which: pair[0] })
-      }).then(function(res){ return res.json(); }).then(function(v){
-        if(typeof v==='string' && v.length===9){
-          var pretty = v.slice(0,3)+'-'+v.slice(3,5)+'-'+v.slice(5);
-          btn.parentNode.textContent = pretty;
-          setTimeout(function(){ if(btn.parentNode) row.querySelector('b').innerHTML = '<button class="linkbtn" style="font-size:13px">Reveal</button>'; openDrawer(r.id); }, 45000);
-        }else{
-          btn.textContent = 'Unavailable';
-        }
-      }).catch(function(){ btn.textContent = 'Error'; });
-    });
-    kv.appendChild(row);
-  });
+  renderDetails(r);
+  $('d-delwrap').hidden = !canDelete();
+  $('d-delconfirm').hidden = true; $('d-del').hidden = false;
 
   $('d-notes').value = r.notes||'';
   $('d-saved').classList.remove('show');
   $('drawer').classList.add('open'); $('scrim').classList.add('open');
   $('drawer').setAttribute('aria-hidden','false');
+}
+/* ---------------- client details, grouped ----------------
+   Same sections the lender sees (jag-file-format.js), so a file reads the same everywhere:
+   Borrower, Employment and income, Housing, Co-borrower. Plus a Submission group for the team. */
+var NAME_KEYS = { 'First Name':1, 'Middle Name':1, 'Last Name':1 };
+var BIG_KEYS  = { 'Gross Monthly Income':1, 'Combined Monthly Income':1, 'Co-borrower Monthly Income':1 };
+var SUBMIT_KEYS = ['Submitted At','SMS Consent','Source Page'];
+function renderDetails(r){
+  var wrap=$('d-kv'); wrap.innerHTML='';
+  var p=r.payload||{}, F=window.JAG_FILE;
+  var secs = F ? F.sections(p) : [{ title:'Details', rows:Object.keys(p).filter(function(k){
+        return ['access_key','botcheck','from_name','subject','__name'].indexOf(k)<0 && p[k]!=null && p[k]!=='';
+      }).map(function(k){ return { key:k, label:k, value:typeof p[k]==='object'?JSON.stringify(p[k]):String(p[k]), tax:null, last4:'' }; }) }];
+  var sub = SUBMIT_KEYS.filter(function(k){ return p[k]!=null && p[k]!==''; })
+              .map(function(k){ return { key:k, label:k, value:String(p[k]), tax:null, last4:'' }; });
+  if(F && sub.length) secs.push({ title:'Submission', rows:sub });
+  if(secs.length===1 && secs[0].title==='Other details') secs[0].title='Details';
+
+  secs.forEach(function(sec){
+    var rows = sec.rows.slice();
+    if(sec.title==='Borrower'){
+      /* one "Full name" line instead of three separate name lines */
+      var full = ['First Name','Middle Name','Last Name'].map(function(k){ return p[k]||''; }).join(' ').replace(/\s+/g,' ').trim();
+      rows = rows.filter(function(x){ return !NAME_KEYS[x.key]; });
+      if(full) rows.unshift({ key:'Full name', label:'Full name', value:full, tax:null, last4:'' });
+    }
+    if(!rows.length) return;
+    var h=document.createElement('div'); h.className='sect'; h.textContent=sec.title; wrap.appendChild(h);
+    var box=document.createElement('div'); box.className='kv'; wrap.appendChild(box);
+    rows.forEach(function(x){
+      var row=document.createElement('div'); if(BIG_KEYS[x.key]) row.className='hl';
+      var lab=document.createElement('span'); lab.textContent=prettyKey(x.label);
+      var val=document.createElement('b');
+      if(x.tax && x.last4){
+        /* encrypted tax id: masked, with a Reveal link on the same line */
+        val.textContent='\u2022\u2022\u2022-\u2022\u2022-'+x.last4+' ';
+        var btn=document.createElement('button'); btn.className='linkbtn'; btn.style.fontSize='13px'; btn.textContent='Reveal';
+        btn.addEventListener('click', function(){
+          btn.textContent='\u2026';
+          api('/rest/v1/rpc/jag_get_tax_id', { method:'POST', body:JSON.stringify({ p_lead_id:r.id, p_which:x.tax }) })
+          .then(function(res){ return res.json(); }).then(function(v){
+            if(typeof v==='string' && v.length===9){
+              val.textContent = v.slice(0,3)+'-'+v.slice(3,5)+'-'+v.slice(5);
+              setTimeout(function(){ if(state.open===r) renderDetails(r); }, 45000);   /* hide again after 45s */
+            }else{ btn.textContent='Unavailable'; }
+          }).catch(function(){ btn.textContent='Error'; });
+        });
+        val.appendChild(btn);
+      }else{
+        val.textContent=x.value;
+      }
+      row.appendChild(lab); row.appendChild(val); box.appendChild(row);
+    });
+  });
+}
+
+/* ---------------- delete a client ----------------
+   Only the emails listed here see the Delete button, and the database checks the same list
+   (function jag_delete_lead in supabase-admin-fix.sql), so hiding the button is not the only lock. */
+var DELETE_ALLOWED = ['jason.aguirre@jasonhoustonrealty.com'];
+function canDelete(){ return DELETE_ALLOWED.indexOf(String(state.email||'').toLowerCase())>=0; }
+function deleteOpenLead(){
+  var r=state.open; if(!r) return;
+  var yes=$('d-del-yes'); yes.disabled=true; yes.textContent='Deleting\u2026';
+  function done(){ yes.disabled=false; yes.textContent='Yes, delete forever'; }
+  api('/rest/v1/rpc/jag_delete_lead', { method:'POST', body:JSON.stringify({ p_lead_id:r.id }) })
+  .then(function(res){
+    return res.text().then(function(t){
+      var j=null; try{ j=JSON.parse(t); }catch(e){}
+      done();
+      if(res.ok && j && j.ok){
+        state.rows = state.rows.filter(function(x){ return x.id!==r.id; });
+        closeDrawer(); render(); toast((r.name||'Client')+' was deleted', true);
+        return;
+      }
+      var why;
+      if(res.status===401){ why='Your login expired. Sign in again.'; }
+      else if(res.status===404){ why='Deleting is not switched on yet. Run supabase-admin-fix.sql once in Supabase.'; }
+      else if(j && j.reason==='not_allowed'){ why='This login is not allowed to delete clients.'; }
+      else if(j && j.reason==='not_found'){ why='That client was already deleted. Click Refresh.'; }
+      else { why='Database error '+res.status+((j&&j.message)?(': '+j.message):'')+'.'; }
+      toast('NOT deleted. '+why);
+      if(res.status===401) signOut();
+    });
+  }).catch(function(){ done(); toast('NOT deleted. Could not reach the database. Check your connection and try again.'); });
 }
 function fillEstimate(r){
   var isApp = r.type==='Mortgage Application';
@@ -960,6 +1031,13 @@ $('d-est-save').addEventListener('click', function(){
 });
 $('d-est').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); $('d-est-save').click(); } });
 $('d-est-auto').addEventListener('click', function(){ saveEstimate(null); });
+$('d-del').addEventListener('click', function(){
+  if(!state.open) return;
+  $('d-deltext').textContent = 'Permanently delete '+(state.open.name||'this client')+'? This removes the application, the stored SSN or ITIN, your notes and any lender links. It cannot be undone.';
+  this.hidden=true; $('d-delconfirm').hidden=false;
+});
+$('d-del-no').addEventListener('click', function(){ $('d-delconfirm').hidden=true; $('d-del').hidden=false; });
+$('d-del-yes').addEventListener('click', deleteOpenLead);
 $('toast').addEventListener('click', function(){ this.className=''; });
 document.addEventListener('visibilitychange', function(){ if(!document.hidden && state.token) freshToken(); });
 $('d-save').addEventListener('click', function(){
