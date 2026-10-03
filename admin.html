@@ -256,7 +256,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-03.1</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-03.2</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -783,68 +783,133 @@ function pdfWrap(str, bold, size, maxW){
   });
   return lines;
 }
+/* JAG Home Loans client file. Brand: ink #17161c, red #c8102e, the EST. 2018 / JAG / HOME LOANS lockup. */
+var PDF_BRAND = {
+  name:'JAG Home Loans', phone:'(832) 702-3574', site:'jasonaguirregroup.company',
+  legal:'Jason Aguirre Group  \u2022  eXp Realty, LLC  \u2022  Equal Housing Opportunity',
+  note:'Preliminary information only. Not a loan approval or a commitment to lend. Confidential client information.'
+};
+var PDF_HIDE = { 'Source Page':1 };                    /* not useful on paper */
 function buildLeadPdf(r){
-  var PW=612, PH=792, L=54, R=558, VX=230, TOP=738, BOTTOM=64;
+  var PW=612, PH=792, L=54, R=558, TOP=742, BOTTOM=74, GAP=22, COLW=(R-L-GAP)/2;
+  var INK='0.090 0.086 0.110', RED='0.784 0.063 0.180', MUT='0.357 0.353 0.388', SOFT='0.541 0.537 0.573',
+      LINE='0.906 0.906 0.925', CARD='0.961 0.961 0.969';
   var pages=[], cur, y;
   function newPage(){ cur=[]; pages.push(cur); y=TOP; }
-  function need(h){ if(y-h<BOTTOM) newPage(); }
-  function text(str,x,yy,size,bold,gray){
-    cur.push((gray==null?'0':gray)+' g BT /'+(bold?'F2':'F1')+' '+size+' Tf '+x.toFixed(1)+' '+yy.toFixed(1)+' Td '+pdfHex(pdfCodes(str))+' Tj ET');
+  function need(h){ if(y-h<BOTTOM){ newPage(); miniHeader(); } }
+  function tw(str,size,bold,sp){ var c=pdfCodes(str); return pdfWidth(c,bold,size)+(sp||0)*c.length; }
+  /* align: 'l' | 'r' | 'c' relative to x */
+  function text(str,x,yy,size,bold,color,sp,align){
+    var w=tw(str,size,bold,sp)-(sp||0);
+    if(align==='r') x-=w; else if(align==='c') x-=w/2;
+    cur.push((color||INK)+' rg BT /'+(bold?'F2':'F1')+' '+size+' Tf '+(sp||0)+' Tc '+x.toFixed(2)+' '+yy.toFixed(2)+' Td '+pdfHex(pdfCodes(str))+' Tj ET');
   }
-  function rule(yy,gray,w){ cur.push((gray||'0.88')+' G '+(w||0.6)+' w '+L+' '+yy.toFixed(1)+' m '+R+' '+yy.toFixed(1)+' l S'); }
-  function heading(t){
-    need(54); y-=20;
-    text(String(t).toUpperCase(), L, y, 8.5, true, '0.42'); y-=7; rule(y,'0.25',0.9); y-=4;
+  function rect(x,yy,w,h,color){ cur.push(color+' rg '+x.toFixed(2)+' '+yy.toFixed(2)+' '+w.toFixed(2)+' '+h.toFixed(2)+' re f'); }
+  function hline(x1,x2,yy,color,w){ cur.push(color+' RG '+(w||0.6)+' w '+x1.toFixed(2)+' '+yy.toFixed(2)+' m '+x2.toFixed(2)+' '+yy.toFixed(2)+' l S'); }
+  function caps(str){ return String(str).toUpperCase(); }
+
+  /* the logo lockup, centred on cx: EST. 2018 / JAG / -- HOME LOANS -- */
+  function lockup(cx, top){
+    text('EST. 2018', cx, top-7, 6.5, false, SOFT, 2.2, 'c');
+    text('JAG', cx, top-36, 31, true, INK, 0.6, 'c');
+    var sub='HOME LOANS', sw=tw(sub,7,true,2.6)-2.6;
+    text(sub, cx, top-50, 7, true, INK, 2.6, 'c');
+    hline(cx-sw/2-20, cx-sw/2-8, top-47.5, RED, 1.4);
+    hline(cx+sw/2+8,  cx+sw/2+20, top-47.5, RED, 1.4);
   }
-  function row(label, value, bold){
-    var lines=pdfWrap(value, bold, 10.5, R-VX); if(!lines.length) lines=[''];
-    var labs=pdfWrap(label, false, 10.5, VX-L-12);
-    var n=Math.max(lines.length, labs.length), h=n*14+8;
-    need(h);
-    for(var i=0;i<n;i++){
-      var yy=y-13-i*14;
-      if(labs[i]!=null) text(labs[i], L, yy, 10.5, false, '0.42');
-      if(lines[i]!=null) text(lines[i], VX, yy, 10.5, bold, '0');
+  function miniHeader(){               /* pages 2+ */
+    text('JAG', L, y-9, 13, true, INK, 0.3);
+    text('HOME LOANS', L+34, y-8, 6.5, true, INK, 2.2);
+    text(r.name||'', R, y-8, 9, false, MUT, 0, 'r');
+    hline(L, R, y-18, LINE, 0.8);
+    y-=38;
+  }
+  function section(t){
+    need(86); y-=20;
+    rect(L, y-1.5, 14, 2.2, RED);
+    text(caps(t), L+22, y-4, 8.5, true, INK, 1.6);
+    y-=18;
+  }
+  /* label above value, flowing in two columns; long values take the full width */
+  function grid(items){
+    var i=0;
+    function cell(it, x, w, yy, draw){
+      var lines=pdfWrap(it.value, !!it.bold, 10.5, w); if(!lines.length) lines=[''];
+      if(draw){
+        text(caps(it.label), x, yy-8, 6.8, false, SOFT, 0.7);
+        lines.forEach(function(ln,k){ text(ln, x, yy-22-k*13, 10.5, !!it.bold, INK); });
+      }
+      return 22+(lines.length-1)*13+10;
     }
-    y-=h; rule(y+1);
+    function wide(it){ return pdfWrap(it.value, !!it.bold, 10.5, COLW).length>2; }
+    while(i<items.length){
+      var a=items[i], b=items[i+1], h;
+      if(wide(a) || !b || wide(b)){
+        h=cell(a, L, R-L, y, false); need(h); cell(a, L, R-L, y, true); i+=1;
+      }else{
+        h=Math.max(cell(a, L, COLW, y, false), cell(b, L+COLW+GAP, COLW, y, false)); need(h);
+        cell(a, L, COLW, y, true); cell(b, L+COLW+GAP, COLW, y, true); i+=2;
+      }
+      y-=h; hline(L, R, y+4, LINE, 0.5);
+    }
   }
 
+  /* ---------- page 1 header ---------- */
   newPage();
-  text('JASON AGUIRRE GROUP', L, y, 9, true, '0.42');
-  var right='eXp Realty'; text(right, R-pdfWidth(pdfCodes(right),false,9), y, 9, false, '0.42');
-  y-=30;
-  pdfWrap(r.name||'(no name)', true, 22, R-L).forEach(function(ln){ text(ln, L, y, 22, true, '0'); y-=26; });
-  y+=8;
-  text(typeShort(r.type)+'  \u2022  Received '+fmtDate(r.created_at), L, y, 10.5, false, '0.42');
-  y-=10;
+  rect(0, PH-7, PW, 7, INK); rect(0, PH-9, PW, 2, RED);
+  lockup(L+(tw('HOME LOANS',7,true,2.6)-2.6)/2+20, y+6);
+  text('CLIENT FILE', R, y-6, 7.5, true, RED, 2.2, 'r');
+  text(typeShort(r.type), R, y-22, 11, true, INK, 0, 'r');
+  text('Received '+fmtDate(r.created_at), R, y-36, 9, false, MUT, 0, 'r');
+  y-=74; hline(L, R, y, LINE, 0.8); y-=34;
 
-  heading('Summary');
-  row('Status', r.status||'New', true);
-  var f=figureFor(r);
-  if(r.type==='Mortgage Application' && f.text && f.text!=='\u2014') row('Estimated qualifying amount', f.text+(f.sub?('  ('+f.sub+')'):''), true);
-  var pl=r.payload||{};
-  if(r.phone && !pl['Phone']) row('Phone', r.phone);
-  if(r.email && !pl['Email']) row('Email', r.email);
+  /* ---------- client name ---------- */
+  pdfWrap(r.name||'(no name)', true, 24, R-L).forEach(function(ln){ text(ln, L, y, 24, true, INK); y-=28; });
+  var p=r.payload||{}, contact=[r.phone||p['Phone'], r.email||p['Email'], r.lang||p['Preferred Language']].filter(Boolean).join('   \u2022   ');
+  if(contact){ y+=8; text(contact, L, y, 10, false, MUT); y-=6; }
+  y-=16;
 
-  detailSections(r).forEach(function(sec){
-    heading(sec.title);
-    sec.rows.forEach(function(x){
-      var v = (x.tax && x.last4) ? ('\u2022\u2022\u2022-\u2022\u2022-'+x.last4) : x.value;
-      row(prettyKey(x.label), v, !!BIG_KEYS[x.key]);
-    });
+  /* ---------- summary cards ---------- */
+  var f=figureFor(r), cards=[['Status', r.status||'New']];
+  if(r.type==='Mortgage Application'){
+    cards.push(['Estimated qualifying amount', (f.text&&f.text!=='\u2014')?f.text:'Not set', (f.text&&f.text!=='\u2014'&&f.sub)?f.sub:'']);
+    var inc=p['Combined Monthly Income']||p['Gross Monthly Income'];
+    if(inc) cards.push([p['Combined Monthly Income']?'Combined monthly income':'Monthly income', String(inc)]);
+  }else if(f.text && f.text!=='\u2014'){ cards.push(['Key figure', f.text]); }
+  var cg=10, cw=(R-L-cg*(cards.length-1))/cards.length, chh=54;
+  cards.forEach(function(c,i){
+    var x=L+i*(cw+cg);
+    rect(x, y-chh, cw, chh, CARD); rect(x, y-chh, 2.5, chh, i===1?RED:INK);
+    text(caps(c[0]), x+14, y-17, 6.8, false, MUT, 0.8);
+    text(c[1], x+14, y-38, 15, true, INK);
+    if(c[2]) text(c[2], x+14+tw(c[1],15,true)+7, y-38, 8, false, SOFT);
   });
+  y-=chh+4;
 
+  /* ---------- sections ---------- */
+  detailSections(r).forEach(function(sec){
+    var items=sec.rows.filter(function(x){ return !PDF_HIDE[x.key]; }).map(function(x){
+      return { label:prettyKey(x.label), bold:!!BIG_KEYS[x.key],
+               value:(x.tax && x.last4) ? ('\u2022\u2022\u2022-\u2022\u2022-'+x.last4) : x.value };
+    });
+    if(!items.length) return;
+    section(sec.title); grid(items);
+  });
   if(r.notes && String(r.notes).trim()){
-    heading('Team notes');
-    pdfWrap(r.notes, false, 10.5, R-L).forEach(function(ln){ need(16); text(ln, L, y-13, 10.5, false, '0'); y-=14; });
+    section('Team notes');
+    pdfWrap(r.notes, false, 10.5, R-L).forEach(function(ln){ need(15); text(ln, L, y-10, 10.5, false, INK); y-=14; });
   }
 
-  var stamp='Saved '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'  \u2022  Confidential client information';
+  /* ---------- footer on every page ---------- */
+  var saved='Saved '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   pages.forEach(function(pg,i){
     cur=pg;
-    rule(46,'0.88',0.6);
-    text(stamp, L, 34, 8, false, '0.5');
-    var pn='Page '+(i+1)+' of '+pages.length; text(pn, R-pdfWidth(pdfCodes(pn),false,8), 34, 8, false, '0.5');
+    hline(L, R, 58, LINE, 0.8);
+    text(PDF_BRAND.name, L, 45, 8, true, INK);
+    text('  \u2022  '+PDF_BRAND.phone+'  \u2022  '+PDF_BRAND.site, L+tw(PDF_BRAND.name,8,true), 45, 8, false, MUT);
+    text(saved+'   \u2022   Page '+(i+1)+' of '+pages.length, R, 45, 8, false, MUT, 0, 'r');
+    text(PDF_BRAND.legal, L, 34, 7, false, SOFT);
+    text(PDF_BRAND.note, L, 25, 7, false, SOFT);
   });
 
   /* assemble the file (all ASCII, so string length == byte length) */
@@ -875,7 +940,7 @@ function savePdf(){
     var name=String(r.name||'Client').replace(/[\\/:*?"<>|]+/g,' ').replace(/\s+/g,' ').trim()||'Client';
     var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download=name+' - '+typeShort(r.type)+'.pdf';
+    a.download=name+' - JAG Home Loans.pdf';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
     toast('PDF saved to your Downloads', true);
