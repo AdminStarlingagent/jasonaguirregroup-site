@@ -4,7 +4,7 @@
 --   1) adds the column that stores an edited "estimated qualifying amount"
 --   2) re-asserts that every signed-in team member can read AND update leads
 --      (status, notes, estimate), in case the live table drifted from supabase-setup.sql
---   3) adds the "Delete this client" function. Only the emails listed inside it can delete.
+--   3) adds the "Delete this client" function for every signed-in team member.
 -- ============================================================
 
 alter table public.jag_leads add column if not exists est_amount numeric;
@@ -20,9 +20,7 @@ drop policy if exists "admins can update leads" on public.jag_leads;
 create policy "admins can update leads" on public.jag_leads for update to authenticated using (true) with check (true);
 
 -- ------------------------------------------------------------
--- Delete a client from the admin page.
--- To let another team member delete, add their email to the list below and run this file again
--- (and add the same email to DELETE_ALLOWED in admin.html so they see the button).
+-- Delete a client from the admin page. Any signed-in team member can delete.
 -- ------------------------------------------------------------
 create or replace function public.jag_delete_lead(p_lead_id uuid)
 returns json
@@ -31,10 +29,9 @@ security definer
 set search_path = public
 as $$
 declare
-  v_email text := lower(coalesce(auth.jwt() ->> 'email', ''));
   v_count int;
 begin
-  if v_email not in ('jason.aguirre@jasonhoustonrealty.com') then
+  if auth.uid() is null then
     return json_build_object('ok', false, 'reason', 'not_allowed');
   end if;
 

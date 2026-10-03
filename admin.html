@@ -120,6 +120,7 @@ td .em{font-size:12.5px;color:var(--muted)}
 .quick{display:flex;gap:9px;margin-bottom:18px;flex-wrap:wrap}
 .qbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:13px;font-weight:800;padding:10px 16px;border-radius:99px;color:#fff}
 .q-call{background:var(--sell)} .q-text{background:var(--loan)} .q-mail{background:var(--ink)}
+.q-pdf{background:#fff;color:var(--ink);border:1.5px solid var(--ink);cursor:pointer;padding:8.5px 15px}
 .q-lender{background:var(--buy);border:0;cursor:pointer;margin-left:auto}
 .q-lender[aria-expanded="true"]{background:#9d0c24}
 
@@ -255,7 +256,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-02.3</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-03.1</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -657,10 +658,12 @@ function openDrawer(id){
                q.push('<a class="qbtn q-text" href="sms:'+esc(r.phone)+'">Text</a>'); }
   if(r.email){ var ml = mailLink(r.email);
                q.push('<a class="qbtn q-mail" href="'+esc(ml.href)+'" target="'+ml.target+'" rel="noopener">Email</a>'); }
+  q.push('<button type="button" class="qbtn q-pdf" id="d-pdf-btn">Save PDF</button>');
   if(r.type==='Mortgage Application'){
     q.push('<button type="button" class="qbtn q-lender" id="d-lender-btn" aria-expanded="false" aria-controls="d-lender">Send to lender</button>');
   }
   $('d-quick').innerHTML = q.join('');
+  $('d-pdf-btn').addEventListener('click', savePdf);
   lenderReset(); $('d-shares').innerHTML='';
   if(r.type==='Mortgage Application'){
     $('d-lender-btn').addEventListener('click', function(){
@@ -687,8 +690,7 @@ function openDrawer(id){
 var NAME_KEYS = { 'First Name':1, 'Middle Name':1, 'Last Name':1 };
 var BIG_KEYS  = { 'Gross Monthly Income':1, 'Combined Monthly Income':1, 'Co-borrower Monthly Income':1 };
 var SUBMIT_KEYS = ['Submitted At','SMS Consent','Source Page'];
-function renderDetails(r){
-  var wrap=$('d-kv'); wrap.innerHTML='';
+function detailSections(r){
   var p=r.payload||{}, F=window.JAG_FILE;
   var secs = F ? F.sections(p) : [{ title:'Details', rows:Object.keys(p).filter(function(k){
         return ['access_key','botcheck','from_name','subject','__name'].indexOf(k)<0 && p[k]!=null && p[k]!=='';
@@ -697,8 +699,7 @@ function renderDetails(r){
               .map(function(k){ return { key:k, label:k, value:String(p[k]), tax:null, last4:'' }; });
   if(F && sub.length) secs.push({ title:'Submission', rows:sub });
   if(secs.length===1 && secs[0].title==='Other details') secs[0].title='Details';
-
-  secs.forEach(function(sec){
+  return secs.map(function(sec){
     var rows = sec.rows.slice();
     if(sec.title==='Borrower'){
       /* one "Full name" line instead of three separate name lines */
@@ -706,7 +707,13 @@ function renderDetails(r){
       rows = rows.filter(function(x){ return !NAME_KEYS[x.key]; });
       if(full) rows.unshift({ key:'Full name', label:'Full name', value:full, tax:null, last4:'' });
     }
-    if(!rows.length) return;
+    return { title:sec.title, rows:rows };
+  }).filter(function(sec){ return sec.rows.length; });
+}
+function renderDetails(r){
+  var wrap=$('d-kv'); wrap.innerHTML='';
+  detailSections(r).forEach(function(sec){
+    var rows = sec.rows;
     var h=document.createElement('div'); h.className='sect'; h.textContent=sec.title; wrap.appendChild(h);
     var box=document.createElement('div'); box.className='kv'; wrap.appendChild(box);
     rows.forEach(function(x){
@@ -736,11 +743,149 @@ function renderDetails(r){
   });
 }
 
+/* ---------------- save the client file as a PDF ----------------
+   Builds the PDF right here in the browser (no outside service, so client data never leaves
+   the page). Same sections as the profile. SSN / ITIN stay masked to the last 4 digits. */
+var PDF_W  = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500];
+var PDF_WB = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,761,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+var PDF_MAP = {0x2022:0x95,0x2013:0x96,0x2014:0x97,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2026:0x85,0x20AC:0x80,0x2713:0x2A};
+function pdfCodes(str){
+  var out=[], t=String(str==null?'':str).replace(/[\r\n\t]+/g,' ');
+  for(var i=0;i<t.length;i++){
+    var c=t.charCodeAt(i);
+    if(PDF_MAP[c]) c=PDF_MAP[c]; else if(c>255 || c<32 || (c>126&&c<160)) c=63;
+    out.push(c);
+  }
+  return out;
+}
+function pdfWidth(codes, bold, size){
+  var T=bold?PDF_WB:PDF_W, w=0;
+  for(var i=0;i<codes.length;i++) w += T[codes[i]-32]||556;
+  return w*size/1000;
+}
+function pdfHex(codes){ return '<'+codes.map(function(c){ return (c<16?'0':'')+c.toString(16); }).join('')+'>'; }
+/* split text into lines no wider than maxW; hard-breaks words that are too long (URLs) */
+function pdfWrap(str, bold, size, maxW){
+  var lines=[], paras=String(str==null?'':str).split(/\r?\n/);
+  paras.forEach(function(par){
+    var words=par.split(/\s+/).filter(Boolean), cur='';
+    if(!words.length){ lines.push(''); return; }
+    words.forEach(function(w){
+      while(pdfWidth(pdfCodes(w),bold,size)>maxW){
+        var n=w.length; while(n>1 && pdfWidth(pdfCodes(w.slice(0,n)),bold,size)>maxW) n--;
+        if(cur){ lines.push(cur); cur=''; }
+        lines.push(w.slice(0,n)); w=w.slice(n);
+      }
+      var tryLine = cur ? cur+' '+w : w;
+      if(pdfWidth(pdfCodes(tryLine),bold,size)<=maxW) cur=tryLine; else { lines.push(cur); cur=w; }
+    });
+    if(cur) lines.push(cur);
+  });
+  return lines;
+}
+function buildLeadPdf(r){
+  var PW=612, PH=792, L=54, R=558, VX=230, TOP=738, BOTTOM=64;
+  var pages=[], cur, y;
+  function newPage(){ cur=[]; pages.push(cur); y=TOP; }
+  function need(h){ if(y-h<BOTTOM) newPage(); }
+  function text(str,x,yy,size,bold,gray){
+    cur.push((gray==null?'0':gray)+' g BT /'+(bold?'F2':'F1')+' '+size+' Tf '+x.toFixed(1)+' '+yy.toFixed(1)+' Td '+pdfHex(pdfCodes(str))+' Tj ET');
+  }
+  function rule(yy,gray,w){ cur.push((gray||'0.88')+' G '+(w||0.6)+' w '+L+' '+yy.toFixed(1)+' m '+R+' '+yy.toFixed(1)+' l S'); }
+  function heading(t){
+    need(54); y-=20;
+    text(String(t).toUpperCase(), L, y, 8.5, true, '0.42'); y-=7; rule(y,'0.25',0.9); y-=4;
+  }
+  function row(label, value, bold){
+    var lines=pdfWrap(value, bold, 10.5, R-VX); if(!lines.length) lines=[''];
+    var labs=pdfWrap(label, false, 10.5, VX-L-12);
+    var n=Math.max(lines.length, labs.length), h=n*14+8;
+    need(h);
+    for(var i=0;i<n;i++){
+      var yy=y-13-i*14;
+      if(labs[i]!=null) text(labs[i], L, yy, 10.5, false, '0.42');
+      if(lines[i]!=null) text(lines[i], VX, yy, 10.5, bold, '0');
+    }
+    y-=h; rule(y+1);
+  }
+
+  newPage();
+  text('JASON AGUIRRE GROUP', L, y, 9, true, '0.42');
+  var right='eXp Realty'; text(right, R-pdfWidth(pdfCodes(right),false,9), y, 9, false, '0.42');
+  y-=30;
+  pdfWrap(r.name||'(no name)', true, 22, R-L).forEach(function(ln){ text(ln, L, y, 22, true, '0'); y-=26; });
+  y+=8;
+  text(typeShort(r.type)+'  \u2022  Received '+fmtDate(r.created_at), L, y, 10.5, false, '0.42');
+  y-=10;
+
+  heading('Summary');
+  row('Status', r.status||'New', true);
+  var f=figureFor(r);
+  if(r.type==='Mortgage Application' && f.text && f.text!=='\u2014') row('Estimated qualifying amount', f.text+(f.sub?('  ('+f.sub+')'):''), true);
+  var pl=r.payload||{};
+  if(r.phone && !pl['Phone']) row('Phone', r.phone);
+  if(r.email && !pl['Email']) row('Email', r.email);
+
+  detailSections(r).forEach(function(sec){
+    heading(sec.title);
+    sec.rows.forEach(function(x){
+      var v = (x.tax && x.last4) ? ('\u2022\u2022\u2022-\u2022\u2022-'+x.last4) : x.value;
+      row(prettyKey(x.label), v, !!BIG_KEYS[x.key]);
+    });
+  });
+
+  if(r.notes && String(r.notes).trim()){
+    heading('Team notes');
+    pdfWrap(r.notes, false, 10.5, R-L).forEach(function(ln){ need(16); text(ln, L, y-13, 10.5, false, '0'); y-=14; });
+  }
+
+  var stamp='Saved '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'  \u2022  Confidential client information';
+  pages.forEach(function(pg,i){
+    cur=pg;
+    rule(46,'0.88',0.6);
+    text(stamp, L, 34, 8, false, '0.5');
+    var pn='Page '+(i+1)+' of '+pages.length; text(pn, R-pdfWidth(pdfCodes(pn),false,8), 34, 8, false, '0.5');
+  });
+
+  /* assemble the file (all ASCII, so string length == byte length) */
+  var objs=[];
+  objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  objs[3]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objs[4]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  var kids=[];
+  pages.forEach(function(pg,i){
+    var pageNo=5+i*2, contNo=6+i*2, stream=pg.join('\n');
+    kids.push(pageNo+' 0 R');
+    objs[pageNo]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PW+' '+PH+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+contNo+' 0 R >>';
+    objs[contNo]='<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream';
+  });
+  objs[2]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages.length+' >>';
+  var out='%PDF-1.4\n', offs=[];
+  for(var n=1;n<objs.length;n++){ offs[n]=out.length; out+=n+' 0 obj\n'+objs[n]+'\nendobj\n'; }
+  var xref=out.length;
+  out+='xref\n0 '+objs.length+'\n0000000000 65535 f \n';
+  for(n=1;n<objs.length;n++) out+=('0000000000'+offs[n]).slice(-10)+' 00000 n \n';
+  out+='trailer\n<< /Size '+objs.length+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n';
+  return out;
+}
+function savePdf(){
+  var r=state.open; if(!r) return;
+  try{
+    var blob=new Blob([buildLeadPdf(r)],{type:'application/pdf'});
+    var name=String(r.name||'Client').replace(/[\\/:*?"<>|]+/g,' ').replace(/\s+/g,' ').trim()||'Client';
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=name+' - '+typeShort(r.type)+'.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+    toast('PDF saved to your Downloads', true);
+  }catch(e){ toast('Could not make the PDF. Refresh the page and try again.'); }
+}
+
 /* ---------------- delete a client ----------------
-   Only the emails listed here see the Delete button, and the database checks the same list
-   (function jag_delete_lead in supabase-admin-fix.sql), so hiding the button is not the only lock. */
-var DELETE_ALLOWED = ['jason.aguirre@jasonhoustonrealty.com'];
-function canDelete(){ return DELETE_ALLOWED.indexOf(String(state.email||'').toLowerCase())>=0; }
+   Any signed-in team member can delete. The database function jag_delete_lead
+   (supabase-admin-fix.sql) does the delete and refuses anyone who is not signed in. */
+function canDelete(){ return !!state.token; }
 function deleteOpenLead(){
   var r=state.open; if(!r) return;
   var yes=$('d-del-yes'); yes.disabled=true; yes.textContent='Deleting\u2026';
@@ -758,7 +903,7 @@ function deleteOpenLead(){
       var why;
       if(res.status===401){ why='Your login expired. Sign in again.'; }
       else if(res.status===404){ why='Deleting is not switched on yet. Run supabase-admin-fix.sql once in Supabase.'; }
-      else if(j && j.reason==='not_allowed'){ why='This login is not allowed to delete clients.'; }
+      else if(j && j.reason==='not_allowed'){ why='You are not signed in. Sign in again.'; }
       else if(j && j.reason==='not_found'){ why='That client was already deleted. Click Refresh.'; }
       else { why='Database error '+res.status+((j&&j.message)?(': '+j.message):'')+'.'; }
       toast('NOT deleted. '+why);
