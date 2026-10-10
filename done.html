@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>JAG · Listo / Done</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="jag-capture.js?v=3"></script>
+<style>
+:root{ --ink:#17161c; --card:#f5f5f7; --line:#e8e8ec; --buy:#c8102e; --sell:#0f8a4d; --sell-t:#e7f5ee; --muted:#6a6972; --soft:#8a8992; }
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--card);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+main{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.card{width:min(440px,100%);background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px 24px;box-shadow:0 18px 50px rgba(23,22,28,.06)}
+.brand{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--soft);margin:0 0 18px}
+.brand b{color:var(--ink)}
+h1{font-size:21px;line-height:1.25;letter-spacing:-.02em;margin:0}
+.en{color:var(--muted);font-weight:600}
+h1 .en{display:block;font-size:15px;margin-top:4px;letter-spacing:-.01em}
+p{font-size:14.5px;line-height:1.55;margin:14px 0 0}
+p .en{display:block;font-size:13.5px;margin-top:2px}
+.type{display:inline-block;margin:0 0 10px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--card);border-radius:99px;padding:4px 10px}
+button{margin-top:22px;width:100%;border:0;border-radius:14px;background:var(--ink);color:#fff;font:inherit;font-weight:800;font-size:16px;padding:16px 18px;cursor:pointer}
+button[disabled]{opacity:.55;cursor:default}
+.ok{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:99px;background:var(--sell-t);color:var(--sell);font-size:24px;font-weight:800;margin-bottom:14px}
+.err{color:var(--buy)}
+</style>
+</head>
+<body>
+<main>
+  <div class="card" id="card" aria-live="polite">
+    <p class="brand"><b>JAG</b> · ALERTAS / ALERTS</p>
+    <h1>Cargando…<span class="en">Loading…</span></h1>
+  </div>
+</main>
+<script>
+/* One-tap "Done" for Speed-to-Lead alerts. The SMS links here with ?t=<token>.
+   Opening the page only LOOKS UP the alert; nothing changes until someone taps the button,
+   because phones fetch links to build message previews and that must not close an alert. */
+(function(){
+  'use strict';
+  var CRM = window.JAG_CRM || {};
+  var card = document.getElementById('card');
+  var token = (new URLSearchParams(location.search).get('t') || '').toLowerCase();
+  var TYPES = {
+    first_call: ['Lead nuevo', 'New lead'],
+    appt_call:  ['Llamada por cita', 'Appointment call']
+  };
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function rpc(name, body){
+    return fetch(String(CRM.url||'').replace(/\/+$/,'') + '/rest/v1/rpc/' + name, {
+      method:'POST',
+      headers:{ apikey:CRM.anonKey, Authorization:'Bearer '+CRM.anonKey, 'Content-Type':'application/json' },
+      body:JSON.stringify(body)
+    }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); });
+  }
+  function view(html){ card.innerHTML = '<p class="brand"><b>JAG</b> · ALERTAS / ALERTS</p>' + html; }
+  function bad(){
+    view('<h1>Este enlace no es válido o ya venció.<span class="en">This link is not valid or has expired.</span></h1>'+
+         '<p>Si la alerta sigue abierta, márcala desde el siguiente mensaje.<span class="en">If the alert is still open, use the link in the next message.</span></p>');
+  }
+  function offline(){
+    view('<h1 class="err">No se pudo conectar.<span class="en">Could not connect.</span></h1>'+
+         '<p>Revisa tu señal e inténtalo otra vez.<span class="en">Check your signal and try again.</span></p>'+
+         '<button type="button" id="retry">Reintentar / Try again</button>');
+    document.getElementById('retry').addEventListener('click', start);
+  }
+  /* already: someone had closed it before (a tap, or the system saw the call in FUB) */
+  function closedView(label, already){
+    view('<div class="ok" aria-hidden="true">&#10003;</div>'+
+         '<h1>'+(already ? 'Esta alerta ya está cerrada.' : 'Listo. Alertas detenidas.')+
+         '<span class="en">'+(already ? 'This alert is already closed.' : 'Done. Alerts stopped.')+'</span></h1>'+
+         (label ? '<p>'+esc(label)+'</p>' : '')+
+         '<p>Recuerda registrar la llamada en Follow Up Boss.<span class="en">Remember to log the call in Follow Up Boss.</span></p>');
+  }
+  function openView(j){
+    var t = TYPES[j.type] || ['Alerta', 'Alert'];
+    view('<span class="type">'+esc(t[0])+' / '+esc(t[1])+'</span>'+
+         '<h1>'+esc(j.label || 'Lead')+'</h1>'+
+         '<p>Toca el botón cuando ya hayas hablado con el cliente o dejado mensaje. Las alertas de este lead se detienen.'+
+         '<span class="en">Tap once you have talked to the client or left a message. Alerts for this lead stop.</span></p>'+
+         '<button type="button" id="done">Marcar como hecho / Mark done</button>');
+    var btn = document.getElementById('done');
+    btn.addEventListener('click', function(){
+      btn.disabled = true; btn.textContent = 'Guardando… / Saving…';
+      rpc('ops_mark_done', { p_token: token }).then(function(r){
+        if(r && r.ok) closedView(r.label || j.label, !!r.already); else bad();
+      }).catch(function(){ btn.disabled = false; btn.textContent = 'Reintentar / Try again'; });
+    });
+  }
+  function start(){
+    if(!/^[0-9a-f]{32}$/.test(token) || !CRM.url || !CRM.anonKey){ bad(); return; }
+    view('<h1>Cargando…<span class="en">Loading…</span></h1>');
+    rpc('ops_done_peek', { p_token: token }).then(function(j){
+      if(!j || !j.ok) bad();
+      else if(!j.open) closedView(j.label, true);
+      else openView(j);
+    }).catch(offline);
+  }
+  start();
+})();
+</script>
+</body>
+</html>

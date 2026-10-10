@@ -183,8 +183,53 @@ td .em{font-size:12.5px;color:var(--muted)}
 .savebtn{background:var(--ink);color:#fff;border:0;border-radius:99px;padding:11px 22px;font-weight:800;cursor:pointer}
 .saved{font-size:13px;color:var(--sell);font-weight:700;opacity:0;transition:opacity .2s}
 .saved.show{opacity:1}
+/* ---- tabs ---- */
+.tabs{display:flex;gap:18px;margin:0 0 18px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;border-bottom:2.5px solid transparent;padding:10px 2px;margin-bottom:-1px;font-weight:800;font-size:14.5px;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--ink);border-bottom-color:var(--buy)}
+.tabcount{background:var(--card);color:var(--ink);border-radius:99px;padding:1px 8px;font-size:11.5px;font-weight:800}
+.tabcount:empty{display:none}
+
+/* ---- deals (closings tracker) ---- */
+.deals{display:grid;gap:12px}
+.deal{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.deal.urgent{border-color:#f3c3a0}
+.d-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.d-top h3{margin:0;font-size:16.5px;letter-spacing:-.015em}
+.d-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.dstat{font-size:11px;font-weight:800;letter-spacing:.03em;padding:5px 10px;border-radius:99px;white-space:nowrap}
+.ds-active{background:var(--sell-t);color:var(--sell)} .ds-offer{background:var(--loan-t);color:var(--loan)}
+.ds-on_hold{background:var(--amber-t);color:var(--amber)} .ds-terminated,.ds-closed{background:var(--card);color:var(--soft)}
+.d-dates{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.ddate{border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12.5px;line-height:1.3}
+.ddate b{display:block;font-size:13.5px}
+.ddate small{color:var(--muted);font-weight:600}
+.ddate.soon{border-color:#f3c3a0;background:var(--amber-t)} .ddate.soon small{color:var(--amber)}
+.ddate.past{border-color:#f0c9c6;background:var(--buy-t)} .ddate.past small{color:var(--buy)}
+.d-items{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:7px}
+.d-items li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;line-height:1.45}
+.own{flex:0 0 auto;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:99px;margin-top:1px}
+.own-jason{background:var(--buy-t);color:var(--buy)} .own-tc{background:var(--teal-t);color:var(--teal)} .own-other{background:var(--card);color:var(--muted)}
+.d-items small{color:var(--soft);white-space:nowrap}
+.d-clear{margin:12px 0 0;font-size:13px;color:var(--sell);font-weight:700}
+.d-more{margin-top:12px;border-top:1px solid #f1f1f4;padding-top:10px}
+.d-more summary{cursor:pointer;font-size:12.5px;font-weight:800;color:var(--muted);list-style:none}
+.d-more summary::-webkit-details-marker{display:none}
+.d-more summary:after{content:' \25BE'}
+.d-more[open] summary:after{content:' \25B4'}
+.d-more .kv{margin-top:10px}
+.d-note{font-size:12.5px;color:var(--muted);margin:10px 0 0;white-space:pre-wrap;line-height:1.5}
+.dealfoot{font-size:12px;color:var(--soft);text-align:center;margin:16px 0 0}
+
 @media(max-width:760px){
   th:nth-child(4),td:nth-child(4),th:nth-child(6),td:nth-child(6){display:none}
+  .deal{padding:14px}
+  /* phones: header buttons wrap instead of pushing the page sideways */
+  .wrap{padding:0 16px}
+  .hin{flex-wrap:wrap;gap:8px 10px;padding:10px 16px}
+  .hin .who{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+  .ghostbtn{padding:7px 12px;font-size:12.5px}
 }
 </style>
 </head>
@@ -229,6 +274,12 @@ td .em{font-size:12.5px;color:var(--muted)}
 
 <!-- app -->
 <div class="app wrap" id="app">
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+    <button type="button" class="tab on" id="tab-leads" data-tab="leads" role="tab" aria-selected="true">Leads</button>
+    <button type="button" class="tab" id="tab-deals" data-tab="deals" role="tab" aria-selected="false">Deals <span class="tabcount" id="dealcount"></span></button>
+  </nav>
+
+  <section id="leadsview">
   <div class="stats" id="stats"></div>
   <div class="toolbar">
     <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>
@@ -254,9 +305,28 @@ td .em{font-size:12.5px;color:var(--muted)}
     <div class="empty" id="empty" style="display:none">No inquiries match — new submissions land here automatically.</div>
     <div class="morebar" id="morebar" style="display:none"><button class="linkbtn" id="more">Load older inquiries</button></div>
   </div>
+  </section>
+
+  <!-- deals: what the closings assistant is tracking (read-only) -->
+  <section id="dealsview" hidden>
+    <div class="stats" id="dealstats"></div>
+    <div class="toolbar">
+      <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>
+        <input id="dq" placeholder="Search address, client, title company, lender…"></label>
+      <div class="chips" id="dealchips">
+        <button class="chip on" data-dfilter="active">Under contract</button>
+        <button class="chip" data-dfilter="offer">Offers out</button>
+        <button class="chip" data-dfilter="jason">Needs Jason</button>
+        <button class="chip" data-dfilter="all">All</button>
+      </div>
+    </div>
+    <div class="deals" id="deals"></div>
+    <div class="empty" id="dealsempty" style="display:none">No deals in this view.</div>
+    <p class="dealfoot" id="dealfoot"></p>
+  </section>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-03.2</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-10.1</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -341,7 +411,7 @@ td .em{font-size:12.5px;color:var(--muted)}
 'use strict';
 var CRM = window.JAG_CRM || {url:'',anonKey:''};
 var PAGE = 200;
-var state = { token:null, refresh:null, exp:0, email:null, rows:[], offset:0, type:'', status:'', q:'', open:null, done:false };
+var state = { token:null, refresh:null, exp:0, email:null, rows:[], offset:0, type:'', status:'', q:'', open:null, done:false, tab:'leads' };
 
 var $ = function(id){ return document.getElementById(id); };
 function base(){ return (CRM.url||'').replace(/\/+$/,''); }
@@ -480,6 +550,7 @@ function show(view){
   var on = view==='app';
   ['copyapply','refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
   $('who').textContent = on ? (state.email||'') : '';
+  if(on) setTab(state.tab||'leads');
 }
 
 /* ---------------- auth ---------------- */
@@ -554,6 +625,7 @@ function toast(msg, ok){
 function signOut(){
   clearTimeout(refreshTimer);
   state.token=null; state.refresh=null; state.exp=0; state.email=null; state.rows=[];
+  deals.rows=null;
   try{ sessionStorage.removeItem('jag_admin'); }catch(e){}
   show('login');
 }
@@ -644,6 +716,133 @@ function render(){
   });
   $('empty').style.display = rows.length? 'none':'block';
   $('morebar').style.display = state.done? 'none':'block';
+}
+
+/* ---------------- tabs ---------------- */
+function setTab(t){
+  if(t!=='deals') t='leads';
+  state.tab=t;
+  $('leadsview').hidden = t!=='leads';
+  $('dealsview').hidden = t!=='deals';
+  ['leads','deals'].forEach(function(k){
+    var b=$('tab-'+k); b.classList.toggle('on', k===t); b.setAttribute('aria-selected', k===t?'true':'false');
+  });
+  $('exportcsv').style.display = (t==='leads') ? 'inline-block' : 'none';
+  try{ sessionStorage.setItem('jag_admin_tab', t); }catch(e){}
+  if(t==='deals' && !deals.rows) loadDeals();
+}
+
+/* ---------------- deals (read-only) ----------------
+   The files the closings assistant is tracking from closings@. It reads them through
+   jag_tc_deals(), which only answers for a signed-in team login. Nothing here edits a deal:
+   to change one, email closings@ or tell the assistant. */
+var deals = { rows:null, filter:'active', q:'', loading:false, last:null };
+var DSTAT = { active:'Under contract', offer:'Offer out', on_hold:'On hold', terminated:'Terminated', closed:'Closed' };
+function loadDeals(){
+  if(deals.loading) return;
+  deals.loading=true;
+  $('dealfoot').textContent='Loading deals…';
+  api('/rest/v1/rpc/jag_tc_deals',{method:'POST', body:'{}'})
+  .then(function(r){ if(r.status===401){ signOut(); throw 0; } return r.json(); })
+  .then(function(j){
+    deals.loading=false;
+    if(!j || j.ok!==true){ deals.rows=[]; renderDeals(); $('dealfoot').textContent='Could not load deals. Try Refresh.'; return; }
+    deals.rows = Array.isArray(j.deals) ? j.deals : [];
+    deals.last = j.last_activity || null;
+    renderDeals();
+  })
+  .catch(function(e){ deals.loading=false; if(e!==0) $('dealfoot').textContent='Could not reach the database. Try Refresh.'; });
+}
+/* 'YYYY-MM-DD' as a local calendar day (new Date('2026-10-13') would be UTC and show the 12th in Houston) */
+function ymd(s){ var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||'')); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; }
+function dayDiff(s){ var d=ymd(s); if(!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((d-t)/864e5); }
+function fmtDay(s){ var d=ymd(s); return d ? d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : ''; }
+function md(s){ var d=ymd(s); return d ? (d.getMonth()+1)+'/'+d.getDate() : ''; }
+function relDay(n){
+  if(n===0) return 'today'; if(n===1) return 'tomorrow'; if(n===-1) return 'yesterday';
+  return n>0 ? ('in '+n+' days') : (-n+' days ago');
+}
+function splitAddr(p){ p=String(p||''); var i=p.indexOf(','); return i<0 ? {street:p, rest:''} : {street:p.slice(0,i), rest:p.slice(i+1).trim()}; }
+function ownLabel(o){ return o==='jason'?'Jason': o==='tc'?'Closings':'Other'; }
+function ownClass(o){ return o==='jason'?'own-jason': o==='tc'?'own-tc':'own-other'; }
+function dealOpen(d){ return d.status==='active' || d.status==='on_hold' || d.status==='offer'; }
+function items(d){ return Array.isArray(d.open_items) ? d.open_items : []; }
+function needsJason(d){ return dealOpen(d) && items(d).some(function(i){ return i && i.owner==='jason'; }); }
+function plain(v){ if(v==null) return ''; return typeof v==='object' ? JSON.stringify(v) : String(v); }
+function dealFiltered(){
+  var q=deals.q.toLowerCase();
+  return (deals.rows||[]).filter(function(d){
+    if(deals.filter==='active' && !(d.status==='active' || d.status==='on_hold')) return false;
+    if(deals.filter==='offer' && d.status!=='offer') return false;
+    if(deals.filter==='jason' && !needsJason(d)) return false;
+    if(q){
+      var hay=[d.property,d.short_name,d.clients,d.other_agent,d.title_company,d.lender,d.notes,plain(d.client_contacts)]
+        .concat(items(d).map(function(i){ return i&&i.item; })).join(' ').toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+}
+function renderDeals(){
+  var all=deals.rows||[], c={uc:0,soon:0,jason:0,offers:0};
+  all.forEach(function(d){
+    if(d.status==='active'){ c.uc++; var n=dayDiff(d.closing_date); if(n!=null && n>=0 && n<=7) c.soon++; }
+    if(d.status==='offer') c.offers++;
+    if(dealOpen(d)) c.jason += items(d).filter(function(i){ return i && i.owner==='jason'; }).length;
+  });
+  $('dealcount').textContent = deals.rows ? String(c.uc) : '';
+  $('dealstats').innerHTML =
+    '<div class="stat"><b><i style="background:var(--sell)"></i>'+c.uc+'</b><span>Under contract</span></div>'+
+    '<div class="stat"><b><i style="background:var(--amber)"></i>'+c.soon+'</b><span>Closing in 7 days</span></div>'+
+    '<div class="stat"><b><i style="background:var(--buy)"></i>'+c.jason+'</b><span>Items waiting on Jason</span></div>'+
+    '<div class="stat"><b><i style="background:var(--loan)"></i>'+c.offers+'</b><span>Offers out</span></div>';
+  var list=dealFiltered();
+  $('deals').innerHTML = list.map(dealCard).join('');
+  $('dealsempty').style.display = list.length ? 'none' : 'block';
+  $('dealfoot').textContent = 'Kept up to date by the closings assistant, which checks the closings inbox every hour.'+
+    (deals.last ? (' Last activity: '+fmtDate(deals.last)+'.') : '');
+}
+/* amber when it is coming up; red only for a closing date that has passed on a file still open
+   (option and financing dates that have passed are simply done, so they stay plain) */
+function dateChip(label, s, warnDays, pastIsBad){
+  if(!s) return '';
+  var n=dayDiff(s), cls='', rel=(n==null?'':relDay(n));
+  if(n!=null && n<0){ if(pastIsBad){ cls=' past'; rel+=': update the file'; } else rel='passed'; }
+  else if(n!=null && n<=warnDays) cls=' soon';
+  return '<div class="ddate'+cls+'"><small>'+esc(label)+'</small><b>'+esc(fmtDay(s))+'</b><small>'+esc(rel)+'</small></div>';
+}
+function kvRow(label, val, copy){
+  if(val==null || val==='') return '';
+  return '<div><span>'+esc(label)+'</span><b>'+esc(plain(val))+
+    (copy ? ' <button type="button" class="linkbtn" data-copy="'+esc(plain(val))+'">Copy</button>' : '')+'</b></div>';
+}
+function dealCard(d){
+  var a=splitAddr(d.property), its=items(d), open=dealOpen(d);
+  var nClose=dayDiff(d.closing_date);
+  var urgent = open && (needsJason(d) || (d.status==='active' && nClose!=null && nClose<=3));
+  var sub=[a.rest, d.side ? (d.side.charAt(0).toUpperCase()+d.side.slice(1)+' side') : '', d.clients].filter(Boolean).join(' · ');
+  var dates = open ? (dateChip('Closing', d.closing_date, 3, d.status==='active') + dateChip('Option ends', d.option_end, 2) + dateChip('Financing', d.financing_deadline, 3)) : '';
+  var list = its.length
+    ? '<ul class="d-items">'+its.map(function(i){
+        i=i||{};
+        return '<li><span class="own '+ownClass(i.owner)+'">'+esc(ownLabel(i.owner))+'</span><span>'+esc(i.item||'')+
+          (i.since ? ' <small>since '+esc(md(i.since))+'</small>' : '')+'</span></li>';
+      }).join('')+'</ul>'
+    : (open ? '<p class="d-clear">Nothing open on this file.</p>' : '');
+  var kv = kvRow('Other side', d.other_agent) + kvRow('Title', d.title_company) + kvRow('Lender', d.lender) +
+           kvRow('Client contacts', d.client_contacts) + kvRow('Client language', d.client_language==='es'?'Spanish':d.client_language==='en'?'English':d.client_language) +
+           kvRow('SkySlope file email', d.skyslope_email, true) + kvRow('eXp file #', d.exp_file_no) +
+           kvRow('Contract date', d.contract_date ? fmtDay(d.contract_date) : '');
+  var more = (kv || d.notes)
+    ? '<details class="d-more"><summary>Contacts and notes</summary>'+(kv?'<div class="kv">'+kv+'</div>':'')+
+      (d.notes ? '<p class="d-note">'+esc(d.notes)+'</p>' : '')+'</details>'
+    : '';
+  return '<article class="deal'+(urgent?' urgent':'')+'">'+
+    '<div class="d-top"><div><h3>'+esc(a.street||d.short_name||'(no address)')+'</h3>'+
+      (sub?'<div class="d-sub">'+esc(sub)+'</div>':'')+'</div>'+
+      '<span class="dstat ds-'+esc(d.status)+'">'+esc(DSTAT[d.status]||d.status||'')+'</span></div>'+
+    (dates?'<div class="d-dates">'+dates+'</div>':'')+
+    list+more+'</article>';
 }
 
 /* ---------------- drawer ---------------- */
@@ -1196,7 +1395,21 @@ $('lp-copy-html').addEventListener('click', function(){ var b=this; if(lender.la
 $('lp-copy-email').addEventListener('click', function(){ var b=this; if(lender.last) copyText('Subject: '+lender.last.mail.subject+'\n\n'+lender.last.mail.body, function(ok){ flash(b, ok?'Copied':'Copy failed'); }); });
 $('lp-again').addEventListener('click', function(){ lenderReset(); $('d-lender').hidden=false; loadRecentLenders(); $('lp-to').focus(); });
 
-$('refresh').addEventListener('click', resetAndLoad);
+$('refresh').addEventListener('click', function(){
+  if(state.tab==='deals'){ deals.rows=null; loadDeals(); } else resetAndLoad();
+});
+$('tabs').addEventListener('click', function(e){ var b=e.target.closest('[data-tab]'); if(b) setTab(b.dataset.tab); });
+$('dealchips').addEventListener('click', function(e){
+  var b=e.target.closest('.chip'); if(!b) return;
+  this.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  b.classList.add('on'); deals.filter=b.dataset.dfilter; renderDeals();
+});
+$('dq').addEventListener('input', function(){ deals.q=this.value; renderDeals(); });
+$('deals').addEventListener('click', function(e){
+  var b=e.target.closest('[data-copy]'); if(!b) return;
+  e.preventDefault();
+  copyText(b.getAttribute('data-copy'), function(ok){ flash(b, ok?'Copied':'Copy failed'); });
+});
 $('exportcsv').addEventListener('click', exportCSV);
 $('more').addEventListener('click', load);
 $('q').addEventListener('input', function(){ state.q=this.value; render(); });
@@ -1264,6 +1477,7 @@ if(!CRM.url || !CRM.anonKey){ show('setup'); }
 else{
   var saved=null;
   try{ saved=JSON.parse(sessionStorage.getItem('jag_admin')||'null'); }catch(e){}
+  try{ state.tab = sessionStorage.getItem('jag_admin_tab')==='deals' ? 'deals' : 'leads'; }catch(e){}
   if(saved && saved.t){
     state.token=saved.t; state.email=saved.e; state.refresh=saved.r||null; state.exp=saved.x||0;
     scheduleRefresh(); show('app'); resetAndLoad();
