@@ -15,6 +15,7 @@
 <script src="jag-capture.js?v=3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha512-z8IYLHO8bTgFqj+yrPyIJnzBDf7DDhWwiEsk4sY+Oe6J2M+WQequeGS7qioI5vT6rXgVRb4K1UVQC5ER7MKzKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="offer-fill.js?v=3"></script>
+<script src="jag-clients.js?v=1"></script>
 <style>
 /* The TREC paragraph number is the organizing device: sections, the paragraph rail and the
    "what's left" list all speak the contract's own numbering, the way listing agents ask for fixes. */
@@ -142,6 +143,18 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
 .status{max-width:880px;margin:6px auto 0;font-size:12.5px;font-weight:600;color:var(--graphite);min-height:1em}
 .status.err{color:var(--red)}
 .hidden{display:none !important}
+.fub .btn{min-height:46px;font-size:14.5px}
+/* client picker sheet */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(23,22,28,.42);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:22px 22px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+@media(min-width:640px){ .scrim{align-items:center} .sheet{border-radius:22px;padding-top:18px} .sheet .grab{display:none} }
+.sheet .grab{width:40px;height:4px;border-radius:99px;background:var(--hair);margin:4px auto 10px}
+.sheet header{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.sheet h2{margin:0;font-size:19px;font-weight:800;line-height:1.25;flex:1}
+.sheet h2 small{display:block;font-size:13px;font-weight:600;color:var(--graphite);margin-top:3px}
+.sheet .x{flex:0 0 auto;width:38px;height:38px;border-radius:99px;border:1px solid var(--hair);background:var(--paper);cursor:pointer;font-size:18px;line-height:1}
+.sheet .say{margin:10px 2px 0;font-size:13px;font-weight:600;color:var(--graphite);min-height:1.2em}
+.sheet .say.err{color:var(--red)}
 .empty{background:var(--paper);border-radius:var(--r-lg);padding:28px 22px;border:1px solid var(--hair);margin-top:30px}
 .empty h2{margin:0;font-size:19px}
 .empty p{color:var(--graphite);margin:8px 0 0}
@@ -180,6 +193,7 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
   /* Sections follow the TREC 20-19 paragraphs. pn = what the rail and headers show. */
   var SECTIONS = [
     { id:'p1', pn:'¶1', rail:'Parties', title:'Parties', fields:[
+      ['_fub', '', 'fub'], ['fub_person_id', '', 'hidden'],
       ['buyer_names', 'Buyer full legal names', 'text', {full:1, hint:'Exactly as they will sign.'}],
       ['seller_names', 'Seller names', 'text', {full:1, hint:'From the tax record or listing. Check against the title commitment.'}]]},
     { id:'p2', pn:'¶2', rail:'Property', title:'Property', fields:[
@@ -305,6 +319,10 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
 
   function current(){
     var t = {};
+    /* keep what the draft was created with that has no field here (list price, MLS number, source) */
+    Object.keys((offer && offer.terms) || {}).forEach(function(k){
+      if(!app.querySelector('[data-k="' + k + '"]')) t[k] = offer.terms[k];
+    });
     app.querySelectorAll('[data-k]').forEach(function(el){
       var k = el.getAttribute('data-k');
       if(el.type === 'checkbox'){ if(el.checked) t[k] = 'true'; return; }
@@ -319,6 +337,9 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
   function field(f, v){
     var k = f[0], label = f[1], type = f[2], o = f[3] || {};
     if(type === 'calc') return '<div class="calc" id="calc_' + k + '"></div>';
+    if(type === 'hidden') return '<input type="hidden" data-k="' + k + '" value="' + esc(v) + '">';
+    if(type === 'fub') return '<div class="full fub"><button type="button" class="btn line" id="fubPick">Fill the buyer from Follow Up Boss</button>' +
+      '<div class="hint">Name, phone, email and mailing address from the client\'s Follow Up Boss profile. Check the legal names after.</div></div>';
     var cls = 'f' + (o.full ? ' full' : ''), html;
     if(type === 'choice'){
       var long = o.opts.some(function(p){ return p[1].length > 24; });
@@ -415,6 +436,7 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
       fin += ', ' + pct + '% down (' + money(down) + ')';
     }
     var rows = [
+      ['List price', t.list_price && Fill.num(t.list_price) !== c.price ? money(t.list_price) : ''],
       ['Earnest money', money(t.earnest_money)],
       ['Option', t.option_fee || t.option_days ? (money(t.option_fee) || '$?') + ' for ' + (t.option_days || '?') + ' days' : ''],
       ['Closing by', c.closingLong],
@@ -621,6 +643,47 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
     return p.saving;
   }
 
+  /* ---------- buyer from Follow Up Boss ---------- */
+  /* The list shows first name + last initial; tapping a client fetches that one profile
+     (read-only) and fills ¶1 and ¶21. Nothing is written to Follow Up Boss. */
+  var lastFocus = null;
+  function closeSheet(){
+    var s = $('scrim'); if(!s) return;
+    s.remove(); document.body.style.overflow = '';
+    if(lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+  function fubSheet(){
+    if(!window.JAGField){ setStatus('The client list did not load. Reload the page.', true); return; }
+    lastFocus = document.activeElement;
+    var s = document.createElement('div'); s.className = 'scrim'; s.id = 'scrim';
+    s.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-label="Pick the buyer"><div class="grab" aria-hidden="true"></div>' +
+      '<header><h2>Pick the buyer<small>Fills the names, phone, email and mailing address.</small></h2><button type="button" class="x" aria-label="Close">×</button></header>' +
+      '<div id="pick"></div><p class="say" id="pickSay" role="status"></p></div>';
+    document.body.appendChild(s); document.body.style.overflow = 'hidden';
+    s.addEventListener('click', function(e){ if(e.target === s || e.target.closest('.x')) closeSheet(); });
+    var sayEl = s.querySelector('#pickSay'), busyPick = false;
+    window.JAGField.picker(s.querySelector('#pick'), { key: key, onPick: function(c){
+      if(!c || busyPick) return;
+      busyPick = true; sayEl.className = 'say'; sayEl.textContent = 'Getting ' + c.label + ' from Follow Up Boss…';
+      window.JAGField.call('client_fill', key, { client_id: c.id }).then(function(r){
+        if(!r.ok || !r.client) throw new Error(r.error || 'Could not load that client.');
+        var cl = r.client, set = function(k, v){ var el = app.querySelector('[data-k="' + k + '"]'); if(el && v) el.value = v; };
+        var d = String(cl.phone || '').replace(/\D/g, '').slice(-10);
+        set('buyer_names', cl.name); set('buyer_email', cl.email);
+        set('buyer_phone', d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : cl.phone);
+        set('buyer_notice_address', cl.address); set('fub_person_id', String(cl.id));
+        closeSheet(); changed();
+        setStatus('Filled from Follow Up Boss. Check the legal names, then Save.');
+        jump('s_p1');
+        var w = $('w_buyer_names'); if(w){ w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash'); }
+      }).catch(function(err){
+        busyPick = false; sayEl.className = 'say err';
+        sayEl.textContent = /http|fetch|network/i.test(err.message) ? 'No connection. Check your signal and try again.' : err.message;
+      });
+    } });
+  }
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeSheet(); });
+
   /* ---------- wiring ---------- */
   function jump(id, focusKey){
     var el = $(id); if(!el) return;
@@ -641,6 +704,7 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
     if(b.hasAttribute('data-focus')){ var k = b.getAttribute('data-focus'); var w = $('w_' + k); if(w) jump(w.closest('.para').id, k); return; }
     if(b.getAttribute('data-dl')) return make(b.getAttribute('data-dl'));
     switch(b.id){
+      case 'fubPick': return fubSheet();
       case 'sendGmail': return sendGmail();
       case 'shareNow': return shareNow();
       case 'dlAll': return downloadAll();
