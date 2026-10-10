@@ -66,14 +66,80 @@
       var dt = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
       closing = { md: dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' }), yy: p[0].slice(2) };
     }
+    var yearBuilt = num(d.year_built);
     return {
       d: d, price: price, type: type, loan: loan,
       cash: price !== null && loan !== null ? price - loan : null,
       financed: type && type !== 'cash',
       street: street, full: full, cityShort: street + (str(d.city) ? ', ' + str(d.city) : ''),
       closing: closing,
-      yearBuilt: num(d.year_built)
+      closingLong: closing ? closing.md + ', 20' + closing.yy : '',
+      yearBuilt: yearBuilt,
+      hoa: isTrue(d.hoa),
+      leadPaint: yearBuilt !== null && yearBuilt < LEAD_PAINT_YEAR
     };
+  }
+
+  /* Things that look wrong (from past offers listing agents sent back). Not blockers. */
+  function warnings(c) {
+    var d = c.d, w = [], em = num(d.earnest_money), opt = num(d.option_fee);
+    if (c.price !== null && c.price < 50000) w.push('Sales price looks too low ($' + money(c.price) + '). Check for a missing digit.');
+    if (c.price !== null && em !== null && em > c.price * 0.05) w.push('Earnest money is more than 5% of the price ($' + money(em) + '). Check for an extra digit.');
+    if (c.price !== null && em !== null && em > 0 && em < c.price * 0.002) w.push('Earnest money looks very low ($' + money(em) + ').');
+    if (opt !== null && em !== null && opt > em) w.push('Option fee is larger than earnest money. Check both.');
+    if (c.price !== null && c.loan !== null && c.loan > c.price) w.push('Loan amount is more than the sales price.');
+    if (c.type === 'fha' && c.price !== null && c.loan !== null && c.loan > c.price * 0.965 + 1) w.push('FHA loan is above 96.5% of the price. Use the base loan, without financed MIP.');
+    if (num(d.option_days) !== null && num(d.option_days) > 20) w.push('Option period over 20 days. Double-check.');
+    if (c.closing) {
+      var p = str(d.closing_date).split('-'), days = (Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.now()) / 864e5;
+      if (days < 14) w.push('Closing date is less than 2 weeks away.');
+      if (days > 120) w.push('Closing date is more than 4 months away.');
+    }
+    if (str(d.district_notices) === '' && /mud|wcid|pid|district/i.test(str(d.special_provisions) + ' ' + str(d.addition))) w.push('Looks like a utility district: add the MUD/district notice in Closing.');
+    return w;
+  }
+
+  /* Which PDFs this offer needs, in the order they go in the package. */
+  function forms(c) {
+    var f = [{ key: 'contract', label: 'Resale contract', form: 'TREC 20-19' }];
+    if (c.financed) f.push({ key: 'tpfa', label: 'Third Party Financing Addendum', form: 'TREC 40-11' });
+    if (c.hoa) f.push({ key: 'hoa', label: 'HOA addendum', form: 'TREC 36-11' });
+    if (c.leadPaint) f.push({ key: 'lead', label: 'Lead-based paint addendum', form: 'TREC 56-0' });
+    return f;
+  }
+
+  /* The email Jason sends listing agents with an offer, built from the same terms. */
+  function offerEmail(c, attachments) {
+    var d = c.d, lines = [];
+    var first = str(d.listing_agent).split(' ')[0];
+    var fin;
+    if (c.type === 'cash') fin = 'Cash';
+    else {
+      var name = { fha: 'FHA', conventional: 'Conventional', va: 'VA', usda: 'USDA' }[c.type] || str(d.loan_type);
+      var down = c.price !== null && c.loan !== null ? c.price - c.loan : null;
+      var pct = down !== null && c.price ? Math.round(down / c.price * 1000) / 10 : null;
+      fin = name + (pct !== null ? ', ' + pct + '% down ($' + money(down) + ')' : '');
+    }
+    var contrib = [];
+    if (num(d.seller_concession)) contrib.push('up to $' + money(d.seller_concession) + " toward buyer's expenses");
+    if (str(d.comp_payer) === 'seller' && num(d.comp_value) !== null)
+      contrib.push(str(d.comp_type) === 'amount' ? '$' + money(d.comp_value) + ' buyer broker compensation' : num(d.comp_value) + '% buyer broker compensation');
+    if (num(d.service_contract)) contrib.push('up to $' + money(d.service_contract) + ' toward a residential service contract');
+    lines.push('Hi' + (first ? ' ' + first : '') + ',', '');
+    lines.push('Attached is an offer from my ' + (/ and |&/.test(str(d.buyer_names)) ? 'buyers' : 'buyer') + ', ' + (str(d.buyer_names) || '[buyer]') + ', on ' + (c.street || '[property]') + '.', '');
+    lines.push('Key terms:');
+    lines.push('- Price: $' + (c.price !== null ? money(c.price) : '[price]'));
+    lines.push('- Financing: ' + (fin || '[financing]'));
+    lines.push('- Earnest money: $' + (money(d.earnest_money) || '[ ]') + ' | Option: $' + (money(d.option_fee) || '[ ]') + ' for ' + (str(d.option_days) || '[ ]') + ' days');
+    lines.push('- Closing: On or before ' + (c.closingLong || '[date]'));
+    if (str(d.title_company)) lines.push('- Title: ' + str(d.title_company) + ", owner's policy at " + (str(d.title_paid_by) === 'buyer' ? "buyer's" : "seller's") + ' expense');
+    if (contrib.length) lines.push('- Seller to contribute ' + contrib.join(', ').replace(/, ([^,]*)$/, ', and $1'));
+    if (str(d.special_provisions)) lines.push('- Special provisions: ' + str(d.special_provisions));
+    if (attachments && attachments.length) lines.push('', 'Included: ' + attachments.join(', ') + '.');
+    lines.push('', 'Please confirm receipt, and let me know if you need anything else.', '', 'Thank you,');
+    [str(d.buyer_agent) || 'Jason Aguirre', str(d.buyer_team), str(d.buyer_firm) ? str(d.buyer_firm).replace(/, LLC$/, '') : '', str(d.buyer_agent_phone)]
+      .filter(Boolean).forEach(function (l) { lines.push(l); });
+    return { subject: 'Offer – ' + (c.full || c.street), body: lines.join('\n') };
   }
 
   /* Short labels of what still needs a human before signatures (shown on the page). */
@@ -107,6 +173,12 @@
       need(num(d.orig_cap) !== null, 'Origination charges cap (financing addendum)');
       need(str(d.approval_days), 'Buyer Approval days, or "none" (financing addendum)');
     }
+    if (c.hoa) {
+      need(str(d.hoa_name), 'HOA name (HOA addendum)');
+      need(str(d.hoa_option) && (/^(received|not_required)$/.test(str(d.hoa_option)) || num(d.hoa_days) !== null), 'Subdivision information choice and days (HOA addendum)');
+      need(num(d.hoa_fee_cap) !== null, 'HOA transfer fees cap (HOA addendum)');
+    }
+    if (c.leadPaint) need(str(d.lead_inspection), 'Lead-based paint inspection: waive or inspect (lead addendum)');
     return m;
   }
 
@@ -308,6 +380,36 @@
     if (c.type === 'fha' || c.type === 'va') T('value of the Property established by the Department of Veterans Affairs', money(c.price));
   }
 
+  /* TREC 36-11, Addendum for Property Subject to Mandatory Membership in a Property Owners Association. */
+  function fillHoa(PDFLib, doc, c, notes) {
+    var form = doc.getForm(), f = filler(form, notes), d = c.d, T = f.text, B = f.box;
+    T('Street Address and City', c.cityShort);
+    T('Name of Property Owners Association Association and Phone Number', [str(d.hoa_name), str(d.hoa_phone)].filter(Boolean).join(', '));
+    var o = str(d.hoa_option);
+    if (o === 'seller_delivers') { B('1 Within', true); T('the Subdivision Information to the Buyer If Seller delivers the Subdivision Information Buyer may terminate', d.hoa_days); }
+    if (o === 'buyer_obtains') { B('undefined', true); T('copy of the Subdivision Information to the Seller', d.hoa_days); }
+    if (o === 'received') {
+      B('3Buyer has received and approved the Subdivision Information before signing the contract Buyer', true);
+      B(isTrue(d.hoa_resale_cert) ? 'does' : 'does not require an updated resale certificate If Buyer requires an updated resale certificate Seller at', true);
+    }
+    if (o === 'not_required') B('4Buyer does not require delivery of the Subdivision Information', true);
+    T('D DEPOSITS FOR RESERVES Buyer shall pay any deposits for reserves required at closing by the Association', money(d.hoa_fee_cap));
+    if (str(d.hoa_info_paid_by) === 'buyer') B('Buyer', true);
+    if (str(d.hoa_info_paid_by) === 'seller') B('Seller shall pay the Title Company the cost of obtaining the', true);
+  }
+
+  /* TREC 56-0, lead-based paint addendum (replaced OP-L on 7/1/2026). The buyer side fills C and D;
+     the seller completes B. */
+  function fillLead(PDFLib, doc, c, notes) {
+    var form = doc.getForm(), f = filler(form, notes), d = c.d, B = f.box;
+    f.text('Street Address and City', c.cityShort);
+    var li = str(d.lead_inspection);
+    B('Check Box11', li === 'waive');
+    B('Check Box12', li === 'inspect');
+    B('Check Box13', isTrue(d.lead_info_received));
+    B('Check Box14', str(d.lead_pamphlet) === '' || isTrue(d.lead_pamphlet));
+  }
+
   /* Fields stay fillable (not flattened) so the agent can still fix a blank in the e-sign app.
      Each form is its own PDF, the way SkySlope and DigiSign expect TREC forms. */
   async function finish(PDFLib, doc, title) {
@@ -317,22 +419,25 @@
     return doc.save({ useObjectStreams: false });
   }
 
-  /* contractBytes / tpfaBytes: ArrayBuffer or Uint8Array of the blank TREC PDFs. */
-  async function build(PDFLib, contractBytes, tpfaBytes, defaults, terms) {
-    var c = compute(defaults, terms), notes = [];
-    var contract = await PDFLib.PDFDocument.load(contractBytes);
-    fillContract(PDFLib, contract, c, notes);
-    var out = { contract: await finish(PDFLib, contract, 'TREC 20-19 draft - ' + (c.full || 'property')), tpfa: null };
-    if (c.financed && tpfaBytes) {
-      var tpfa = await PDFLib.PDFDocument.load(tpfaBytes);
-      fillTpfa(PDFLib, tpfa, c, notes);
-      out.tpfa = await finish(PDFLib, tpfa, 'TREC 40-11 draft - ' + (c.full || 'property'));
+  var FILLERS = { contract: fillContract, tpfa: fillTpfa, hoa: fillHoa, lead: fillLead };
+
+  /* blanks: { contract, tpfa, hoa, lead } as ArrayBuffer/Uint8Array of the blank TREC PDFs.
+     only: optional form key to build just that one. */
+  async function build(PDFLib, blanks, defaults, terms, only) {
+    var c = compute(defaults, terms), notes = [], out = {};
+    var list = forms(c).filter(function (x) { return !only || x.key === only; });
+    for (var i = 0; i < list.length; i++) {
+      var x = list[i];
+      if (!blanks[x.key]) continue;
+      var doc = await PDFLib.PDFDocument.load(blanks[x.key]);
+      FILLERS[x.key](PDFLib, doc, c, notes);
+      out[x.key] = await finish(PDFLib, doc, x.form + ' draft - ' + (c.full || 'property'));
     }
-    out.notes = notes; out.missing = missing(c); out.computed = c;
+    out.notes = notes; out.missing = missing(c); out.warnings = warnings(c); out.forms = forms(c); out.computed = c;
     return out;
   }
 
-  var api = { build: build, compute: compute, missing: missing, money: money, num: num };
+  var api = { build: build, compute: compute, missing: missing, warnings: warnings, forms: forms, offerEmail: offerEmail, money: money, num: num };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.JAGOfferFill = api;
 })(this);
