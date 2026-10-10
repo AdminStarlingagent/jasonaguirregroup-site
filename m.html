@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#17161c">
+<title>Morning board · Jason Aguirre Group</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="jag-capture.js?v=3"></script>
+<style>
+/* Lola's morning board, opened from the 8:30 AM team text: jasonaguirregroup.company/m#<code>.
+   Same family as /h and /o: ink, white cards, red only for Lola and for what's urgent. */
+:root{
+  --canvas:#eef0f3; --paper:#ffffff; --ink:#17161c; --graphite:#5d5c66; --soft:#8b8a94; --hair:#dfe1e6;
+  --red:#c8102e; --red-t:#fdecef; --green:#0f8a4d; --green-t:#e6f4ec; --amber:#8a5a00; --amber-t:#fff3d9;
+  --r-lg:20px; --r-md:14px; --r-sm:10px; --top:58px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--ink);font:500 15px/1.5 'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+.hidden{display:none !important}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* header */
+.top{position:sticky;top:0;z-index:10;height:var(--top);background:rgba(238,240,243,.94);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--hair)}
+.top .in{max-width:760px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;gap:12px}
+.mark{flex:0 0 auto;width:34px;height:34px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.02em}
+.top h1{margin:0;font-size:15px;line-height:1.25;font-weight:800;min-width:0;flex:1}
+.top h1 small{display:block;font-size:12.5px;font-weight:600;color:var(--graphite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+main{max-width:760px;margin:0 auto;padding:18px 16px 64px}
+
+/* Lola talks */
+.lola{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:end}
+.lola + .lola{margin-top:8px}
+.ava{width:38px;height:38px;border-radius:99px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px;letter-spacing:-.01em}
+.bubble{position:relative;background:var(--paper);border:1px solid var(--hair);border-radius:20px 20px 20px 6px;padding:12px 15px 13px;font-size:16px;line-height:1.45;font-weight:600;max-width:560px}
+.bubble .by{display:block;font-size:12px;font-weight:800;color:var(--red);margin-bottom:2px}
+.zoom{display:flex;align-items:center;gap:10px;margin:12px 0 0 48px;background:var(--ink);color:#fff;border-radius:var(--r-md);padding:11px 14px;max-width:512px}
+.zoom svg{flex:0 0 auto}
+.zoom b{font-weight:800}
+.zoom span{color:#c9c8d0;font-weight:600;font-size:14px}
+
+/* the day in numbers, as plain chips */
+.tally{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 0}
+.tally span{background:var(--paper);border:1px solid var(--hair);border-radius:99px;padding:5px 11px;font-size:13px;font-weight:700;color:var(--graphite)}
+.tally b{color:var(--ink);font-weight:800}
+.tally .warm{background:var(--red-t);border-color:transparent;color:var(--red)}
+.tally .warm b{color:var(--red)}
+
+section{margin-top:28px}
+section > h2{margin:0 4px 10px;font-size:18px;font-weight:800;letter-spacing:-.01em;line-height:1.25}
+section > h2 small{font-size:13.5px;font-weight:600;color:var(--graphite);margin-left:6px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px;white-space:nowrap;line-height:1.5}
+.k-contract{background:var(--green-t);color:var(--green)}
+.k-offer{background:var(--amber-t);color:var(--amber)}
+.k-hold{background:var(--canvas);color:var(--graphite)}
+.k-draft{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--hair)}
+.when{background:var(--canvas);color:var(--ink)}
+.when.soon{background:var(--red);color:#fff}
+.when.past{background:var(--canvas);color:var(--graphite)}
+
+/* client name = the link to Follow Up Boss */
+a.who{color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;text-decoration-color:rgba(200,16,46,.55);display:inline-flex;align-items:baseline;gap:5px}
+a.who:hover{text-decoration-color:var(--red)}
+a.who svg{flex:0 0 auto;align-self:center;color:var(--red)}
+.who.plain{color:var(--ink)}
+
+/* hot cards */
+.deal{background:var(--paper);border:1px solid var(--hair);border-radius:var(--r-lg);padding:15px 16px 14px;margin-top:10px}
+.deal h3{margin:10px 0 0;font-size:21px;line-height:1.2;font-weight:800;letter-spacing:-.02em}
+.prop{margin:3px 0 0;font-size:14px;font-weight:700;color:var(--ink)}
+.prop span{font-weight:600;color:var(--graphite)}
+.deal .line{margin:10px 0 0;font-size:15px;line-height:1.5;font-weight:600;padding-left:12px;border-left:3px solid #cfd2d8}
+.meta{margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;padding:10px 12px;background:var(--canvas);border-radius:var(--r-md)}
+.meta div{min-width:0}
+.meta dt{font-size:11.5px;font-weight:700;color:var(--graphite)}
+.meta dd{margin:1px 0 0;font-size:14px;font-weight:800;overflow-wrap:anywhere}
+@media(min-width:640px){ .hotgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .hotgrid .deal{margin-top:0} }
+
+/* everything else and appointments: one white card each, rows inside */
+.panel{background:var(--paper);border:1px solid var(--hair);border-radius:var(--r-lg);padding:4px 16px}
+.panel h3{margin:14px 0 2px;font-size:13.5px;font-weight:800;color:var(--graphite)}
+.panel ul{list-style:none;margin:0;padding:0}
+.row{padding:12px 0;border-top:1px solid var(--hair)}
+.panel h3 + ul .row:first-child{border-top:0}
+.row .r1{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.row .r1 .name{font-size:16px;font-weight:800}
+.row .prop{margin-top:1px;font-size:13.5px}
+.row .line{margin:4px 0 0;font-size:14px;color:var(--graphite);font-weight:600}
+.panel > .row:first-child{border-top:0}
+
+.appt{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:4px 12px;align-items:baseline;padding:12px 0;border-top:1px solid var(--hair)}
+.appt:first-child{border-top:0}
+.appt time{font-weight:800;font-size:15px}
+.appt .name{font-size:16px;font-weight:800}
+.appt .what{display:block;font-size:13.5px;color:var(--graphite);font-weight:600}
+.appt .owner{font-size:12.5px;font-weight:800;background:var(--canvas);border-radius:99px;padding:3px 9px;white-space:nowrap}
+
+.sign{margin-top:30px}
+.fine{font-size:12.5px;color:var(--soft);line-height:1.55;margin:22px 4px 0}
+
+.empty{background:var(--paper);border-radius:var(--r-lg);padding:24px 20px;border:1px solid var(--hair)}
+.empty h2{margin:0;font-size:19px}
+.empty p{color:var(--graphite);margin:8px 0 0}
+.none{margin:0;padding:14px 0;color:var(--graphite);font-weight:600}
+
+@media print{ .top{position:static} body{background:#fff} }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <div class="mark" aria-hidden="true">JAG</div>
+    <h1 id="title">Morning board<small id="sub">Loading…</small></h1>
+  </div>
+</header>
+<main id="app" aria-live="polite">
+  <div class="empty"><h2>Loading the board…</h2></div>
+</main>
+<script>
+/* The board is saved by the JAG Ops morning workflow (n8n) and read here with the short code in the link.
+   The code is the only key; boards expire after 7 days. Client names link to their Follow Up Boss profile. */
+(function(){
+  'use strict';
+  var CRM = window.JAG_CRM || {};
+  var app = document.getElementById('app');
+  var KIND = { contract: 'Under contract', offer: 'Offer out', hold: 'On hold', draft: 'Offer draft' };
+  var GROUPS = [['contract', 'Under contract'], ['offer', 'Offers out'], ['hold', 'On hold'], ['draft', 'Offer drafts']];
+  var ARROW = '<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 3h8v8M13 3 3 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CAM = '<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="m15.5 10.5 6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fubUrl(u){ return /^https:\/\/[a-z0-9-]+\.followupboss\.com\/2\/people\/view\/\d+$/.test(String(u || '')) ? u : null; }
+  function rpc(name, body){
+    return fetch(String(CRM.url || '').replace(/\/+$/, '') + '/rest/v1/rpc/' + name, {
+      method: 'POST', headers: { apikey: CRM.anonKey, Authorization: 'Bearer ' + CRM.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function(r){ if(!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+  function readCode(){ try { return decodeURIComponent((location.hash || '').replace(/^#/, '')).trim(); } catch(e) { return ''; } }
+
+  function person(name, url, cls){
+    var u = fubUrl(url);
+    if(!name) return '';
+    if(!u) return '<span class="' + (cls || '') + ' who plain">' + esc(name) + '</span>';
+    return '<a class="' + (cls || '') + ' who" href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" title="Open ' + esc(name) + ' in Follow Up Boss">' +
+      esc(name) + ARROW + '<span class="sr"> (opens Follow Up Boss)</span></a>';
+  }
+  function whenChip(c){
+    if(!c || !c.label) return '';
+    var cls = c.days < 0 ? 'past' : (c.days <= 3 ? 'soon' : '');
+    var lab = String(c.label).replace(',', '');
+    var txt = c.days === 0 ? 'Closes today' : (c.days === 1 ? 'Closes tomorrow, ' + lab : (c.days < 0 ? 'Was set to close ' + lab : 'Closes ' + lab));
+    return '<span class="chip when ' + cls + ' num">' + esc(txt) + '</span>';
+  }
+  function propLine(it){
+    var bits = [];
+    if(it.client && it.name) bits.push(esc(it.name));
+    var rest = [];
+    if(it.street) rest.push(esc(it.street));
+    if(it.side === 'seller') rest.push('our listing');
+    if(!bits.length && !rest.length) return '';
+    return '<p class="prop">' + bits.join('') + (rest.length ? (bits.length ? ' <span>' : '<span>') + rest.join(', ') + '</span>' : '') + '</p>';
+  }
+  function title(it){ return it.client ? person(it.client, it.fub_url) : esc(it.name || 'Deal'); }
+
+  function hotCard(it){
+    var meta = [];
+    if(it.waiting_on && it.waiting_on.length) meta.push(['Waiting on', it.waiting_on.join(', ')]);
+    if(it.other_agent) meta.push(['Other agent', it.other_agent]);
+    if(it.agent) meta.push(['Started by', it.agent]);
+    return '<article class="deal">' +
+      '<div class="chips"><span class="chip k-' + esc(it.kind) + '">' + esc(KIND[it.kind] || 'Deal') + '</span>' + whenChip(it.closing) + '</div>' +
+      '<h3>' + title(it) + '</h3>' + propLine(it) +
+      (it.line ? '<p class="line">' + esc(it.line) + '</p>' : '') +
+      (meta.length ? '<dl class="meta">' + meta.map(function(m){ return '<div><dt>' + esc(m[0]) + '</dt><dd>' + esc(m[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+      '</article>';
+  }
+  function row(it){
+    var who = it.client ? person(it.client, it.fub_url, 'name') : '<span class="name">' + esc(it.name || 'Deal') + '</span>';
+    var extra = it.agent ? ' <span>by ' + esc(it.agent) + '</span>' : '';
+    return '<li class="row"><div class="r1">' + who + whenChip(it.closing) + '</div>' +
+      propLine(it).replace('</p>', extra + '</p>') +
+      (it.line ? '<p class="line">' + esc(it.line) + '</p>' : '') + '</li>';
+  }
+  function appt(a){
+    return '<li class="appt"><time class="num">' + esc(a.time || '') + '</time>' +
+      '<div>' + (a.client ? person(a.client, a.fub_url, 'name') : '<span class="name">Client</span>') + '<span class="what">' + esc(a.what || 'Appointment') + '</span></div>' +
+      (a.owner ? '<span class="owner">' + esc(a.owner) + '</span>' : '<span></span>') + '</li>';
+  }
+  function lola(text, sign){
+    return '<div class="lola' + (sign ? ' sign' : '') + '"><div class="ava" aria-hidden="true">L</div>' +
+      '<p class="bubble"><span class="by">Lola</span>' + esc(text) + '</p></div>';
+  }
+
+  function render(r){
+    var b = r.board || {}, items = Array.isArray(b.items) ? b.items : [], c = b.counts || {};
+    var dateLabel = b.date_label || '';
+    document.getElementById('sub').textContent = dateLabel;
+    document.title = 'Morning board' + (dateLabel ? ', ' + dateLabel : '') + ' · JAG';
+
+    var html = '';
+    if(b.intro) html += lola(b.intro);
+    if(b.zoom_time !== undefined){
+      html += '<div class="zoom">' + CAM + '<div><b>Team Zoom' + (b.zoom_time ? ' at ' + esc(b.zoom_time) : '') + (b.zoom_now ? ', starting now' : '') + '</b><br><span>The link is in your email.</span></div></div>';
+    }
+    var t = [];
+    if(c.closing_this_week) t.push('<span class="warm"><b>' + c.closing_this_week + '</b> closing this week</span>');
+    if(c.offers) t.push('<span><b>' + c.offers + '</b> offer' + (c.offers === 1 ? '' : 's') + ' out</span>');
+    if(c.under_contract) t.push('<span><b>' + c.under_contract + '</b> under contract</span>');
+    if(c.on_hold) t.push('<span><b>' + c.on_hold + '</b> on hold</span>');
+    if(c.drafts) t.push('<span><b>' + c.drafts + '</b> offer draft' + (c.drafts === 1 ? '' : 's') + '</span>');
+    if(c.appointments) t.push('<span><b>' + c.appointments + '</b> appointment' + (c.appointments === 1 ? '' : 's') + '</span>');
+    if(t.length) html += '<div class="tally num">' + t.join('') + '</div>';
+
+    var hot = items.filter(function(i){ return i.hot; });
+    var rest = items.filter(function(i){ return !i.hot; });
+    if(hot.length){
+      html += '<section aria-labelledby="h-hot"><h2 id="h-hot">Hot right now</h2><div class="hotgrid">' + hot.map(hotCard).join('') + '</div></section>';
+    }
+    var ap = Array.isArray(b.appointments) ? b.appointments : [];
+    html += '<section aria-labelledby="h-appt"><h2 id="h-appt">Today’s appointments' + (ap.length ? '<small class="num">' + ap.length + '</small>' : '') + '</h2><div class="panel">' +
+      (ap.length ? '<ul>' + ap.map(appt).join('') + '</ul>' : '<p class="none">No appointments on the calendar.</p>') + '</div></section>';
+    if(rest.length){
+      html += '<section aria-labelledby="h-rest"><h2 id="h-rest">Everything else</h2><div class="panel">';
+      GROUPS.forEach(function(g){
+        var list = rest.filter(function(i){ return i.kind === g[0]; });
+        if(list.length) html += '<h3>' + esc(g[1]) + ' <span class="num">(' + list.length + ')</span></h3><ul>' + list.map(row).join('') + '</ul>';
+      });
+      html += '</div></section>';
+    }
+    if(!items.length && !ap.length) html += '<section><div class="empty"><h2>Nothing on the board today</h2><p>No offers out, deals under contract or appointments. Go make some trouble.</p></div></section>';
+    if(b.closer) html += '<div class="sign">' + lola(b.closer, true) + '</div>';
+    html += '<p class="fine">Tap a client’s name to open their profile in Follow Up Boss (you need to be logged in). Deals come from the closings tracker and appointments from Follow Up Boss. This board is for the team only: please don’t forward the link. It expires after 7 days.</p>';
+    app.innerHTML = html;
+  }
+  function fail(head, msg){
+    document.getElementById('sub').textContent = '';
+    app.innerHTML = '<div class="empty"><h2>' + esc(head) + '</h2><p>' + esc(msg) + '</p></div>';
+  }
+  function start(){
+    var code = readCode();
+    if(!/^[A-Za-z0-9]{8,16}$/.test(code) || !CRM.url || !CRM.anonKey){ fail('This link is not complete', 'Open the board from Lola’s morning text. A new one goes out every weekday at 8:30 AM.'); return; }
+    rpc('ops_morning_board_peek', { p_code: code }).then(function(r){
+      if(r && r.ok) render(r);
+      else if(r && r.expired) fail('This board has expired', 'Lola sends a new one every weekday at 8:30 AM.');
+      else fail('This board was not found', 'Check that the whole link came through, or open today’s board from Lola’s morning text.');
+    }).catch(function(){ fail('No connection', 'Check your signal and reload the page.'); });
+  }
+  window.addEventListener('hashchange', start);
+  start();
+})();
+</script>
+</body>
+</html>
