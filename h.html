@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin">
+<meta name="theme-color" content="#17161c">
+<title>Home search · Jason Aguirre Group</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" integrity="sha512-Zcn6bjR/8RZbLEpLIeOwNtzREBAJnUKESxces60Mpoj+2okopSAcSUIUOseddDm0cxnGQzxIR7vJgsLZbdLE3w==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script src="jag-capture.js?v=3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" integrity="sha512-BwHfrr4c9kmRkLw6iXFdzcdWV/PGkVgiIyIWLLlTSXzWQzxuSg4DiQUCpauz/EWjgk5TYQqX/kvn9pG1NpYfqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="jag-clients.js?v=1"></script>
+<style>
+/* Field view for a showing day: the map and the cards share one numbering, so "4" on the map is card 4.
+   Same family as the offer page (/o): ink, white cards, one red for what needs a tap. */
+:root{
+  --canvas:#eef0f3; --paper:#ffffff; --ink:#17161c; --graphite:#5d5c66; --soft:#8b8a94; --hair:#dfe1e6;
+  --red:#c8102e; --red-t:#fdecef; --green:#0f8a4d; --green-t:#e6f4ec; --amber:#8a5a00; --amber-t:#fff3d9; --blue:#1f6feb;
+  --r-lg:20px; --r-md:14px; --r-sm:10px; --top:58px; --maph:34vh;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--ink);font:500 15px/1.5 'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.hidden{display:none !important}
+
+/* header */
+.top{position:sticky;top:0;z-index:1001;height:var(--top);background:rgba(238,240,243,.94);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--hair)}
+.top .in{max-width:1180px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;gap:12px}
+.mark{flex:0 0 auto;width:34px;height:34px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.02em}
+.top h1{margin:0;font-size:15px;line-height:1.25;font-weight:800;min-width:0;flex:1}
+.top h1 small{display:block;font-size:12.5px;font-weight:600;color:var(--graphite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-btn{flex:0 0 auto;border:1px solid var(--hair);background:var(--paper);border-radius:99px;padding:8px 13px;font-size:13px;font-weight:800;cursor:pointer;min-height:38px}
+
+/* layout: phones stack a sticky map over the list; wide screens put the map on the right */
+.wrap{max-width:1180px;margin:0 auto}
+.mapcol{position:sticky;top:var(--top);z-index:5;height:var(--maph);min-height:200px;background:#dfe3e8;border-bottom:1px solid var(--hair)}
+.mapcol.off{height:0;min-height:0;border:0;overflow:hidden}
+#map{position:absolute;inset:0}
+.listcol{padding:12px 16px 120px}
+@media(min-width:900px){
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:0}
+  .listcol{order:1;padding:16px 20px 80px}
+  .mapcol,.mapcol.off{order:2;height:calc(100vh - var(--top));min-height:0;border:0;border-left:1px solid var(--hair);overflow:visible}
+  #mapToggle,.tools .sep{display:none}
+}
+
+/* map pins */
+.pin{width:28px;height:28px;border-radius:99px;background:var(--ink);color:#fff;border:2px solid #fff;display:grid;place-items:center;font:800 12px/1 'Plus Jakarta Sans',system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.pin.on{background:var(--red);transform:scale(1.18)}
+.pin.cut{box-shadow:0 0 0 3px var(--green),0 1px 4px rgba(0,0,0,.35)}
+.you{width:16px;height:16px;border-radius:99px;background:var(--blue);border:3px solid #fff;box-shadow:0 0 0 6px rgba(31,111,235,.2)}
+.leaflet-container{font-family:inherit}
+
+/* tools */
+.tools{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 10px;margin:0 -16px;padding-left:16px;padding-right:16px}
+.tools::-webkit-scrollbar{display:none}
+.tools button{flex:0 0 auto;border:1px solid var(--hair);background:var(--paper);border-radius:99px;padding:8px 13px;font-size:13px;font-weight:700;color:var(--graphite);cursor:pointer;min-height:38px}
+.tools button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.tools .sep{flex:0 0 1px;background:var(--hair);margin:6px 2px}
+
+/* cards */
+.home{background:var(--paper);border:1px solid var(--hair);border-radius:var(--r-lg);margin-top:10px;display:grid;grid-template-columns:auto 1fr;gap:0 12px;padding:16px 16px 14px;scroll-margin-top:calc(var(--top) + var(--maph) + 12px)}
+.home.flash{box-shadow:0 0 0 2px var(--red)}
+@media(min-width:900px){ .home{scroll-margin-top:calc(var(--top) + 12px)} }
+.home > .n{grid-row:1;align-self:start;width:30px;height:30px;border-radius:99px;border:0;background:var(--ink);color:#fff;font-weight:800;font-size:12.5px;cursor:pointer;display:grid;place-items:center;margin-top:4px}
+.home.on > .n{background:var(--red)}
+.home .pr{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.home .price{font-size:26px;line-height:1.1;font-weight:800;letter-spacing:-.02em}
+.tag{display:inline-block;font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px;white-space:nowrap}
+.tag.cut{background:var(--green-t);color:var(--green)}
+.tag.new{background:var(--canvas);color:var(--ink)}
+.tag.fresh{background:var(--amber-t);color:var(--amber)}
+.home h2{margin:4px 0 0;font-size:16px;font-weight:800;line-height:1.3}
+.home h2 small{display:block;font-size:13px;font-weight:600;color:var(--graphite)}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 0;padding:10px 12px;background:var(--canvas);border-radius:var(--r-md)}
+.facts dt{font-size:11.5px;font-weight:700;color:var(--graphite)}
+.facts dd{margin:1px 0 0;font-size:15px;font-weight:800}
+.more{margin:10px 0 0;font-size:13.5px;color:var(--graphite);font-weight:600}
+.who{margin:8px 0 0;font-size:13.5px;font-weight:600;color:var(--graphite)}
+.who b{color:var(--ink);font-weight:800}
+.tip{margin:8px 0 0;font-size:12.5px;font-weight:600;color:#5c3c00;background:var(--amber-t);border-radius:var(--r-sm);padding:7px 10px}
+.acts{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px}
+.acts a,.acts button{display:flex;align-items:center;justify-content:center;text-align:center;border:1px solid var(--hair);background:var(--paper);border-radius:var(--r-sm);min-height:44px;padding:8px 6px;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer;line-height:1.2}
+.acts .go{grid-column:1 / -1;background:var(--ink);border-color:var(--ink);color:#fff;font-size:15px;min-height:48px}
+@media(min-width:560px){ .acts{grid-template-columns:1.6fr repeat(4,minmax(0,1fr))} .acts .go{grid-column:auto} }
+
+.empty{background:var(--paper);border-radius:var(--r-lg);padding:24px 20px;border:1px solid var(--hair);margin-top:12px}
+.empty h2{margin:0;font-size:19px}
+.empty p{color:var(--graphite);margin:8px 0 0}
+.empty .btn{margin-top:14px}
+.fine{font-size:12.5px;color:var(--soft);line-height:1.55;margin:18px 4px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:var(--r-md);background:var(--ink);color:#fff;font-weight:800;font-size:15.5px;padding:14px 18px;min-height:50px;cursor:pointer;text-decoration:none;width:100%}
+.btn.line{background:var(--paper);color:var(--ink);border:1px solid var(--hair)}
+.btn[disabled]{opacity:.55;cursor:default}
+
+/* bottom sheets */
+.scrim{position:fixed;inset:0;z-index:2000;background:rgba(23,22,28,.42);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+@media(min-width:640px){ .scrim{align-items:center} .sheet{border-radius:22px;max-height:88vh;padding-top:18px} .sheet .grab{display:none} }
+.sheet .grab{width:40px;height:4px;border-radius:99px;background:var(--hair);margin:4px auto 10px}
+.sheet header{display:flex;gap:12px;align-items:flex-start}
+.sheet h2{margin:0;font-size:19px;font-weight:800;line-height:1.25;flex:1}
+.sheet h2 small{display:block;font-size:13px;font-weight:600;color:var(--graphite);margin-top:3px}
+.x{flex:0 0 auto;width:38px;height:38px;border-radius:99px;border:1px solid var(--hair);background:var(--paper);cursor:pointer;font-size:18px;line-height:1}
+.sheet h3{margin:18px 0 8px;font-size:14px;font-weight:800}
+.sheet .lead{margin:8px 0 0;font-size:13.5px;color:var(--graphite);font-weight:600}
+.field{width:100%;font-size:16px;border:1px solid var(--hair);background:#f8f9fa;border-radius:var(--r-sm);padding:11px 12px;min-height:46px}
+.field:focus{background:#fff;border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(23,22,28,.08)}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pills button{border:1px solid var(--hair);background:#f8f9fa;border-radius:99px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;min-height:42px}
+.pills button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.note{margin:14px 0 0;font-size:13px;font-weight:600;color:#5c3c00;background:var(--amber-t);border-radius:var(--r-sm);padding:9px 12px}
+.sheet .btn{margin-top:18px}
+.say{margin:8px 2px 0;font-size:13px;font-weight:600;color:var(--graphite);min-height:1.2em}
+.say.err{color:var(--red)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two label{display:block;font-size:13px;font-weight:700;color:var(--graphite);margin-bottom:6px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <div class="mark" aria-hidden="true">JAG</div>
+    <h1 id="title">Home search<small id="sub">Loading…</small></h1>
+    <button type="button" class="chip-btn hidden" id="change">Change</button>
+  </div>
+</header>
+<div class="wrap">
+  <section class="mapcol" id="mapcol" aria-label="Map of the homes"><div id="map"></div></section>
+  <main class="listcol" id="app" aria-live="polite">
+    <div class="tools hidden" id="tools" role="toolbar" aria-label="Sort the homes"></div>
+    <div id="list"><div class="empty"><h2>Loading the homes…</h2></div></div>
+    <p class="fine hidden" id="fine">Active listings from the MLS feed (RentCast), refreshed daily. Check HAR before showing or writing an offer. Distances are straight-line miles.</p>
+  </main>
+</div>
+<script>
+/* Home search results, opened from the JAG text line: jasonaguirregroup.company/h#<code>.
+   The code is the only key. Results load from Supabase; "Draft an offer", the client list and
+   "Change" go through the JAG Field API (n8n), which checks the same code. */
+(function(){
+  'use strict';
+  var CRM = window.JAG_CRM || {}, F = window.JAGField;
+  var code = '', data = null, homes = [], markers = {}, map = null, youMarker = null, you = null;
+  var sort = 'near', active = null, prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem('jag_h_prefs') || '{}') || {}; } catch(e) { prefs = {}; }
+  function savePrefs(){ try { localStorage.setItem('jag_h_prefs', JSON.stringify(prefs)); } catch(e) {} }
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function n(v){ var x = Number(v); return isFinite(x) && v !== null && v !== '' ? x : null; }
+  function money(v){ var x = n(v); return x === null ? '' : '$' + Math.round(x).toLocaleString('en-US'); }
+  function short$(v){ var x = n(v); if(x === null) return ''; return x >= 1e6 ? '$' + (Math.round(x / 1e5) / 10) + 'M' : '$' + Math.round(x / 1000) + 'k'; }
+  function phoneFmt(v){ var d = String(v || '').replace(/\D/g, '').slice(-10); return d.length === 10 ? '(' + d.slice(0,3) + ') ' + d.slice(3,6) + '-' + d.slice(6) : String(v || ''); }
+  function tel(v){ var d = String(v || '').replace(/\D/g, '').slice(-10); return d.length === 10 ? '+1' + d : ''; }
+  function reduced(){ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  function rpc(name, body){
+    return fetch(String(CRM.url || '').replace(/\/+$/, '') + '/rest/v1/rpc/' + name, {
+      method: 'POST', headers: { apikey: CRM.anonKey, Authorization: 'Bearer ' + CRM.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function(r){ if(!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+  var R = 3958.8;
+  function miles(a, b){
+    if(!a || !b || a.lat == null || b.lat == null) return null;
+    var rad = Math.PI / 180, dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    var h = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.pow(Math.sin(dLng / 2), 2);
+    return Math.round(2 * R * Math.asin(Math.sqrt(h)) * 10) / 10;
+  }
+  var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  /* ---------- load ---------- */
+  function readCode(){ return decodeURIComponent((location.hash || '').replace(/^#/, '')).trim(); }
+  function start(){
+    code = readCode();
+    if(!/^[A-Za-z0-9]{8,16}$/.test(code) || !CRM.url){ fail('This link is not complete', 'Text the JAG line something like "new builds near 77357, 4 bed 2 bath" to get a fresh one.'); return; }
+    $('sub').textContent = 'Loading…';
+    rpc('ops_home_search_peek', { p_code: code }).then(function(r){
+      if(!r || !r.ok){ fail('This search has expired', 'Searches stay open for 14 days. Text the JAG line a new search, like "new builds near 77357, 4 bed 2 bath".'); return; }
+      data = r;
+      homes = (r.results || []).map(function(h, i){ h.i = i; h.no = i + 1; return h; });
+      if(you) homes.forEach(function(h){ h.fromYou = miles(you, h); });
+      if(sort === 'you' && !you) sort = 'near';
+      header(); tools(); drawMap(); list();
+      $('change').classList.remove('hidden'); $('fine').classList.remove('hidden');
+      document.title = (r.params && r.params.zipCode ? 'Homes near ' + r.params.zipCode : 'Home search') + ' · JAG';
+    }).catch(function(){ fail('No connection', 'Check your signal and reload the page.'); });
+  }
+  function fail(title, msg){
+    $('title').firstChild.nodeValue = 'Home search';
+    $('sub').textContent = '';
+    $('tools').classList.add('hidden');
+    $('mapcol').classList.add('off');
+    $('list').innerHTML = '<div class="empty"><h2>' + esc(title) + '</h2><p>' + esc(msg) + '</p></div>';
+  }
+
+  /* ---------- header ---------- */
+  function filtersText(p){
+    var bits = [];
+    if(p.bedrooms) bits.push(String(p.bedrooms).replace(':*', '+') + ' bd');
+    if(p.bathrooms) bits.push(String(p.bathrooms).replace(':*', '+') + ' ba');
+    if(p.price){ var m = String(p.price).split(':'); if(m[1] && m[1] !== '*') bits.push('up to ' + short$(m[1])); if(m[0] && m[0] !== '*') bits.push('from ' + short$(m[0])); }
+    if(p.widened && p.radius) bits.push('within ' + p.radius + ' mi');
+    return bits.join(', ');
+  }
+  function header(){
+    var p = data.params || {}, count = homes.length;
+    var what = p.newConstruction ? (count === 1 ? 'new build' : 'new builds') : (count === 1 ? 'home' : 'homes');
+    $('title').firstChild.nodeValue = count + ' ' + what + (p.zipCode ? ' near ' + p.zipCode : '');
+    var d = data.created ? new Date(data.created) : null, when = '';
+    if(d){ when = d.toDateString() === new Date().toDateString() ? 'today ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : d.toLocaleDateString([], { month: 'short', day: 'numeric' }); }
+    $('sub').textContent = [filtersText(p), when ? 'searched ' + when : ''].filter(Boolean).join(', ');
+  }
+
+  /* ---------- sort ---------- */
+  var SORTS = [['near', 'Closest'], ['you', 'Closest to me'], ['price', 'Lowest price'], ['new', 'Newest'], ['cut', 'Price cuts']];
+  function tools(){
+    var t = $('tools');
+    t.innerHTML = SORTS.map(function(s){
+      return '<button type="button" data-sort="' + s[0] + '" aria-pressed="' + (sort === s[0]) + '"' + (sort === s[0] ? ' class="on"' : '') + '>' + esc(s[1]) + '</button>';
+    }).join('') + '<span class="sep" aria-hidden="true"></span><button type="button" id="mapToggle" aria-pressed="' + !prefs.mapOff + '">' + (prefs.mapOff ? 'Show map' : 'Hide map') + '</button>';
+    t.classList.remove('hidden');
+  }
+  function ordered(){
+    var list = homes.slice();
+    var by = {
+      near: function(a, b){ return (a.miles == null ? 999 : a.miles) - (b.miles == null ? 999 : b.miles) || (a.price || 0) - (b.price || 0); },
+      you: function(a, b){ return (a.fromYou == null ? 999 : a.fromYou) - (b.fromYou == null ? 999 : b.fromYou); },
+      price: function(a, b){ return (a.price || 9e9) - (b.price || 9e9); },
+      new: function(a, b){ return (a.dom == null ? 9999 : a.dom) - (b.dom == null ? 9999 : b.dom); },
+      cut: function(a, b){ return (b.priceCut || 0) - (a.priceCut || 0) || (a.price || 0) - (b.price || 0); }
+    }[sort] || function(){ return 0; };
+    return list.sort(by);
+  }
+
+  /* ---------- cards ---------- */
+  function lotText(sq){ var x = n(sq); if(!x) return ''; return x >= 10890 ? (Math.round(x / 43560 * 100) / 100) + '-acre lot' : Math.round(x).toLocaleString('en-US') + ' sq ft lot'; }
+  function harUrl(h){ return 'https://www.har.com/search/dosearch?for_sale=1&quicksearch=' + encodeURIComponent(h.mls || h.address || ''); }
+  function zillowUrl(h){ return 'https://www.zillow.com/homes/' + encodeURIComponent(String(h.address || '').replace(/,/g, '').replace(/\s+/g, '-')) + '_rb/'; }
+  function dirUrl(h){
+    var dest = h.address || (h.lat + ',' + h.lng);
+    return iOS ? 'https://maps.apple.com/?daddr=' + encodeURIComponent(dest) : 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest);
+  }
+  function isBuilder(h){ return !!(h.builder && h.builder.name); }
+  function card(h){
+    var ppsf = h.price && h.sqft ? Math.round(h.price / h.sqft) : null;
+    var dist = sort === 'you' && h.fromYou != null ? h.fromYou + ' mi from you' : h.miles != null ? h.miles + ' mi from ' + (data.params && data.params.zipCode ? data.params.zipCode : 'the ZIP') : '';
+    var tags = '';
+    if(h.priceCut) tags += '<span class="tag cut">Cut ' + esc(money(h.priceCut)) + '</span>';
+    if(h.listingType === 'New Construction' || isBuilder(h)) tags += '<span class="tag new">New build</span>';
+    if(h.dom != null && h.dom <= 7) tags += '<span class="tag fresh">New this week</span>';
+    var more = [];
+    if(h.year) more.push('Built ' + h.year);
+    var lt = lotText(h.lot); if(lt) more.push(lt);
+    if(h.hoa) more.push('HOA ' + money(h.hoa) + ' a month');
+    if(h.dom != null) more.push(h.dom === 0 ? 'Listed today' : 'Listed ' + h.dom + (h.dom === 1 ? ' day ago' : ' days ago'));
+    var who = '', callNo = '', callWho = '';
+    if(isBuilder(h)){
+      who = '<p class="who"><b>' + esc(h.builder.name) + '</b>' + (h.builder.development ? ', ' + esc(h.builder.development) : '') + '</p>';
+      callNo = h.builder.phone; callWho = 'builder';
+    }
+    if(h.agent && h.agent.name){
+      who += '<p class="who">Listed by <b>' + esc(h.agent.name) + '</b>' + (h.office && h.office.name ? ', ' + esc(h.office.name) : '') + '</p>';
+      if(!callNo || !isBuilder(h)){ callNo = h.agent.phone || (h.office && h.office.phone); callWho = 'agent'; }
+    } else if(!isBuilder(h) && h.office && h.office.name){
+      who += '<p class="who">Listed by <b>' + esc(h.office.name) + '</b></p>'; callNo = h.office.phone; callWho = 'office';
+    }
+    var tip = isBuilder(h) ? '<p class="tip">Most builders only pay your side if you register the buyer at the first visit.</p>' : '';
+    var call = tel(callNo) ? '<a href="tel:' + tel(callNo) + '" aria-label="Call the ' + callWho + ' at ' + esc(phoneFmt(callNo)) + '">Call</a>' : '<button type="button" disabled>No phone</button>';
+    return '<article class="home' + (active === h.i ? ' on' : '') + '" id="home-' + h.i + '">' +
+      '<button type="button" class="n num" data-pin="' + h.i + '" aria-label="Show home ' + h.no + ' on the map">' + h.no + '</button>' +
+      '<div><div class="pr"><span class="price num">' + esc(money(h.price) || 'Price not listed') + '</span>' + tags + '</div>' +
+      '<h2>' + esc(h.street || h.address) + '<small>' + esc([h.city, h.zip].filter(Boolean).join(' ') + (dist ? ', ' + dist : '')) + '</small></h2>' +
+      '<dl class="facts num"><div><dt>Beds</dt><dd>' + esc(h.beds != null ? h.beds : '–') + '</dd></div><div><dt>Baths</dt><dd>' + esc(h.baths != null ? h.baths : '–') + '</dd></div>' +
+      '<div><dt>Sq ft</dt><dd>' + esc(h.sqft ? Number(h.sqft).toLocaleString('en-US') : '–') + '</dd></div><div><dt>$ per sq ft</dt><dd>' + esc(ppsf ? '$' + ppsf : '–') + '</dd></div></dl>' +
+      (more.length ? '<p class="more">' + esc(more.join('. ')) + '.</p>' : '') + who + tip + '</div>' +
+      '<div class="acts"><button type="button" class="go" data-offer="' + h.i + '">Draft an offer</button>' +
+      '<a href="' + esc(dirUrl(h)) + '" target="_blank" rel="noopener">Directions</a>' + call +
+      '<a href="' + esc(harUrl(h)) + '" target="_blank" rel="noopener">HAR</a>' +
+      '<a href="' + esc(zillowUrl(h)) + '" target="_blank" rel="noopener">Zillow</a></div>' +
+      '</article>';
+  }
+  function list(){
+    if(!homes.length){
+      $('list').innerHTML = '<div class="empty"><h2>No homes matched</h2><p>Try fewer beds or baths, or a higher price.</p><button type="button" class="btn" data-change="1">Change the search</button></div>';
+      return;
+    }
+    $('list').innerHTML = ordered().map(card).join('');
+  }
+
+  /* ---------- map ---------- */
+  function drawMap(){
+    var col = $('mapcol');
+    col.classList.toggle('off', !!prefs.mapOff && window.innerWidth < 900);
+    if(!window.L){ col.classList.add('off'); return; }
+    if(!map){
+      map = L.map('map', { zoomControl: false, scrollWheelZoom: false, tap: true });
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+      map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, referrerPolicy: 'strict-origin-when-cross-origin',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+      }).addTo(map);
+    }
+    Object.keys(markers).forEach(function(k){ map.removeLayer(markers[k]); }); markers = {};
+    var pts = [];
+    homes.forEach(function(h){
+      if(h.lat == null || h.lng == null) return;
+      /* lower numbers (closest to the ZIP) sit on top where pins overlap */
+      var m = L.marker([h.lat, h.lng], { icon: pinIcon(h), keyboard: true, title: (h.no + '. ' + (h.street || '') + ' ' + money(h.price)).trim(),
+        riseOnHover: true, zIndexOffset: (homes.length - h.i) * 10 });
+      m.on('click', function(){ select(h.i, 'map'); });
+      m.addTo(map); markers[h.i] = m; pts.push([h.lat, h.lng]);
+    });
+    if(you) pts.push([you.lat, you.lng]);
+    if(pts.length) map.fitBounds(pts, { padding: [28, 28], maxZoom: 14 });
+    else if(data.center && data.center.lat != null) map.setView([data.center.lat, data.center.lng], 12);
+    setTimeout(function(){ map.invalidateSize(); }, 50);
+  }
+  function pinIcon(h){
+    return L.divIcon({ className: '', iconSize: [28, 28], iconAnchor: [14, 14],
+      html: '<div class="pin num' + (active === h.i ? ' on' : '') + (h.priceCut ? ' cut' : '') + '">' + h.no + '</div>' });
+  }
+  function select(i, from){
+    var prev = active; active = i;
+    [prev, i].forEach(function(k){ var h = homes[k]; if(h && markers[k]) markers[k].setIcon(pinIcon(h)); });
+    if(markers[i]) markers[i].setZIndexOffset(5000);
+    if(prev != null && markers[prev] && prev !== i) markers[prev].setZIndexOffset((homes.length - prev) * 10);
+    document.querySelectorAll('.home.on').forEach(function(el){ el.classList.remove('on'); });
+    var el = $('home-' + i); if(!el) return;
+    el.classList.add('on');
+    if(from === 'map'){
+      el.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' });
+      el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+      setTimeout(function(){ el.classList.remove('flash'); }, 1400);
+    } else if(map && markers[i]){
+      if(prefs.mapOff && window.innerWidth < 900){ prefs.mapOff = false; savePrefs(); tools(); $('mapcol').classList.remove('off'); setTimeout(function(){ map.invalidateSize(); }, 50); }
+      map.setView(markers[i].getLatLng(), Math.max(map.getZoom(), 15), { animate: !reduced() });
+      if(window.innerWidth < 900) window.scrollBy({ top: el.getBoundingClientRect().top - (58 + $('mapcol').offsetHeight + 12), behavior: reduced() ? 'auto' : 'smooth' });
+    }
+  }
+  function nearMe(){
+    if(!navigator.geolocation){ say('This phone does not share its location with the browser.'); return; }
+    var b = document.querySelector('[data-sort="you"]'); if(b) b.textContent = 'Finding you…';
+    navigator.geolocation.getCurrentPosition(function(pos){
+      you = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      homes.forEach(function(h){ h.fromYou = miles(you, h); });
+      sort = 'you'; tools(); list();
+      if(map){
+        if(youMarker) map.removeLayer(youMarker);
+        youMarker = L.marker([you.lat, you.lng], { icon: L.divIcon({ className: '', iconSize: [16, 16], iconAnchor: [8, 8], html: '<div class="you"></div>' }), title: 'You', keyboard: false }).addTo(map);
+        var near = ordered().slice(0, 4).filter(function(h){ return h.lat != null; }).map(function(h){ return [h.lat, h.lng]; });
+        map.fitBounds(near.concat([[you.lat, you.lng]]), { padding: [36, 36], maxZoom: 15 });
+      }
+    }, function(err){
+      tools();
+      say(err && err.code === 1 ? 'Location is off for this site. Allow it in the browser settings to sort by distance from you.' : 'Could not find your location. Try again outside.');
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  }
+  var sayTimer = null;
+  function say(msg){
+    var t = $('toast');
+    if(!t){ t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status');
+      t.style.cssText = 'position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:2100;max-width:520px;margin:0 auto;background:#17161c;color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+      document.body.appendChild(t); }
+    t.textContent = msg; t.classList.remove('hidden');
+    clearTimeout(sayTimer); sayTimer = setTimeout(function(){ t.classList.add('hidden'); }, 5200);
+  }
+
+  /* ---------- sheets ---------- */
+  var lastFocus = null;
+  function openSheet(html, label){
+    closeSheet();
+    lastFocus = document.activeElement;
+    var s = document.createElement('div');
+    s.className = 'scrim'; s.id = 'scrim';
+    s.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(label) + '"><div class="grab" aria-hidden="true"></div>' + html + '</div>';
+    document.body.appendChild(s);
+    document.body.style.overflow = 'hidden';
+    s.addEventListener('click', function(e){ if(e.target === s || e.target.closest('.x')) closeSheet(); });
+    return s.querySelector('.sheet');
+  }
+  function closeSheet(){
+    var s = $('scrim'); if(!s) return;
+    s.remove(); document.body.style.overflow = '';
+    if(lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeSheet(); });
+  function pills(name, opts, val){
+    return '<div class="pills" data-pills="' + name + '">' + opts.map(function(o){
+      var on = String(val) === String(o[0]);
+      return '<button type="button" data-v="' + esc(o[0]) + '" aria-pressed="' + on + '"' + (on ? ' class="on"' : '') + '>' + esc(o[1]) + '</button>';
+    }).join('') + '</div>';
+  }
+  function pillVal(root, name){ var b = root.querySelector('[data-pills="' + name + '"] .on'); return b ? b.getAttribute('data-v') : ''; }
+  function wirePills(root){
+    root.addEventListener('click', function(e){
+      var b = e.target.closest('[data-pills] button'); if(!b) return;
+      b.parentNode.querySelectorAll('button').forEach(function(x){ var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+    });
+  }
+
+  /* Draft an offer: pick the buyer, price and financing; the Field API pulls the tax record and
+     listing agent, creates the draft and the offer page opens with everything filled in. */
+  function offerSheet(i){
+    var h = homes[i]; if(!h) return;
+    var builder = isBuilder(h) || h.listingType === 'New Construction';
+    var sheet = openSheet(
+      '<header><h2>Offer on ' + esc(h.street || h.address) + '<small>List price ' + esc(money(h.price) || 'not listed') + (h.mls ? ', MLS ' + esc(h.mls) : '') + '</small></h2>' +
+      '<button type="button" class="x" aria-label="Close">×</button></header>' +
+      '<p class="lead">The draft pulls the seller, county and legal description from the tax record and the listing agent from the MLS. You review every blank on the next page.</p>' +
+      '<h3>Buyer</h3><div id="pick"></div>' +
+      '<div class="two" style="margin-top:6px"><div><h3 style="margin-top:12px">Offer price</h3><input class="field num" id="oPrice" inputmode="decimal" autocomplete="off" value="' + esc(h.price ? Math.round(h.price).toLocaleString('en-US') : '') + '" aria-label="Offer price"></div></div>' +
+      '<h3>Financing</h3>' + pills('loan', [['fha', 'FHA'], ['conventional', 'Conventional'], ['va', 'VA'], ['usda', 'USDA'], ['cash', 'Cash']], prefs.loan || '') +
+      (builder ? '<p class="note">Builders often write on their own contract. This starts the TREC resale contract (20-19) so the buyer, price and financing are ready either way.</p>' : '') +
+      '<button type="button" class="btn" id="mkOffer">Create the offer draft</button><p class="say" id="oSay" role="status"></p>', 'Draft an offer');
+    wirePills(sheet);
+    var pick = F.picker(sheet.querySelector('#pick'), { key: code, allowSkip: true });
+    sheet.querySelector('#mkOffer').addEventListener('click', function(){
+      var btn = this, sayEl = sheet.querySelector('#oSay');
+      var client = pick.selected(), loan = pillVal(sheet, 'loan');
+      var price = String(sheet.querySelector('#oPrice').value || '').replace(/[^0-9.]/g, '');
+      if(loan){ prefs.loan = loan; savePrefs(); }
+      btn.disabled = true; sayEl.className = 'say'; sayEl.textContent = 'Pulling the tax record and listing agent…';
+      F.call('offer_from_listing', code, { index: h.i, price: price, loan_type: loan, client_id: client ? client.id : null }).then(function(r){
+        if(!r.ok || !r.code) throw new Error(r.error || 'The draft was not created. Try again.');
+        sayEl.textContent = 'Draft ready. Opening it…';
+        location.href = 'o#' + encodeURIComponent(r.code);
+      }).catch(function(err){
+        btn.disabled = false; sayEl.className = 'say err';
+        sayEl.textContent = /http|fetch|network/i.test(err.message) ? 'No connection. Check your signal and try again.' : err.message;
+      });
+    });
+  }
+
+  function changeSheet(){
+    var p = (data && data.params) || {};
+    var beds = String(p.bedrooms || '').replace(':*', ''), baths = String(p.bathrooms || '').replace(':*', '');
+    var max = p.price ? String(p.price).split(':')[1] : '';
+    var sheet = openSheet(
+      '<header><h2>Change the search<small>Searches active listings in the ZIP, and nearby if there are few.</small></h2><button type="button" class="x" aria-label="Close">×</button></header>' +
+      '<div class="two"><div><h3>ZIP code</h3><input class="field num" id="sZip" inputmode="numeric" maxlength="5" autocomplete="postal-code" value="' + esc(p.zipCode || '') + '" aria-label="ZIP code"></div>' +
+      '<div><h3>Max price</h3><input class="field num" id="sMax" inputmode="decimal" placeholder="Any" autocomplete="off" value="' + esc(max && max !== '*' ? Number(max).toLocaleString('en-US') : '') + '" aria-label="Max price"></div></div>' +
+      '<h3>Beds</h3>' + pills('beds', [['', 'Any'], ['2', '2+'], ['3', '3+'], ['4', '4+'], ['5', '5+']], beds) +
+      '<h3>Baths</h3>' + pills('baths', [['', 'Any'], ['2', '2+'], ['3', '3+']], baths) +
+      '<h3>Homes</h3>' + pills('nc', [['true', 'New builds only'], ['false', 'All homes']], p.newConstruction ? 'true' : 'false') +
+      '<button type="button" class="btn" id="go">Search</button><p class="say" id="sSay" role="status"></p>', 'Change the search');
+    wirePills(sheet);
+    sheet.querySelector('#go').addEventListener('click', function(){
+      var btn = this, sayEl = sheet.querySelector('#sSay');
+      var zip = sheet.querySelector('#sZip').value.replace(/\D/g, '');
+      if(zip.length !== 5){ sayEl.className = 'say err'; sayEl.textContent = 'Enter a 5-digit ZIP code.'; sheet.querySelector('#sZip').focus(); return; }
+      btn.disabled = true; sayEl.className = 'say'; sayEl.textContent = 'Searching listings…';
+      F.call('search', code, { zip: zip, beds: pillVal(sheet, 'beds'), baths: pillVal(sheet, 'baths'),
+        maxPrice: sheet.querySelector('#sMax').value.replace(/[^0-9.]/g, ''), newConstruction: pillVal(sheet, 'nc') === 'true' }).then(function(r){
+        if(!r.ok || !r.code) throw new Error(r.error || 'The search did not finish. Try again.');
+        closeSheet(); active = null; location.hash = r.code;
+      }).catch(function(err){
+        btn.disabled = false; sayEl.className = 'say err';
+        sayEl.textContent = /http|fetch|network/i.test(err.message) ? 'No connection. Check your signal and try again.' : err.message;
+      });
+    });
+    setTimeout(function(){ sheet.querySelector('#sZip').focus(); }, 60);
+  }
+
+  /* ---------- wiring ---------- */
+  $('tools').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    if(b.id === 'mapToggle'){
+      prefs.mapOff = !prefs.mapOff; savePrefs(); tools();
+      $('mapcol').classList.toggle('off', prefs.mapOff);
+      if(!prefs.mapOff && map) setTimeout(function(){ map.invalidateSize(); }, 50);
+      return;
+    }
+    var s = b.getAttribute('data-sort'); if(!s) return;
+    if(s === 'you' && !you){ nearMe(); return; }
+    sort = s; tools(); list();
+  });
+  $('list').addEventListener('click', function(e){
+    var b = e.target.closest('[data-pin],[data-offer],[data-change]'); if(!b) return;
+    if(b.hasAttribute('data-pin')) return select(Number(b.getAttribute('data-pin')), 'card');
+    if(b.hasAttribute('data-offer')) return offerSheet(Number(b.getAttribute('data-offer')));
+    if(b.hasAttribute('data-change')) return changeSheet();
+  });
+  $('change').addEventListener('click', changeSheet);
+  window.addEventListener('hashchange', function(){ if(readCode() !== code) start(); });
+  window.addEventListener('resize', function(){ if(map) map.invalidateSize(); });
+  start();
+})();
+</script>
+</body>
+</html>

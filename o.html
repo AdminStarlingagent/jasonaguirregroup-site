@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#17161c">
+<title>Offer draft · Jason Aguirre Group</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="jag-capture.js?v=3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha512-z8IYLHO8bTgFqj+yrPyIJnzBDf7DDhWwiEsk4sY+Oe6J2M+WQequeGS7qioI5vT6rXgVRb4K1UVQC5ER7MKzKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="offer-fill.js?v=3"></script>
+<script src="jag-clients.js?v=1"></script>
+<style>
+/* The TREC paragraph number is the organizing device: sections, the paragraph rail and the
+   "what's left" list all speak the contract's own numbering, the way listing agents ask for fixes. */
+:root{
+  --canvas:#eef0f3; --paper:#ffffff; --ink:#17161c; --graphite:#5d5c66; --soft:#8b8a94; --hair:#dfe1e6;
+  --red:#c8102e; --red-t:#fdecef; --green:#0f8a4d; --green-t:#e6f4ec; --amber:#8a5a00; --amber-t:#fff3d9;
+  --r-lg:20px; --r-md:14px; --r-sm:10px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--ink);font:500 15px/1.5 'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:rgba(238,240,243,.92);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--hair)}
+.top .in{max-width:880px;margin:0 auto;padding:10px 16px 0;display:flex;align-items:center;gap:12px}
+.mark{flex:0 0 auto;width:34px;height:34px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.02em}
+.top h1{margin:0;font-size:15px;line-height:1.25;font-weight:800;min-width:0;flex:1}
+.top h1 small{display:block;font-size:12.5px;font-weight:600;color:var(--graphite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.left{flex:0 0 auto;font-size:12.5px;font-weight:800;border-radius:99px;padding:6px 11px;background:var(--red-t);color:var(--red);white-space:nowrap}
+.left.ready{background:var(--green-t);color:var(--green)}
+.rail{max-width:880px;margin:0 auto;display:flex;gap:6px;overflow-x:auto;padding:10px 16px 10px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail button{flex:0 0 auto;border:1px solid var(--hair);background:var(--paper);border-radius:99px;padding:6px 11px;font-size:12.5px;font-weight:700;color:var(--graphite);cursor:pointer;display:flex;gap:6px;align-items:center}
+.rail button b{font-weight:800;color:var(--ink)}
+.rail button.miss{border-color:#f1b7c1;color:var(--red)} .rail button.miss b{color:var(--red)}
+.rail button.done{border-color:#bfe2cd} .rail button.done:after{content:'';width:6px;height:6px;border-radius:99px;background:var(--green)}
+
+main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
+
+/* the offer at a glance */
+.glance{background:var(--ink);color:#fff;border-radius:var(--r-lg);padding:22px 20px 18px}
+.glance .addr{font-size:14px;font-weight:600;color:#c9c8d1;margin:0}
+.glance .price{font-size:44px;line-height:1.05;font-weight:800;letter-spacing:-.03em;margin:6px 0 4px}
+.glance .price.unset{font-size:24px;color:#c9c8d1}
+.glance .fin{font-size:15px;font-weight:700;margin:0}
+.glance dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;margin:18px 0 0;padding-top:16px;border-top:1px solid #2f2e36}
+.glance dt{font-size:12px;color:#a9a8b2;font-weight:600}
+.glance dd{margin:2px 0 0;font-size:14.5px;font-weight:700;word-break:break-word}
+@media(min-width:640px){ .glance dl{grid-template-columns:repeat(4,minmax(0,1fr))} .glance .price{font-size:56px} }
+
+/* what's left */
+.todo{background:var(--paper);border-radius:var(--r-lg);margin-top:12px;padding:16px 18px;border:1px solid var(--hair)}
+.todo h2,.send h2{margin:0;font-size:16px;font-weight:800}
+.todo p{margin:4px 0 0;color:var(--graphite);font-size:13.5px}
+.todo ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:2px}
+.todo li button{width:100%;text-align:left;border:0;background:none;padding:9px 0;display:flex;gap:10px;align-items:baseline;cursor:pointer;border-top:1px solid #f0f1f4;font-size:14px;font-weight:600}
+.todo li:first-child button{border-top:0}
+.todo li button span.p{flex:0 0 52px;font-weight:800;color:var(--red);font-size:12.5px}
+.todo li button span.go{margin-left:auto;color:var(--soft);font-weight:700;font-size:12.5px}
+.todo.ready{border-color:#bfe2cd;background:var(--green-t)}
+.todo.ready h2{color:var(--green)}
+.warn{margin-top:12px;border-radius:var(--r-md);padding:12px 16px;background:var(--amber-t);color:#5c3c00;font-size:13.5px}
+.warn b{display:block;font-size:14px;margin-bottom:2px}
+.warn ul{margin:4px 0 0;padding-left:18px}
+
+/* send */
+.send{background:var(--paper);border-radius:var(--r-lg);margin-top:12px;padding:16px 18px;border:1px solid var(--hair)}
+.send .forms{margin:10px 0 0;display:grid;gap:8px}
+.form{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-md);background:var(--canvas)}
+.form .ic{flex:0 0 auto;width:30px;height:36px;border-radius:5px;background:var(--paper);border:1px solid var(--hair);display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--graphite)}
+.form div{flex:1;min-width:0}
+.form b{display:block;font-size:14px}
+.form small{color:var(--graphite);font-size:12px;font-weight:600}
+.form button{border:0;background:none;font-weight:800;font-size:13.5px;padding:8px 4px;cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.attach{margin-top:14px}
+.attach h3{margin:0 0 4px;font-size:13.5px;font-weight:800}
+.check{display:flex;gap:12px;align-items:flex-start;padding:8px 0;cursor:pointer;font-size:14px;font-weight:600}
+.check input{flex:0 0 22px;width:22px;height:22px;margin:1px 0 0;accent-color:var(--ink)}
+.check small{display:block;color:var(--soft);font-weight:600;font-size:12.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:var(--r-md);background:var(--ink);color:#fff;font-weight:800;font-size:15.5px;padding:14px 18px;min-height:50px;cursor:pointer;text-decoration:none;width:100%}
+.btn.line{background:var(--paper);color:var(--ink);border:1px solid var(--hair)}
+.btn[disabled]{opacity:.5;cursor:default}
+.stack{display:grid;gap:8px;margin-top:14px}
+@media(min-width:640px){ .stack.two{grid-template-columns:1fr 1fr} }
+.hint{font-size:12.5px;color:var(--soft);font-weight:600;margin:6px 0 0;line-height:1.45}
+.steps{margin:12px 0 0;padding-left:20px;font-size:13.5px;color:var(--graphite)}
+.steps li{margin:3px 0}
+
+/* contract paragraphs */
+.para{background:var(--paper);border-radius:var(--r-lg);margin-top:12px;border:1px solid var(--hair);scroll-margin-top:118px}
+.para > header{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;padding:16px 18px 4px}
+.para .pn{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--ink);min-width:44px}
+.para .pn.form-no{font-size:13px;font-weight:800;color:var(--graphite);padding-top:4px}
+.para h2{margin:0;font-size:16.5px;font-weight:800;letter-spacing:-.01em}
+.para .st{font-size:12.5px;font-weight:800;color:var(--red);white-space:nowrap}
+.para .st.ok{color:var(--green)}
+.para .body{padding:6px 18px 18px;display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
+.para .body > .full{grid-column:1 / -1}
+@media(max-width:560px){ .para .body{grid-template-columns:1fr} }
+.f label,.f .lab{display:block;font-size:13px;font-weight:700;color:var(--graphite);margin-bottom:6px}
+.f input[type=text],.f input[type=tel],.f input[type=email],.f input[type=date],.f textarea{width:100%;font-size:16px;border:1px solid var(--hair);background:#f8f9fa;border-radius:var(--r-sm);padding:11px 12px;min-height:46px}
+.f textarea{min-height:84px;resize:vertical}
+.f input:focus,.f textarea:focus{background:#fff;border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(23,22,28,.08)}
+.f .hint{margin-top:5px}
+.f.need input,.f.need textarea{border-color:var(--red);background:var(--red-t)}
+.f.need .lab,.f.need label{color:var(--red)}
+.f.flash{animation:flash 1.2s ease}
+@keyframes flash{0%{box-shadow:0 0 0 0 rgba(200,16,46,.35);border-radius:12px}100%{box-shadow:0 0 0 14px rgba(200,16,46,0);border-radius:12px}}
+@media (prefers-reduced-motion:reduce){ .f.flash{animation:none} }
+/* choices: short ones as pills, long ones as a list */
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pills button{border:1px solid var(--hair);background:#f8f9fa;border-radius:99px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;min-height:42px}
+.pills button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.list{display:grid;gap:6px}
+.list button{display:flex;gap:10px;align-items:center;text-align:left;border:1px solid var(--hair);background:#f8f9fa;border-radius:var(--r-sm);padding:11px 12px;font-size:14px;font-weight:600;cursor:pointer}
+.list button:before{content:'';flex:0 0 18px;height:18px;border-radius:99px;border:2px solid #c6c8cf;background:#fff}
+.list button.on{border-color:var(--ink);background:#fff}
+.list button.on:before{border:6px solid var(--ink)}
+.f.need .pills button,.f.need .list button{border-color:#f1b7c1}
+.calc{grid-column:1 / -1;font-size:13px;color:var(--graphite);font-weight:600;background:var(--canvas);border-radius:var(--r-sm);padding:9px 12px}
+.calc:empty{display:none}
+
+.remember{margin-top:12px;background:var(--paper);border-radius:var(--r-lg);border:1px solid var(--hair);padding:6px 18px}
+.fine{font-size:12.5px;color:var(--soft);line-height:1.55;margin:16px 4px 0}
+
+/* bottom bar */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--hair);padding:10px 16px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.bar .in{max-width:880px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.bar .btn{width:auto;flex:1}
+.bar .btn.line{flex:0 0 auto}
+.status{max-width:880px;margin:6px auto 0;font-size:12.5px;font-weight:600;color:var(--graphite);min-height:1em}
+.status.err{color:var(--red)}
+.hidden{display:none !important}
+.fub .btn{min-height:46px;font-size:14.5px}
+/* client picker sheet */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(23,22,28,.42);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:22px 22px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+@media(min-width:640px){ .scrim{align-items:center} .sheet{border-radius:22px;padding-top:18px} .sheet .grab{display:none} }
+.sheet .grab{width:40px;height:4px;border-radius:99px;background:var(--hair);margin:4px auto 10px}
+.sheet header{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.sheet h2{margin:0;font-size:19px;font-weight:800;line-height:1.25;flex:1}
+.sheet h2 small{display:block;font-size:13px;font-weight:600;color:var(--graphite);margin-top:3px}
+.sheet .x{flex:0 0 auto;width:38px;height:38px;border-radius:99px;border:1px solid var(--hair);background:var(--paper);cursor:pointer;font-size:18px;line-height:1}
+.sheet .say{margin:10px 2px 0;font-size:13px;font-weight:600;color:var(--graphite);min-height:1.2em}
+.sheet .say.err{color:var(--red)}
+.empty{background:var(--paper);border-radius:var(--r-lg);padding:28px 22px;border:1px solid var(--hair);margin-top:30px}
+.empty h2{margin:0;font-size:19px}
+.empty p{color:var(--graphite);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="top hidden" id="top">
+  <div class="in">
+    <div class="mark" aria-hidden="true">JAG</div>
+    <h1 id="topAddr">Offer draft<small id="topSub"></small></h1>
+    <span class="left" id="left"></span>
+  </div>
+  <nav class="rail" id="rail" aria-label="Contract paragraphs"></nav>
+</div>
+<main id="app" aria-live="polite">
+  <div class="empty"><h2>Loading the offer…</h2></div>
+</main>
+<div class="bar hidden" id="bar"><div class="in">
+  <button type="button" class="btn line" id="save">Save</button>
+  <button type="button" class="btn" id="goSend">Send the offer</button>
+</div><div class="status" id="status"></div></div>
+<script>
+/* Offer draft review, opened from the JAG text line: jasonaguirregroup.company/o#<code>.
+   The code (or the older ?t=<token>) is the only key to this offer. Edits save to Supabase;
+   the TREC PDFs are filled here in the browser and, when sent, a copy is kept for JAG Admin → Deals. */
+(function(){
+  'use strict';
+  var CRM = window.JAG_CRM || {}, Fill = window.JAGOfferFill;
+  var params = new URLSearchParams(location.search);
+  var key = decodeURIComponent((location.hash || '').replace(/^#/, '')) || params.get('t') || params.get('c') || '';
+  key = key.trim();
+  var token = '';                     /* the long token, returned by the server once the link checks out */
+  var app = document.getElementById('app'), bar = document.getElementById('bar'), statusEl = document.getElementById('status');
+  var offer = null, defaults = {}, dirty = false, prepared = null, pkgSig = '';
+
+  /* Sections follow the TREC 20-19 paragraphs. pn = what the rail and headers show. */
+  var SECTIONS = [
+    { id:'p1', pn:'¶1', rail:'Parties', title:'Parties', fields:[
+      ['_fub', '', 'fub'], ['fub_person_id', '', 'hidden'],
+      ['buyer_names', 'Buyer full legal names', 'text', {full:1, hint:'Exactly as they will sign.'}],
+      ['seller_names', 'Seller names', 'text', {full:1, hint:'From the tax record or listing. Check against the title commitment.'}]]},
+    { id:'p2', pn:'¶2', rail:'Property', title:'Property', fields:[
+      ['address', 'Street address', 'text', {full:1}],
+      ['city', 'City', 'text'], ['zip', 'ZIP', 'text', {mode:'numeric'}],
+      ['county', 'County', 'text'], ['year_built', 'Year built', 'number', {hint:'Before 1978 adds the lead paint addendum.'}],
+      ['lot', 'Lot', 'text'], ['block', 'Block', 'text'],
+      ['addition', 'Subdivision', 'text', {full:1}],
+      ['hoa', 'Mandatory HOA', 'choice', {opts:[['true','Yes'],['false','No']], hint:'Yes adds the HOA addendum.'}],
+      ['exclusions', 'Items the seller keeps', 'text', {full:1}]]},
+    { id:'p3', pn:'¶3', rail:'Price', title:'Sales price', fields:[
+      ['sales_price', 'Sales price', 'money'],
+      ['loan_type', 'Financing', 'choice', {full:1, opts:[['fha','FHA'],['conventional','Conventional'],['va','VA'],['usda','USDA'],['cash','Cash']]}],
+      ['down_payment', 'Down payment (% or $)', 'text'],
+      ['loan_amount', 'or exact loan amount', 'money', {hint:'Base loan, without financed MIP or funding fee. Overrides the down payment.'}],
+      ['_calc3', '', 'calc']]},
+    { id:'p5', pn:'¶5', rail:'Earnest', title:'Earnest money and option', fields:[
+      ['earnest_money', 'Earnest money', 'money'], ['option_fee', 'Option fee', 'money'],
+      ['option_days', 'Option days', 'number'], ['title_company', 'Title company', 'text'],
+      ['title_company_address', 'Title company address', 'text', {full:1}],
+      ['escrow_officer', 'Escrow officer', 'text', {full:1, hint:'Name, email and phone. For the title order; not printed on the contract.'}]]},
+    { id:'p6', pn:'¶6', rail:'Title', title:'Title and survey', fields:[
+      ['title_paid_by', 'Owner title policy paid by', 'choice', {opts:[['seller','Seller'],['buyer','Buyer']]}],
+      ['objection_days', 'Objection days (6D)', 'number'],
+      ['survey', 'Survey', 'choice', {full:1, opts:[['existing','Seller provides the existing survey and T-47'],['new_buyer','New survey, buyer pays'],['new_seller','New survey, seller pays']]}],
+      ['survey_days', 'Survey days', 'number'],
+      ['survey_new_paid_by', 'If the existing survey is not accepted', 'choice', {opts:[['buyer','Buyer pays'],['seller','Seller pays']]}],
+      ['shortages', 'Shortages in area, 6A(8)', 'choice', {full:1, opts:[['none','(i) Not amended'],['buyer','(ii) Amended, buyer pays'],['seller','(ii) Amended, seller pays']]}]]},
+    { id:'p7', pn:'¶7', rail:'Condition', title:'Property condition', fields:[
+      ['sd_status', "Seller's Disclosure Notice, 7B", 'choice', {full:1, opts:[['received','Buyer has received it'],['not_received','Not received yet'],['not_required','Seller not required']]}],
+      ['sd_days', 'Days to deliver it', 'number'],
+      ['water_status', "Seller's Water Disclosure, 7I", 'choice', {full:1, opts:[['received','Buyer has received it'],['not_received','Not received yet'],['not_required','Seller not required']]}],
+      ['water_days', 'Days to deliver it', 'number'],
+      ['water_provider', 'Water provider (only if not required)', 'text', {full:1}],
+      ['repairs', 'Specific repairs the seller completes', 'textarea', {full:1, hint:'Leave blank for As Is. Name each repair; no "subject to inspections".'}],
+      ['service_contract', 'Home warranty up to', 'money']]},
+    { id:'p9', pn:'¶9', rail:'Closing', title:'Closing, possession and provisions', fields:[
+      ['closing_date', 'Closing on or before', 'date'],
+      ['possession', 'Possession', 'choice', {opts:[['closing','At closing'],['lease','Temporary lease']]}],
+      ['special_provisions', 'Special provisions, ¶11', 'textarea', {full:1, hint:'Facts and instructions only; TREC does not allow new legal terms here.'}]]},
+    { id:'p12', pn:'¶12', rail:'Costs', title:'Who pays what', fields:[
+      ['seller_concession', "Seller pays toward buyer's costs, 12A", 'money', {full:1}],
+      ['comp_payer', "Buyer's agent compensation, 12B", 'choice', {opts:[['seller','Seller pays'],['buyer','Buyer pays']]}],
+      ['comp_type', 'As', 'choice', {opts:[['pct','% of price'],['amount','Dollar amount']]}],
+      ['comp_value', 'Amount (% or $)', 'text', {mode:'decimal'}]]},
+    { id:'p21', pn:'¶21', rail:'Notices', title:'Notices', fields:[
+      ['buyer_notice_address', 'Buyer mailing address', 'text', {full:1}],
+      ['buyer_phone', 'Buyer phone', 'tel'], ['buyer_email', 'Buyer email', 'email']]},
+    { id:'p22', pn:'¶22', rail:'Addenda', title:'Addenda and notices', fields:[
+      ['district_notices', 'MUD, PID or district notices given', 'text', {full:1}],
+      ['appraisal_addendum', "Right to Terminate Due to Lender's Appraisal", 'choice', {opts:[['true','Add it'],['false','No']]}]]},
+    { id:'tpfa', pn:'40-11', form:1, rail:'Financing', title:'Third Party Financing Addendum', when:'financed', fields:[
+      ['loan_years', 'Loan term (years)', 'number'], ['rate_cap', 'Rate not to exceed (%)', 'text', {mode:'decimal'}],
+      ['rate_years', 'Rate cap for the first (years)', 'number'], ['orig_cap', 'Origination charges up to (%)', 'text', {mode:'decimal'}],
+      ['fha_section', 'FHA section', 'text'], ['approval_days', 'Buyer Approval days', 'text', {hint:'Type none if the offer is not subject to Buyer Approval.'}]]},
+    { id:'hoa', pn:'36-11', form:1, rail:'HOA', title:'HOA addendum', when:'hoa', fields:[
+      ['hoa_name', 'HOA name', 'text'], ['hoa_phone', 'HOA phone', 'tel'],
+      ['hoa_option', 'Subdivision information', 'choice', {full:1, opts:[['seller_delivers','Seller gets it and delivers it within a set number of days'],['buyer_obtains','Buyer gets it within a set number of days'],['received','Buyer already received and approved it'],['not_required','Buyer does not need it']]}],
+      ['hoa_days', 'Days', 'number'],
+      ['hoa_resale_cert', 'Updated resale certificate', 'choice', {opts:[['false','Not required'],['true','Required']], hint:'Only when the buyer already has the information.'}],
+      ['hoa_fee_cap', 'Buyer pays transfer fees up to', 'money'],
+      ['hoa_info_paid_by', 'Cost of the HOA information', 'choice', {opts:[['seller','Seller pays'],['buyer','Buyer pays']]}]]},
+    { id:'lead', pn:'56-0', form:1, rail:'Lead paint', title:'Lead-based paint addendum', when:'leadPaint', fields:[
+      ['lead_inspection', 'Lead paint inspection', 'choice', {full:1, opts:[['waive','Buyer waives the inspection'],['inspect','Buyer may inspect within 10 days']]}],
+      ['lead_info_received', 'Buyer received the records the seller listed', 'choice', {opts:[['true','Yes'],['false','No']]}],
+      ['lead_pamphlet', 'Buyer received the EPA pamphlet', 'choice', {opts:[['true','Yes'],['false','No']]}]]},
+    { id:'list', pn:'Pg 11', form:1, rail:'Listing side', title:'Listing agent', fields:[
+      ['listing_agent', 'Listing agent', 'text'], ['listing_firm', 'Brokerage', 'text'],
+      ['listing_agent_phone', 'Phone', 'tel'], ['listing_agent_email', 'Email', 'email'],
+      ['listing_agent_address', 'Address for notices', 'text', {full:1}]]},
+    { id:'ours', pn:'Pg 11', form:1, rail:'Our info', title:'Our agent and broker', fields:[
+      ['buyer_agent', 'Agent', 'text'], ['buyer_agent_license', 'Agent license', 'text'],
+      ['buyer_agent_phone', 'Phone', 'tel'], ['buyer_agent_email', 'Email', 'email'],
+      ['buyer_team', 'Team', 'text'], ['buyer_firm', 'Broker firm', 'text'],
+      ['buyer_firm_license', 'Firm license', 'text'], ['buyer_firm_address', 'Firm address', 'text'],
+      ['buyer_supervisor', 'Licensed supervisor', 'text'], ['buyer_supervisor_license', 'Supervisor license', 'text'],
+      ['buyer_supervisor_phone', 'Supervisor phone', 'tel']]}
+  ];
+  var DEFAULT_KEYS = ['title_company','title_company_address','title_paid_by','survey','survey_days','survey_new_paid_by','objection_days',
+    'option_days','possession','loan_years','rate_years','rate_cap','orig_cap','fha_section','approval_days','comp_payer','comp_type',
+    'comp_value','buyer_firm','buyer_firm_license','buyer_firm_address','buyer_team','buyer_agent','buyer_agent_license',
+    'buyer_agent_phone','buyer_agent_email','buyer_supervisor','buyer_supervisor_license','buyer_supervisor_phone','sd_days','water_days',
+    'hoa_option','hoa_days','hoa_fee_cap','hoa_info_paid_by','service_contract'];
+  /* missing-list label → fields it points at (first one gets focus) */
+  var NEED_KEYS = {
+    'Buyer full legal names':['buyer_names'], 'Seller names':['seller_names'], 'Property address, city and ZIP':['address','city','zip'],
+    'County':['county'], 'Legal description (lot, block, subdivision)':['lot','block','addition'], 'Sales price':['sales_price'],
+    'Loan type':['loan_type'], 'Loan amount or down payment':['down_payment','loan_amount'], 'Earnest money':['earnest_money'], 'Option fee':['option_fee'],
+    'Option days':['option_days'], 'Title company':['title_company'], 'Closing date':['closing_date'], 'Survey choice':['survey'],
+    'Title objection days (6D)':['objection_days'], "Seller's Disclosure (received or not)":['sd_status'],
+    "Seller's Water Disclosure (7I)":['water_status'], 'HOA yes or no':['hoa'], 'Year built (lead-based paint addendum)':['year_built'],
+    "Buyer's agent compensation (12B)":['comp_payer','comp_value'], "Agent's license number":['buyer_agent_license'],
+    'Broker firm license number':['buyer_firm_license'], 'Interest rate cap (financing addendum)':['rate_cap'],
+    'Origination charges cap (financing addendum)':['orig_cap'], 'Buyer Approval days, or "none" (financing addendum)':['approval_days'],
+    'HOA name (HOA addendum)':['hoa_name'], 'Subdivision information choice and days (HOA addendum)':['hoa_option','hoa_days'],
+    'HOA transfer fees cap (HOA addendum)':['hoa_fee_cap'], 'Lead-based paint inspection: waive or inspect (lead addendum)':['lead_inspection']
+  };
+  var BLANKS = { contract:'forms/trec-20-19.pdf', tpfa:'forms/trec-40-11.pdf', hoa:'forms/trec-36-11.pdf', lead:'forms/trec-56-0.pdf' };
+  var FORM_SHORT = { contract:'Contract', tpfa:'Financing addendum', hoa:'HOA addendum', lead:'Lead paint addendum' };
+  function attachList(c){
+    var d = c.d, list = [];
+    list.push(['pkg_preapproval', c.type === 'cash' ? 'Proof of funds' : 'Pre-approval letter', 'Listing agents asked for it on 6 past offers.']);
+    list.push(['pkg_sd', "Seller's Disclosure signed by the seller", 'From the listing; the buyer signs it too.']);
+    list.push(['pkg_mud', 'MUD or water district notice', 'From the listing, if the home is in a MUD, WCID or PID.']);
+    if(d.survey === 'existing') list.push(['pkg_survey', "Seller's survey and T-47.1", 'From the listing.']);
+    if(c.leadPaint) list.push(['pkg_pamphlet', 'Lead paint pamphlet receipt (TXR 2511)', 'From DigiSign.']);
+    list.push(['pkg_txr', 'Buyer notices from DigiSign', 'TXR 1414 flood, 1506 and 2517 wire fraud. Optional.']);
+    return list;
+  }
+  var ATTACH_NAMES = { pkg_preapproval:'pre-approval letter', pkg_sd:"signed Seller's Disclosure", pkg_mud:'MUD notice',
+    pkg_survey:'survey and T-47.1', pkg_pamphlet:'lead paint pamphlet receipt', pkg_txr:'buyer notices' };
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function $(id){ return document.getElementById(id); }
+  function rpc(name, body){
+    return fetch(String(CRM.url||'').replace(/\/+$/,'') + '/rest/v1/rpc/' + name, {
+      method:'POST', headers:{ apikey:CRM.anonKey, Authorization:'Bearer '+CRM.anonKey, 'Content-Type':'application/json' },
+      body:JSON.stringify(body)
+    }).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); });
+  }
+  function setStatus(msg, bad){ statusEl.textContent = msg || ''; statusEl.className = 'status' + (bad ? ' err' : ''); }
+  function money(v){ var n = Fill.num(v); return n === null ? '' : '$' + Fill.money(n); }
+
+  function current(){
+    var t = {};
+    /* keep what the draft was created with that has no field here (list price, MLS number, source) */
+    Object.keys((offer && offer.terms) || {}).forEach(function(k){
+      if(!app.querySelector('[data-k="' + k + '"]')) t[k] = offer.terms[k];
+    });
+    app.querySelectorAll('[data-k]').forEach(function(el){
+      var k = el.getAttribute('data-k');
+      if(el.type === 'checkbox'){ if(el.checked) t[k] = 'true'; return; }
+      var v = String(el.value || '').trim();
+      if(v !== '') t[k] = v;
+    });
+    return t;
+  }
+  function val(t, k){ return t[k] != null ? t[k] : (defaults[k] != null ? defaults[k] : ''); }
+
+  /* ---------- fields ---------- */
+  function field(f, v){
+    var k = f[0], label = f[1], type = f[2], o = f[3] || {};
+    if(type === 'calc') return '<div class="calc" id="calc_' + k + '"></div>';
+    if(type === 'hidden') return '<input type="hidden" data-k="' + k + '" value="' + esc(v) + '">';
+    if(type === 'fub') return '<div class="full fub"><button type="button" class="btn line" id="fubPick">Fill the buyer from Follow Up Boss</button>' +
+      '<div class="hint">Name, phone, email and mailing address from the client\'s Follow Up Boss profile. Check the legal names after.</div></div>';
+    var cls = 'f' + (o.full ? ' full' : ''), html;
+    if(type === 'choice'){
+      var long = o.opts.some(function(p){ return p[1].length > 24; });
+      html = '<div class="' + cls + '" id="w_' + k + '" role="group" aria-labelledby="l_' + k + '"><span class="lab" id="l_' + k + '">' + esc(label) + '</span>' +
+        '<input type="hidden" data-k="' + k + '" value="' + esc(v) + '">' +
+        '<div class="' + (long ? 'list' : 'pills') + '">' + o.opts.map(function(p){
+          return '<button type="button" data-pick="' + k + '" data-v="' + esc(p[0]) + '" aria-pressed="' + (String(v) === p[0]) + '"' +
+            (String(v) === p[0] ? ' class="on"' : '') + '>' + esc(p[1]) + '</button>';
+        }).join('') + '</div>';
+    } else {
+      html = '<div class="' + cls + '" id="w_' + k + '"><label for="f_' + k + '">' + esc(label) + '</label>';
+      if(type === 'textarea') html += '<textarea id="f_' + k + '" data-k="' + k + '">' + esc(v) + '</textarea>';
+      else {
+        var t = type === 'money' || type === 'number' ? 'text' : type;
+        var mode = type === 'money' ? 'decimal' : type === 'number' ? 'numeric' : (o.mode || '');
+        html += '<input id="f_' + k + '" data-k="' + k + '" type="' + t + '"' + (mode ? ' inputmode="' + mode + '"' : '') +
+          (type === 'money' ? ' placeholder="$"' : '') + ' value="' + esc(v) + '" autocomplete="off">';
+      }
+    }
+    if(o.hint) html += '<div class="hint">' + esc(o.hint) + '</div>';
+    return html + '</div>';
+  }
+  function pick(btn){
+    var k = btn.getAttribute('data-pick'), v = btn.getAttribute('data-v');
+    var input = app.querySelector('input[type=hidden][data-k="' + k + '"]');
+    input.value = v;
+    btn.parentNode.querySelectorAll('button').forEach(function(b){
+      var on = b === btn; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+    });
+    changed();
+  }
+
+  /* ---------- page ---------- */
+  function render(){
+    var t = offer.terms || {};
+    var html = '<section class="glance" id="glance"></section>' +
+      '<section class="todo" id="todo"></section><div id="warn"></div>' +
+      '<section class="send" id="send"></section>';
+    SECTIONS.forEach(function(s){
+      html += '<section class="para" id="s_' + s.id + '"' + (s.when ? ' data-when="' + s.when + '"' : '') + '>' +
+        '<header><span class="pn' + (s.form ? ' form-no' : '') + '">' + esc(s.pn) + '</span><h2>' + esc(s.title) + '</h2><span class="st" id="st_' + s.id + '"></span></header>' +
+        '<div class="body">' + s.fields.map(function(f){ return field(f, val(t, f[0])); }).join('') + '</div></section>';
+    });
+    html += '<section class="remember"><label class="check"><input type="checkbox" id="remember"><span>Use these title, survey, financing, HOA and agent answers on future offers<small>Saved as the team default when you tap Save.</small></span></label></section>' +
+      '<p class="fine">A draft built from the team\'s texts. Nothing has been sent to the seller. The licensed agent reviews every blank before it goes out. The PDFs stay fillable, so a small fix can also be made in DigiSign or SkySlope.</p>';
+    app.innerHTML = html;
+    /* saved checklist answers live in hidden inputs until the send panel draws */
+    $('send').innerHTML = Object.keys(ATTACH_NAMES).map(function(k){ return t[k] === 'true' ? '<input type="checkbox" class="hidden" data-k="' + k + '" checked>' : ''; }).join('');
+    $('top').classList.remove('hidden'); bar.classList.remove('hidden');
+    $('topAddr').firstChild.nodeValue = offer.property || 'Offer draft';
+    refresh();
+  }
+
+  function changed(){ dirty = true; dropPrepared(); setStatus('Not saved yet'); refresh(); }
+
+  function refresh(){
+    var t = current(), c = Fill.compute({}, t);
+    var miss = Fill.missing(c), warn = Fill.warnings(c);
+    var needed = {}, firstFor = {};
+    miss.forEach(function(m){ (NEED_KEYS[m] || []).forEach(function(k, i){ needed[k] = 1; if(i === 0) firstFor[m] = k; }); });
+
+    /* header */
+    $('topSub').textContent = [offer.client || t.buyer_names, offer.requested_by ? 'started by ' + offer.requested_by : ''].filter(Boolean).join(', ');
+    var left = $('left');
+    left.textContent = miss.length ? miss.length + (miss.length === 1 ? ' blank left' : ' blanks left') : 'Ready to review';
+    left.className = 'left' + (miss.length ? '' : ' ready');
+
+    /* conditional sections */
+    var when = { financed: c.financed, hoa: c.hoa, leadPaint: c.leadPaint };
+    app.querySelectorAll('[data-when]').forEach(function(el){ el.classList.toggle('hidden', !when[el.getAttribute('data-when')]); });
+
+    /* field and section state */
+    var secOf = {};
+    SECTIONS.forEach(function(s){ s.fields.forEach(function(f){ secOf[f[0]] = s.id; }); });
+    var secMiss = {};
+    Object.keys(needed).forEach(function(k){ if(secOf[k]) secMiss[secOf[k]] = (secMiss[secOf[k]] || 0) + 1; });
+    app.querySelectorAll('.f').forEach(function(w){
+      var k = w.id.replace(/^w_/, ''), input = w.querySelector('[data-k]');
+      w.classList.toggle('need', !!needed[k] && input && String(input.value || '').trim() === '');
+    });
+    var railHtml = '';
+    SECTIONS.forEach(function(s){
+      var hidden = s.when && !when[s.when];
+      var n = secMiss[s.id] || 0, st = $('st_' + s.id);
+      if(st){ st.textContent = n ? n + ' to fill' : 'Done'; st.className = 'st' + (n ? '' : ' ok'); }
+      if(!hidden) railHtml += '<button type="button" data-jump="s_' + s.id + '" class="' + (n ? 'miss' : 'done') + '"><b>' + esc(s.pn.replace('Pg 11', '')) + '</b>' + esc(s.rail) + '</button>';
+    });
+    $('rail').innerHTML = railHtml;
+
+    /* at a glance */
+    var fin = c.type === 'cash' ? 'Cash' : c.type ? ({fha:'FHA', conventional:'Conventional', va:'VA', usda:'USDA'}[c.type]) : '';
+    if(fin && c.type !== 'cash' && c.price !== null && c.loan !== null){
+      var down = c.price - c.loan, pct = c.price ? Math.round(down / c.price * 1000) / 10 : 0;
+      fin += ', ' + pct + '% down (' + money(down) + ')';
+    }
+    var rows = [
+      ['List price', t.list_price && Fill.num(t.list_price) !== c.price ? money(t.list_price) : ''],
+      ['Earnest money', money(t.earnest_money)],
+      ['Option', t.option_fee || t.option_days ? (money(t.option_fee) || '$?') + ' for ' + (t.option_days || '?') + ' days' : ''],
+      ['Closing by', c.closingLong],
+      ['Seller pays', money(t.seller_concession)],
+      ['Buyer', t.buyer_names],
+      ['Seller', t.seller_names],
+      ['Title', t.title_company],
+      ['Listing agent', t.listing_agent]
+    ].filter(function(r){ return r[1]; });
+    $('glance').innerHTML = '<p class="addr">' + esc(c.full || offer.property || '') + '</p>' +
+      (c.price !== null ? '<div class="price num">' + esc(money(c.price)) + '</div>' : '<div class="price unset">Price not set</div>') +
+      (fin ? '<p class="fin">' + esc(fin) + '</p>' : '') +
+      (rows.length ? '<dl>' + rows.map(function(r){ return '<div><dt>' + esc(r[0]) + '</dt><dd class="num">' + esc(r[1]) + '</dd></div>'; }).join('') + '</dl>' : '');
+
+    /* what's left */
+    var todo = $('todo');
+    todo.className = 'todo' + (miss.length ? '' : ' ready');
+    if(miss.length){
+      todo.innerHTML = '<h2>' + miss.length + (miss.length === 1 ? ' blank' : ' blanks') + ' before signatures</h2>' +
+        '<p>Tap one to jump to it.</p><ul>' + miss.map(function(m){
+          var k = firstFor[m], s = SECTIONS.filter(function(x){ return x.id === secOf[k]; })[0];
+          return '<li><button type="button" data-focus="' + esc(k || '') + '"><span class="p">' + esc(s ? s.pn : '') + '</span><span>' + esc(m) + '</span><span class="go">Fill</span></button></li>';
+        }).join('') + '</ul>';
+    } else {
+      todo.innerHTML = '<h2>Every tracked blank is filled</h2><p>Read the PDFs once before you send them.</p>';
+    }
+    $('warn').innerHTML = warn.length ? '<div class="warn"><b>Double-check</b><ul>' + warn.map(function(w){ return '<li>' + esc(w) + '</li>'; }).join('') + '</ul></div>' : '';
+
+    /* calc line under price */
+    var calc = $('calc__calc3');
+    if(calc) calc.textContent = c.price !== null && c.loan !== null
+      ? 'Cash at closing (3A) ' + money(c.cash) + (c.financed ? ', loan (3B) ' + money(c.loan) : '') + ', sales price ' + money(c.price) : '';
+
+    renderSend(c, t);
+  }
+
+  function renderSend(c, t){
+    var sig = Fill.forms(c).map(function(f){ return f.key; }).join(',') + '|' +
+      attachList(c).map(function(a){ return a[0] + (t[a[0]] === 'true' ? '+' : ''); }).join(',') + '|' + (offer.sent_at || '');
+    if(sig === pkgSig) return;
+    pkgSig = sig;
+    var forms = Fill.forms(c);
+    var html = '<h2>Send the offer</h2>' +
+      (offer.sent_at ? '<p class="hint">Last sent ' + esc(new Date(offer.sent_at).toLocaleString([], {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})) + '. Sending again saves a new version.</p>' : '') +
+      '<div class="forms">' + forms.map(function(f){
+        return '<div class="form"><span class="ic" aria-hidden="true">PDF</span><div><b>' + esc(FORM_SHORT[f.key] || f.label) + '</b><small>' + esc(f.form) + '</small></div>' +
+          '<button type="button" data-dl="' + f.key + '">Download</button></div>';
+      }).join('') + '</div>' +
+      '<div class="attach"><h3>Also attach</h3>' + attachList(c).map(function(a){
+        return '<label class="check"><input type="checkbox" data-k="' + a[0] + '"' + (t[a[0]] === 'true' ? ' checked' : '') + '><span>' + esc(a[1]) + '<small>' + esc(a[2]) + '</small></span></label>';
+      }).join('') + '</div>' +
+      '<div class="stack"><button type="button" class="btn" id="sendGmail">Email it to the listing agent</button></div>' +
+      '<div id="sendBox"></div>';
+    $('send').innerHTML = html;
+    prepared = null;
+  }
+
+  /* ---------- save ---------- */
+  function save(){
+    var terms = current(), body = { p_token: token, p_terms: terms, p_defaults: null };
+    if($('remember').checked){
+      var d = {}; DEFAULT_KEYS.forEach(function(k){ if(terms[k] != null) d[k] = terms[k]; }); body.p_defaults = d;
+    }
+    setStatus('Saving…');
+    return rpc('ops_offer_save', body).then(function(r){
+      if(!r || !r.ok) throw new Error('not saved');
+      dirty = false; setStatus('Saved ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}));
+    }).catch(function(){ setStatus('Not saved. Check your signal and tap Save again.', true); throw new Error('save failed'); });
+  }
+
+  /* ---------- PDFs ---------- */
+  var blankCache = {};
+  function blank(k){
+    if(!blankCache[k]) blankCache[k] = fetch(BLANKS[k]).then(function(r){ if(!r.ok) throw new Error('form ' + r.status); return r.arrayBuffer(); });
+    return blankCache[k];
+  }
+  function download(bytes, name){
+    var url = URL.createObjectURL(new Blob([bytes], {type:'application/pdf'}));
+    var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 60000);
+  }
+  function fileBase(){ return (offer.property || 'offer').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60); }
+  function busy(on){ document.querySelectorAll('#bar button, #send button').forEach(function(b){ b.disabled = on; }); }
+  function make(k){
+    busy(true);
+    (dirty ? save() : Promise.resolve()).catch(function(){}).then(function(){
+      setStatus('Filling the TREC form…'); return blank(k);
+    }).then(function(bytes){
+      var b = {}; b[k] = bytes; return Fill.build(window.PDFLib, b, {}, current(), k);
+    }).then(function(r){
+      var f = (r.forms || []).filter(function(x){ return x.key === k; })[0];
+      if(r[k]) download(r[k], fileBase() + '-' + (f ? f.form.replace(/\s+/g, '-') : k) + '-draft.pdf');
+      setStatus(r.notes.length ? 'Downloaded. Note: ' + r.notes.join(' ') : 'Downloaded.');
+    }).catch(function(e){ setStatus('Could not build the PDF (' + e.message + '). Try again on Wi-Fi.', true); })
+      .then(function(){ busy(false); });
+  }
+
+  /* ---------- email ---------- */
+  function included(c, t){
+    var names = Fill.forms(c).map(function(f){ return f.key === 'contract' ? null : f.label; }).filter(Boolean);
+    attachList(c).forEach(function(a){ if(t[a[0]] === 'true') names.push(ATTACH_NAMES[a[0]]); });
+    return names;
+  }
+  function copyText(text){
+    if(navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise(function(res, rej){
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? res() : rej(new Error('copy')); } catch(e){ rej(e); }
+      ta.remove();
+    });
+  }
+  function dropPrepared(){
+    prepared = null;
+    var box = $('sendBox'); if(box) box.innerHTML = '';
+    var b = $('sendGmail'); if(b) b.classList.remove('hidden');
+  }
+  /* Phone: the PDFs go to Gmail through the share menu. Gmail squashes shared text onto one line,
+     so the email text is copied instead and pasted into the body, where it keeps its lines.
+     Computer: Gmail opens in the browser with To, Cc, subject and text filled in; the PDFs download. */
+  function sendGmail(){
+    busy(true);
+    var t = current(), c = Fill.compute({}, t), keys = Fill.forms(c).map(function(f){ return f.key; });
+    (dirty ? save() : Promise.resolve()).catch(function(){}).then(function(){
+      setStatus('Filling ' + keys.length + ' TREC forms…');
+      return Promise.all(keys.map(blank));
+    }).then(function(list){
+      var b = {}; keys.forEach(function(k, i){ b[k] = list[i]; });
+      return Fill.build(window.PDFLib, b, {}, t);
+    }).then(function(r){
+      var e = Fill.offerEmail(r.computed, included(r.computed, t));
+      var meta = r.forms.filter(function(f){ return r[f.key]; }).map(function(f){
+        return { form: f.form, file: new File([r[f.key]], fileBase() + '-' + f.form.replace(/\s+/g, '-') + '.pdf', { type: 'application/pdf' }) };
+      });
+      var files = meta.map(function(m){ return m.file; });
+      prepared = { files: files, meta: meta, subject: e.subject, body: e.body, to: t.listing_agent_email || '' };
+      /* phones and tablets use the share menu; computers get Gmail in the browser */
+      var phone = !!(navigator.canShare && navigator.share && window.matchMedia('(pointer: coarse)').matches && navigator.canShare({ files: files }));
+      var html = '';
+      $('sendGmail').classList.add('hidden');
+      if(phone){
+        html = '<ol class="steps"><li>Tap the button below and pick <b>Gmail</b>. The ' + files.length + ' PDFs are attached.</li>' +
+          '<li>Tap the body of the email and <b>Paste</b>. The email text is already copied, line breaks included.</li>' +
+          '<li>Add the listing agent in To' + (prepared.to ? ' (copy it below)' : '') + ', Cc closings@jasonhoustonrealty.com, check the subject, send.</li></ol>' +
+          '<div class="stack"><button type="button" class="btn" id="shareNow">Open Gmail with the PDFs</button></div>';
+      } else {
+        html = '<div class="stack two"><button type="button" class="btn line" id="dlAll">Download the ' + files.length + ' PDFs</button>' +
+          '<a class="btn" target="_blank" rel="noopener" id="gmailWeb" href="' + gmailUrl(prepared) + '">Open Gmail</a></div>' +
+          '<p class="hint">Gmail opens with To, Cc, subject and text filled in. Drag the downloaded PDFs into the email.</p>';
+      }
+      html += '<div class="stack two">' +
+        '<button type="button" class="btn line" id="copyBody">Copy the email text</button>' +
+        (prepared.to ? '<button type="button" class="btn line" id="copyTo" data-to="' + esc(prepared.to) + '">Copy ' + esc(prepared.to) + '</button>' : '') +
+        '<button type="button" class="btn line" id="copySubject">Copy the subject</button>' +
+        '<button type="button" class="btn line" id="saveDeals">Save the PDFs to JAG Admin</button></div>' +
+        '<p class="hint">Sending saves the PDFs to this client\'s card in JAG Admin, Deals tab.</p>';
+      $('sendBox').innerHTML = html;
+      setStatus(r.notes.length ? 'Ready. Note: ' + r.notes.join(' ') : 'PDFs ready.');
+    }).catch(function(err){ setStatus('Could not build the PDFs (' + err.message + '). Try again on Wi-Fi.', true); })
+      .then(function(){ busy(false); });
+  }
+  function shareNow(){
+    if(!prepared) return;
+    copyText(prepared.body).catch(function(){});
+    navigator.share({ files: prepared.files, title: prepared.subject })
+      .catch(function(err){ if(err && err.name !== 'AbortError') setStatus('Could not open the share menu (' + err.message + ').', true); });
+    savePackage();
+  }
+  function downloadAll(){
+    if(!prepared) return;
+    prepared.files.forEach(function(f, i){ setTimeout(function(){ download(f, f.name); }, i * 400); });
+    setStatus('Downloading ' + prepared.files.length + ' PDFs. If the browser asks, allow multiple downloads.');
+    savePackage();
+  }
+  function gmailUrl(p){
+    return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(p.to) +
+      '&cc=' + encodeURIComponent('closings@jasonhoustonrealty.com') +
+      '&su=' + encodeURIComponent(p.subject) + '&body=' + encodeURIComponent(p.body);
+  }
+  function savePackage(){
+    if(!prepared) return Promise.resolve();
+    if(prepared.saving) return prepared.saving;
+    var p = prepared;
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '').replace('T', '-');
+    var folder = token + '/' + stamp, root = String(CRM.url || '').replace(/\/+$/, '');
+    p.saving = Promise.all(p.meta.map(function(m){
+      var path = folder + '/' + m.file.name;
+      return fetch(root + '/storage/v1/object/offer-files/' + path.split('/').map(encodeURIComponent).join('/'), {
+        method: 'POST',
+        headers: { apikey: CRM.anonKey, Authorization: 'Bearer ' + CRM.anonKey, 'Content-Type': 'application/pdf', 'x-upsert': 'false' },
+        body: m.file
+      }).then(function(r){ if(!r.ok) throw new Error('upload ' + r.status); return { path: path, name: m.file.name, form: m.form, size: m.file.size }; });
+    })).then(function(files){
+      return rpc('ops_offer_mark_sent', { p_token: token, p_files: files });
+    }).then(function(r){
+      if(!r || !r.ok) throw new Error('not recorded');
+      offer.sent_at = new Date().toISOString();
+      setStatus('Saved ' + r.saved + ' PDFs to JAG Admin, Deals tab.');
+      var b = $('saveDeals'); if(b){ b.textContent = 'Saved to JAG Admin'; b.disabled = true; }
+    }).catch(function(err){
+      p.saving = null;
+      setStatus('The PDFs were not saved to JAG Admin (' + err.message + '). Tap "Save the PDFs to JAG Admin" to try again.', true);
+    });
+    return p.saving;
+  }
+
+  /* ---------- buyer from Follow Up Boss ---------- */
+  /* The list shows first name + last initial; tapping a client fetches that one profile
+     (read-only) and fills ¶1 and ¶21. Nothing is written to Follow Up Boss. */
+  var lastFocus = null;
+  function closeSheet(){
+    var s = $('scrim'); if(!s) return;
+    s.remove(); document.body.style.overflow = '';
+    if(lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+  function fubSheet(){
+    if(!window.JAGField){ setStatus('The client list did not load. Reload the page.', true); return; }
+    lastFocus = document.activeElement;
+    var s = document.createElement('div'); s.className = 'scrim'; s.id = 'scrim';
+    s.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-label="Pick the buyer"><div class="grab" aria-hidden="true"></div>' +
+      '<header><h2>Pick the buyer<small>Fills the names, phone, email and mailing address.</small></h2><button type="button" class="x" aria-label="Close">×</button></header>' +
+      '<div id="pick"></div><p class="say" id="pickSay" role="status"></p></div>';
+    document.body.appendChild(s); document.body.style.overflow = 'hidden';
+    s.addEventListener('click', function(e){ if(e.target === s || e.target.closest('.x')) closeSheet(); });
+    var sayEl = s.querySelector('#pickSay'), busyPick = false;
+    window.JAGField.picker(s.querySelector('#pick'), { key: key, onPick: function(c){
+      if(!c || busyPick) return;
+      busyPick = true; sayEl.className = 'say'; sayEl.textContent = 'Getting ' + c.label + ' from Follow Up Boss…';
+      window.JAGField.call('client_fill', key, { client_id: c.id }).then(function(r){
+        if(!r.ok || !r.client) throw new Error(r.error || 'Could not load that client.');
+        var cl = r.client, set = function(k, v){ var el = app.querySelector('[data-k="' + k + '"]'); if(el && v) el.value = v; };
+        var d = String(cl.phone || '').replace(/\D/g, '').slice(-10);
+        set('buyer_names', cl.name); set('buyer_email', cl.email);
+        set('buyer_phone', d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : cl.phone);
+        set('buyer_notice_address', cl.address); set('fub_person_id', String(cl.id));
+        closeSheet(); changed();
+        setStatus('Filled from Follow Up Boss. Check the legal names, then Save.');
+        jump('s_p1');
+        var w = $('w_buyer_names'); if(w){ w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash'); }
+      }).catch(function(err){
+        busyPick = false; sayEl.className = 'say err';
+        sayEl.textContent = /http|fetch|network/i.test(err.message) ? 'No connection. Check your signal and try again.' : err.message;
+      });
+    } });
+  }
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeSheet(); });
+
+  /* ---------- wiring ---------- */
+  function jump(id, focusKey){
+    var el = $(id); if(!el) return;
+    el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    if(focusKey){
+      var w = $('w_' + focusKey); if(!w) return;
+      w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash');
+      var input = w.querySelector('input:not([type=hidden]), textarea, button');
+      if(input) setTimeout(function(){ input.focus({ preventScroll: true }); }, 350);
+    }
+  }
+  app.addEventListener('input', function(e){ if(e.target.id === 'remember') return; changed(); });
+  app.addEventListener('change', function(e){ if(e.target.id === 'remember' || e.target.type !== 'checkbox') return; changed(); });
+  app.addEventListener('click', function(e){
+    if(e.target.closest('#gmailWeb')) { savePackage(); return; }
+    var b = e.target.closest('button'); if(!b) return;
+    if(b.hasAttribute('data-pick')) return pick(b);
+    if(b.hasAttribute('data-focus')){ var k = b.getAttribute('data-focus'); var w = $('w_' + k); if(w) jump(w.closest('.para').id, k); return; }
+    if(b.getAttribute('data-dl')) return make(b.getAttribute('data-dl'));
+    switch(b.id){
+      case 'fubPick': return fubSheet();
+      case 'sendGmail': return sendGmail();
+      case 'shareNow': return shareNow();
+      case 'dlAll': return downloadAll();
+      case 'saveDeals': return savePackage();
+      case 'copyBody': return copyText(prepared.body).then(function(){ setStatus('Email text copied. Paste it into the body.'); }, function(){ setStatus('Could not copy on this device.', true); });
+      case 'copySubject': return copyText(prepared.subject).then(function(){ setStatus('Subject copied.'); }, function(){});
+      case 'copyTo': return copyText(b.getAttribute('data-to')).then(function(){ setStatus('Address copied. Paste it in the To line.'); }, function(){});
+    }
+  });
+  $('rail').addEventListener('click', function(e){ var b = e.target.closest('[data-jump]'); if(b) jump(b.getAttribute('data-jump')); });
+  $('save').addEventListener('click', function(){ save().catch(function(){}); });
+  $('goSend').addEventListener('click', function(){ jump('send'); });
+  window.addEventListener('beforeunload', function(e){ if(dirty){ e.preventDefault(); e.returnValue = ''; } });
+
+  function bad(title, msg){
+    app.innerHTML = '<div class="empty"><h2>' + esc(title) + '</h2><p>' + esc(msg) + '</p></div>';
+  }
+  function start(){
+    if(!/^([0-9a-f]{32}|[A-Za-z0-9]{8,16})$/.test(key) || !CRM.url || !CRM.anonKey){ bad('This link is not complete', 'Text the JAG line "send me the link for <address>" to get a fresh one.'); return; }
+    if(!Fill || !window.PDFLib){ bad('The form tools did not load', 'Check your signal and reload the page.'); return; }
+    rpc('ops_offer_peek', { p_token: key }).then(function(r){
+      if(!r || !r.ok){ bad('This offer link has expired', 'Text the JAG line "send me the link for <address>" to get a fresh one.'); return; }
+      offer = r; token = r.token; defaults = r.defaults || {};
+      document.title = (r.property || 'Offer draft') + ' · JAG offer';
+      render();
+    }).catch(function(){ bad('No connection', 'Check your signal and reload the page.'); });
+  }
+  start();
+})();
+</script>
+</body>
+</html>
