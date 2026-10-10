@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js?v=3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha512-z8IYLHO8bTgFqj+yrPyIJnzBDf7DDhWwiEsk4sY+Oe6J2M+WQequeGS7qioI5vT6rXgVRb4K1UVQC5ER7MKzKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="offer-fill.js?v=2"></script>
+<script src="offer-fill.js?v=3"></script>
 <style>
 :root{ --ink:#17161c; --card:#f5f5f7; --line:#e8e8ec; --red:#c8102e; --red-t:#fbe9ec; --green:#0f8a4d; --green-t:#e7f5ee; --muted:#6a6972; --soft:#8a8992; --amber:#9a6200; --amber-t:#fff4de; }
 *{box-sizing:border-box}
@@ -61,6 +61,7 @@ button[disabled]{opacity:.5;cursor:default}
 .pkg .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .pkg .row button{flex:1 1 160px}
 .pkg label.check{margin:8px 0;font-weight:600}
+.btnlink{flex:1 1 160px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:var(--ink);color:#fff;font-weight:800;font-size:15px;padding:12px 16px;min-height:44px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -223,7 +224,7 @@ button[disabled]{opacity:.5;cursor:default}
     return names;
   }
 
-  var pkgSig = '';
+  var pkgSig = '', prepared = null;
   function renderPackage(c, t){
     /* Re-draw only when the list changes: a blur 'change' event must not swap out a button mid-click. */
     var sig = Fill.forms(c).map(function(f){ return f.key; }).join(',') + '|' +
@@ -240,10 +241,11 @@ button[disabled]{opacity:.5;cursor:default}
       html += '<label class="check"><input type="checkbox" data-k="' + a[0] + '"' + (t[a[0]] === 'true' ? ' checked' : '') + '> <span>' + esc(a[1]) +
         '<small class="hint" style="display:block">' + esc(a[2]) + '</small></span></label>';
     });
-    html += '<div class="row"><button type="button" class="ghost" id="copyEmail">Copy email for listing agent</button>' +
-      '<button type="button" class="ghost" id="mailEmail">Open in email app</button></div>' +
-      '<p class="hint">The email lists the key terms and what is included. Attach the PDFs yourself; closings@ is copied.</p>';
+    html += '<h3>Send it</h3><div class="row"><button type="button" id="sendGmail">Email it with the PDFs attached</button>' +
+      '<button type="button" class="ghost" id="copyEmail">Copy email text only</button></div>' +
+      '<div id="sendBox"></div>';
     document.getElementById('pkg').innerHTML = html;
+    prepared = null;
   }
 
   function refresh(){
@@ -311,13 +313,16 @@ button[disabled]{opacity:.5;cursor:default}
     /* Seed the checklist from saved terms before the first refresh reads it. */
     var pkgSeed = document.getElementById('pkg');
     pkgSeed.innerHTML = Object.keys(ATTACH_NAMES).map(function(k){ return t[k] === 'true' ? '<input type="checkbox" data-k="' + k + '" checked>' : ''; }).join('');
-    app.addEventListener('input', function(e){ if(e.target.id === 'remember') return; dirty = true; setStatus('Unsaved changes'); refresh(); });
-    app.addEventListener('change', function(e){ if(e.target.id === 'remember') return; dirty = true; refresh(); });
+    app.addEventListener('input', function(e){ if(e.target.id === 'remember') return; dirty = true; dropPrepared(); setStatus('Unsaved changes'); refresh(); });
+    app.addEventListener('change', function(e){ if(e.target.id === 'remember') return; dirty = true; dropPrepared(); refresh(); });
     app.addEventListener('click', function(e){
       var b = e.target.closest('button'); if(!b) return;
       if(b.getAttribute('data-dl')) make(b.getAttribute('data-dl'));
       else if(b.id === 'copyEmail') copyEmail();
-      else if(b.id === 'mailEmail') mailEmail();
+      else if(b.id === 'sendGmail') sendGmail();
+      else if(b.id === 'shareNow') shareNow();
+      else if(b.id === 'copyTo') copyText(b.getAttribute('data-to'), 'Address copied. Paste it in the To line.');
+      else if(b.id === 'dlAll') downloadAll();
     });
     bar.classList.remove('hidden');
     refresh();
@@ -370,22 +375,79 @@ button[disabled]{opacity:.5;cursor:default}
     var t = current(), c = Fill.compute({}, t);
     return Fill.offerEmail(c, included(c, t));
   }
-  function copyEmail(){
-    var e = emailParts(), text = 'Subject: ' + e.subject + '\n\n' + e.body;
-    var done = function(){ setStatus('Email copied. Paste it, attach the PDFs, and send.'); };
+  function copyText(text, okMsg){
+    var done = function(){ setStatus(okMsg); };
     if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
     function fallback(){
       var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); done(); } catch(err) { setStatus('Could not copy. Use Open in email app instead.', true); }
+      try { document.execCommand('copy'); done(); } catch(err) { setStatus('Could not copy on this device.', true); }
       ta.remove();
     }
   }
-  function mailEmail(){
-    var e = emailParts(), t = current();
-    location.href = 'mailto:' + encodeURIComponent(t.listing_agent_email || '') +
-      '?cc=' + encodeURIComponent('closings@jasonhoustonrealty.com') +
-      '&subject=' + encodeURIComponent(e.subject) + '&body=' + encodeURIComponent(e.body);
+  function copyEmail(){
+    var e = emailParts();
+    copyText('Subject: ' + e.subject + '\n\n' + e.body, 'Email copied. Paste it, attach the PDFs, and send.');
+  }
+
+  /* Email with the PDFs attached.
+     Phone: build every PDF, then the share sheet (Gmail) opens with the files attached and the email text filled in.
+     That takes two taps because phones only open the share sheet straight from a tap, not after a wait.
+     Computer: download the PDFs and open a Gmail compose window with To, Cc, subject and text filled in. */
+  function dropPrepared(){
+    prepared = null;
+    var box = document.getElementById('sendBox'); if(box) box.innerHTML = '';
+    var b = document.getElementById('sendGmail'); if(b) b.classList.remove('hidden');
+  }
+  function sendGmail(){
+    busy(true);
+    var t = current(), c = Fill.compute({}, t), keys = Fill.forms(c).map(function(f){ return f.key; });
+    var savedFirst = dirty ? save() : Promise.resolve();
+    savedFirst.catch(function(){}).then(function(){
+      setStatus('Filling ' + keys.length + ' TREC forms…');
+      return Promise.all(keys.map(blank));
+    }).then(function(list){
+      var blanks = {}; keys.forEach(function(k, i){ blanks[k] = list[i]; });
+      return Fill.build(window.PDFLib, blanks, {}, t);
+    }).then(function(r){
+      var e = Fill.offerEmail(r.computed, included(r.computed, t));
+      var files = r.forms.filter(function(f){ return r[f.key]; }).map(function(f){
+        return new File([r[f.key]], fileBase() + '-' + f.form.replace(/\s+/g, '-') + '.pdf', { type: 'application/pdf' });
+      });
+      prepared = { files: files, subject: e.subject, body: e.body, to: t.listing_agent_email || '' };
+      var canShare = navigator.canShare && navigator.share && navigator.canShare({ files: files });
+      var box = document.getElementById('sendBox'), html = '';
+      document.getElementById('sendGmail').classList.add('hidden');
+      if(canShare){
+        html += '<div class="row"><button type="button" id="shareNow">Open Gmail with ' + files.length + ' PDFs</button></div>' +
+          '<p class="hint">Pick Gmail in the share menu. The PDFs and the email text go in; add the To address' +
+          (prepared.to ? ' (tap below to copy it)' : '') + ', check the subject, and Cc closings@jasonhoustonrealty.com.</p>';
+      } else {
+        html += '<div class="row"><button type="button" id="dlAll">1. Download the ' + files.length + ' PDFs</button>' +
+          '<a class="btnlink" target="_blank" rel="noopener" href="' + gmailUrl(prepared) + '">2. Open Gmail</a></div>' +
+          '<p class="hint">Gmail opens with To, Cc, subject and text filled in. Drag the downloaded PDFs into the email.</p>';
+      }
+      if(prepared.to) html += '<div class="row"><button type="button" class="ghost" id="copyTo" data-to="' + esc(prepared.to) + '">Copy ' + esc(prepared.to) + '</button></div>';
+      box.innerHTML = html;
+      setStatus(r.notes.length ? 'Ready. Note: ' + r.notes.join(' ') : 'PDFs ready.');
+    }).catch(function(err){ setStatus('Could not build the PDFs (' + err.message + '). Try again on Wi-Fi.', true); })
+      .then(function(){ busy(false); });
+  }
+  function shareNow(){
+    if(!prepared) return;
+    navigator.share({ files: prepared.files, title: prepared.subject, text: prepared.body })
+      .then(function(){ setStatus('Sent to the share menu. Check the email in Gmail before you send it.'); })
+      .catch(function(err){ if(err && err.name !== 'AbortError') setStatus('Could not open the share menu (' + err.message + ').', true); });
+  }
+  function downloadAll(){
+    if(!prepared) return;
+    prepared.files.forEach(function(f, i){ setTimeout(function(){ download(f, f.name); }, i * 400); });
+    setStatus('Downloading ' + prepared.files.length + ' PDFs. If the browser asks, allow multiple downloads.');
+  }
+  function gmailUrl(p){
+    return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(p.to) +
+      '&cc=' + encodeURIComponent('closings@jasonhoustonrealty.com') +
+      '&su=' + encodeURIComponent(p.subject) + '&body=' + encodeURIComponent(p.body);
   }
 
   function bad(msg){ app.innerHTML = '<h1>' + esc(msg) + '</h1><p class="sub">Ask the JAG text line for a fresh link.</p>'; }
