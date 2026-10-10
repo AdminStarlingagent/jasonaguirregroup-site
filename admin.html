@@ -221,6 +221,14 @@ td .em{font-size:12.5px;color:var(--muted)}
 .d-more .kv{margin-top:10px}
 .d-note{font-size:12.5px;color:var(--muted);margin:10px 0 0;white-space:pre-wrap;line-height:1.5}
 .dealfoot{font-size:12px;color:var(--soft);text-align:center;margin:16px 0 0}
+.d-files{margin-top:12px;border-top:1px solid #f1f1f4;padding-top:10px}
+.d-files h4{margin:0 0 6px;font-size:12.5px;font-weight:800;color:var(--muted)}
+.d-files ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.d-files li{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13.5px}
+.d-files a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1px solid var(--line);word-break:break-word}
+.d-files small{color:var(--soft);white-space:nowrap}
+.d-files .when{font-size:12px;color:var(--muted);margin:8px 0 4px;font-weight:700}
+.ds-sent{background:var(--loan-t);color:var(--loan)} .ds-drafting{background:var(--card);color:var(--muted)}
 
 @media(max-width:760px){
   th:nth-child(4),td:nth-child(4),th:nth-child(6),td:nth-child(6){display:none}
@@ -326,7 +334,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   </section>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-10.1</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-10.2</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -625,7 +633,7 @@ function toast(msg, ok){
 function signOut(){
   clearTimeout(refreshTimer);
   state.token=null; state.refresh=null; state.exp=0; state.email=null; state.rows=[];
-  deals.rows=null;
+  deals.rows=null; deals.offers=[]; deals.urls={};
   try{ sessionStorage.removeItem('jag_admin'); }catch(e){}
   show('login');
 }
@@ -736,18 +744,23 @@ function setTab(t){
    The files the closings assistant is tracking from closings@. It reads them through
    jag_tc_deals(), which only answers for a signed-in team login. Nothing here edits a deal:
    to change one, email closings@ or tell the assistant. */
-var deals = { rows:null, filter:'active', q:'', loading:false, last:null };
+var deals = { rows:null, offers:[], urls:{}, filter:'active', q:'', loading:false, last:null };
 var DSTAT = { active:'Under contract', offer:'Offer out', on_hold:'On hold', terminated:'Terminated', closed:'Closed' };
 function loadDeals(){
   if(deals.loading) return;
   deals.loading=true;
   $('dealfoot').textContent='Loading deals…';
+  /* offers (with their saved PDFs) load beside the deals; if that part fails, deals still show */
+  var offersP = loadOfferFiles().catch(function(){ return { offers:[], urls:{} }; });
   api('/rest/v1/rpc/jag_tc_deals',{method:'POST', body:'{}'})
   .then(function(r){ if(r.status===401){ signOut(); throw 0; } return r.json(); })
-  .then(function(j){
+  .then(function(j){ return offersP.then(function(o){ return [j, o]; }); })
+  .then(function(both){
+    var j=both[0], o=both[1];
     deals.loading=false;
     if(!j || j.ok!==true){ deals.rows=[]; renderDeals(); $('dealfoot').textContent='Could not load deals. Try Refresh.'; return; }
     deals.rows = Array.isArray(j.deals) ? j.deals : [];
+    deals.offers = o.offers; deals.urls = o.urls;
     deals.last = j.last_activity || null;
     renderDeals();
   })
@@ -783,6 +796,85 @@ function dealFiltered(){
     return true;
   });
 }
+/* Offer drafts from the JAG text line, with the PDFs saved when the offer was emailed.
+   Files sit in a private bucket; the links below are signed for one hour. */
+function loadOfferFiles(){
+  return api('/rest/v1/rpc/jag_offer_files',{method:'POST', body:'{}'})
+  .then(function(r){ return r.json(); })
+  .then(function(j){
+    var offers = (j && j.ok===true && Array.isArray(j.offers)) ? j.offers : [];
+    var paths = [];
+    offers.forEach(function(o){ (o.files||[]).forEach(function(f){ paths.push(f.path); }); });
+    if(!paths.length) return { offers:offers, urls:{} };
+    return api('/storage/v1/object/sign/offer-files',{method:'POST', body:JSON.stringify({ expiresIn:3600, paths:paths })})
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(list){
+      var urls={};
+      (Array.isArray(list)?list:[]).forEach(function(x){ if(x && x.signedURL && x.path) urls[x.path] = base()+'/storage/v1'+x.signedURL; });
+      return { offers:offers, urls:urls };
+    }, function(){ return { offers:offers, urls:{} }; });
+  });
+}
+var SUFFIX={drive:'dr',street:'st',lane:'ln',road:'rd',court:'ct',avenue:'ave',boulevard:'blvd',circle:'cir',trail:'trl',parkway:'pkwy',place:'pl',terrace:'ter',highway:'hwy'};
+function streetKey(p){
+  var w = String(p||'').split(',')[0].toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(Boolean)
+    .map(function(x){ return SUFFIX[x]||x; });
+  return w.join(' ');
+}
+function sameStreet(a, b){
+  var x=streetKey(a), y=streetKey(b); if(!x || !y) return false;
+  if(x===y) return true;
+  var xs=x.split(' '), ys=y.split(' ');   /* house number + first street word, e.g. "2711 king" */
+  return xs.length>1 && ys.length>1 && /^\d+$/.test(xs[0]) && xs[0]===ys[0] && xs[1]===ys[1];
+}
+function offersFor(d){ return (deals.offers||[]).filter(function(o){ return sameStreet(o.property, d.property); }); }
+function looseOffers(){
+  var rows=deals.rows||[];
+  return (deals.offers||[]).filter(function(o){ return !rows.some(function(d){ return sameStreet(o.property, d.property); }); });
+}
+function money0(v){ var n=Number(String(v==null?'':v).replace(/[$,]/g,'')); return v!=null && v!=='' && isFinite(n) ? '$'+n.toLocaleString('en-US') : ''; }
+function fileSize(b){ return b ? (b>=1048576 ? (b/1048576).toFixed(1)+' MB' : Math.round(b/1024)+' KB') : ''; }
+var FORMNAME={'TREC 20-19':'Contract','TREC 40-11':'Financing addendum','TREC 36-11':'HOA addendum','TREC 56-0':'Lead paint addendum'};
+function filesBlock(offs){
+  var withFiles = offs.filter(function(o){ return (o.files||[]).length; });
+  if(!withFiles.length) return '';
+  var html = '<div class="d-files"><h4>Offer PDFs</h4>';
+  withFiles.forEach(function(o){
+    var groups={}, order=[];
+    o.files.forEach(function(f){ var k=String(f.saved_at||'').slice(0,16); if(!groups[k]){ groups[k]=[]; order.push(k); } groups[k].push(f); });
+    order.forEach(function(k, i){
+      html += '<div class="when">'+(i===0?'Sent ':'Earlier version, sent ')+esc(fmtDate(groups[k][0].saved_at))+
+        (o.buyer_names ? ' · '+esc(o.buyer_names) : '')+'</div><ul>'+
+        groups[k].map(function(f){
+          var u=deals.urls[f.path];
+          var label = FORMNAME[f.form] ? FORMNAME[f.form]+' ('+f.form+')' : (f.form||f.name);
+          return '<li>'+(u ? '<a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(label)+'</a>' : '<span>'+esc(label)+'</span>')+
+            '<small>'+esc(fileSize(f.size))+'</small></li>';
+        }).join('')+'</ul>';
+    });
+  });
+  return html+'</div>';
+}
+function offerCard(o){
+  var a=splitAddr(o.property);
+  var sent = o.status==='sent';
+  var sub=[o.city, o.buyer_names||o.client, o.requested_by ? 'by '+o.requested_by : ''].filter(Boolean).join(' · ');
+  var kv = kvRow('Price', money0(o.sales_price)) + kvRow('Financing', o.loan_type ? String(o.loan_type).toUpperCase() : '') +
+           kvRow('Listing agent', o.listing_agent) + kvRow(sent?'Sent':'Started', fmtDate(sent?o.sent_at:o.created_at));
+  return '<article class="deal">'+
+    '<div class="d-top"><div><h3>'+esc(a.street||'(no address)')+'</h3>'+(sub?'<div class="d-sub">'+esc(sub)+'</div>':'')+'</div>'+
+    '<span class="dstat '+(sent?'ds-sent':'ds-drafting')+'">'+(sent?'Offer sent':'Offer draft')+'</span></div>'+
+    (kv?'<div class="kv" style="margin-top:12px">'+kv+'</div>':'')+
+    filesBlock([o])+
+    (o.draft_link ? '<p class="d-note"><a href="'+esc(o.draft_link)+'" target="_blank" rel="noopener">Open the offer draft</a></p>' : '')+
+    '</article>';
+}
+function offerMatches(o){
+  if(deals.filter==='active' || deals.filter==='jason') return false;
+  var q=deals.q.toLowerCase();
+  if(!q) return true;
+  return [o.property,o.buyer_names,o.client,o.listing_agent,o.requested_by].join(' ').toLowerCase().indexOf(q)!==-1;
+}
 function renderDeals(){
   var all=deals.rows||[], c={uc:0,soon:0,jason:0,offers:0};
   all.forEach(function(d){
@@ -790,6 +882,7 @@ function renderDeals(){
     if(d.status==='offer') c.offers++;
     if(dealOpen(d)) c.jason += items(d).filter(function(i){ return i && i.owner==='jason'; }).length;
   });
+  c.offers += looseOffers().filter(function(o){ return o.status==='sent'; }).length;
   $('dealcount').textContent = deals.rows ? String(c.uc) : '';
   $('dealstats').innerHTML =
     '<div class="stat"><b><i style="background:var(--sell)"></i>'+c.uc+'</b><span>Under contract</span></div>'+
@@ -797,8 +890,9 @@ function renderDeals(){
     '<div class="stat"><b><i style="background:var(--buy)"></i>'+c.jason+'</b><span>Items waiting on Jason</span></div>'+
     '<div class="stat"><b><i style="background:var(--loan)"></i>'+c.offers+'</b><span>Offers out</span></div>';
   var list=dealFiltered();
-  $('deals').innerHTML = list.map(dealCard).join('');
-  $('dealsempty').style.display = list.length ? 'none' : 'block';
+  var loose=looseOffers().filter(offerMatches);
+  $('deals').innerHTML = list.map(dealCard).join('') + loose.map(offerCard).join('');
+  $('dealsempty').style.display = (list.length || loose.length) ? 'none' : 'block';
   $('dealfoot').textContent = 'Kept up to date by the closings assistant, which checks the closings inbox every hour.'+
     (deals.last ? (' Last activity: '+fmtDate(deals.last)+'.') : '');
 }
@@ -842,7 +936,7 @@ function dealCard(d){
       (sub?'<div class="d-sub">'+esc(sub)+'</div>':'')+'</div>'+
       '<span class="dstat ds-'+esc(d.status)+'">'+esc(DSTAT[d.status]||d.status||'')+'</span></div>'+
     (dates?'<div class="d-dates">'+dates+'</div>':'')+
-    list+more+'</article>';
+    list+filesBlock(offersFor(d))+more+'</article>';
 }
 
 /* ---------------- drawer ---------------- */

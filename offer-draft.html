@@ -317,6 +317,7 @@ button[disabled]{opacity:.5;cursor:default}
     app.addEventListener('input', function(e){ if(e.target.id === 'remember') return; dirty = true; dropPrepared(); setStatus('Unsaved changes'); refresh(); });
     app.addEventListener('change', function(e){ if(e.target.id === 'remember') return; dirty = true; dropPrepared(); refresh(); });
     app.addEventListener('click', function(e){
+      if(e.target.closest('a.btnlink')) savePackage();
       var b = e.target.closest('button'); if(!b) return;
       if(b.getAttribute('data-dl')) make(b.getAttribute('data-dl'));
       else if(b.id === 'copyEmail') copyEmail();
@@ -324,6 +325,7 @@ button[disabled]{opacity:.5;cursor:default}
       else if(b.id === 'shareNow') shareNow();
       else if(b.id === 'copyTo') copyText(b.getAttribute('data-to'), 'Address copied. Paste it in the To line.');
       else if(b.id === 'dlAll') downloadAll();
+      else if(b.id === 'saveDeals') savePackage();
     });
     bar.classList.remove('hidden');
     refresh();
@@ -412,10 +414,11 @@ button[disabled]{opacity:.5;cursor:default}
       return Fill.build(window.PDFLib, blanks, {}, t);
     }).then(function(r){
       var e = Fill.offerEmail(r.computed, included(r.computed, t));
-      var files = r.forms.filter(function(f){ return r[f.key]; }).map(function(f){
-        return new File([r[f.key]], fileBase() + '-' + f.form.replace(/\s+/g, '-') + '.pdf', { type: 'application/pdf' });
+      var meta = r.forms.filter(function(f){ return r[f.key]; }).map(function(f){
+        return { form: f.form, file: new File([r[f.key]], fileBase() + '-' + f.form.replace(/\s+/g, '-') + '.pdf', { type: 'application/pdf' }) };
       });
-      prepared = { files: files, subject: e.subject, body: e.body, to: t.listing_agent_email || '' };
+      var files = meta.map(function(m){ return m.file; });
+      prepared = { files: files, meta: meta, subject: e.subject, body: e.body, to: t.listing_agent_email || '' };
       var canShare = navigator.canShare && navigator.share && navigator.canShare({ files: files });
       var box = document.getElementById('sendBox'), html = '';
       document.getElementById('sendGmail').classList.add('hidden');
@@ -429,6 +432,8 @@ button[disabled]{opacity:.5;cursor:default}
           '<p class="hint">Gmail opens with To, Cc, subject and text filled in. Drag the downloaded PDFs into the email.</p>';
       }
       if(prepared.to) html += '<div class="row"><button type="button" class="ghost" id="copyTo" data-to="' + esc(prepared.to) + '">Copy ' + esc(prepared.to) + '</button></div>';
+      html += '<div class="row"><button type="button" class="ghost" id="saveDeals">Save these PDFs to the Deals tab</button></div>' +
+        '<p class="hint">Opening Gmail or downloading saves them to the client\'s file in JAG Admin → Deals automatically.</p>';
       box.innerHTML = html;
       setStatus(r.notes.length ? 'Ready. Note: ' + r.notes.join(' ') : 'PDFs ready.');
     }).catch(function(err){ setStatus('Could not build the PDFs (' + err.message + '). Try again on Wi-Fi.', true); })
@@ -436,14 +441,43 @@ button[disabled]{opacity:.5;cursor:default}
   }
   function shareNow(){
     if(!prepared) return;
+    /* The share menu must open straight from the tap; the copy for the Deals tab uploads alongside. */
     navigator.share({ files: prepared.files, title: prepared.subject, text: prepared.body })
-      .then(function(){ setStatus('Sent to the share menu. Check the email in Gmail before you send it.'); })
       .catch(function(err){ if(err && err.name !== 'AbortError') setStatus('Could not open the share menu (' + err.message + ').', true); });
+    savePackage();
   }
   function downloadAll(){
     if(!prepared) return;
     prepared.files.forEach(function(f, i){ setTimeout(function(){ download(f, f.name); }, i * 400); });
     setStatus('Downloading ' + prepared.files.length + ' PDFs. If the browser asks, allow multiple downloads.');
+    savePackage();
+  }
+  /* Keep a copy of exactly what was sent: private storage, shown on the client's card in JAG Admin → Deals.
+     The page can only add files to this offer's own folder; it cannot read or remove anything. */
+  function savePackage(){
+    if(!prepared) return Promise.resolve();
+    if(prepared.saving) return prepared.saving;
+    var p = prepared;
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '').replace('T', '-');
+    var folder = token + '/' + stamp, root = String(CRM.url || '').replace(/\/+$/, '');
+    p.saving = Promise.all(p.meta.map(function(m){
+      var path = folder + '/' + m.file.name;
+      return fetch(root + '/storage/v1/object/offer-files/' + path.split('/').map(encodeURIComponent).join('/'), {
+        method: 'POST',
+        headers: { apikey: CRM.anonKey, Authorization: 'Bearer ' + CRM.anonKey, 'Content-Type': 'application/pdf', 'x-upsert': 'false' },
+        body: m.file
+      }).then(function(r){ if(!r.ok) throw new Error('upload ' + r.status); return { path: path, name: m.file.name, form: m.form, size: m.file.size }; });
+    })).then(function(files){
+      return rpc('ops_offer_mark_sent', { p_token: token, p_files: files });
+    }).then(function(r){
+      if(!r || !r.ok) throw new Error('not recorded');
+      setStatus('Saved ' + r.saved + ' PDFs to the Deals tab in JAG Admin.');
+      var b = document.getElementById('saveDeals'); if(b){ b.textContent = 'Saved to the Deals tab'; b.disabled = true; }
+    }).catch(function(err){
+      p.saving = null;
+      setStatus('Could not save the PDFs to the Deals tab (' + err.message + '). Tap "Save these PDFs to the Deals tab" to try again.', true);
+    });
+    return p.saving;
   }
   function gmailUrl(p){
     return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(p.to) +
