@@ -1577,6 +1577,10 @@ function buildPayload(){
     p['Combined Monthly Income'] = money(totalIncome());
   }
 
+  try{ // home the buyer was looking at on /homes (link carries it; kept for this visit)
+    var jh = JSON.parse(sessionStorage.getItem('jag_home')||'null');
+    if(jh && jh.home){ p['Interested Property'] = jh.home; if(jh.mls) p['Interested MLS #'] = jh.mls; if(jh.price) p['Interested List Price'] = jh.price; }
+  }catch(e){}
   return p;
 }
 
@@ -1803,6 +1807,10 @@ function buildCalculator(){
 
 /* boot */
 try{ if(new URLSearchParams(location.search).get('lang')==='es') A.language='Espa\u00f1ol'; }catch(e){}
+try{ // ?home=&mls=&price= from a listing on /homes
+  var hq=new URLSearchParams(location.search), hh=(hq.get('home')||'').slice(0,160);
+  if(hh) sessionStorage.setItem('jag_home', JSON.stringify({home:hh, mls:(hq.get('mls')||'').replace(/[^A-Za-z0-9-]/g,'').slice(0,24), price:(hq.get('price')||'').replace(/[^0-9]/g,'').slice(0,10)}));
+}catch(e){}
 applyChrome();
 renderStep();
 </script>

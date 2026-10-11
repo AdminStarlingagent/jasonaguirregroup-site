@@ -175,6 +175,18 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .lead .fine{font-size:10.5px;color:var(--soft);margin:9px 0 0;line-height:1.45}
 .ok{background:var(--ok-bg);color:var(--ok);border-radius:6px;padding:14px;font-weight:700;text-align:center}
 .err{color:var(--buy);font-size:12.5px;font-weight:700;margin:0 0 8px;display:none}
+.evalbox{background:var(--loan-t);border:1px solid #d3defc;border-radius:8px;padding:16px;margin-bottom:14px}
+.evalbox h4{margin:0 0 4px;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.evalbox p{margin:0 0 12px;font-size:13.5px;color:#34406b}
+.evalbtn{display:block;text-align:center;text-decoration:none;background:var(--loan);color:#fff;font-weight:800;font-size:15px;border-radius:6px;padding:14px 12px}
+.evalbtn:hover{background:#1c41b3}
+.evalbox small{display:block;margin-top:8px;font-size:11.5px;color:#4a5a8c}
+.oklink{display:block;margin-top:10px;color:var(--loan);font-weight:800}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1200;background:var(--ink);color:#fff;border-radius:10px;padding:12px 14px;display:none;align-items:center;gap:12px;box-shadow:0 8px 26px rgba(0,0,0,.35);max-width:calc(100vw - 24px);font-size:14px;font-weight:600}
+.toast.on{display:flex}
+.toast a{color:#fff;background:var(--loan);border-radius:6px;padding:8px 12px;font-weight:800;text-decoration:none;white-space:nowrap}
+.toast button{border:0;background:none;color:#bbb;font-size:18px;padding:0 2px}
+@media (max-width:860px){ .toast{bottom:76px} }
 .lb{position:fixed;inset:0;z-index:1100;background:#0d0c10;display:none;align-items:center;justify-content:center}
 .lb.on{display:flex}
 .lb img{max-width:100%;max-height:100%;object-fit:contain}
@@ -286,6 +298,7 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 <button class="viewtog" id="viewtog" type="button"></button>
 
 <div class="ov" id="ov" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"><span id="toastmsg"></span><a id="toastlink" href="apply.html"></a><button type="button" id="toastx" aria-label="Cerrar">×</button></div>
 <div class="lb" id="lb"><span id="lbc"></span><img id="lbi" alt=""><button class="lp" type="button" aria-label="‹">‹</button><button class="ln" type="button" aria-label="›">›</button><button class="lx" type="button" aria-label="Cerrar">×</button></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -324,6 +337,7 @@ var T={
   need:'Escribe tu nombre y un teléfono válido.',thanks:'¡Listo! Nuestro equipo te llama hoy.',
   fine:'Al enviar, aceptas que el Jason Aguirre Group te contacte por llamada o texto. Pueden aplicar cargos por mensajes.',
   f_priv:'Privacidad y Términos',use:'La información de los listados es para uso personal y no comercial de los consumidores, y no puede usarse para ningún otro fin que no sea identificar propiedades que les interese comprar o rentar.',
+  ev_h:'¿Puedo comprar esta casa?',ev_p:'Evaluación gratis en 3 minutos. Vemos cómo le podemos ayudar y le recomendamos el prestamista con las mejores opciones para su caso.',ev_btn:'Iniciar mi evaluación gratis',ev_fine:'Sin revisión de crédito para empezar. Compradores con ITIN bienvenidos.',ev_link:'Vea si califica',ev_saved:'Casa guardada. ¿Quiere saber si puede comprarla?',ev_go:'Evaluación gratis',ev_after:'¿Quiere saber para cuánto califica? Evaluación gratis ›',
   listed:'Listado por: ',map:'Mapa',listv:'Lista',
   idx:'Prototipo: datos de muestra proporcionados por Repliers, solo para demostración. Información considerada confiable pero no garantizada. Jason Aguirre Group · eXp Realty.'},
  en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_team:'Meet the team',
@@ -348,6 +362,7 @@ var T={
   need:'Enter your name and a valid phone number.',thanks:'Done! Our team will call you today.',
   fine:'By submitting, you agree the Jason Aguirre Group may contact you by call or text. Message rates may apply.',
   f_priv:'Privacy & Terms',use:'Listing information is provided for consumers\' personal, non-commercial use and may not be used for any purpose other than to identify prospective properties they may be interested in purchasing or renting.',
+  ev_h:'Can I buy this home?',ev_p:'Free 3-minute evaluation. We see how we can help and recommend the lender with the best options for your situation.',ev_btn:'Start my free evaluation',ev_fine:'No credit check to get started. ITIN buyers welcome.',ev_link:'See if you qualify',ev_saved:'Home saved. Want to know if you can buy it?',ev_go:'Free evaluation',ev_after:'Want to know how much you qualify for? Free evaluation ›',
   listed:'Listing provided by: ',map:'Map',listv:'List',
   idx:'Prototype: sample data provided by Repliers for demonstration only. Information deemed reliable but not guaranteed. Jason Aguirre Group · eXp Realty.'}
 };
@@ -491,8 +506,19 @@ function logEvent(mls,kind){
       body:JSON.stringify({p_mls:mls,p_kind:kind})}).catch(function(){});
   }catch(e){}
 }
+function evalUrl(l){
+  var u=new URLSearchParams(); if(lang==='es') u.set('lang','es');
+  if(l){ var a=l.address||{}; u.set('home',addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip); u.set('mls',l.mlsNumber); u.set('price',Math.round(l.listPrice)); }
+  var q=u.toString(); return 'apply.html'+(q?'?'+q:'');
+}
+function findListing(id){ if(cur&&cur.mlsNumber===id) return cur; for(var k=0;k<state.items.length;k++) if(state.items[k].mlsNumber===id) return state.items[k]; return null; }
+var toastT;
+function showToast(l){
+  $('toastmsg').textContent=t('ev_saved'); $('toastlink').textContent=t('ev_go'); $('toastlink').href=evalUrl(l);
+  $('toast').classList.add('on'); clearTimeout(toastT); toastT=setTimeout(function(){ $('toast').classList.remove('on'); },9000);
+}
 function toggleFav(id){
-  if(favs[id]) delete favs[id]; else { favs[id]=1; logEvent(id,'save'); }
+  if(favs[id]) delete favs[id]; else { favs[id]=1; logEvent(id,'save'); showToast(findListing(id)); }
   try{ localStorage.setItem('jag_favs',JSON.stringify(favs)); }catch(e){}
   return !!favs[id];
 }
@@ -532,7 +558,7 @@ function wireLead(form,extra){
     Object.keys(extra).forEach(function(k){ data[k]=extra[k]; });
     if(window.jagCapture) window.jagCapture('home-search',data);
     if(extra['MLS #']) logEvent(extra['MLS #'],'inquiry');
-    form.innerHTML='<div class="ok">'+t('thanks')+'</div>';
+    form.innerHTML='<div class="ok">'+t('thanks')+'<a class="oklink" href="'+esc(evalUrl(extra['MLS #']?findListing(extra['MLS #']):null))+'">'+t('ev_after')+'</a></div>';
   });
 }
 
@@ -562,12 +588,13 @@ function openDetail(i){
       '<div class="hero"><h2>'+money(l.listPrice)+(lease?'<small style="font-size:16px">'+t('mo')+'</small>':'')+'</h2>'+
         (d.numBedrooms!=null?'<span class="f"><b>'+d.numBedrooms+'</b>'+t('bd')+'</span>':'')+(d.numBathrooms!=null?'<span class="f"><b>'+d.numBathrooms+'</b>'+t('ba')+'</span>':'')+(d.sqft?'<span class="f"><b>'+num(d.sqft)+'</b>'+t('sqft')+'</span>':'')+'</div>'+
       '<div class="ad2">'+esc(full)+'</div>'+
-      (lease?'':'<span class="estl">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'<a href="apply.html">'+t('prequal')+' ›</a></span>')+
+      (lease?'':'<span class="estl">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'<a href="'+esc(evalUrl(l))+'">'+t('ev_link')+' ›</a></span>')+
       '<div class="chips">'+chips.filter(function(c){return c[0]!=null&&c[0]!=='';}).map(function(c){return '<div><span><small>'+t(c[1])+'</small>'+esc(c[0])+'</span></div>';}).join('')+'</div>'+
       (desc?'<h3>'+t('about')+'</h3><div class="desc clip" id="ds">'+esc(desc)+'</div><button class="more" type="button" id="mr">'+t('more')+'</button>':'')+
       '<p class="credit">'+t('listed')+esc((l.office||{}).brokerageName||'—')+' · MLS# '+esc(l.mlsNumber)+'</p>'+
       '<div class="foot"><b>Jason Aguirre Group · eXp Realty</b><nav><a href="iabs.html">TREC Information About Brokerage Services</a><a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></nav><p>'+t('use')+'</p><p>'+t('idx')+'</p></div>'+
     '</div><aside class="side">'+
+      (lease?'':'<div class="evalbox"><h4>'+t('ev_h')+'</h4><p>'+t('ev_p')+'</p><a class="evalbtn" href="'+esc(evalUrl(l))+'">'+t('ev_btn')+'</a><small>'+t('ev_fine')+'</small></div>')+
       '<form class="box lead" id="lf" novalidate>'+leadForm('home')+'</form>'+
       (lease?'':'<div class="box pay"><h4>'+t('pay_h')+'</h4><div class="big"><span id="pb"></span><small>'+t('mo')+'</small></div>'+
         '<label>'+t('down')+'<select id="dn"><option value="3.5">3.5% (FHA)</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option></select></label>'+
@@ -596,6 +623,7 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){ closeDetail(); closeDD(); }
 });
 
+$('toastx').onclick=function(){ $('toast').classList.remove('on'); };
 $('saveBtn').addEventListener('click',function(){
   closeDD(); $('sheet').className='sheet sm';
   $('sheet').innerHTML='<button class="x" type="button" aria-label="Cerrar">×</button><div style="padding:26px 22px"><form class="lead" id="lf" novalidate><h3 style="font-size:21px;margin:0 0 4px;font-weight:800">'+t('saveh')+'</h3><p style="color:var(--muted);margin:0 0 14px">'+t('savep')+'</p>'+leadForm('save')+'</form></div>';
