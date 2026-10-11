@@ -710,7 +710,8 @@ if('IntersectionObserver' in window){
   var SAMPLE=true, RATE=6.75, MIN_HOT=4, items=[], hot=false;
   function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function money(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
-  function pmt(p){ var P=p*0.965, r=RATE/1200; return P*r/(1-Math.pow(1+r,-360)); }
+  /* same default estimate as /homes: principal+interest at 3.5% down, plus estimated taxes (2.1%), insurance (1%) and mortgage insurance (0.55%) */
+  function pmt(p){ var P=p*0.965, r=RATE/1200; return P*r/(1-Math.pow(1+r,-360)) + p*0.021/12 + p*0.01/12 + P*0.0055/12; }
   function addr(a){ return [a.streetNumber,a.streetDirectionPrefix,a.streetName,a.streetSuffix,a.streetDirection].filter(Boolean).join(' '); }
   window.renderFeatured=function(){
     var sec=document.getElementById('featured'); if(!items.length){ sec.hidden=true; return; }
