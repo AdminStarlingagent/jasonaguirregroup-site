@@ -135,7 +135,7 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .sheet{background:#fff;max-width:1180px;margin:0 auto;min-height:100%;position:relative}
 .sheet.sm{max-width:460px;min-height:0;margin:8vh auto;border-radius:10px}
 .top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);height:54px;padding:0 16px;display:flex;align-items:center;gap:10px}
-.top .back{border:0;background:none;font-weight:800;color:var(--buy);padding:8px 4px}
+.top .back{border:0;background:none;font-weight:800;color:var(--buy);padding:8px 4px;white-space:nowrap}
 .top .lock{margin:0 auto}
 .top .lock b{font-size:20px}
 .top .act{border:0;background:none;font-weight:700;display:flex;align-items:center;gap:6px;padding:8px}
@@ -161,7 +161,7 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .desc{font-size:15px;color:#33323a;white-space:pre-line}
 .desc.clip{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .more{border:0;background:none;color:var(--loan);font-weight:800;padding:6px 0}
-.side{position:sticky;top:70px;align-self:start}
+.side{position:sticky;top:124px;align-self:start}
 .box{border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(23,22,28,.07)}
 .box h4{margin:0 0 10px;font-size:15px;font-weight:800}
 .pay{background:var(--loan-t);border-color:#d3defc;box-shadow:none}
@@ -177,6 +177,50 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .lead .fine{font-size:10.5px;color:var(--soft);margin:9px 0 0;line-height:1.45}
 .ok{background:var(--ok-bg);color:var(--ok);border-radius:6px;padding:14px;font-weight:700;text-align:center}
 .err{color:var(--buy);font-size:12.5px;font-weight:700;margin:0 0 8px;display:none}
+.tabs{position:sticky;top:54px;z-index:4;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:center;gap:4px;padding:0 12px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:none;padding:14px 14px;font-weight:600;font-size:15px;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent}
+.tabs button:hover{color:var(--ink);border-bottom-color:var(--buy)}
+.dw section{padding-bottom:6px}
+.dw section+section{border-top:1px solid var(--line);margin-top:22px}
+.mvp{color:#33323a;font-size:15px;margin:0 0 12px}
+.mvf{font-size:11.5px;color:var(--soft);margin:8px 0 0}
+.days{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.days button{flex:0 0 112px;border:1px solid #a7a6b0;border-radius:6px;background:#fff;padding:12px 6px;font-size:15px;text-transform:capitalize}
+.days button b{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.days button.on{border:2px solid var(--buy);background:var(--buy-t)}
+.trsel{width:100%;height:46px;border:1px solid #a7a6b0;border-radius:6px;padding:0 12px;background:#fff;margin-bottom:12px}
+.bigbtn{display:block;width:100%;border:0;border-radius:6px;background:var(--buy);color:#fff;font-weight:800;font-size:16px;padding:13px 12px}
+.bigbtn:hover{background:var(--buy-d)}
+.bigbtn small{display:block;font-size:12px;font-weight:600;opacity:.92}
+.outbtn{display:block;width:100%;border:1px solid var(--buy);border-radius:6px;background:#fff;color:var(--buy);font-weight:800;font-size:16px;padding:12px}
+.outbtn:hover{background:var(--buy-t)}
+.ghostbtn{border:1px solid var(--ink);border-radius:6px;background:#fff;font-weight:800;padding:11px 18px}
+.ghostbtn:hover{background:var(--card)}
+.linkbtn{border:0;background:none;color:var(--loan);font-weight:800;padding:4px 0;display:block;margin:0 auto}
+.actbox{display:grid;gap:10px}
+.actnote{margin:0;font-size:11.5px;color:var(--soft);text-align:center}
+.fxg{margin-bottom:6px}
+.fxg h4{margin:0;background:var(--card);padding:10px 14px;font-size:15px;font-weight:800;border-radius:4px}
+.fxg ul{list-style:disc;margin:12px 0 14px;padding:0 0 0 34px;columns:2;column-gap:40px;font-size:15px}
+.fxg li{margin-bottom:7px;break-inside:avoid}
+.fxg li span{color:var(--muted)}
+.mvt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.mvt div{background:var(--card);border-radius:6px;padding:14px}
+.mvt small{display:block;color:var(--muted);font-weight:600;font-size:13px}
+.mvt b{font-size:21px;font-weight:800;letter-spacing:-.02em}
+table.ph{width:100%;border-collapse:collapse;font-size:15px;margin-bottom:8px}
+table.ph th{text-align:left;font-weight:800;padding:10px 12px;border-bottom:1px solid var(--line)}
+table.ph td{padding:12px;border-bottom:1px solid var(--line)}
+.mbar{display:none}
+.fm{position:fixed;inset:0;z-index:1150;background:rgba(23,22,28,.6);display:none;align-items:center;justify-content:center;padding:14px;overflow-y:auto}
+.fm.on{display:flex}
+.fmbox{background:#fff;border-radius:10px;width:100%;max-width:400px;padding:22px 20px 18px;position:relative;max-height:calc(100vh - 28px);overflow-y:auto}
+.fmbox h3{margin:0 40px 14px 0;font-size:20px;font-weight:800}
+.fmrow{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-bottom:8px}
+.fmbox select,.fmbox textarea{width:100%;border:1px solid #a7a6b0;border-radius:6px;padding:0 10px;background:#fff;min-height:44px;font:inherit}
+.fmbox textarea{padding:10px 12px;margin-bottom:8px;resize:vertical}
 .evalbox{background:var(--loan-t);border:1px solid #d3defc;border-radius:8px;padding:16px;margin-bottom:14px}
 .evalbox h4{margin:0 0 4px;font-size:17px;font-weight:800;letter-spacing:-.01em}
 .evalbox p{margin:0 0 12px;font-size:13.5px;color:#34406b}
@@ -222,6 +266,15 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
   .hero{gap:14px}.hero h2{font-size:28px;flex:1 1 100%}
   .chips{grid-template-columns:repeat(2,minmax(0,1fr))}
   .side{position:static}
+  .side .actbox{display:none}
+  .top .lock{display:none}
+  .top .back{margin-right:auto}
+  .fxg ul{columns:1}
+  .mvt{grid-template-columns:minmax(0,1fr)}
+  .tabs{justify-content:flex-start}
+  .tabs button{padding:12px 10px;font-size:14px}
+  .mbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px;z-index:6}
+  .mbar .bigbtn,.mbar .outbtn{font-size:14.5px;padding:12px 6px}
   .sheet.sm{margin:0;border-radius:0;min-height:100%}
 }
 </style>
@@ -300,6 +353,7 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 <button class="viewtog" id="viewtog" type="button"></button>
 
 <div class="ov" id="ov" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
+<div class="fm" id="fm"></div>
 <div class="toast" id="toast" role="status"><span id="toastmsg"></span><a id="toastlink" href="apply.html"></a><button type="button" id="toastx" aria-label="Cerrar">×</button></div>
 <div class="lb" id="lb"><span id="lbc"></span><img id="lbi" alt=""><button class="lp" type="button" aria-label="‹">‹</button><button class="ln" type="button" aria-label="›">›</button><button class="lx" type="button" aria-label="Cerrar">×</button></div>
 
@@ -340,6 +394,21 @@ var T={
   fine:'Al enviar, aceptas que el Jason Aguirre Group te contacte por llamada o texto. Pueden aplicar cargos por mensajes.',
   f_priv:'Privacidad y Términos',use:'La información de los listados es para uso personal y no comercial de los consumidores, y no puede usarse para ningún otro fin que no sea identificar propiedades que les interese comprar o rentar.',
   ev_h:'¿Puedo comprar esta casa?',ev_p:'Evaluación gratis en 3 minutos. Vemos cómo le podemos ayudar y le recomendamos el prestamista con las mejores opciones para su caso.',ev_btn:'Iniciar mi evaluación gratis',ev_fine:'Sin revisión de crédito para empezar. Compradores con ITIN bienvenidos.',ev_link:'Vea si califica',ev_saved:'Casa guardada. ¿Quiere saber si puede comprarla?',ev_go:'Evaluación gratis',ev_after:'¿Quiere saber para cuánto califica? Evaluación gratis ›',
+  tb_over:'Resumen',tb_facts:'Datos y características',tb_val:'Valor de mercado',tb_pay:'Calculadora de pago',
+  tr_h:'Visite esta casa con un agente de JAG',tr_p:'Elija un día y una hora. Un agente de nuestro equipo le confirma la visita.',tr_go:'Continuar',tr_sub:'tan pronto como mañana',
+  act_note:'Lo atiende el equipo de Jason Aguirre Group, eXp Realty.',
+  fm_tour:'Agendar una visita',fm_contact:'Contactar a un agente',fm_offer:'Hacer una oferta',fm_day:'Día',fm_time:'Hora',fm_msgl:'Mensaje',fm_send:'Enviar',
+  fm_msg:'Me interesa ',fm_msg_offer:'Quiero hacer una oferta en ',
+  fx_int:'Interior',fx_prop:'Propiedad',fx_con:'Construcción',fx_util:'Servicios',fx_comm:'Comunidad y HOA',fx_fin:'Finanzas y datos del listado',
+  fx_beds:'Recámaras',fx_baths:'Baños',fx_sqft:'Área habitable',fx_heat:'Calefacción',fx_cool:'Aire acondicionado',fx_floor:'Pisos',fx_appl:'Electrodomésticos incluidos',fx_fire:'Chimeneas',fx_laundry:'Lavandería',fx_access:'Accesibilidad',
+  fx_lot:'Tamaño del terreno',fx_lotf:'Características del terreno',fx_garage:'Espacios de garaje',fx_park:'Estacionamientos',fx_pool:'Alberca',fx_patio:'Patio',fx_view:'Vista',
+  fx_ext:'Exterior',fx_roof:'Techo',fx_found:'Cimientos',fx_sewer:'Drenaje',fx_water:'Agua',fx_nbhd:'Vecindario',fx_county:'Condado',fx_hoa:'Cuota de HOA',
+  fx_tax:'Impuestos anuales',fx_listed:'Fecha en el mercado',
+  ph_h:'Historial de precio',ph_date:'Fecha',ph_event:'Evento',ph_price:'Precio',ph_list:'Listada en venta',ph_listr:'Listada en renta',ph_change:'Cambio de precio',
+  mv_h:'Valor estimado de mercado',mv_p:'Compare el precio de lista con un estimado automático basado en casas similares cercanas.',mv_btn:'Ver el valor estimado',mv_load:'Calculando el estimado…',
+  mv_none:'No pudimos calcular un estimado automático para esta dirección. Pídanos una valuación y se la preparamos.',
+  mv_est:'Valor estimado',mv_low:'Rango bajo',mv_high:'Rango alto',mv_cmp:'El precio de lista está {p}% {d} del estimado.',mv_above:'por encima',mv_below:'por debajo',mv_same:'El precio de lista está en línea con el estimado.',
+  mv_comps:'Basado en {n} casas comparables.',mv_fine:'Estimado automático de RentCast. No es un avalúo ni una opinión de valor de un agente.',
   agentc:'Agente del listado: ',upd:'Información actualizada el ',
   listed:'Listado por: ',map:'Mapa',listv:'Lista',
   idx:'Prototipo: datos de muestra proporcionados por Repliers, solo para demostración. Información considerada confiable pero no garantizada. Jason Aguirre Group · eXp Realty.'},
@@ -366,6 +435,21 @@ var T={
   fine:'By submitting, you agree the Jason Aguirre Group may contact you by call or text. Message rates may apply.',
   f_priv:'Privacy & Terms',use:'Listing information is provided for consumers\' personal, non-commercial use and may not be used for any purpose other than to identify prospective properties they may be interested in purchasing or renting.',
   ev_h:'Can I buy this home?',ev_p:'Free 3-minute evaluation. We see how we can help and recommend the lender with the best options for your situation.',ev_btn:'Start my free evaluation',ev_fine:'No credit check to get started. ITIN buyers welcome.',ev_link:'See if you qualify',ev_saved:'Home saved. Want to know if you can buy it?',ev_go:'Free evaluation',ev_after:'Want to know how much you qualify for? Free evaluation ›',
+  tb_over:'Overview',tb_facts:'Facts & features',tb_val:'Market value',tb_pay:'Payment calculator',
+  tr_h:'Tour this home with a JAG agent',tr_p:'Pick a day and time. An agent from our team confirms the tour with you.',tr_go:'Continue',tr_sub:'as early as tomorrow',
+  act_note:'You will hear from the Jason Aguirre Group team, eXp Realty.',
+  fm_tour:'Request a tour',fm_contact:'Contact agent',fm_offer:'Make an offer',fm_day:'Day',fm_time:'Time',fm_msgl:'Message',fm_send:'Send',
+  fm_msg:'I am interested in ',fm_msg_offer:'I want to make an offer on ',
+  fx_int:'Interior',fx_prop:'Property',fx_con:'Construction',fx_util:'Utilities',fx_comm:'Community & HOA',fx_fin:'Financial & listing details',
+  fx_beds:'Bedrooms',fx_baths:'Bathrooms',fx_sqft:'Living area',fx_heat:'Heating',fx_cool:'Cooling',fx_floor:'Flooring',fx_appl:'Appliances included',fx_fire:'Fireplaces',fx_laundry:'Laundry',fx_access:'Accessibility',
+  fx_lot:'Lot size',fx_lotf:'Lot features',fx_garage:'Garage spaces',fx_park:'Parking spaces',fx_pool:'Pool',fx_patio:'Patio',fx_view:'View',
+  fx_ext:'Exterior',fx_roof:'Roof',fx_found:'Foundation',fx_sewer:'Sewer',fx_water:'Water',fx_nbhd:'Subdivision',fx_county:'County',fx_hoa:'HOA fee',
+  fx_tax:'Annual taxes',fx_listed:'Date on market',
+  ph_h:'Price history',ph_date:'Date',ph_event:'Event',ph_price:'Price',ph_list:'Listed for sale',ph_listr:'Listed for rent',ph_change:'Price change',
+  mv_h:'Estimated market value',mv_p:'Compare the list price with an automated estimate based on similar homes nearby.',mv_btn:'See the estimated value',mv_load:'Calculating the estimate…',
+  mv_none:'We could not calculate an automated estimate for this address. Ask us for a valuation and we will prepare one.',
+  mv_est:'Estimated value',mv_low:'Low range',mv_high:'High range',mv_cmp:'The list price is {p}% {d} the estimate.',mv_above:'above',mv_below:'below',mv_same:'The list price is in line with the estimate.',
+  mv_comps:'Based on {n} comparable homes.',mv_fine:'Automated estimate from RentCast. Not an appraisal or an agent’s opinion of value.',
   agentc:'Listing agent: ',upd:'Information last updated ',
   listed:'Listing provided by: ',map:'Map',listv:'List',
   idx:'Prototype: sample data provided by Repliers for demonstration only. Information deemed reliable but not guaranteed. Jason Aguirre Group · eXp Realty.'}
@@ -578,6 +662,99 @@ function wireLead(form,extra){
   });
 }
 
+/* ---------- listing page helpers ---------- */
+var VALUE_PROXY='https://lucky-lake-acf9rentcast-proxy.jason-aguirre.workers.dev/', mvCache={};
+function fv(x){ if(x==null) return null; x=String(x).trim(); return (!x||/^(none|null|n\/a|see remarks|0)$/i.test(x))?null:x; }
+function fdate(x){ if(!x) return null; var d=new Date(x); return isNaN(d)?null:d.toLocaleDateString(lang==='es'?'es-MX':'en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}); }
+function fullAddr(l){ var a=l.address||{}; return addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip; }
+function isLease(l){ return String(l.type||'').toLowerCase()==='lease'; }
+/* Facts come straight from the listing feed. Anything the feed leaves blank is left out. */
+function factGroups(l){
+  var d=l.details||{}, lot=l.lot||{}, tx=l.taxes||{}, a=l.address||{}, lease=isLease(l);
+  var hoa=fv(d.HOAFee)?money(parseFloat(d.HOAFee))+(fv(d.HOAFee2)?' / '+d.HOAFee2:''):null; if(hoa==='$NaN') hoa=fv(d.HOAFee);
+  return [
+    ['fx_int',[['fx_beds',d.numBedrooms],['fx_baths',d.numBathrooms],['fx_sqft',d.sqft?num(d.sqft)+' '+t('sqft'):null],['fx_heat',fv(d.heating)],['fx_cool',fv(d.airConditioning)],['fx_floor',fv(d.flooringType)],['fx_appl',fv(d.extras)],['fx_fire',fv(d.numFireplaces)],['fx_laundry',fv(d.laundryLevel)],['fx_access',fv(d.handicappedEquipped)]]],
+    ['fx_prop',[['fx_lot',lot.squareFeet?num(Math.round(lot.squareFeet))+' '+t('sqft')+(lot.acres?' ('+Number(lot.acres).toFixed(2)+t('acres')+')':''):null],['fx_lotf',fv(lot.features)],['fx_garage',fv(d.numGarageSpaces)],['fx_park',fv(d.numParkingSpaces)],['fx_pool',fv(d.swimmingPool)],['fx_patio',fv(d.patio)],['fx_view',fv(d.viewType)]]],
+    ['fx_con',[['f_type',fv(d.style)||fv(d.propertyType)],['f_year',fv(d.yearBuilt)],['fx_ext',[fv(d.exteriorConstruction1),fv(d.exteriorConstruction2)].filter(Boolean).join(', ')||null],['fx_roof',fv(d.roofMaterial)],['fx_found',fv(d.foundationType)]]],
+    ['fx_util',[['fx_sewer',fv(d.sewer)],['fx_water',fv(d.waterSource)]]],
+    ['fx_comm',[['fx_nbhd',fv(a.neighborhood)],['fx_county',fv(a.area)],['fx_hoa',hoa]]],
+    ['fx_fin',[['f_ppsf',d.sqft&&!lease?money(l.listPrice/d.sqft)+'/'+t('sqft'):null],['fx_tax',tx.annualAmount?money(tx.annualAmount)+(tx.assessmentYear?' ('+tx.assessmentYear+')':''):null],['fx_listed',fdate(l.listDate)],['f_dom',l.daysOnMarket],['f_mls',l.mlsNumber]]]
+  ];
+}
+function factsHtml(l){
+  return factGroups(l).map(function(g){
+    var rows=g[1].filter(function(r){ return r[1]!=null&&r[1]!==''; });
+    if(!rows.length) return '';
+    return '<div class="fxg"><h4>'+t(g[0])+'</h4><ul>'+rows.map(function(r){ return '<li><span>'+t(r[0])+':</span> '+esc(r[1])+'</li>'; }).join('')+'</ul></div>';
+  }).join('');
+}
+function historyHtml(l){
+  var rows=[]; if(!l.listDate) return '';
+  var op=l.originalPrice||l.listPrice;
+  rows.push([fdate(l.listDate),t(isLease(l)?'ph_listr':'ph_list'),money(op)]);
+  if(l.originalPrice&&Math.round(l.originalPrice)!==Math.round(l.listPrice)) rows.push([updated(l)||'—',t('ph_change'),money(l.listPrice)]);
+  return '<h3>'+t('ph_h')+'</h3><table class="ph"><thead><tr><th>'+t('ph_date')+'</th><th>'+t('ph_event')+'</th><th>'+t('ph_price')+'</th></tr></thead><tbody>'+
+    rows.map(function(r){ return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td><td>'+esc(r[2])+'</td></tr>'; }).join('')+'</tbody></table>';
+}
+function tourDays(){
+  var out=[], now=new Date();
+  for(var k=1;k<=7;k++){ var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k); out.push(d); }
+  return out;
+}
+function dayLabel(d,long){ return d.toLocaleDateString(lang==='es'?'es-MX':'en-US',long?{weekday:'long',month:'long',day:'numeric'}:{weekday:'short'}); }
+function timeOpts(sel){
+  var o=''; for(var h=9;h<=18;h++){ [0,30].forEach(function(m){ if(h===18&&m) return; var hh=((h+11)%12)+1, s=hh+':'+(m?'30':'00')+' '+(h<12?'AM':'PM'); o+='<option'+(s===sel?' selected':'')+'>'+s+'</option>'; }); }
+  return o;
+}
+/* Tour / contact / offer form in a small dialog */
+function openForm(kind,l,pre){
+  pre=pre||{}; var days=tourDays(), full=fullAddr(l);
+  var title={tour:t('fm_tour'),contact:t('fm_contact'),offer:t('fm_offer')}[kind];
+  var msg=(kind==='offer'?t('fm_msg_offer'):t('fm_msg'))+full+'.';
+  $('fm').innerHTML='<div class="fmbox" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><button class="x" type="button" aria-label="Cerrar">×</button><h3>'+title+'</h3>'+
+    '<form class="lead" novalidate>'+
+    (kind==='tour'?'<div class="fmrow"><select name="day" aria-label="'+t('fm_day')+'">'+days.map(function(d,k){ return '<option value="'+k+'"'+(k===(pre.day||0)?' selected':'')+'>'+esc(dayLabel(d,true))+'</option>'; }).join('')+'</select>'+
+      '<select name="time" aria-label="'+t('fm_time')+'">'+timeOpts(pre.time||'10:00 AM')+'</select></div>':'')+
+    '<p class="err">'+t('need')+'</p>'+
+    '<input name="name" autocomplete="name" placeholder="'+t('name')+'" aria-label="'+t('name')+'">'+
+    '<input name="phone" type="tel" autocomplete="tel" placeholder="'+t('phone')+'" aria-label="'+t('phone')+'">'+
+    '<input name="email" type="email" autocomplete="email" placeholder="'+t('email')+'" aria-label="'+t('email')+'">'+
+    '<textarea name="msg" rows="3" aria-label="'+t('fm_msgl')+'">'+esc(msg)+'</textarea>'+
+    '<button class="btn" type="submit">'+t('fm_send')+'</button><p class="fine">'+t('fine')+'</p></form></div>';
+  var box=$('fm'), form=box.querySelector('form');
+  box.classList.add('on');
+  box.querySelector('.x').onclick=function(){ box.classList.remove('on'); };
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var n=form.name.value.trim(), ph=form.phone.value.replace(/\D/g,'');
+    if(n.length<2||ph.length<10){ form.querySelector('.err').style.display='block'; return; }
+    var data={__name:n,Phone:form.phone.value.trim(),Email:form.email.value.trim()||null,'Preferred Language':lang==='es'?'Spanish':'English',
+      Request:{tour:'Tour request',contact:'Agent contact',offer:'Offer request'}[kind],Message:form.msg.value.trim().slice(0,600)||null,
+      Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice,'Sample Data':SAMPLE};
+    if(kind==='tour'){ var dd=days[+form.day.value]; data['Preferred Day']=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); data['Preferred Time']=form.time.value+' Central'; }
+    if(window.jagCapture) window.jagCapture('home-search',data);
+    logEvent(l.mlsNumber,'inquiry');
+    form.innerHTML='<div class="ok">'+t('thanks')+(isLease(l)?'':'<a class="oklink" href="'+esc(evalUrl(l))+'">'+t('ev_after')+'</a>')+'</div>';
+  });
+}
+function loadValue(l){
+  var box=$('mv'), full=fullAddr(l);
+  function show(v){
+    if(!v||!v.price){ box.innerHTML='<p class="mvp">'+t('mv_none')+'</p>'; return; }
+    var diff=(l.listPrice-v.price)/v.price*100, ad=Math.abs(diff).toFixed(0);
+    var cmp=Math.abs(diff)<1?t('mv_same'):t('mv_cmp').replace('{p}',ad).replace('{d}',t(diff>0?'mv_above':'mv_below'));
+    box.innerHTML='<div class="mvt"><div><small>'+t('mv_est')+'</small><b>'+money(v.price)+'</b></div>'+
+      '<div><small>'+t('mv_low')+'</small><b>'+(v.priceRangeLow?money(v.priceRangeLow):'—')+'</b></div>'+
+      '<div><small>'+t('mv_high')+'</small><b>'+(v.priceRangeHigh?money(v.priceRangeHigh):'—')+'</b></div></div>'+
+      '<p class="mvp">'+cmp+((v.comparables||[]).length?' '+t('mv_comps').replace('{n}',v.comparables.length):'')+'</p>'+
+      '<p class="mvf">'+t('mv_fine')+'</p>';
+  }
+  if(mvCache[l.mlsNumber]){ show(mvCache[l.mlsNumber]); return; }
+  box.innerHTML='<p class="mvp">'+t('mv_load')+'</p>';
+  fetch(VALUE_PROXY+'?address='+encodeURIComponent(full)).then(function(r){ return r.ok?r.json():null; })
+    .then(function(v){ if(v&&v.price) mvCache[l.mlsNumber]=v; show(v); }).catch(function(){ show(null); });
+}
+
 /* ---------- home detail ---------- */
 var cur=null, lbn=0;
 function showLB(n){ lbn=(n+cur.images.length)%cur.images.length; $('lbi').src=img(cur.images[lbn],'large'); $('lbc').textContent=(lbn+1)+' / '+cur.images.length; $('lb').classList.add('on'); }
@@ -589,7 +766,7 @@ function openDetail(i){
   if(typeof i==='object') i=state.items.indexOf(l);
   logEvent(l.mlsNumber,'view');
   state.seen[l.mlsNumber]=1; var pn=document.querySelector('.pin[data-i="'+i+'"]'); if(pn) pn.classList.add('seen');
-  var d=l.details||{}, a=l.address||{}, lease=String(l.type||'').toLowerCase()==='lease', full=addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip;
+  var d=l.details||{}, lease=isLease(l), full=fullAddr(l), days=tourDays(), pick={day:0,time:'10:00 AM'};
   var desc=String(d.description||'').replace(/\*+\s*SAMPLE DATA\s*\*+/gi,'').trim();
   var chips=[[d.style||d.propertyType,'f_type'],[d.yearBuilt,'f_year'],[(l.lot||{}).acres?Number(l.lot.acres).toFixed(2)+t('acres'):null,'f_lot'],
     [d.sqft&&!lease?money(l.listPrice/d.sqft):null,'f_ppsf'],[l.daysOnMarket,'f_dom'],[l.mlsNumber,'f_mls']];
@@ -600,23 +777,34 @@ function openDetail(i){
       '<button class="act" type="button" id="dshare"><svg viewBox="0 0 24 24"><path d="M12 15V4m0 0l-4 4m4-4l4 4M5 13v6h14v-6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>'+t('share')+'</span></button></div>'+
     '<div class="mos">'+l.images.slice(0,5).map(function(p,k){ return '<button type="button" data-k="'+k+'" aria-label="'+(k+1)+'" style="background-image:url(\''+img(p,k?'small':'medium')+'\')"></button>'; }).join('')+
       (l.images.length>1?'<button type="button" class="all" data-k="0">'+t('allph')+l.images.length+t('photos')+'</button>':'')+'</div>'+
+    '<nav class="tabs" id="tabs"><button type="button" data-s="sec-over">'+t('tb_over')+'</button><button type="button" data-s="sec-facts">'+t('tb_facts')+'</button>'+
+      (lease?'':'<button type="button" data-s="sec-val">'+t('tb_val')+'</button><button type="button" data-s="sec-pay">'+t('tb_pay')+'</button>')+'</nav>'+
     '<div class="dw"><div>'+
-      '<div class="hero"><h2>'+money(l.listPrice)+(lease?'<small style="font-size:16px">'+t('mo')+'</small>':'')+'</h2>'+
+      '<section id="sec-over"><div class="hero"><h2>'+money(l.listPrice)+(lease?'<small style="font-size:16px">'+t('mo')+'</small>':'')+'</h2>'+
         (d.numBedrooms!=null?'<span class="f"><b>'+d.numBedrooms+'</b>'+t('bd')+'</span>':'')+(d.numBathrooms!=null?'<span class="f"><b>'+d.numBathrooms+'</b>'+t('ba')+'</span>':'')+(d.sqft?'<span class="f"><b>'+num(d.sqft)+'</b>'+t('sqft')+'</span>':'')+'</div>'+
       '<div class="ad2">'+esc(full)+'</div>'+
       (lease?'':'<span class="estl">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'<a href="'+esc(evalUrl(l))+'">'+t('ev_link')+' ›</a></span>')+
       '<div class="chips">'+chips.filter(function(c){return c[0]!=null&&c[0]!=='';}).map(function(c){return '<div><span><small>'+t(c[1])+'</small>'+esc(c[0])+'</span></div>';}).join('')+'</div>'+
-      (desc?'<h3>'+t('about')+'</h3><div class="desc clip" id="ds">'+esc(desc)+'</div><button class="more" type="button" id="mr">'+t('more')+'</button>':'')+
+      (desc?'<h3>'+t('about')+'</h3><div class="desc clip" id="ds">'+esc(desc)+'</div><button class="more" type="button" id="mr">'+t('more')+'</button>':'')+'</section>'+
+      '<section id="sec-tour"><h3>'+t('tr_h')+'</h3><p class="mvp">'+t('tr_p')+'</p>'+
+        '<div class="days" id="days">'+days.map(function(dd,k){ return '<button type="button" data-k="'+k+'" class="'+(k?'':'on')+'"><b>'+esc(dayLabel(dd))+'</b>'+esc(dd.toLocaleDateString(lang==='es'?'es-MX':'en-US',{month:'short',day:'numeric'}))+'</button>'; }).join('')+'</div>'+
+        '<select id="trtime" class="trsel" aria-label="'+t('fm_time')+'">'+timeOpts('10:00 AM')+'</select>'+
+        '<button type="button" class="bigbtn" id="trgo">'+t('tr_go')+'</button></section>'+
+      '<section id="sec-facts"><h3>'+t('tb_facts')+'</h3><div id="facts">'+factsHtml(l)+'</div><div id="phist"></div></section>'+
+      (lease?'':'<section id="sec-val"><h3>'+t('mv_h')+'</h3><div id="mv"><p class="mvp">'+t('mv_p')+'</p><button type="button" class="ghostbtn" id="mvbtn">'+t('mv_btn')+'</button></div></section>'+
+        '<section id="sec-pay"><h3>'+t('pay_h')+'</h3><div class="box pay"><div class="big"><span id="pb"></span><small>'+t('mo')+'</small></div>'+
+        '<label>'+t('down')+'<select id="dn"><option value="3.5">3.5% (FHA)</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option></select></label>'+
+        '<label>'+t('rate')+'<input id="rt" type="number" inputmode="decimal" step="0.125" min="0" max="20" value="'+RATE+'"></label>'+
+        '<p>'+t('pay_fine')+'</p></div></section>')+
       '<p class="credit">'+t('listed')+'<b>'+esc(credit(l))+'</b>'+(agentContact(l)?'<br>'+t('agentc')+agentContact(l):'')+'<br>MLS# '+esc(l.mlsNumber)+(updated(l)?' · '+t('upd')+esc(updated(l)):'')+'</p>'+
       '<div class="foot"><b>Jason Aguirre Group · eXp Realty</b><nav><a href="iabs.html">TREC Information About Brokerage Services</a><a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></nav><p>'+t('use')+'</p><p>'+t('idx')+'</p></div>'+
     '</div><aside class="side">'+
+      '<div class="box actbox"><button type="button" class="bigbtn" data-f="tour">'+t('tour')+'<small>'+t('tr_sub')+'</small></button>'+
+        '<button type="button" class="outbtn" data-f="contact">'+t('fm_contact')+'</button>'+
+        (lease?'':'<button type="button" class="linkbtn" data-f="offer">'+t('offer')+' ›</button>')+'<p class="actnote">'+t('act_note')+'</p></div>'+
       (lease?'':'<div class="evalbox"><h4>'+t('ev_h')+'</h4><p>'+t('ev_p')+'</p><a class="evalbtn" href="'+esc(evalUrl(l))+'">'+t('ev_btn')+'</a><small>'+t('ev_fine')+'</small></div>')+
-      '<form class="box lead" id="lf" novalidate>'+leadForm('home')+'</form>'+
-      (lease?'':'<div class="box pay"><h4>'+t('pay_h')+'</h4><div class="big"><span id="pb"></span><small>'+t('mo')+'</small></div>'+
-        '<label>'+t('down')+'<select id="dn"><option value="3.5">3.5% (FHA)</option><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option></select></label>'+
-        '<label>'+t('rate')+'<input id="rt" type="number" inputmode="decimal" step="0.125" min="0" max="20" value="'+RATE+'"></label>'+
-        '<p>'+t('pay_fine')+'</p></div>')+
-    '</aside></div>';
+    '</aside></div>'+
+    '<div class="mbar"><button type="button" class="bigbtn" data-f="tour">'+t('tour')+'</button><button type="button" class="outbtn" data-f="contact">'+t('fm_contact')+'</button></div>';
   var s=$('sheet');
   s.querySelector('.back').onclick=closeDetail;
   s.querySelector('.mos').addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) showLB(+b.getAttribute('data-k')); });
@@ -625,17 +813,28 @@ function openDetail(i){
     if(navigator.share) navigator.share({title:full,url:u}).catch(function(){});
     else if(navigator.clipboard) navigator.clipboard.writeText(u).then(function(){ sp.textContent=t('copied'); }).catch(function(){}); };
   if($('mr')) $('mr').onclick=function(){ var c=$('ds').classList.toggle('clip'); this.textContent=c?t('more'):t('less'); };
+  $('tabs').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; var el=$(b.getAttribute('data-s')); if(el) $('ov').scrollTo({top:el.offsetTop-112,behavior:'smooth'}); });
+  $('days').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; pick.day=+b.getAttribute('data-k'); [].forEach.call($('days').children,function(c){ c.classList.toggle('on',c===b); }); });
+  $('trtime').onchange=function(){ pick.time=this.value; };
+  $('trgo').onclick=function(){ openForm('tour',l,pick); };
+  s.querySelectorAll('[data-f]').forEach(function(b){ b.addEventListener('click',function(){ openForm(b.getAttribute('data-f'),l,pick); }); });
   if(!lease){
     var calc=function(){ var v=money(pmt(l.listPrice,+$('dn').value,Math.max(0,+$('rt').value||0))); $('pb').textContent=v; $('pb2').textContent=v; };
     $('dn').onchange=calc; $('rt').oninput=calc; calc();
+    $('mvbtn').onclick=function(){ loadValue(l); };
+    if(mvCache[l.mlsNumber]) loadValue(l);
   }
-  wireLead($('lf'),{Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice,'Sample Data':SAMPLE});
   $('ov').classList.add('on'); $('ov').scrollTop=0; document.body.style.overflow='hidden';
+  /* fuller facts for this one home */
+  fetch(API+'?detail=1&mlsNumber='+encodeURIComponent(l.mlsNumber)).then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){ var f=j&&j.listings&&j.listings[0]; if(!f||cur!==l||!$('facts')) return; $('facts').innerHTML=factsHtml(f); $('phist').innerHTML=historyHtml(f); })
+    .catch(function(){});
 }
-function closeDetail(){ $('ov').classList.remove('on'); $('lb').classList.remove('on'); document.body.style.overflow=''; }
+function closeDetail(){ $('ov').classList.remove('on'); $('lb').classList.remove('on'); $('fm').classList.remove('on'); document.body.style.overflow=''; }
 $('ov').addEventListener('click',function(e){ if(e.target===$('ov')) closeDetail(); });
 document.addEventListener('keydown',function(e){
   if($('lb').classList.contains('on')){ if(e.key==='Escape') $('lb').classList.remove('on'); else if(e.key==='ArrowLeft') showLB(lbn-1); else if(e.key==='ArrowRight') showLB(lbn+1); return; }
+  if($('fm').classList.contains('on')){ if(e.key==='Escape') $('fm').classList.remove('on'); return; }
   if(e.key==='Escape'){ closeDetail(); closeDD(); }
 });
 
