@@ -405,10 +405,9 @@ var T={
   fx_ext:'Exterior',fx_roof:'Techo',fx_found:'Cimientos',fx_sewer:'Drenaje',fx_water:'Agua',fx_nbhd:'Vecindario',fx_county:'Condado',fx_hoa:'Cuota de HOA',
   fx_tax:'Impuestos anuales',fx_listed:'Fecha en el mercado',
   ph_h:'Historial de precio',ph_date:'Fecha',ph_event:'Evento',ph_price:'Precio',ph_list:'Listada en venta',ph_listr:'Listada en renta',ph_change:'Cambio de precio',
-  mv_h:'Valor estimado de mercado',mv_p:'Compare el precio de lista con un estimado automático basado en casas similares cercanas.',mv_btn:'Ver el valor estimado',mv_load:'Calculando el estimado…',
+  mv_h:'Valor estimado de mercado',mv_p:'Vea un estimado automático del valor de esta casa, con su rango bajo y alto, basado en casas similares cercanas.',mv_btn:'Ver el valor estimado',mv_load:'Calculando el estimado…',
   mv_none:'No pudimos calcular un estimado automático para esta dirección. Pídanos una valuación y se la preparamos.',
-  mv_est:'Valor estimado',mv_low:'Rango bajo',mv_high:'Rango alto',mv_cmp:'El precio de lista está {p}% {d} del estimado.',mv_above:'por encima',mv_below:'por debajo',mv_same:'El precio de lista está en línea con el estimado.',
-  mv_comps:'Basado en {n} casas comparables.',mv_fine:'Estimado automático de RentCast. No es un avalúo ni una opinión de valor de un agente.',
+  mv_est:'Valor estimado',mv_low:'Rango bajo',mv_high:'Rango alto',  mv_comps:'Basado en {n} casas comparables.',mv_fine:'Estimado automático de RentCast. No es un avalúo ni una opinión de valor de un agente.',
   agentc:'Agente del listado: ',upd:'Información actualizada el ',
   listed:'Listado por: ',map:'Mapa',listv:'Lista',
   idx:'Prototipo: datos de muestra proporcionados por Repliers, solo para demostración. Información considerada confiable pero no garantizada. Jason Aguirre Group · eXp Realty.'},
@@ -446,10 +445,9 @@ var T={
   fx_ext:'Exterior',fx_roof:'Roof',fx_found:'Foundation',fx_sewer:'Sewer',fx_water:'Water',fx_nbhd:'Subdivision',fx_county:'County',fx_hoa:'HOA fee',
   fx_tax:'Annual taxes',fx_listed:'Date on market',
   ph_h:'Price history',ph_date:'Date',ph_event:'Event',ph_price:'Price',ph_list:'Listed for sale',ph_listr:'Listed for rent',ph_change:'Price change',
-  mv_h:'Estimated market value',mv_p:'Compare the list price with an automated estimate based on similar homes nearby.',mv_btn:'See the estimated value',mv_load:'Calculating the estimate…',
+  mv_h:'Estimated market value',mv_p:'See an automated estimate of this home\u2019s value, with its low and high range, based on similar homes nearby.',mv_btn:'See the estimated value',mv_load:'Calculating the estimate…',
   mv_none:'We could not calculate an automated estimate for this address. Ask us for a valuation and we will prepare one.',
-  mv_est:'Estimated value',mv_low:'Low range',mv_high:'High range',mv_cmp:'The list price is {p}% {d} the estimate.',mv_above:'above',mv_below:'below',mv_same:'The list price is in line with the estimate.',
-  mv_comps:'Based on {n} comparable homes.',mv_fine:'Automated estimate from RentCast. Not an appraisal or an agent’s opinion of value.',
+  mv_est:'Estimated value',mv_low:'Low range',mv_high:'High range',  mv_comps:'Based on {n} comparable homes.',mv_fine:'Automated estimate from RentCast. Not an appraisal or an agent’s opinion of value.',
   agentc:'Listing agent: ',upd:'Information last updated ',
   listed:'Listing provided by: ',map:'Map',listv:'List',
   idx:'Prototype: sample data provided by Repliers for demonstration only. Information deemed reliable but not guaranteed. Jason Aguirre Group · eXp Realty.'}
@@ -741,12 +739,10 @@ function loadValue(l){
   var box=$('mv'), full=fullAddr(l);
   function show(v){
     if(!v||!v.price){ box.innerHTML='<p class="mvp">'+t('mv_none')+'</p>'; return; }
-    var diff=(l.listPrice-v.price)/v.price*100, ad=Math.abs(diff).toFixed(0);
-    var cmp=Math.abs(diff)<1?t('mv_same'):t('mv_cmp').replace('{p}',ad).replace('{d}',t(diff>0?'mv_above':'mv_below'));
     box.innerHTML='<div class="mvt"><div><small>'+t('mv_est')+'</small><b>'+money(v.price)+'</b></div>'+
       '<div><small>'+t('mv_low')+'</small><b>'+(v.priceRangeLow?money(v.priceRangeLow):'—')+'</b></div>'+
       '<div><small>'+t('mv_high')+'</small><b>'+(v.priceRangeHigh?money(v.priceRangeHigh):'—')+'</b></div></div>'+
-      '<p class="mvp">'+cmp+((v.comparables||[]).length?' '+t('mv_comps').replace('{n}',v.comparables.length):'')+'</p>'+
+      ((v.comparables||[]).length?'<p class="mvp">'+t('mv_comps').replace('{n}',v.comparables.length)+'</p>':'')+
       '<p class="mvf">'+t('mv_fine')+'</p>';
   }
   if(mvCache[l.mlsNumber]){ show(mvCache[l.mlsNumber]); return; }
