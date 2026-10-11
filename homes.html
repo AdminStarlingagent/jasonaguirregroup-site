@@ -111,7 +111,9 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .c .sp em{font-style:normal;color:var(--muted)}
 .c .ad{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .c .br{font-size:14px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.credit{font-size:15px;color:var(--muted);margin:16px 0 0}
+.credit{font-size:15px;color:var(--muted);margin:16px 0 0;line-height:1.6}
+.credit b{color:var(--ink);font-weight:700}
+.credit a{color:var(--ink)}
 .foot{border-top:1px solid var(--line);margin-top:22px;padding-top:16px;font-size:13px;color:var(--muted);line-height:1.6}
 .foot b{color:var(--ink)}
 .foot nav{display:flex;flex-wrap:wrap;gap:4px 16px;margin:8px 0}
@@ -338,6 +340,7 @@ var T={
   fine:'Al enviar, aceptas que el Jason Aguirre Group te contacte por llamada o texto. Pueden aplicar cargos por mensajes.',
   f_priv:'Privacidad y Términos',use:'La información de los listados es para uso personal y no comercial de los consumidores, y no puede usarse para ningún otro fin que no sea identificar propiedades que les interese comprar o rentar.',
   ev_h:'¿Puedo comprar esta casa?',ev_p:'Evaluación gratis en 3 minutos. Vemos cómo le podemos ayudar y le recomendamos el prestamista con las mejores opciones para su caso.',ev_btn:'Iniciar mi evaluación gratis',ev_fine:'Sin revisión de crédito para empezar. Compradores con ITIN bienvenidos.',ev_link:'Vea si califica',ev_saved:'Casa guardada. ¿Quiere saber si puede comprarla?',ev_go:'Evaluación gratis',ev_after:'¿Quiere saber para cuánto califica? Evaluación gratis ›',
+  agentc:'Agente del listado: ',upd:'Información actualizada el ',
   listed:'Listado por: ',map:'Mapa',listv:'Lista',
   idx:'Prototipo: datos de muestra proporcionados por Repliers, solo para demostración. Información considerada confiable pero no garantizada. Jason Aguirre Group · eXp Realty.'},
  en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_team:'Meet the team',
@@ -363,6 +366,7 @@ var T={
   fine:'By submitting, you agree the Jason Aguirre Group may contact you by call or text. Message rates may apply.',
   f_priv:'Privacy & Terms',use:'Listing information is provided for consumers\' personal, non-commercial use and may not be used for any purpose other than to identify prospective properties they may be interested in purchasing or renting.',
   ev_h:'Can I buy this home?',ev_p:'Free 3-minute evaluation. We see how we can help and recommend the lender with the best options for your situation.',ev_btn:'Start my free evaluation',ev_fine:'No credit check to get started. ITIN buyers welcome.',ev_link:'See if you qualify',ev_saved:'Home saved. Want to know if you can buy it?',ev_go:'Free evaluation',ev_after:'Want to know how much you qualify for? Free evaluation ›',
+  agentc:'Listing agent: ',upd:'Information last updated ',
   listed:'Listing provided by: ',map:'Map',listv:'List',
   idx:'Prototype: sample data provided by Repliers for demonstration only. Information deemed reliable but not guaranteed. Jason Aguirre Group · eXp Realty.'}
 };
@@ -377,6 +381,18 @@ function short(n){ return n>=1e6 ? '$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'
 function num(n){ return Number(n).toLocaleString('en-US'); }
 function pmt(price,downPct,rate){ var P=price*(1-downPct/100), r=rate/1200, n=360; return r? P*r/(1-Math.pow(1+r,-n)) : P/n; }
 function addr(a){ return [a.streetNumber,a.streetDirectionPrefix,a.streetName,a.streetSuffix,a.streetDirection].filter(Boolean).join(' ')+(a.unitNumber&&a.unitNumber!=='0'?' #'+a.unitNumber:''); }
+function agentOf(l){ var a=(l.agents||[])[0]||{}; return a.name?String(a.name).trim():''; }
+function credit(l){ var b=(l.office||{}).brokerageName||((((l.agents||[])[0]||{}).brokerage||{}).name)||'', a=agentOf(l); return [a,b].filter(Boolean).join(', ')||'—'; }
+function agentContact(l){
+  var a=(l.agents||[])[0]||{}, out=[], ph=(a.phones||[])[0], em=a.email;
+  if(ph) out.push('<a href="tel:'+esc(String(ph).replace(/[^0-9+]/g,''))+'">'+esc(ph)+'</a>');
+  if(em&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) out.push('<a href="mailto:'+esc(em)+'">'+esc(em)+'</a>');
+  return out.join(' · ');
+}
+function updated(l){
+  if(!l.updatedOn) return ''; var d=new Date(l.updatedOn); if(isNaN(d)) return '';
+  return d.toLocaleDateString(lang==='es'?'es-MX':'en-US',{year:'numeric',month:'long',day:'numeric'});
+}
 function img(p,cls){ return CDN+p+'?class='+cls; }
 
 var F={type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:['Residential']};
@@ -473,7 +489,7 @@ function render(fit){
       '<div class="bd"><div class="pr">'+money(l.listPrice)+(lease?'<span class="pm" style="color:inherit">'+t('mo')+'</span>':'<span class="pm">'+t('est')+money(pmt(l.listPrice,3.5,RATE))+t('mo')+'</span>')+'</div>'+
       '<div class="sp">'+specs(l)+' <em>- '+t(lease?'forrent':'forsale')+'</em></div>'+
       '<div class="ad">'+esc(addr(a))+', '+esc(a.city)+', '+esc(a.state||'TX')+' '+esc(a.zip)+'</div>'+
-      '<div class="br">'+t('listed')+esc((l.office||{}).brokerageName||'—')+'</div></div></article>';
+      '<div class="br">'+t('listed')+esc(credit(l))+'</div></div></article>';
   }).join('');
   $('pager').innerHTML=state.pages>1?'<button type="button" id="pv" '+(state.page<=1?'disabled':'')+'>'+t('prev')+'</button><span>'+t('page')+state.page+t('of')+num(state.pages)+'</span><button type="button" id="nx" '+(state.page>=state.pages?'disabled':'')+'>'+t('next')+'</button>':'';
   drawPins(fit);
@@ -591,7 +607,7 @@ function openDetail(i){
       (lease?'':'<span class="estl">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'<a href="'+esc(evalUrl(l))+'">'+t('ev_link')+' ›</a></span>')+
       '<div class="chips">'+chips.filter(function(c){return c[0]!=null&&c[0]!=='';}).map(function(c){return '<div><span><small>'+t(c[1])+'</small>'+esc(c[0])+'</span></div>';}).join('')+'</div>'+
       (desc?'<h3>'+t('about')+'</h3><div class="desc clip" id="ds">'+esc(desc)+'</div><button class="more" type="button" id="mr">'+t('more')+'</button>':'')+
-      '<p class="credit">'+t('listed')+esc((l.office||{}).brokerageName||'—')+' · MLS# '+esc(l.mlsNumber)+'</p>'+
+      '<p class="credit">'+t('listed')+'<b>'+esc(credit(l))+'</b>'+(agentContact(l)?'<br>'+t('agentc')+agentContact(l):'')+'<br>MLS# '+esc(l.mlsNumber)+(updated(l)?' · '+t('upd')+esc(updated(l)):'')+'</p>'+
       '<div class="foot"><b>Jason Aguirre Group · eXp Realty</b><nav><a href="iabs.html">TREC Information About Brokerage Services</a><a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></nav><p>'+t('use')+'</p><p>'+t('idx')+'</p></div>'+
     '</div><aside class="side">'+
       (lease?'':'<div class="evalbox"><h4>'+t('ev_h')+'</h4><p>'+t('ev_p')+'</p><a class="evalbtn" href="'+esc(evalUrl(l))+'">'+t('ev_btn')+'</a><small>'+t('ev_fine')+'</small></div>')+

@@ -724,7 +724,7 @@ if('IntersectionObserver' in window){
         '<div class="ph" style="background-image:url(\''+CDN+l.images[0]+'?class=small\')"><span class="tg">'+(hot?d.ft_tag:d.ft_tagnew)+'</span></div>'+
         '<div class="bd"><div><span class="pr">'+money(l.listPrice)+'</span><span class="pm">'+d.ft_est+money(pmt(l.listPrice))+d.ft_mo+'</span></div>'+
         '<div class="sp">'+sp+'</div><div class="ad">'+esc(addr(a))+', '+esc(a.city)+', '+esc(a.state||'TX')+' '+esc(a.zip)+'</div>'+
-        '<div class="br">'+d.ft_by+esc((l.office||{}).brokerageName||'\u2014')+'</div></div></a>';
+        '<div class="br">'+d.ft_by+esc([(((l.agents||[])[0]||{}).name||'').trim(),(l.office||{}).brokerageName||''].filter(Boolean).join(', ')||'\u2014')+'</div></div></a>';
     }).join('');
     sec.hidden=false;
   };
