@@ -289,12 +289,12 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 <script src="jag-capture.js"></script>
 <script>
 /* ============================================================
-   JAG home search — Repliers API.
-   SAMPLE KEY: returns demo listings only. Before going live with
-   HAR data, move the key behind a server proxy (never ship a
-   production key in page source) and set SAMPLE=false.
+   JAG home search. Listings come through the JAG proxy (Supabase
+   edge function "home-search"), which holds the Repliers API key
+   server-side. No data key belongs in this page.
+   Set SAMPLE=false once the proxy's key is the live HAR key.
    ============================================================ */
-var API='https://api.repliers.io', KEY='h3qmelwnfkf0WWXfVoX4v1CCjoZf1Q', CDN='https://cdn.repliers.io/';
+var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
 var SAMPLE=true, STATE='TX', PER=24, RATE=6.75;
 var HEART='<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg>';
 
@@ -416,8 +416,7 @@ document.querySelectorAll('.langs button').forEach(function(b){
 
 /* ---------- data ---------- */
 function query(){
-  var p=new URLSearchParams({status:'A',class:'residential',type:F.type,hasImages:'true',resultsPerPage:PER,pageNum:state.page,sortBy:$('sort').value,
-    fields:'mlsNumber,listPrice,type,address,map,images,photoCount,daysOnMarket,details.numBedrooms,details.numBathrooms,details.sqft,details.yearBuilt,details.description,details.propertyType,details.style,lot.acres,office.brokerageName'});
+  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:state.page,sortBy:$('sort').value});
   var q=$('q').value.trim();
   if(state.bounds){ var b=state.bounds; p.set('map',JSON.stringify([[[b.getWest(),b.getSouth()],[b.getEast(),b.getSouth()],[b.getEast(),b.getNorth()],[b.getWest(),b.getNorth()]]])); }
   else{ p.set('state',STATE); if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q) p.set('search',q); }
@@ -428,7 +427,7 @@ function query(){
 }
 function load(fit){
   var mine=++state.req; $('grid').style.opacity=.45;
-  fetch(API+'/listings?'+query(),{headers:{'REPLIERS-API-KEY':KEY}})
+  fetch(API+'?'+query())
    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
    .then(function(d){ if(mine!==state.req) return; state.items=d.listings||[]; state.pages=d.numPages||1; state.count=d.count||0; render(fit!==false&&!state.bounds); })
    .catch(function(){ if(mine!==state.req) return; state.items=[]; state.count=null; render(); });
