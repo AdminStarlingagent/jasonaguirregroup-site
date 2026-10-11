@@ -234,6 +234,8 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
 .fc .sp,.fc .ad,.fc .br{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fc .br{color:var(--muted)}
 .fall{display:inline-block;margin-top:6px;font-weight:800;color:var(--buy);text-decoration:none}
+.fgroup{font-size:12.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--buy);margin:26px 0 2px}
+.fgroup:first-child{margin-top:0}
 </style>
 <script>
 /* Password-recovery link detector: forward to reset-password.html with the token hash */
@@ -429,11 +431,24 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
     <div class="wrap">
       <div class="sechead rev"><h2 data-t="faq_h"></h2></div>
       <div class="faq">
-        <details class="rev"><summary><span data-t="q1"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="a1"></p></details>
-        <details class="rev"><summary><span data-t="q2"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="a2"></p></details>
-        <details class="rev"><summary><span data-t="q3"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="a3"></p></details>
-        <details class="rev"><summary><span data-t="q4"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="a4"></p></details>
-        <details class="rev"><summary><span data-t="q5"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="a5"></p></details>
+        <h3 class="fgroup rev" data-t="fg1"></h3>
+        <details class="rev"><summary><span data-t="f1q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f1a"></p></details>
+        <details class="rev"><summary><span data-t="f2q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f2a"></p></details>
+        <details class="rev"><summary><span data-t="f3q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f3a"></p></details>
+        <details class="rev"><summary><span data-t="f4q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f4a"></p></details>
+        <details class="rev"><summary><span data-t="f5q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f5a"></p></details>
+        <h3 class="fgroup rev" data-t="fg2"></h3>
+        <details class="rev"><summary><span data-t="f6q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f6a"></p></details>
+        <details class="rev"><summary><span data-t="f7q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f7a"></p></details>
+        <details class="rev"><summary><span data-t="f8q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f8a"></p></details>
+        <details class="rev"><summary><span data-t="f9q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f9a"></p></details>
+        <details class="rev"><summary><span data-t="f10q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f10a"></p></details>
+        <details class="rev"><summary><span data-t="f11q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f11a"></p></details>
+        <details class="rev"><summary><span data-t="f12q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f12a"></p></details>
+        <details class="rev"><summary><span data-t="f13q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f13a"></p></details>
+        <h3 class="fgroup rev" data-t="fg3"></h3>
+        <details class="rev"><summary><span data-t="f14q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f14a"></p></details>
+        <details class="rev"><summary><span data-t="f15q"></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p data-t="f15a"></p></details>
       </div>
     </div>
   </section>
@@ -513,16 +528,39 @@ en:{
   ab_role:'REALTOR\u00ae \u00b7 Team Lead \u00b7 eXp Realty',
   ab_p:'Jason leads a bilingual team that specializes in first-time buyers, ITIN and credit-path clients, and families told \u201cnot yet\u201d by other lenders. Hundreds of local families served \u2014 in English y en espa\u00f1ol.',
   faq_h:'Questions, answered.',
-  q1:'Can I really make an offer before I\u2019m prequalified?',
-  a1:'Yes. Tell us the home and we\u2019ll draft the offer while JAG Home Loans works your qualification in parallel. Sellers see a serious, well-prepared offer \u2014 and you don\u2019t lose the house while you wait.',
-  q2:'Will you run my credit?',
-  a2:'Not to get started. The application never asks for your SSN or date of birth and never triggers a credit check. A licensed loan officer only moves forward after talking with you.',
-  q3:'I have an ITIN, not a Social Security number. Can I buy?',
-  a3:'Yes \u2014 we help ITIN buyers qualify every day, with down payments as low as 3%. Work permits (EAD) and green cards work too.',
-  q4:'\u00bfHablan espa\u00f1ol?',
-  a4:'S\u00ed. Todo el proceso \u2014 la solicitud, las llamadas y el cierre \u2014 puede ser completamente en espa\u00f1ol. Toque \u201cES\u201d arriba para cambiar el sitio.',
-  q5:'What does any of this cost?',
-  a5:'Nothing to apply, get an estimate, or draft an offer. No fees, no commitment \u2014 you decide if and when to move forward.',
+  fg1:'Getting started',
+  fg2:'Buying a home',
+  fg3:'Selling a home',
+  f1q:'Do you make loans or sell houses?',
+  f1a:'We are a real estate team with eXp Realty. We help you find and buy your home, and we work side by side with licensed loan officers who review which loan program fits you. One team walks with you from the first question to the keys.',
+  f2q:'Will you check my credit?',
+  f2a:'Not to get started. The free evaluation is a few questions about your work and income so we can see how to help. After that, and only with your permission, there is a soft credit review that does not affect your score. A formal pre-approval with a lender does require a full credit check, and we tell you before that happens.',
+  f3q:'What does any of this cost?',
+  f3a:'Nothing to get your evaluation, a home value estimate, or an offer drafted. No fees and no commitment. You decide if and when to move forward.',
+  f4q:'¿Hablan español?',
+  f4a:'Sí. Todo el proceso, desde la evaluación y las llamadas hasta el cierre, puede ser completamente en español. Toque “ES” arriba para cambiar el sitio.',
+  f5q:'What if I’m not ready to buy yet?',
+  f5a:'That is fine, and it is where many of our clients start. We tell you exactly what to work on, whether that is credit, savings, or time on the job, and we check back in when you ask us to. No pressure.',
+  f6q:'Can I really make an offer before I’m prequalified?',
+  f6a:'Yes. Tell us the home and we draft the offer while a loan officer works on your qualification at the same time. The seller sees a serious, well-prepared offer, and you don’t lose the house while you wait.',
+  f7q:'I have old debts or collections. Do I have to pay them all off first?',
+  f7a:'Not necessarily, and this is the most common misunderstanding we hear. Before you pay anything, we review your credit report with you and show you which accounts actually matter for buying a home. Paying the wrong one first can cost you money without helping. You leave with a clear plan.',
+  f8q:'I have an ITIN, not a Social Security number. Can I buy?',
+  f8a:'Yes. There are home loans made for ITIN buyers. Lenders usually ask for your tax returns, most often the last two years, plus proof of income. The down payment depends on the program. If you have not filed taxes yet, we tell you what to get ready so you can qualify. Work permits (EAD) and green cards work too.',
+  f9q:'I have no credit history, or I just got my work permit. Can I still buy?',
+  f9a:'Often the answer is “not yet” rather than “no.” We explain how to start building credit, how much work history lenders want to see, and what to save in the meantime. Then we follow up with you when you are closer.',
+  f10q:'I’m self-employed, paid by 1099, or paid in cash. Can I qualify?',
+  f10a:'Many of our clients are. Lenders go by income you can document, such as tax returns and bank statements. We look at what you have and tell you honestly whether it is enough today or what would make it enough.',
+  f11q:'Can I buy with my son, daughter, or another family member?',
+  f11a:'Yes, and it is very common. Each person on the loan fills out the evaluation. Incomes can be combined, and each person’s debts and credit count too. We help you decide who should be on the loan.',
+  f12q:'Do I need 20% down?',
+  f12a:'No. Many buyers use programs with down payments around 3% to 3.5%, and there are down payment assistance programs for buyers who qualify. Sometimes the seller can also help with closing costs. We show you the real numbers for your situation.',
+  f13q:'Am I too old to get a home loan?',
+  f13a:'No. A lender cannot turn you down because of your age. What counts is your income, your credit, and your debts, and retirement or Social Security income can count as income.',
+  f14q:'I own a home and want a different one. Do I have to sell first?',
+  f14a:'It depends on your numbers. Some owners sell first, some buy first if they qualify with both payments, and many time the two closings together. We start with a free estimate of what your home is worth and lay out each option.',
+  f15q:'What does it cost to sell my home, and how much will I keep?',
+  f15a:'The estimate and the consultation are free. When a home sells there are agent commissions, closing costs, and whatever you still owe on your mortgage. Before you decide anything, we give you a simple sheet showing about how much you would walk away with.',
   fin_h:'Ready when you are.',
   fin_s:'Three minutes. No credit check. In your language.',
   fin_apply:'Apply with JAG Home Loans', fin_offer:'Make an offer instead',
@@ -566,16 +604,39 @@ es:{
   ab_role:'REALTOR\u00ae \u00b7 L\u00edder de Equipo \u00b7 eXp Realty',
   ab_p:'Jason dirige un equipo biling\u00fce especializado en compradores de primera casa, clientes con ITIN o cr\u00e9dito en construcci\u00f3n, y familias a las que otros les dijeron que \u201ctodav\u00eda no\u201d. Cientos de familias ya compraron o vendieron con nosotros \u2014 en ingl\u00e9s y en espa\u00f1ol.',
   faq_h:'Preguntas frecuentes',
-  q1:'\u00bfDe verdad puedo hacer una oferta antes de estar precalificado?',
-  a1:'S\u00ed. D\u00edganos qu\u00e9 casa le gusta y nosotros preparamos la oferta mientras JAG Home Loans trabaja su calificaci\u00f3n al mismo tiempo. El vendedor recibe una oferta seria y bien preparada \u2014 y usted no pierde la casa por esperar.',
-  q2:'\u00bfVan a revisar mi cr\u00e9dito?',
-  a2:'No para comenzar. La solicitud nunca le pide su n\u00famero de Seguro Social ni su fecha de nacimiento, y nunca genera una revisi\u00f3n de cr\u00e9dito. Un oficial de pr\u00e9stamos con licencia solo contin\u00faa despu\u00e9s de hablar con usted.',
-  q3:'Tengo ITIN, no n\u00famero de Seguro Social. \u00bfPuedo comprar casa?',
-  a3:'S\u00ed \u2014 todos los d\u00edas ayudamos a compradores con ITIN, con enganche desde el 3%. Tambi\u00e9n aceptamos permiso de trabajo (EAD) y green card.',
-  q4:'Do you speak English?',
-  a4:'Yes. The whole process \u2014 application, calls, and closing \u2014 can be fully in English. Tap \u201cEN\u201d above to switch the site.',
-  q5:'\u00bfCu\u00e1nto cuesta todo esto?',
-  a5:'Nada. Aplicar, recibir su estimado o preparar una oferta no cuesta nada y no lo compromete a nada \u2014 usted decide si avanza y cu\u00e1ndo.',
+  fg1:'Para empezar',
+  fg2:'Comprar casa',
+  fg3:'Vender casa',
+  f1q:'¿Ustedes hacen préstamos o venden casas?',
+  f1a:'Somos un equipo de bienes raíces con eXp Realty. Le ayudamos a encontrar y comprar su casa, y trabajamos de la mano con oficiales de préstamo con licencia que revisan para qué programa califica. Un solo equipo le acompaña desde la primera pregunta hasta que recibe sus llaves.',
+  f2q:'¿Van a revisar mi crédito?',
+  f2a:'Para empezar, no. La evaluación gratis son unas preguntas sobre su trabajo e ingresos para ver cómo le podemos ayudar. Después, y solo con su permiso, se hace una revisión suave de crédito que no afecta su puntaje. Una preaprobación formal con el prestamista sí requiere una revisión completa, y le avisamos antes de que suceda.',
+  f3q:'¿Cuánto cuesta todo esto?',
+  f3a:'Nada. Su evaluación, el estimado del valor de su casa o preparar una oferta no cuestan nada y no le comprometen a nada. Usted decide si avanza y cuándo.',
+  f4q:'Do you speak English?',
+  f4a:'Yes. The whole process, from the evaluation and calls to closing, can be fully in English. Tap “EN” above to switch the site.',
+  f5q:'¿Y si todavía no estoy listo para comprar?',
+  f5a:'No pasa nada, y así empiezan muchos de nuestros clientes. Le decimos exactamente en qué trabajar, ya sea crédito, ahorros o tiempo en su empleo, y le damos seguimiento cuando usted nos diga. Sin presión.',
+  f6q:'¿De verdad puedo hacer una oferta antes de estar precalificado?',
+  f6a:'Sí. Díganos qué casa le gusta y preparamos la oferta mientras un oficial de préstamos trabaja su calificación al mismo tiempo. El vendedor recibe una oferta seria y bien preparada, y usted no pierde la casa por esperar.',
+  f7q:'Tengo deudas viejas o colecciones. ¿Tengo que pagarlas todas primero?',
+  f7a:'No necesariamente, y es la confusión más común que escuchamos. Antes de pagar algo, revisamos su reporte de crédito con usted y le mostramos qué cuentas realmente importan para comprar casa. Pagar primero la cuenta equivocada puede costarle dinero sin ayudarle. Usted sale con un plan claro.',
+  f8q:'Tengo ITIN, no número de Seguro Social. ¿Puedo comprar casa?',
+  f8a:'Sí. Hay préstamos hechos para compradores con ITIN. Por lo general el prestamista pide sus declaraciones de impuestos, casi siempre de los últimos dos años, y comprobantes de ingresos. El enganche depende del programa. Si todavía no ha declarado impuestos, le decimos qué preparar para poder calificar. También aceptamos permiso de trabajo (EAD) y green card.',
+  f9q:'No tengo historial de crédito o acabo de recibir mi permiso de trabajo. ¿Puedo comprar?',
+  f9a:'Muchas veces la respuesta es “todavía no” en lugar de “no”. Le explicamos cómo empezar a construir crédito, cuánto tiempo de trabajo piden los prestamistas y qué ir ahorrando mientras tanto. Después le damos seguimiento cuando esté más cerca.',
+  f10q:'Trabajo por mi cuenta, con 1099 o me pagan en efectivo. ¿Puedo calificar?',
+  f10a:'Muchos de nuestros clientes trabajan así. Los prestamistas se basan en ingresos que se puedan comprobar, como declaraciones de impuestos y estados de cuenta. Revisamos lo que usted tiene y le decimos con honestidad si alcanza hoy o qué haría falta.',
+  f11q:'¿Puedo comprar con mi hijo, mi hija u otro familiar?',
+  f11a:'Sí, y es muy común. Cada persona que va en el préstamo llena la evaluación. Los ingresos se pueden sumar, y también cuentan las deudas y el crédito de cada uno. Le ayudamos a decidir quién conviene que esté en el préstamo.',
+  f12q:'¿Necesito el 20% de enganche?',
+  f12a:'No. Muchos compradores usan programas con enganche de alrededor del 3% al 3.5%, y existen programas de ayuda para el enganche para quienes califican. A veces el vendedor también puede ayudar con los gastos de cierre. Le mostramos los números reales para su caso.',
+  f13q:'¿Ya soy muy mayor para que me presten?',
+  f13a:'No. Un prestamista no puede negarle un préstamo por su edad. Lo que cuenta son sus ingresos, su crédito y sus deudas, y el ingreso de jubilación o Seguro Social puede contar como ingreso.',
+  f14q:'Ya tengo casa y quiero otra. ¿Tengo que vender primero?',
+  f14a:'Depende de sus números. Algunos dueños venden primero, otros compran primero si califican con los dos pagos, y muchos coordinan los dos cierres. Empezamos con un estimado gratis de lo que vale su casa y le explicamos cada opción.',
+  f15q:'¿Cuánto cuesta vender mi casa y cuánto me queda?',
+  f15a:'El estimado y la consulta son gratis. Al vender hay comisiones de los agentes, gastos de cierre y lo que todavía deba de su hipoteca. Antes de decidir, le damos una hoja sencilla con lo que aproximadamente le quedaría en la mano.',
   fin_h:'Listos cuando usted lo est\u00e9.',
   fin_s:'Tres minutos. Sin revisi\u00f3n de cr\u00e9dito. En su idioma.',
   fin_apply:'Aplicar con JAG Home Loans', fin_offer:'Prefiero hacer una oferta',
