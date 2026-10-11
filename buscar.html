@@ -110,7 +110,13 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .c .sp i{font-style:normal;color:var(--line);margin:0 5px}
 .c .sp em{font-style:normal;color:var(--muted)}
 .c .ad{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.c .br{font-size:10px;color:var(--soft);margin-top:4px;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c .br{font-size:14px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.credit{font-size:15px;color:var(--muted);margin:16px 0 0}
+.foot{border-top:1px solid var(--line);margin-top:22px;padding-top:16px;font-size:13px;color:var(--muted);line-height:1.6}
+.foot b{color:var(--ink)}
+.foot nav{display:flex;flex-wrap:wrap;gap:4px 16px;margin:8px 0}
+.foot nav a{color:var(--ink);font-weight:700}
+.foot p{margin:8px 0 0;font-size:12px}
 .empty{grid-column:1/-1;padding:50px 10px;text-align:center;color:var(--muted);font-weight:600}
 .pager{display:flex;justify-content:center;align-items:center;gap:12px;margin:20px 0 6px;font-weight:700;font-size:13px}
 .pager button{border:1px solid #a7a6b0;background:#fff;border-radius:6px;padding:8px 14px;font-weight:800;color:var(--buy)}
@@ -179,7 +185,7 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 @media (max-width:1180px){ .main{grid-template-columns:minmax(0,1fr) minmax(0,400px)} .grid{grid-template-columns:minmax(0,1fr)} }
 @media (max-width:860px){
   .hin{grid-template-columns:auto 1fr;height:54px;padding:0 14px}
-  .hl,.brok,.hr a.n{display:none}
+  .hl,.hr a.n{display:none}
   .logo{justify-self:start}
   .bar{flex-wrap:wrap;padding:8px 12px}
   .q{flex:1 1 100%}
@@ -261,7 +267,17 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
     </div>
     <div class="grid" id="grid"></div>
     <div class="pager" id="pager"></div>
-    <p class="idx" data-t="idx"></p>
+    <footer class="foot">
+      <b>Jason Aguirre Group &middot; eXp Realty</b><br>
+      <a href="https://www.google.com/maps/search/?api=1&amp;query=5373+W+Alabama+St+Suite+448+Houston+TX+77056" target="_blank" rel="noopener">5373 W Alabama St, Suite 448 &middot; Houston, TX 77056</a> &middot; <a href="tel:+18327023574">(832) 702-3574</a>
+      <nav>
+        <a href="iabs.html">TREC Information About Brokerage Services</a>
+        <a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a>
+        <a href="privacy-terms.html" data-t="f_priv"></a>
+      </nav>
+      <p data-t="use"></p>
+      <p data-t="idx"></p>
+    </footer>
   </section>
 </div>
 <button class="viewtog" id="viewtog" type="button"></button>
@@ -304,6 +320,7 @@ var T={
   tour:'Agendar una visita',offer:'Hacer una oferta',saveh:'Guarda esta búsqueda',savep:'Te avisamos cuando salgan casas nuevas como estas.',savebtn:'Guardar y recibir avisos',
   need:'Escribe tu nombre y un teléfono válido.',thanks:'¡Listo! Nuestro equipo te llama hoy.',
   fine:'Al enviar, aceptas que el Jason Aguirre Group te contacte por llamada o texto. Pueden aplicar cargos por mensajes.',
+  f_priv:'Privacidad y Términos',use:'La información de los listados es para uso personal y no comercial de los consumidores, y no puede usarse para ningún otro fin que no sea identificar propiedades que les interese comprar o rentar.',
   listed:'Listado por: ',map:'Mapa',listv:'Lista',
   idx:'Prototipo: datos de muestra proporcionados por Repliers, solo para demostración. Información considerada confiable pero no garantizada. Jason Aguirre Group · eXp Realty.'},
  en:{nav_buy:'Buy',nav_sell:'Sell',
@@ -327,6 +344,7 @@ var T={
   tour:'Request a tour',offer:'Make an offer',saveh:'Save this search',savep:'We\'ll let you know when new homes like these come up.',savebtn:'Save and get alerts',
   need:'Enter your name and a valid phone number.',thanks:'Done! Our team will call you today.',
   fine:'By submitting, you agree the Jason Aguirre Group may contact you by call or text. Message rates may apply.',
+  f_priv:'Privacy & Terms',use:'Listing information is provided for consumers\' personal, non-commercial use and may not be used for any purpose other than to identify prospective properties they may be interested in purchasing or renting.',
   listed:'Listing provided by: ',map:'Map',listv:'List',
   idx:'Prototype: sample data provided by Repliers for demonstration only. Information deemed reliable but not guaranteed. Jason Aguirre Group · eXp Realty.'}
 };
@@ -530,7 +548,8 @@ function openDetail(i){
       (lease?'':'<span class="estl">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'<a href="apply.html">'+t('prequal')+' ›</a></span>')+
       '<div class="chips">'+chips.filter(function(c){return c[0]!=null&&c[0]!=='';}).map(function(c){return '<div><span><small>'+t(c[1])+'</small>'+esc(c[0])+'</span></div>';}).join('')+'</div>'+
       (desc?'<h3>'+t('about')+'</h3><div class="desc clip" id="ds">'+esc(desc)+'</div><button class="more" type="button" id="mr">'+t('more')+'</button>':'')+
-      '<p class="idx">'+t('listed')+esc((l.office||{}).brokerageName||'—')+' · MLS# '+esc(l.mlsNumber)+'</p>'+
+      '<p class="credit">'+t('listed')+esc((l.office||{}).brokerageName||'—')+' · MLS# '+esc(l.mlsNumber)+'</p>'+
+      '<div class="foot"><b>Jason Aguirre Group · eXp Realty</b><nav><a href="iabs.html">TREC Information About Brokerage Services</a><a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></nav><p>'+t('use')+'</p><p>'+t('idx')+'</p></div>'+
     '</div><aside class="side">'+
       '<form class="box lead" id="lf" novalidate>'+leadForm('home')+'</form>'+
       (lease?'':'<div class="box pay"><h4>'+t('pay_h')+'</h4><div class="big"><span id="pb"></span><small>'+t('mo')+'</small></div>'+
