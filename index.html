@@ -213,6 +213,27 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
 .hsearch button:hover{background:var(--buy-d)}
 .hsearch svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.4;stroke-linecap:round;vertical-align:middle}
 .hero{padding:26px 22px 30px}
+/* ---------------- featured homes ---------------- */
+.feat{padding:8px 0 34px}
+.fhead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:14px}
+.fhead h2{font-size:24px;letter-spacing:-.02em;margin:0;font-weight:800}
+.fhead p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.fsample{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:#fff7e0;color:#5c4700;border:1px solid #f0dfa8;border-radius:99px;padding:3px 9px;vertical-align:middle;white-space:nowrap}
+.farr{display:flex;gap:8px;flex:none}
+.farr button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:22px;line-height:1;cursor:pointer;color:var(--ink)}
+.farr button:hover{border-color:var(--ink)}
+.frow{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 12px;scrollbar-width:none}
+.frow::-webkit-scrollbar{display:none}
+.fc{flex:0 0 300px;max-width:82vw;scroll-snap-align:start;text-decoration:none;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(23,22,28,.22);transition:box-shadow .15s}
+.fc:hover{box-shadow:0 0 0 2px var(--buy),0 6px 18px rgba(23,22,28,.2)}
+.fc .ph{aspect-ratio:16/10;background:var(--card) center/cover no-repeat;position:relative}
+.fc .tg{position:absolute;left:8px;top:8px;background:var(--buy);color:#fff;border-radius:4px;font-size:11.5px;font-weight:700;padding:3px 8px}
+.fc .bd{padding:10px 12px 12px}
+.fc .pr{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.fc .pm{font-size:12px;font-weight:700;color:var(--loan);margin-left:6px}
+.fc .sp,.fc .ad,.fc .br{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc .br{color:var(--muted)}
+.fall{display:inline-block;margin-top:6px;font-weight:800;color:var(--buy);text-decoration:none}
 </style>
 <script>
 /* Password-recovery link detector: forward to reset-password.html with the token hash */
@@ -309,6 +330,24 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px;font-size:13px;color
     </div>
     <p class="heronote" data-t="heronote"></p>
   </div>
+
+  <!-- ================= FEATURED HOMES ================= -->
+  <section id="featured" class="feat" hidden>
+    <div class="wrap">
+      <div class="fhead">
+        <div>
+          <h2><span data-t="ft_h"></span> <span class="fsample" id="fsample" data-t="ft_sample" hidden></span></h2>
+          <p id="ft_sub"></p>
+        </div>
+        <div class="farr">
+          <button type="button" id="fprev" aria-label="Previous">&#8249;</button>
+          <button type="button" id="fnext" aria-label="Next">&#8250;</button>
+        </div>
+      </div>
+      <div class="frow" id="frow"></div>
+      <a class="fall" href="homes"><span data-t="ft_all"></span> &rarr;</a>
+    </div>
+  </section>
 
   <!-- ================= HOW IT WORKS ================= -->
   <section id="how">
@@ -440,6 +479,7 @@ var T = {
 en:{
   nav_buyh:'Buy', nav_rent:'Rent', nav_sellh:'Sell', nav_loan:'Get a mortgage', nav_team:'Meet the team', nav_help:'Get help',
   hs_a:'Find your home.', hs_b:'No credit check to get started.', hs_ph:'Enter a city, ZIP code or keyword', hs_sub:'Search homes, make an offer on any of them, or start your free evaluation in 3 minutes. ITIN buyers welcome.',
+  ft_h:'Featured homes', ft_sample:'Sample data', ft_hot:'The homes getting the most attention on our site right now.', ft_new:'The newest homes on our site.', ft_all:'See all homes', ft_tag:'Popular', ft_tagnew:'New', ft_est:'Est. ', ft_mo:'/mo', ft_bd:'bds', ft_ba:'ba', ft_sqft:'sqft', ft_by:'Listing provided by: ',
   nav_how:'How it works', nav_buy:'Make an offer', nav_sell:'Home value', nav_faq:'FAQ', nav_apply:'Apply',
   switch_hint:'\u00bfPrefiere espa\u00f1ol? \u00b7 Ver el sitio en espa\u00f1ol',
   h1a:'Make an offer on', h1b:'any home', h1c:'.',
@@ -492,6 +532,7 @@ en:{
 es:{
   nav_buyh:'Comprar', nav_rent:'Rentar', nav_sellh:'Vender', nav_loan:'Pr\u00e9stamo', nav_team:'Conoce al equipo', nav_help:'Ayuda',
   hs_a:'Encuentre su casa.', hs_b:'Sin revisi\u00f3n de cr\u00e9dito para empezar.', hs_ph:'Ciudad, c\u00f3digo postal o palabra', hs_sub:'Busque casas, haga una oferta en cualquiera, o inicie su evaluaci\u00f3n gratis en 3 minutos. Compradores con ITIN bienvenidos.',
+  ft_h:'Casas destacadas', ft_sample:'Datos de muestra', ft_hot:'Las casas que m\u00e1s inter\u00e9s est\u00e1n recibiendo en nuestro sitio.', ft_new:'Las casas m\u00e1s nuevas en nuestro sitio.', ft_all:'Ver todas las casas', ft_tag:'Popular', ft_tagnew:'Nueva', ft_est:'Est. ', ft_mo:'/mes', ft_bd:'rec', ft_ba:'ba', ft_sqft:'pies\u00b2', ft_by:'Listado por: ',
   nav_how:'C\u00f3mo funciona', nav_buy:'Hacer una oferta', nav_sell:'Valor de su casa', nav_faq:'Preguntas', nav_apply:'Aplicar',
   switch_hint:'Prefer English? \u00b7 View site in English',
   h1a:'Haga una oferta en', h1b:'cualquier casa', h1c:'.',
@@ -559,6 +600,7 @@ function applyLang(){
   }
   var phs = document.querySelectorAll('[data-ph]');
   for(var q=0;q<phs.length;q++){ var pk=phs[q].getAttribute('data-ph'); if(d[pk]!=null) phs[q].placeholder=d[pk]; }
+  if(window.renderFeatured) window.renderFeatured();
   var sw = document.querySelectorAll('[data-switch] span');
   for(var s=0;s<sw.length;s++) sw[s].textContent = d.switch_hint;
   var bs = document.querySelectorAll('.langs button');
@@ -597,6 +639,54 @@ if('IntersectionObserver' in window){
 }else{
   revs.forEach(function(r){ r.classList.add('in'); });
 }
+</script>
+<script>
+/* Featured homes: ranked by attention on our own site (views, saves, inquiries on /homes),
+   read from Supabase; falls back to the newest listings until there is enough activity. */
+(function(){
+  var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
+  var SB='https://nyaxywghbpphjhwcmspd.supabase.co', KEY='sb_publishable_a3LN_l283LN8J-bJTEO8hQ_U40t09eh';
+  var SAMPLE=true, RATE=6.75, MIN_HOT=4, items=[], hot=false;
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function money(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+  function pmt(p){ var P=p*0.965, r=RATE/1200; return P*r/(1-Math.pow(1+r,-360)); }
+  function addr(a){ return [a.streetNumber,a.streetDirectionPrefix,a.streetName,a.streetSuffix,a.streetDirection].filter(Boolean).join(' '); }
+  window.renderFeatured=function(){
+    var sec=document.getElementById('featured'); if(!items.length){ sec.hidden=true; return; }
+    var d=T[lang];
+    document.getElementById('ft_sub').textContent=hot?d.ft_hot:d.ft_new;
+    document.getElementById('fsample').hidden=!SAMPLE;
+    document.getElementById('frow').innerHTML=items.map(function(l){
+      var x=l.details||{}, a=l.address||{};
+      var sp=[x.numBedrooms!=null?'<b>'+x.numBedrooms+'</b> '+d.ft_bd:'',x.numBathrooms!=null?'<b>'+x.numBathrooms+'</b> '+d.ft_ba:'',x.sqft?'<b>'+Number(x.sqft).toLocaleString('en-US')+'</b> '+d.ft_sqft:''].filter(Boolean).join(' | ');
+      return '<a class="fc" href="homes#'+encodeURIComponent(l.mlsNumber)+'">'+
+        '<div class="ph" style="background-image:url(\''+CDN+l.images[0]+'?class=small\')"><span class="tg">'+(hot?d.ft_tag:d.ft_tagnew)+'</span></div>'+
+        '<div class="bd"><div><span class="pr">'+money(l.listPrice)+'</span><span class="pm">'+d.ft_est+money(pmt(l.listPrice))+d.ft_mo+'</span></div>'+
+        '<div class="sp">'+sp+'</div><div class="ad">'+esc(addr(a))+', '+esc(a.city)+', '+esc(a.state||'TX')+' '+esc(a.zip)+'</div>'+
+        '<div class="br">'+d.ft_by+esc((l.office||{}).brokerageName||'\u2014')+'</div></div></a>';
+    }).join('');
+    sec.hidden=false;
+  };
+  function listings(qs){ return fetch(API+'?'+qs).then(function(r){ return r.ok?r.json():{listings:[]}; }).then(function(j){ return (j.listings||[]).filter(function(l){ return l.images&&l.images.length; }); }); }
+  function newest(){ return listings('type=sale&state=TX&propertyType=Residential&sortBy=createdOnDesc&resultsPerPage=8'); }
+  fetch(SB+'/rest/v1/rpc/jag_top_listings',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_days:14,p_limit:8})})
+   .then(function(r){ return r.ok?r.json():[]; })
+   .then(function(top){
+     if(!top||top.length<MIN_HOT) return newest();
+     var order=top.map(function(t){ return t.mls_number; });
+     return listings(order.map(function(m){ return 'mlsNumber='+encodeURIComponent(m); }).join('&')+'&resultsPerPage=12').then(function(ls){
+       ls.sort(function(a,b){ return order.indexOf(a.mlsNumber)-order.indexOf(b.mlsNumber); });
+       if(ls.length<MIN_HOT) return newest();
+       hot=true; return ls;
+     });
+   })
+   .catch(function(){ return newest(); })
+   .then(function(ls){ items=ls||[]; window.renderFeatured(); })
+   .catch(function(){});
+  var row=document.getElementById('frow');
+  document.getElementById('fprev').onclick=function(){ row.scrollBy({left:-320,behavior:'smooth'}); };
+  document.getElementById('fnext').onclick=function(){ row.scrollBy({left:320,behavior:'smooth'}); };
+})();
 </script>
 </body>
 </html>

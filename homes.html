@@ -479,8 +479,20 @@ function hot(i,on){
   var c=document.querySelector('.c[data-i="'+i+'"]'); if(c) c.classList.toggle('hot',on);
   var p=document.querySelector('.pin[data-i="'+i+'"]'); if(p) p.classList.toggle('hot',on);
 }
+/* Anonymous attention signal (MLS number + kind only) — feeds "featured homes" on the homepage. */
+var logged={};
+function logEvent(mls,kind){
+  try{
+    var c=window.JAG_CRM||{}; if(!c.url||!c.anonKey||!mls) return;
+    var k=kind+':'+mls; if(logged[k]) return; logged[k]=1;
+    if(kind==='view'){ try{ if(sessionStorage.getItem('jv:'+mls)) return; sessionStorage.setItem('jv:'+mls,'1'); }catch(e){} }
+    fetch(c.url.replace(/\/+$/,'')+'/rest/v1/rpc/jag_log_listing_event',{method:'POST',keepalive:true,
+      headers:{apikey:c.anonKey,Authorization:'Bearer '+c.anonKey,'Content-Type':'application/json'},
+      body:JSON.stringify({p_mls:mls,p_kind:kind})}).catch(function(){});
+  }catch(e){}
+}
 function toggleFav(id){
-  if(favs[id]) delete favs[id]; else favs[id]=1;
+  if(favs[id]) delete favs[id]; else { favs[id]=1; logEvent(id,'save'); }
   try{ localStorage.setItem('jag_favs',JSON.stringify(favs)); }catch(e){}
   return !!favs[id];
 }
@@ -519,6 +531,7 @@ function wireLead(form,extra){
     var data={__name:n,Phone:form.phone.value.trim(),Email:form.email.value.trim()||null,'Preferred Language':lang==='es'?'Spanish':'English',Request:action||'Inquiry'};
     Object.keys(extra).forEach(function(k){ data[k]=extra[k]; });
     if(window.jagCapture) window.jagCapture('home-search',data);
+    if(extra['MLS #']) logEvent(extra['MLS #'],'inquiry');
     form.innerHTML='<div class="ok">'+t('thanks')+'</div>';
   });
 }
@@ -530,9 +543,11 @@ $('lb').querySelector('.lp').onclick=function(){ showLB(lbn-1); };
 $('lb').querySelector('.ln').onclick=function(){ showLB(lbn+1); };
 $('lb').querySelector('.lx').onclick=function(){ $('lb').classList.remove('on'); };
 function openDetail(i){
-  var l=state.items[i]; if(!l) return; cur=l;
+  var l=(typeof i==='object')?i:state.items[i]; if(!l) return; cur=l;
+  if(typeof i==='object') i=state.items.indexOf(l);
+  logEvent(l.mlsNumber,'view');
   state.seen[l.mlsNumber]=1; var pn=document.querySelector('.pin[data-i="'+i+'"]'); if(pn) pn.classList.add('seen');
-  var d=l.details||{}, a=l.address||{}, lease=F.type==='lease', full=addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip;
+  var d=l.details||{}, a=l.address||{}, lease=String(l.type||'').toLowerCase()==='lease', full=addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip;
   var desc=String(d.description||'').replace(/\*+\s*SAMPLE DATA\s*\*+/gi,'').trim();
   var chips=[[d.style||d.propertyType,'f_type'],[d.yearBuilt,'f_year'],[(l.lot||{}).acres?Number(l.lot.acres).toFixed(2)+t('acres'):null,'f_lot'],
     [d.sqft&&!lease?money(l.listPrice/d.sqft):null,'f_ppsf'],[l.daysOnMarket,'f_dom'],[l.mlsNumber,'f_mls']];
@@ -609,6 +624,12 @@ try{
   if(t0==='lease'){ F.type='lease'; var r=document.querySelector('input[name=type][value=lease]'); if(r) r.checked=true; }
 }catch(e){}
 applyLang(); load();
+/* /homes#MLS123 opens that listing directly (featured homes, shared links) */
+(function(){
+  var m=/^#([A-Za-z0-9-]{3,24})$/.exec(location.hash); if(!m) return;
+  fetch(API+'?mlsNumber='+encodeURIComponent(m[1])).then(function(r){ return r.ok?r.json():null; })
+   .then(function(d){ if(d&&d.listings&&d.listings[0]) openDetail(d.listings[0]); }).catch(function(){});
+})();
 </script>
 </body>
 </html>
