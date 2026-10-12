@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#17161c">
+<title>Closings checklist · Jason Aguirre Group</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="jag-capture.js?v=3"></script>
+<style>
+/* Opened from the 7 AM closings brief: jasonaguirregroup.company/c#<code>.
+   Tapping Done takes the item off the deal, so the brief and the closings assistant stop asking about it. */
+:root{
+  --canvas:#eef0f3; --paper:#ffffff; --ink:#17161c; --graphite:#5d5c66; --soft:#8b8a94; --hair:#dfe1e6;
+  --red:#c8102e; --red-t:#fdecef; --green:#0f8a4d; --green-t:#e6f4ec; --amber:#8a5a00; --amber-t:#fff3d9;
+  --top:58px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--ink);font:500 15px/1.5 'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.top{position:sticky;top:0;z-index:10;height:var(--top);background:rgba(238,240,243,.94);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--hair)}
+.top .in{max-width:720px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;gap:12px}
+.mark{flex:0 0 auto;width:34px;height:34px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px}
+.top h1{margin:0;font-size:15px;line-height:1.25;font-weight:800;flex:1;min-width:0}
+.top h1 small{display:block;font-size:12.5px;font-weight:600;color:var(--graphite)}
+main{max-width:720px;margin:0 auto;padding:18px 16px 64px}
+.lead{margin:0 4px 6px;color:var(--graphite);font-weight:600;font-size:14px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 4px}
+.filters button{border:1px solid var(--hair);background:var(--paper);border-radius:99px;padding:7px 13px;font-size:13px;font-weight:700;color:var(--graphite);cursor:pointer;min-height:36px}
+.filters button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.deal{background:var(--paper);border:1px solid var(--hair);border-radius:20px;padding:6px 16px 4px;margin-top:12px}
+.deal header{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:10px 0 6px}
+.deal h2{margin:0;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.chip{font-size:12px;font-weight:800;border-radius:99px;padding:2px 9px;background:var(--canvas);color:var(--graphite)}
+.chip.soon{background:var(--red);color:#fff}
+.item{border-top:1px solid var(--hair);padding:12px 0}
+.item p{margin:0;font-size:15px;line-height:1.45}
+.item .meta{margin:4px 0 0;font-size:12.5px;font-weight:700;color:var(--soft)}
+.who{display:inline-block;font-size:11.5px;font-weight:800;border-radius:99px;padding:1px 8px;margin-right:6px}
+.who.jason{background:var(--red-t);color:var(--red)}
+.who.tc{background:var(--canvas);color:var(--graphite)}
+.who.other{background:var(--amber-t);color:var(--amber)}
+.acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.acts button{border-radius:12px;padding:9px 14px;font-weight:800;font-size:14px;cursor:pointer;min-height:42px}
+.done{background:var(--ink);color:#fff;border:0}
+.nn{background:var(--paper);border:1px solid var(--hair)}
+.note{display:none;margin-top:8px}
+.note.open{display:block}
+.note textarea{width:100%;min-height:62px;border:1px solid var(--hair);border-radius:12px;padding:10px 12px;font-size:15px;background:#f8f9fa;resize:vertical}
+.note small{display:block;color:var(--soft);font-size:12px;margin-top:4px}
+.item.gone{background:var(--green-t);border-radius:12px;padding:12px;margin:8px -4px;border-top:0}
+.item.gone p{color:var(--green);font-weight:700}
+.item.gone .undo{background:transparent;border:0;color:var(--ink);text-decoration:underline;font-weight:800;cursor:pointer;padding:6px 0;margin-top:4px}
+.none{padding:12px 0;color:var(--soft);font-weight:600;border-top:1px solid var(--hair)}
+.recent{margin:2px 0 10px;font-size:13px;color:var(--green);font-weight:600}
+.empty{background:var(--paper);border-radius:20px;padding:24px 20px;border:1px solid var(--hair);margin-top:12px}
+.empty h2{margin:0;font-size:19px}
+.empty p{color:var(--graphite);margin:8px 0 0}
+.fine{font-size:12.5px;color:var(--soft);line-height:1.55;margin:22px 4px 0}
+</style>
+</head>
+<body>
+<header class="top"><div class="in"><div class="mark" aria-hidden="true">JAG</div><h1>Closings checklist<small id="sub">Loading…</small></h1></div></header>
+<main id="app" aria-live="polite"><div class="empty"><h2>Loading open items…</h2></div></main>
+<script>
+(function(){
+  'use strict';
+  var CRM = window.JAG_CRM || {}, app = document.getElementById('app'), code = '', data = null, filter = 'jason';
+  var OWN = { jason: 'Jason', tc: 'Closings team', other: 'Other side' };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function rpc(name, body){
+    return fetch(String(CRM.url || '').replace(/\/+$/, '') + '/rest/v1/rpc/' + name, {
+      method: 'POST', headers: { apikey: CRM.anonKey, Authorization: 'Bearer ' + CRM.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body) }).then(function(r){ if(!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+  function days(d){ if(!d) return null; var t = new Date(d + 'T12:00:00'), n = new Date(); n.setHours(12,0,0,0); return Math.round((t - n) / 864e5); }
+  function md(d){ var p = String(d).split('-'); return Number(p[1]) + '/' + Number(p[2]); }
+
+  function render(){
+    var deals = (data.deals || []).map(function(d){
+      return { d: d, items: (d.items || []).filter(function(i){ return filter === 'all' || i.owner === filter; }) };
+    }).filter(function(x){ return x.items.length || filter === 'all'; });
+    var total = 0, mine = 0;
+    (data.deals || []).forEach(function(d){ (d.items || []).forEach(function(i){ total++; if(i.owner === 'jason') mine++; }); });
+    document.getElementById('sub').textContent = total + ' open item' + (total === 1 ? '' : 's') + ', ' + mine + ' for Jason';
+    var html = '<p class="lead">Tap <b>Done</b> on anything already handled (by phone, in person, anywhere). It comes off the deal, so tomorrow’s brief and the closings assistant stop asking about it.</p>' +
+      '<div class="filters" role="group" aria-label="Show">' +
+      [['jason','Needs Jason'],['tc','Closings team'],['other','Other side'],['all','Everything']].map(function(f){
+        return '<button type="button" data-f="' + f[0] + '" class="' + (filter === f[0] ? 'on' : '') + '" aria-pressed="' + (filter === f[0]) + '">' + f[1] + '</button>'; }).join('') + '</div>';
+    if(!deals.length) html += '<div class="empty"><h2>Nothing open here</h2><p>All clear for this list. Check “Everything” for the rest.</p></div>';
+    deals.forEach(function(x){
+      var d = x.d, n = days(d.closing_date);
+      html += '<section class="deal"><header><h2>' + esc(d.name) + '</h2>' +
+        (d.closing_date ? '<span class="chip' + (n !== null && n >= 0 && n <= 3 ? ' soon' : '') + '">Closes ' + md(d.closing_date) + '</span>' : '<span class="chip">' + esc(d.status === 'offer' ? 'Offer out' : d.status === 'on_hold' ? 'On hold' : 'Under contract') + '</span>') +
+        '</header>';
+      (d.recently_done || []).slice(0, 2).forEach(function(r){ html += '<p class="recent">✓ ' + esc(r.summary) + '</p>'; });
+      if(!x.items.length) html += '<p class="none">No open items.</p>';
+      x.items.forEach(function(i){
+        var id = 'n' + i.key;
+        html += '<div class="item" data-p="' + esc(d.property) + '" data-k="' + i.key + '">' +
+          '<p>' + esc(i.item) + '</p>' +
+          '<p class="meta"><span class="who ' + esc(i.owner) + '">' + esc(OWN[i.owner] || i.owner || '') + '</span>' + (i.since ? 'open since ' + md(i.since) : '') + '</p>' +
+          '<div class="note" id="' + id + '"><textarea aria-label="Note (optional)" placeholder="Optional note, e.g. called eXp, CDA sent to title"></textarea><small>The note is saved on the deal for the closings assistant.</small></div>' +
+          '<div class="acts"><button type="button" class="done" data-a="done">Done</button><button type="button" class="nn" data-a="not_needed">Not needed</button><button type="button" class="nn" data-a="note" aria-controls="' + id + '">Add a note</button></div></div>';
+      });
+      html += '</section>';
+    });
+    html += '<p class="fine">Items you can’t mark here (like a Gmail thread in the brief): reply to the brief email and the closings assistant handles it within the hour. Only Jason and Kat get this link; it expires after 7 days.</p>';
+    app.innerHTML = html;
+  }
+
+  app.addEventListener('click', function(e){
+    var f = e.target.closest('[data-f]');
+    if(f){ filter = f.getAttribute('data-f'); render(); return; }
+    var b = e.target.closest('button[data-a]'), u = e.target.closest('button.undo');
+    if(u){
+      var g = u.closest('.item'); u.disabled = true;
+      rpc('tc_brief_restore', { p_code: code, p_property: g.getAttribute('data-p'), p_item: JSON.parse(g.getAttribute('data-removed')) })
+        .then(load).catch(function(){ u.disabled = false; u.textContent = 'Try again'; });
+      return;
+    }
+    if(!b) return;
+    var row = b.closest('.item'), a = b.getAttribute('data-a');
+    if(a === 'note'){ var n = row.querySelector('.note'); n.classList.toggle('open'); if(n.classList.contains('open')) n.querySelector('textarea').focus(); return; }
+    var note = row.querySelector('textarea').value;
+    row.querySelectorAll('button').forEach(function(x){ x.disabled = true; });
+    b.textContent = 'Saving…';
+    rpc('tc_brief_mark', { p_code: code, p_property: row.getAttribute('data-p'), p_key: row.getAttribute('data-k'), p_action: a, p_note: note || null })
+      .then(function(r){
+        if(!r || !r.ok){ fail('This link has expired', 'Open the checklist from today’s brief email.'); return; }
+        var text = row.querySelector('p').textContent;
+        row.className = 'item gone';
+        row.setAttribute('data-removed', JSON.stringify(r.removed || {}));
+        row.innerHTML = '<p>✓ ' + (a === 'done' ? 'Done' : 'Not needed') + ': ' + esc(text) + '</p>' + (r.removed ? '<button type="button" class="undo">Undo</button>' : '');
+        data.deals.forEach(function(d){ if(d.property === row.getAttribute('data-p')) d.items = d.items.filter(function(i){ return i.key !== row.getAttribute('data-k'); }); });
+      })
+      .catch(function(){ row.querySelectorAll('button').forEach(function(x){ x.disabled = false; }); b.textContent = 'Try again'; });
+  });
+
+  function fail(h, m){ document.getElementById('sub').textContent = ''; app.innerHTML = '<div class="empty"><h2>' + esc(h) + '</h2><p>' + esc(m) + '</p></div>'; }
+  function load(){
+    return rpc('tc_brief_peek', { p_code: code }).then(function(r){
+      if(!r || !r.ok){ fail('This link has expired', 'Open the checklist from today’s 7 AM closings brief.'); return; }
+      data = r; render();
+    }).catch(function(){ fail('No connection', 'Check your signal and reload the page.'); });
+  }
+  try { code = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim(); } catch(e) {}
+  if(!/^[A-Za-z0-9]{12,24}$/.test(code) || !CRM.url){ fail('This link is not complete', 'Open the checklist from the 7 AM closings brief email.'); }
+  else load();
+})();
+</script>
+</body>
+</html>
