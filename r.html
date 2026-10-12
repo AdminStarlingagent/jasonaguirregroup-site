@@ -229,13 +229,14 @@ a.who svg{flex:0 0 auto;align-self:center;color:var(--red)}
     if(b.closer) html += '<div class="sign lola"><div class="ava" aria-hidden="true">L</div><p class="bubble"><span class="by">Lola</span>' + esc(b.closer) + '</p></div>';
     html += '<p class="fine">Tap a client’s name to open their profile in Follow Up Boss (you need to be logged in); names without a link didn’t have a clear match. Pulled from this morning’s team Zoom, so double-check anything that sounds off. Team only: please don’t forward the link. It expires after 14 days.</p>';
     app.innerHTML = html;
+    var nav = app.querySelector('.tabs'), sel = app.querySelector('.tab[aria-pressed="true"]');
+    if(nav && sel) nav.scrollLeft = Math.max(0, sel.offsetLeft - (nav.clientWidth - sel.offsetWidth) / 2);
     Array.prototype.forEach.call(app.querySelectorAll('.tab'), function(btn){
       btn.addEventListener('click', function(){
         me = btn.getAttribute('data-who');
         var h = readHash();
         history.replaceState(null, '', '#' + h.code + (me === 'all' ? '' : '.' + me));
         render();
-        var t = app.querySelector('.tab[aria-pressed="true"]'); if(t && t.scrollIntoView) t.scrollIntoView({ inline: 'center', block: 'nearest' });
       });
     });
   }
