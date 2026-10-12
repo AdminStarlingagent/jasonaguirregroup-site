@@ -327,7 +327,6 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   </div>
 </header>
 
-<div class="demo" data-t="demo"></div>
 
 <div class="bar" id="bar">
   <form class="q" id="qf">
@@ -388,10 +387,10 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
    JAG home search. Listings come through the JAG proxy (Supabase
    edge function "home-search"), which holds the Repliers API key
    server-side. No data key belongs in this page.
-   Set SAMPLE=false once the proxy's key is the live HAR key.
+   Live HAR (board 147) data; the proxy enforces HAR-only results.
    ============================================================ */
 var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
-var SAMPLE=true, STATE='TX', PER=24, RATE=6.75;
+var SAMPLE=false, STATE='TX', PER=24, RATE=6.75;
 var HEART='<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg>';
 
 var T={
@@ -407,7 +406,7 @@ var T={
   none:'No encontramos casas con esos filtros. Mueve el mapa o cambia los filtros.',
   fail:'No pudimos cargar las casas. Intenta de nuevo.',prev:'‹ Anterior',next:'Siguiente ›',page:'Página ',of:' de ',
   bd:'rec',ba:'ba',sqft:'pies²',est:'Est. ',mo:'/mes',forsale:'Casa en venta',forrent:'Casa en renta',
-  new_:'Nueva',dom:' días en JAG',back:'‹ Volver a la búsqueda',savehome:'Guardar',saved:'Guardada',share:'Compartir',copied:'Enlace copiado',
+  new_:'Nueva',dom:' días en el mercado',back:'‹ Volver a la búsqueda',savehome:'Guardar',saved:'Guardada',share:'Compartir',copied:'Enlace copiado',
   allph:'Ver las ',photos:' fotos',estpay:'Pago est.: ',prequal:'Precalifícate',
   f_type:'Tipo',f_year:'Construida en',f_lot:'Terreno',f_dom:'Días en venta',f_ppsf:'Precio/pie²',f_mls:'MLS #',acres:' acres',
   about:'Sobre esta casa',more:'Ver más',less:'Ver menos',pay_h:'Pago mensual estimado',down:'Enganche',rate:'Interés %',
@@ -438,7 +437,7 @@ var T={
   mv_est:'Valor estimado',mv_low:'Rango bajo',mv_high:'Rango alto',  mv_comps:'Basado en {n} casas comparables.',mv_fine:'Estimado automático de RentCast. No es un avalúo ni una opinión de valor de un agente.',
   agentc:'Agente del listado: ',upd:'Información actualizada el ',
   listed:'Listado por: ',map:'Mapa',listv:'Lista',
-  idx:'Prototipo: datos de muestra proporcionados por Repliers, solo para demostración. Información considerada confiable pero no garantizada. Jason Aguirre Group · eXp Realty.'},
+  idx:'Datos de listados proporcionados por Houston Association of REALTORS® (HAR) a través de Repliers. Información considerada confiable pero no garantizada; verifique todos los datos de forma independiente. Jason Aguirre Group · eXp Realty.'},
  en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_team:'Meet the team',
   demo:'Prototype running on sample data — these homes are not actually for sale. Houston listings arrive once the HAR license is approved.',
   q_ph:'City, ZIP or keyword',t_sale:'For sale',t_lease:'For rent',
@@ -451,7 +450,7 @@ var T={
   none:'No homes match those filters. Move the map or change the filters.',
   fail:'We couldn\'t load homes. Please try again.',prev:'‹ Previous',next:'Next ›',page:'Page ',of:' of ',
   bd:'bds',ba:'ba',sqft:'sqft',est:'Est. ',mo:'/mo',forsale:'House for sale',forrent:'House for rent',
-  new_:'New',dom:' days on JAG',back:'‹ Back to search',savehome:'Save',saved:'Saved',share:'Share',copied:'Link copied',
+  new_:'New',dom:' days on market',back:'‹ Back to search',savehome:'Save',saved:'Saved',share:'Share',copied:'Link copied',
   allph:'See all ',photos:' photos',estpay:'Est. payment: ',prequal:'Get pre-qualified',
   f_type:'Type',f_year:'Built in',f_lot:'Lot',f_dom:'Days on market',f_ppsf:'Price/sqft',f_mls:'MLS #',acres:' acres',
   about:'About this home',more:'Show more',less:'Show less',pay_h:'Estimated monthly payment',down:'Down payment',rate:'Rate %',
@@ -482,7 +481,7 @@ var T={
   mv_est:'Estimated value',mv_low:'Low range',mv_high:'High range',  mv_comps:'Based on {n} comparable homes.',mv_fine:'Automated estimate from RentCast. Not an appraisal or an agent’s opinion of value.',
   agentc:'Listing agent: ',upd:'Information last updated ',
   listed:'Listing provided by: ',map:'Map',listv:'List',
-  idx:'Prototype: sample data provided by Repliers for demonstration only. Information deemed reliable but not guaranteed. Jason Aguirre Group · eXp Realty.'}
+  idx:'Listing data provided by the Houston Association of REALTORS® (HAR) through Repliers. Information deemed reliable but not guaranteed; verify all information independently. Jason Aguirre Group · eXp Realty.'}
 };
 var KINDS=[['Residential','k_Residential'],['Land','k_Land'],['Residential Income','k_Income'],['Farm','k_Farm']];
 var lang='es', favs={};
@@ -627,7 +626,12 @@ function drawPins(fit){
     mk.on('mouseover',function(){ hot(i,true); }); mk.on('mouseout',function(){ hot(i,false); });
     mk.addTo(layer); pts.push([m.latitude,m.longitude]);
   });
-  if(fit&&pts.length){ quiet++; map.fitBounds(pts,{padding:[40,40],maxZoom:14,animate:false}); setTimeout(function(){ quiet--; },400); }
+  if(fit&&pts.length){ quiet++;
+    /* ignore far-off outliers (e.g. one listing hours away) so the map stays on the main cluster */
+    var med=function(a){ a=a.slice().sort(function(x,y){return x-y;}); return a[Math.floor(a.length/2)]; };
+    var mla=med(pts.map(function(q){return q[0];})), mln=med(pts.map(function(q){return q[1];}));
+    var near=pts.filter(function(q){ return Math.abs(q[0]-mla)<1 && Math.abs(q[1]-mln)<1.2; });
+    map.fitBounds(near.length?near:pts,{padding:[40,40],maxZoom:14,animate:false}); setTimeout(function(){ quiet--; },400); }
 }
 function hot(i,on){
   var c=document.querySelector('.c[data-i="'+i+'"]'); if(c) c.classList.toggle('hot',on);
@@ -769,7 +773,7 @@ function openForm(kind,l,pre){
     if(n.length<2||ph.length<10){ form.querySelector('.err').style.display='block'; return; }
     var data={__name:n,Phone:form.phone.value.trim(),Email:form.email.value.trim()||null,'Preferred Language':lang==='es'?'Spanish':'English',
       Request:{tour:'Tour request',contact:'Agent contact',offer:'Offer request'}[kind],Message:form.msg.value.trim().slice(0,600)||null,
-      Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice,'Sample Data':SAMPLE};
+      Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice};
     if(kind==='tour'){ var dd=days[+form.day.value]; data['Preferred Day']=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); data['Preferred Time']=form.time.value+' Central'; }
     if(window.jagCapture) window.jagCapture('home-search',data);
     logEvent(l.mlsNumber,'inquiry');
@@ -917,7 +921,7 @@ $('saveBtn').addEventListener('click',function(){
 function setTog(){ $('viewtog').textContent=$('main').classList.contains('mapview')?t('listv'):t('map'); }
 $('viewtog').addEventListener('click',function(){ $('main').classList.toggle('mapview'); setTog(); if(map){ quiet++; map.invalidateSize(); drawPins(!state.bounds); setTimeout(function(){ quiet--; },400); } });
 try{
-  map=L.map('map',{scrollWheelZoom:true}).setView([30.27,-97.74],10);
+  map=L.map('map',{scrollWheelZoom:true}).setView([29.76,-95.37],10);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
   layer=L.layerGroup().addTo(map);
   var mt;

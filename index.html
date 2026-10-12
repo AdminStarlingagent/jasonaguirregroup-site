@@ -707,7 +707,7 @@ if('IntersectionObserver' in window){
 (function(){
   var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
   var SB='https://nyaxywghbpphjhwcmspd.supabase.co', KEY='sb_publishable_a3LN_l283LN8J-bJTEO8hQ_U40t09eh';
-  var SAMPLE=true, RATE=6.75, MIN_HOT=4, items=[], hot=false;
+  var SAMPLE=false, RATE=6.75, MIN_HOT=4, items=[], hot=false;
   function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function money(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
   /* same default estimate as /homes: principal+interest at 3.5% down, plus estimated taxes (2.1%), insurance (1%) and mortgage insurance (0.55%) */
@@ -722,7 +722,7 @@ if('IntersectionObserver' in window){
       var x=l.details||{}, a=l.address||{};
       var sp=[x.numBedrooms!=null?'<b>'+x.numBedrooms+'</b> '+d.ft_bd:'',x.numBathrooms!=null?'<b>'+x.numBathrooms+'</b> '+d.ft_ba:'',x.sqft?'<b>'+Number(x.sqft).toLocaleString('en-US')+'</b> '+d.ft_sqft:''].filter(Boolean).join(' | ');
       return '<a class="fc" href="homes#'+encodeURIComponent(l.mlsNumber)+'">'+
-        '<div class="ph" style="background-image:url(\''+CDN+l.images[0]+'?class=small\')"><span class="tg">'+(hot?d.ft_tag:d.ft_tagnew)+'</span></div>'+
+        '<div class="ph" style="background-image:url(\''+CDN+l.images[0]+'?class=small\')"><span class="tg">'+(hot&&!l._fill?d.ft_tag:d.ft_tagnew)+'</span></div>'+
         '<div class="bd"><div><span class="pr">'+money(l.listPrice)+'</span><span class="pm">'+d.ft_est+money(pmt(l.listPrice))+d.ft_mo+'</span></div>'+
         '<div class="sp">'+sp+'</div><div class="ad">'+esc(addr(a))+', '+esc(a.city)+', '+esc(a.state||'TX')+' '+esc(a.zip)+'</div>'+
         '<div class="br">'+d.ft_by+esc([(((l.agents||[])[0]||{}).name||'').trim(),(l.office||{}).brokerageName||''].filter(Boolean).join(', ')||'\u2014')+'</div></div></a>';
@@ -730,7 +730,7 @@ if('IntersectionObserver' in window){
     sec.hidden=false;
   };
   function listings(qs){ return fetch(API+'?'+qs).then(function(r){ return r.ok?r.json():{listings:[]}; }).then(function(j){ return (j.listings||[]).filter(function(l){ return l.images&&l.images.length; }); }); }
-  function newest(){ return listings('type=sale&state=TX&propertyType=Residential&sortBy=createdOnDesc&resultsPerPage=8'); }
+  function newest(){ return listings('type=sale&city=Houston&propertyType=Residential&minPrice=100000&sortBy=createdOnDesc&resultsPerPage=8'); }
   fetch(SB+'/rest/v1/rpc/jag_top_listings',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_days:14,p_limit:8})})
    .then(function(r){ return r.ok?r.json():[]; })
    .then(function(top){
@@ -739,7 +739,11 @@ if('IntersectionObserver' in window){
      return listings(order.map(function(m){ return 'mlsNumber='+encodeURIComponent(m); }).join('&')+'&resultsPerPage=12').then(function(ls){
        ls.sort(function(a,b){ return order.indexOf(a.mlsNumber)-order.indexOf(b.mlsNumber); });
        if(ls.length<MIN_HOT) return newest();
-       hot=true; return ls;
+       hot=true;
+       if(ls.length>=8) return ls;
+       /* top up the row with the newest listings so it is never short */
+       return newest().then(function(nw){ var seen={}; ls.forEach(function(l){ seen[l.mlsNumber]=1; });
+         return ls.concat(nw.filter(function(l){ if(seen[l.mlsNumber]) return false; l._fill=1; return true; })).slice(0,8); }).catch(function(){ return ls; });
      });
    })
    .catch(function(){ return newest(); })
