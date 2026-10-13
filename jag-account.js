@@ -1,5 +1,5 @@
 /* ============================================================
-   JAG client accounts: sign in with a 6-digit email code (no password),
+   JAG client accounts: sign in with an emailed code (no password),
    favorites, saved searches, activity for recommendations.
    Talks to Supabase Auth + REST with the public key; row-level security
    means each client can only ever read or change their own rows.
@@ -13,14 +13,14 @@
     es:{ signin:'Iniciar sesión', account:'Mi cuenta', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
       h1:'Inicie sesión o cree su cuenta', p1:'Guarde casas, reciba avisos de casas nuevas y vea recomendaciones para usted. Sin contraseña: le enviamos un código a su correo.',
       email:'Correo electrónico', send:'Enviarme el código', terms:'Al continuar acepta nuestros <a href="privacy-terms.html" target="_blank" rel="noopener">términos y privacidad</a>. Puede borrar su cuenta cuando quiera.',
-      h2:'Revise su correo', p2:'Escribimos un código de 6 dígitos a ', code:'Código de 6 dígitos', verify:'Entrar', resend:'Reenviar código', other:'Usar otro correo',
+      h2:'Revise su correo', p2:'Le enviamos un código a ', code:'Código del correo', verify:'Entrar', resend:'Reenviar código', other:'Usar otro correo',
       h3:'¡Bienvenido! ¿Cómo se llama?', p3:'Así sabemos cómo dirigirnos a usted. El teléfono es opcional.', name:'Nombre', phone:'Teléfono (opcional)', done:'Listo', skip:'Ahora no',
       bademail:'Escriba un correo válido.', badcode:'Ese código no funcionó o ya venció. Intente otra vez o pida uno nuevo.', wait:'Espere un momento antes de pedir otro código.', neterr:'No pudimos conectar. Intente de nuevo.',
       why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
     en:{ signin:'Sign in', account:'My account', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
       h1:'Sign in or create your account', p1:'Save homes, get alerts on new listings and see picks for you. No password: we email you a code.',
       email:'Email', send:'Email me a code', terms:'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. You can delete your account any time.',
-      h2:'Check your email', p2:'We sent a 6-digit code to ', code:'6-digit code', verify:'Sign in', resend:'Resend code', other:'Use a different email',
+      h2:'Check your email', p2:'We sent a code to ', code:'Code from the email', verify:'Sign in', resend:'Resend code', other:'Use a different email',
       h3:'Welcome! What is your name?', p3:'So we know how to address you. Phone is optional.', name:'Name', phone:'Phone (optional)', done:'Done', skip:'Not now',
       bademail:'Enter a valid email.', badcode:'That code did not work or expired. Try again or request a new one.', wait:'Please wait a moment before requesting another code.', neterr:'We could not connect. Please try again.',
       why_fav:'Sign in to save this home and get alerts if the price changes.', why_search:'Sign in to save this search and get alerts on new homes.', sent_again:'Code sent again.', close:'Close' }
@@ -167,14 +167,14 @@
       };
     }else if(step==='code'){
       b.innerHTML='<h3>'+t('h2')+'</h3><p>'+t('p2')+'<b>'+esc(email)+'</b></p>'+
-        '<form novalidate><label for="ja-c">'+t('code')+'</label><input id="ja-c" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="10">'+
+        '<form novalidate><label for="ja-c">'+t('code')+'</label><input id="ja-c" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8">'+
         '<div class="ja-err" id="ja-err"></div><button class="ja-btn" type="submit">'+t('verify')+'</button>'+
         '<div class="ja-row"><button type="button" class="ja-link" id="ja-re">'+t('resend')+'</button><button type="button" class="ja-link" id="ja-ot">'+t('other')+'</button></div></form>';
       var f2=b.querySelector('form'), c=b.querySelector('#ja-c');
       setTimeout(function(){ c.focus(); },50);
-      c.addEventListener('input',function(){ var d=c.value.replace(/\D/g,''); c.value=d; if(d.length===6) f2.requestSubmit?f2.requestSubmit():f2.onsubmit({preventDefault:function(){}}); });
+      c.addEventListener('input',function(){ var d=c.value.replace(/\D/g,'').slice(0,8); c.value=d; if(d.length===8) f2.requestSubmit?f2.requestSubmit():f2.onsubmit({preventDefault:function(){}}); });
       f2.onsubmit=function(e){ e.preventDefault();
-        var v=c.value.replace(/\D/g,''); if(v.length<6) return err(t('badcode'));
+        var v=c.value.replace(/\D/g,''); if(v.length<6||v.length>8) return err(t('badcode'));
         var btn=f2.querySelector('.ja-btn'); btn.disabled=true;
         verify(email,v).then(function(){ return init(); }).then(function(j){
           if(j&&j.new){ step='name'; render(); } else finish();
