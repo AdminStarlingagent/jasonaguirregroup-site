@@ -43,6 +43,8 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .lock b{font-size:25px;font-weight:800;letter-spacing:-.02em;color:var(--buy)}
 .lock i{font-style:normal;font-size:8px;letter-spacing:.3em;font-weight:700;text-transform:uppercase}
 .brok{font-size:10.5px;font-weight:700;color:var(--muted);border-left:1px solid var(--line);padding-left:10px}
+.hr #acct{margin-left:10px}
+@media(max-width:600px){.hphone{display:none}}
 .langs{display:flex;border:1px solid var(--ink);border-radius:6px;overflow:hidden;margin-left:8px}
 .langs button{border:0;background:transparent;font-size:12px;font-weight:800;padding:6px 10px}
 .langs button.on{background:var(--ink);color:#fff}
@@ -319,7 +321,8 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
       <span class="brok">eXp Realty</span>
     </a>
     <div class="hr">
-      <a class="n" href="tel:+18327023574">(832) 702-3574</a>
+      <a class="n hphone" href="tel:+18327023574">(832) 702-3574</a>
+      <span id="acct"></span>
       <span class="langs" role="group" aria-label="Idioma / Language">
         <button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button>
       </span>
@@ -382,6 +385,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="jag-capture.js"></script>
+<script src="jag-account.js"></script>
 <script>
 /* ============================================================
    JAG home search. Listings come through the JAG proxy (Supabase
@@ -400,7 +404,7 @@ var T={
   price:'Precio',h_price:'Rango de precio',nomin:'Sin mín.',nomax:'Sin máx.',upto:'Hasta ',
   bb:'Recámaras y baños',h_beds:'Recámaras',h_baths:'Baños',any:'Todas',bdS:' rec.',baS:' ba.',
   kind:'Tipo de casa',h_kind:'Tipo de propiedad',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
-  apply:'Aplicar',save:'Guardar búsqueda',mapnote:'Mostrando casas en esta zona del mapa',
+  apply:'Aplicar',save:'Guardar búsqueda',ss_saved:'Búsqueda guardada. Le avisaremos cuando salgan casas nuevas.',ss_go:'Ver mis búsquedas',ss_err:'No pudimos guardar la búsqueda. Intente de nuevo.',ss_map:'Área del mapa',ss_upto:'hasta ',ss_from:'desde ',ss_bd:'+ rec',ss_ba:'+ ba',mapnote:'Mostrando casas en esta zona del mapa',
   ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',
   res:' resultados',res1:' resultado',sortl:'Ordenar:',s_new:'Más recientes',s_low:'Precio (menor)',s_high:'Precio (mayor)',
   none:'No encontramos casas con esos filtros. Mueve el mapa o cambia los filtros.',
@@ -444,7 +448,7 @@ var T={
   price:'Price',h_price:'Price range',nomin:'No min',nomax:'No max',upto:'Up to ',
   bb:'Beds & baths',h_beds:'Bedrooms',h_baths:'Bathrooms',any:'Any',bdS:' bd',baS:' ba',
   kind:'Home type',h_kind:'Home type',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
-  apply:'Apply',save:'Save search',mapnote:'Showing homes in this map area',
+  apply:'Apply',save:'Save search',ss_saved:'Search saved. We will email you when new homes hit the market.',ss_go:'See my searches',ss_err:'We could not save the search. Please try again.',ss_map:'Map area',ss_upto:'up to ',ss_from:'from ',ss_bd:'+ bd',ss_ba:'+ ba',mapnote:'Showing homes in this map area',
   ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',
   res:' results',res1:' result',sortl:'Sort:',s_new:'Newest',s_low:'Price (low to high)',s_high:'Price (high to low)',
   none:'No homes match those filters. Move the map or change the filters.',
@@ -556,7 +560,10 @@ document.querySelectorAll('.apply').forEach(function(b){ b.addEventListener('cli
   var ks=[].map.call(document.querySelectorAll('#kinds input:checked'),function(i){return i.value;}); F.kinds=ks.length?ks:['Residential']; segs();
   commit();
 }); });
-$('qf').addEventListener('submit',function(e){ e.preventDefault(); state.bounds=null; $('mapnote').classList.remove('on'); state.page=1; load(); });
+$('qf').addEventListener('submit',function(e){ e.preventDefault();
+  var qv=$('q').value.trim();
+  if(qv&&window.JagAccount&&JagAccount.user()) JagAccount.logActivity(/^\d{5}$/.test(qv)?{kind:'search',zip:qv,beds:F.beds||null,baths:F.baths||null,price:F.maxp||null}:{kind:'search',city:qv.slice(0,60),beds:F.beds||null,baths:F.baths||null,price:F.maxp||null});
+  state.bounds=null; $('mapnote').classList.remove('on'); state.page=1; load(); });
 $('sort').addEventListener('change',function(){ state.page=1; load(); });
 
 function applyLang(){
@@ -565,6 +572,7 @@ function applyLang(){
   document.querySelectorAll('[data-ph]').forEach(function(el){ el.placeholder=t(el.getAttribute('data-ph')); });
   document.querySelectorAll('.langs button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-lang')===lang); });
   priceOpts(); segs(); pills(); setTog(); render();
+  if(window.JagAccount) JagAccount.relabel();
 }
 document.querySelectorAll('.langs button').forEach(function(b){
   b.addEventListener('click',function(){ lang=b.getAttribute('data-lang'); try{localStorage.setItem('jag_lang',lang);}catch(e){} applyLang(); });
@@ -660,11 +668,39 @@ function showToast(l){
   $('toastmsg').textContent=t('ev_saved'); $('toastlink').textContent=t('ev_go'); $('toastlink').href=evalUrl(l);
   $('toast').classList.add('on'); clearTimeout(toastT); toastT=setTimeout(function(){ $('toast').classList.remove('on'); },9000);
 }
-function toggleFav(id){
-  if(favs[id]) delete favs[id]; else { favs[id]=1; logEvent(id,'save'); showToast(findListing(id)); }
-  try{ localStorage.setItem('jag_favs',JSON.stringify(favs)); }catch(e){}
-  return !!favs[id];
+function storeFavs(){ try{ localStorage.setItem('jag_favs',JSON.stringify(favs)); }catch(e){} }
+function paintHearts(){
+  document.querySelectorAll('.c').forEach(function(c){ var l=state.items[+c.getAttribute('data-i')], h=c.querySelector('.heart'); if(l&&h) h.classList.toggle('on',!!favs[l.mlsNumber]); });
+  var d=$('dfav'); if(d&&cur){ var on=!!favs[cur.mlsNumber]; d.classList.toggle('on',on); d.querySelector('span').textContent=t(on?'saved':'savehome'); }
 }
+function addFav(id,l){
+  favs[id]=1; storeFavs(); paintHearts(); logEvent(id,'save'); showToast(l);
+  var A=window.JagAccount; if(A&&A.user()&&l) A.addFavorite(l).catch(function(){});
+}
+/* Saving a home needs an account (like the big portals) so we can alert on price and status changes. */
+function toggleFav(id){
+  var A=window.JagAccount, l=findListing(id);
+  if(favs[id]){ delete favs[id]; storeFavs(); paintHearts(); if(A&&A.user()) A.removeFavorite(id).catch(function(){}); return false; }
+  if(A&&!A.user()){ A.requireSignIn('why_fav').then(function(){ addFav(id,l); }).catch(function(){}); return false; }
+  addFav(id,l); return true;
+}
+/* After sign-in: the account's saved homes become the hearts; anything hearted on this device before is added to the account. */
+function syncFavs(){
+  var A=window.JagAccount; if(!A) return;
+  if(!A.user()){ favs={}; storeFavs(); paintHearts(); return; }
+  A.favorites().then(function(rows){
+    var local=Object.keys(favs); /* read now, not before the request: a heart tapped meanwhile must survive */
+    var server={}; (rows||[]).forEach(function(r){ server[r.mls]=1; });
+    var missing=local.filter(function(id){ return !server[id]; }).slice(0,20);
+    favs=server; missing.forEach(function(id){ favs[id]=1; }); storeFavs(); paintHearts();
+    missing.forEach(function(id){
+      var l=findListing(id);
+      (l?Promise.resolve(l):fetch(API+'?mlsNumber='+encodeURIComponent(id)).then(function(r){ return r.ok?r.json():null; }).then(function(d){ return d&&d.listings&&d.listings[0]; }))
+        .then(function(x){ if(x) return A.addFavorite(x); }).catch(function(){});
+    });
+  }).catch(function(){});
+}
+if(window.JagAccount){ JagAccount.onChange(syncFavs); if(JagAccount.user()) syncFavs(); }
 $('grid').addEventListener('click',function(e){
   var c=e.target.closest('.c'); if(!c) return; var i=+c.getAttribute('data-i'), l=state.items[i];
   var h=e.target.closest('.heart'); if(h){ h.classList.toggle('on',toggleFav(l.mlsNumber)); return; }
@@ -806,6 +842,9 @@ function openDetail(i){
   var l=(typeof i==='object')?i:state.items[i]; if(!l) return; cur=l;
   if(typeof i==='object') i=state.items.indexOf(l);
   logEvent(l.mlsNumber,'view');
+  if(window.JagAccount&&JagAccount.user()){ var la=l.address||{}, ld=l.details||{};
+    JagAccount.logActivity({kind:'view',mls:String(l.mlsNumber),zip:la.zip||null,city:la.city||null,price:l.listPrice||null,
+      beds:ld.numBedrooms!=null?ld.numBedrooms:null,baths:ld.numBathrooms!=null?ld.numBathrooms:null,ptype:ld.propertyType||null}); }
   state.seen[l.mlsNumber]=1; var pn=document.querySelector('.pin[data-i="'+i+'"]'); if(pn) pn.classList.add('seen');
   var d=l.details||{}, lease=isLease(l), full=fullAddr(l), days=tourDays(), pick={day:0,time:'10:00 AM'};
   var desc=String(d.description||'').replace(/\*+\s*SAMPLE DATA\s*\*+/gi,'').trim();
@@ -909,12 +948,33 @@ document.addEventListener('keydown',function(e){
 });
 
 $('toastx').onclick=function(){ $('toast').classList.remove('on'); };
+function searchLabel(){
+  var parts=[], q=$('q').value.trim();
+  parts.push(state.bounds?t('ss_map'):(q||'Houston'));
+  parts.push(t(F.type==='sale'?'t_sale':'t_lease'));
+  if(F.beds) parts.push(F.beds+t('ss_bd')); if(F.baths) parts.push(F.baths+t('ss_ba'));
+  var sp=F.type==='lease'?money:short;
+  if(F.minp&&F.maxp) parts.push(sp(+F.minp)+'–'+sp(+F.maxp)); else if(F.maxp) parts.push(t('ss_upto')+sp(+F.maxp)); else if(F.minp) parts.push(t('ss_from')+sp(+F.minp));
+  return parts.join(' · ');
+}
+function currentSearch(){
+  var p=query(), apiP={};
+  ['pageNum','resultsPerPage','sortBy'].forEach(function(k){ p.delete(k); });
+  p.forEach(function(v,k){ if(apiP[k]===undefined) apiP[k]=v; else apiP[k]=[].concat(apiP[k],v); });
+  return { api:apiP, ui:{ q:$('q').value.trim(), type:F.type, minp:F.minp, maxp:F.maxp, beds:F.beds, baths:F.baths, kinds:F.kinds.slice(),
+    b:state.bounds?state.bounds.toBBoxString():null } };
+}
+function ssToast(msg,link){
+  $('toastmsg').textContent=msg; $('toastlink').textContent=link?t('ss_go'):''; $('toastlink').href='account#searches'; $('toastlink').style.display=link?'':'none';
+  $('toast').classList.add('on'); clearTimeout(toastT); toastT=setTimeout(function(){ $('toast').classList.remove('on'); $('toastlink').style.display=''; },9000);
+}
 $('saveBtn').addEventListener('click',function(){
-  closeDD(); $('sheet').className='sheet sm';
-  $('sheet').innerHTML='<button class="x" type="button" aria-label="Cerrar">×</button><div style="padding:26px 22px"><form class="lead" id="lf" novalidate><h3 style="font-size:21px;margin:0 0 4px;font-weight:800">'+t('saveh')+'</h3><p style="color:var(--muted);margin:0 0 14px">'+t('savep')+'</p>'+leadForm('save')+'</form></div>';
-  $('sheet').querySelector('.x').onclick=closeDetail;
-  wireLead($('lf'),{Search:state.bounds?'Map area '+state.bounds.toBBoxString():($('q').value.trim()||'Texas'),Type:F.type,'Min Price':F.minp||null,'Max Price':F.maxp||null,'Min Beds':F.beds||null,'Min Baths':F.baths||null,'Home Types':F.kinds.join(', ')});
-  $('ov').classList.add('on'); document.body.style.overflow='hidden';
+  closeDD();
+  var A=window.JagAccount, snap=currentSearch(), label=searchLabel();
+  if(!A) return;
+  A.requireSignIn('why_search').then(function(){ return A.addSearch(label,snap); })
+   .then(function(){ ssToast(t('ss_saved'),true); })
+   .catch(function(e){ if(!e||e.message!=='cancelled') ssToast(t('ss_err'),false); });
 });
 
 /* ---------- map: results follow the map, like the big portals ---------- */
@@ -935,8 +995,14 @@ try{
   var qs=new URLSearchParams(location.search), q0=(qs.get('q')||'').trim().slice(0,80), t0=qs.get('type');
   if(q0) $('q').value=q0;
   if(t0==='lease'){ F.type='lease'; var r=document.querySelector('input[name=type][value=lease]'); if(r) r.checked=true; }
+  var num_=function(k){ var v=qs.get(k); return v&&/^\d{1,9}$/.test(v)?v:''; };
+  F.minp=num_('minp'); F.maxp=num_('maxp'); F.beds=num_('beds'); F.baths=num_('baths');
+  var k0=qs.get('kinds'); if(k0){ var ks=k0.split(',').filter(function(k){ return KINDS.some(function(x){ return x[0]===k; }); }); if(ks.length) F.kinds=ks; }
+  var b0=(qs.get('b')||'').split(',').map(Number);
+  if(map&&b0.length===4&&b0.every(isFinite)){ state.bounds=L.latLngBounds([b0[1],b0[0]],[b0[3],b0[2]]); quiet++; map.fitBounds(state.bounds,{animate:false}); setTimeout(function(){ quiet--; },400); $('mapnote').classList.add('on'); }
 }catch(e){}
 applyLang(); load();
+if(window.JagAccount) JagAccount.mountButton($('acct'));
 /* /homes#MLS123 opens that listing directly (featured homes, shared links) */
 (function(){
   var m=/^#([A-Za-z0-9-]{3,24})$/.exec(location.hash); if(!m) return;

@@ -107,6 +107,30 @@ td .em{font-size:12.5px;color:var(--muted)}
 .morebar{padding:14px;text-align:center;border-top:1px solid var(--line)}
 .linkbtn{background:none;border:0;color:var(--loan);font-weight:800;cursor:pointer;font-size:14px}
 
+/* ---- client accounts ---- */
+.cdlg{position:fixed;inset:0;background:rgba(15,14,20,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:60;overflow:auto}
+.cdlg.on{display:flex}
+.cbox{background:#fff;border-radius:18px;max-width:860px;width:100%;padding:22px 24px;position:relative}
+.cbox h2{margin:0 0 2px;font-size:22px}
+.cbox .meta{color:var(--muted);font-size:13.5px;margin-bottom:14px}
+.cbox .dclose{position:absolute;top:12px;right:14px}
+.cbox h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);margin:20px 0 8px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.cfav{border:1px solid var(--line);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;font-size:13px}
+.cfav i{display:block;aspect-ratio:3/2;background:#eee center/cover no-repeat}
+.cfav span{display:block;padding:8px 10px}
+.cfav b{font-size:15px}
+.clist{margin:0;padding:0;list-style:none;font-size:13.5px}
+.clist li{padding:7px 0;border-bottom:1px solid #f1f1f4;display:flex;gap:10px;justify-content:space-between}
+.clist time{color:var(--soft);white-space:nowrap}
+.cact{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.cact button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer}
+.cact button.del{color:#b3261e;border-color:#f0c6cd}
+.cnote{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;min-height:60px}
+.pill{display:inline-block;font-size:11px;font-weight:800;border-radius:99px;padding:3px 9px;background:var(--card,#f3f3f6)}
+.pill.off{background:#fdecef;color:#a30d26}
+#clientsview .tablecard{overflow-x:auto}
+#clientsview table{min-width:820px}
 /* ---- drawer ---- */
 .scrim{display:none;position:fixed;inset:0;background:rgba(23,22,28,.35);z-index:60}
 .scrim.open{display:block}
@@ -285,6 +309,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
     <button type="button" class="tab on" id="tab-leads" data-tab="leads" role="tab" aria-selected="true">Leads</button>
     <button type="button" class="tab" id="tab-deals" data-tab="deals" role="tab" aria-selected="false">Deals <span class="tabcount" id="dealcount"></span></button>
+    <button type="button" class="tab" id="tab-clients" data-tab="clients" role="tab" aria-selected="false">Client accounts <span class="tabcount" id="clientcount"></span></button>
   </nav>
 
   <section id="leadsview">
@@ -298,6 +323,7 @@ td .em{font-size:12.5px;color:var(--muted)}
       <button class="chip" data-type="Buyer Offer">Offers</button>
       <button class="chip" data-type="Seller Listing">Seller leads</button>
       <button class="chip" data-type="Home Value">Home values</button>
+      <button class="chip" data-type="Website Account">Website accounts</button>
     </div>
     <select class="chip" id="statusfilter">
       <option value="">Any status</option>
@@ -332,9 +358,38 @@ td .em{font-size:12.5px;color:var(--muted)}
     <div class="empty" id="dealsempty" style="display:none">No deals in this view.</div>
     <p class="dealfoot" id="dealfoot"></p>
   </section>
+
+  <section id="clientsview" hidden>
+    <div class="stats" id="clientstats"></div>
+    <div class="toolbar">
+      <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>
+        <input id="cq" placeholder="Search name, email, phone, ZIP…"></label>
+      <div class="chips" id="clientchips">
+        <button class="chip on" data-cfilter="all">All</button>
+        <button class="chip" data-cfilter="active">Active this week</button>
+        <button class="chip" data-cfilter="searches">Has saved searches</button>
+        <button class="chip" data-cfilter="paused">Alerts paused</button>
+      </div>
+    </div>
+    <div class="tablecard">
+      <table>
+        <thead><tr><th>Signed up</th><th>Client</th><th>Phone</th><th>Saved</th><th>Searches</th><th>Views (30d)</th><th>ZIPs</th><th>Alerts</th><th>Last seen</th></tr></thead>
+        <tbody id="crows"></tbody>
+      </table>
+      <div class="empty" id="cempty" style="display:none">No client accounts yet. They appear here when someone signs up on the home search.</div>
+    </div>
+  </section>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-10.2</p>
+<div class="cdlg" id="cdlg" role="dialog" aria-modal="true" aria-labelledby="cd-name">
+  <div class="cbox">
+    <button class="dclose" id="cd-close" aria-label="Close">&times;</button>
+    <h2 id="cd-name"></h2><div class="meta" id="cd-meta"></div>
+    <div id="cd-body"></div>
+  </div>
+</div>
+
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-13.1</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -633,7 +688,7 @@ function toast(msg, ok){
 function signOut(){
   clearTimeout(refreshTimer);
   state.token=null; state.refresh=null; state.exp=0; state.email=null; state.rows=[];
-  deals.rows=null; deals.offers=[]; deals.urls={};
+  deals.rows=null; deals.offers=[]; deals.urls={}; clients.rows=null;
   try{ sessionStorage.removeItem('jag_admin'); }catch(e){}
   show('login');
 }
@@ -728,16 +783,103 @@ function render(){
 
 /* ---------------- tabs ---------------- */
 function setTab(t){
-  if(t!=='deals') t='leads';
+  if(t!=='deals' && t!=='clients') t='leads';
   state.tab=t;
   $('leadsview').hidden = t!=='leads';
   $('dealsview').hidden = t!=='deals';
-  ['leads','deals'].forEach(function(k){
+  $('clientsview').hidden = t!=='clients';
+  if(t==='clients' && !clients.rows) loadClients();
+  ['leads','deals','clients'].forEach(function(k){
     var b=$('tab-'+k); b.classList.toggle('on', k===t); b.setAttribute('aria-selected', k===t?'true':'false');
   });
   $('exportcsv').style.display = (t==='leads') ? 'inline-block' : 'none';
   try{ sessionStorage.setItem('jag_admin_tab', t); }catch(e){}
   if(t==='deals' && !deals.rows) loadDeals();
+}
+
+/* ---------------- client accounts ----------------
+   People who created an account on /homes. Read through jag_staff_clients() / jag_staff_client_detail(),
+   which only answer for team logins. Team can pause a client's alert emails, keep a note, or delete the account. */
+var clients = { rows:null, q:'', filter:'all', loading:false };
+var CDN_='https://cdn.repliers.io/';
+function cmoney(n){ return n==null?'':'$'+Math.round(n).toLocaleString('en-US'); }
+function crel(iso){ if(!iso) return '—'; var d=(Date.now()-new Date(iso).getTime())/864e5; if(d<1) return 'today'; if(d<2) return 'yesterday'; if(d<30) return Math.floor(d)+' days ago'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function loadClients(){
+  if(clients.loading) return; clients.loading=true;
+  api('/rest/v1/rpc/jag_staff_clients',{method:'POST',body:'{}'})
+  .then(function(r){ if(r.status===401){ signOut(); throw 0; } return r.json(); })
+  .then(function(j){ clients.loading=false; clients.rows=(j&&j.ok&&Array.isArray(j.clients))?j.clients:[]; renderClients(); })
+  .catch(function(e){ clients.loading=false; if(e!==0){ clients.rows=[]; renderClients(); toast('Could not load client accounts. Has the client-accounts SQL been run?'); } });
+}
+function clientFiltered(){
+  var q=clients.q.toLowerCase(), wk=Date.now()-7*864e5;
+  return (clients.rows||[]).filter(function(c){
+    if(clients.filter==='active' && new Date(c.last_seen_at).getTime()<wk) return false;
+    if(clients.filter==='searches' && !(c.searches>0)) return false;
+    if(clients.filter==='paused' && !(c.paused_by_staff||c.alert_freq==='off')) return false;
+    if(q && [c.name,c.email,c.phone,(c.zips||[]).join(' ')].join(' ').toLowerCase().indexOf(q)===-1) return false;
+    return true;
+  });
+}
+function renderClients(){
+  var all=clients.rows||[], wk=Date.now()-7*864e5;
+  $('clientcount').textContent=all.length?all.length:'';
+  var act=all.filter(function(c){ return new Date(c.last_seen_at).getTime()>=wk; }).length;
+  var fav=all.reduce(function(a,c){ return a+(+c.favorites||0); },0), ss=all.reduce(function(a,c){ return a+(+c.searches||0); },0);
+  $('clientstats').innerHTML='<div class="stat"><b>'+all.length+'</b><span>Accounts</span></div><div class="stat"><b>'+act+'</b><span>Active this week</span></div><div class="stat"><b>'+fav+'</b><span>Saved homes</span></div><div class="stat"><b>'+ss+'</b><span>Saved searches</span></div>';
+  var rows=clientFiltered();
+  $('cempty').style.display=rows.length?'none':'block';
+  $('crows').innerHTML=rows.map(function(c){
+    var al=c.paused_by_staff?'<span class="pill off">Paused by team</span>':c.alert_freq==='off'?'<span class="pill off">Off</span>':'<span class="pill">'+(c.alert_freq==='daily'?'Daily':'Instant')+'</span>';
+    return '<tr class="lead" data-uid="'+esc(c.user_id)+'"><td class="dt">'+shortDay(c.created_at)+'</td><td><span class="nm">'+esc(c.name||'—')+'</span><span class="em">'+esc(c.email)+'</span></td>'+
+      '<td>'+esc(c.phone||'')+'</td><td>'+(c.favorites||0)+'</td><td>'+(c.searches||0)+'</td><td>'+(c.views_30d||0)+'</td><td>'+esc((c.zips||[]).slice(0,4).join(', '))+'</td><td>'+al+'</td><td class="dt">'+crel(c.last_seen_at)+'</td></tr>';
+  }).join('');
+}
+$('cq').addEventListener('input',function(){ clients.q=this.value; renderClients(); });
+$('clientchips').addEventListener('click',function(e){ var b=e.target.closest('[data-cfilter]'); if(!b) return; clients.filter=b.dataset.cfilter; this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on',x===b); }); renderClients(); });
+$('crows').addEventListener('click',function(e){ var tr=e.target.closest('tr[data-uid]'); if(tr) openClient(tr.getAttribute('data-uid')); });
+$('cd-close').onclick=function(){ $('cdlg').classList.remove('on'); };
+$('cdlg').addEventListener('click',function(e){ if(e.target===this) this.classList.remove('on'); });
+function openClient(uid){
+  var c=(clients.rows||[]).filter(function(x){ return x.user_id===uid; })[0]; if(!c) return;
+  $('cd-name').textContent=c.name||c.email;
+  $('cd-meta').innerHTML=esc(c.email)+(c.phone?' · '+esc(c.phone):'')+' · '+(c.lang==='en'?'English':'Español')+' · signed up '+shortDay(c.created_at)+' · last seen '+crel(c.last_seen_at);
+  $('cd-body').innerHTML='<p class="dt">Loading…</p>';
+  $('cdlg').classList.add('on');
+  api('/rest/v1/rpc/jag_staff_client_detail',{method:'POST',body:JSON.stringify({p_user:uid})})
+  .then(function(r){ return r.json(); })
+  .then(function(j){
+    if(!j||!j.ok){ $('cd-body').innerHTML='<p>Could not load this client.</p>'; return; }
+    var p=j.profile||c, h='';
+    h+='<div class="cact">'+(c.phone?'<button type="button" onclick="location.href=\'tel:'+esc(String(c.phone).replace(/[^0-9+]/g,''))+'\'">Call</button>':'')+
+      '<button type="button" onclick="location.href=\'mailto:'+esc(c.email)+'\'">Email</button>'+
+      '<button type="button" id="cd-pause">'+(p.paused_by_staff?'Resume alert emails':'Pause alert emails')+'</button>'+
+      '<button type="button" class="del" id="cd-del">Delete account</button></div>';
+    h+='<h3>Team note</h3><textarea class="cnote" id="cd-note" placeholder="Only the team sees this">'+esc(p.staff_note||'')+'</textarea><div class="cact"><button type="button" id="cd-savenote">Save note</button></div>';
+    h+='<h3>Saved homes ('+j.favorites.length+')</h3>'+(j.favorites.length?'<div class="cgrid">'+j.favorites.map(function(f){ var s=f.snap||{};
+      return '<a class="cfav" href="homes#'+encodeURIComponent(f.mls)+'" target="_blank" rel="noopener"><i style="background-image:url(\''+(s.photo?CDN_+esc(s.photo)+'?class=small':'')+'\')"></i><span><b>'+cmoney(f.last_price||s.price)+'</b> · '+esc([s.beds!=null?s.beds+' bd':'',s.baths!=null?s.baths+' ba':''].filter(Boolean).join(' '))+'<br>'+esc(s.addr||'')+(s.zip?' '+esc(s.zip):'')+(f.last_status&&f.last_status!=='Active'?'<br><b>'+esc(f.last_status)+'</b>':'')+'</span></a>'; }).join('')+'</div>':'<p class="dt">None yet.</p>');
+    h+='<h3>Saved searches ('+j.searches.length+')</h3>'+(j.searches.length?'<ul class="clist">'+j.searches.map(function(s){ return '<li><span>'+esc(s.label)+(s.alerts?'':' <span class="pill off">alerts off</span>')+'</span><time>'+shortDay(s.created_at)+'</time></li>'; }).join('')+'</ul>':'<p class="dt">None yet.</p>');
+    h+='<h3>Recent activity</h3>'+(j.activity.length?'<ul class="clist">'+j.activity.slice(0,25).map(function(a){
+      var what=a.kind==='view'?'Viewed '+(a.mls?'<a href="homes#'+encodeURIComponent(a.mls)+'" target="_blank" rel="noopener">MLS '+esc(a.mls)+'</a>':'a home')+' · '+cmoney(a.price)+(a.beds!=null?' · '+a.beds+' bd':'')+(a.zip?' · '+esc(a.zip):''):'Searched '+esc(a.zip||a.city||'');
+      return '<li><span>'+what+'</span><time>'+crel(a.created_at)+'</time></li>'; }).join('')+'</ul>':'<p class="dt">No activity yet.</p>');
+    h+='<h3>Alerts sent ('+j.alerts.length+')</h3>'+(j.alerts.length?'<ul class="clist">'+j.alerts.slice(0,25).map(function(a){ var d=a.detail||{}, s=d.snap||{};
+      var what=a.kind==='new'?(d.smart?'New match (from their activity)':'New match: '+esc(d.label||'')):a.kind==='price'?'Price '+cmoney(d.old_price)+' → '+cmoney(d.new_price):'Status → '+esc(d.new_status||'');
+      return '<li><span>'+what+' · '+esc(s.addr||'MLS '+a.mls)+'</span><time>'+(a.emailed_at?'emailed ':'in account ')+crel(a.created_at)+'</time></li>'; }).join('')+'</ul>':'<p class="dt">None yet.</p>');
+    $('cd-body').innerHTML=h;
+    $('cd-pause').onclick=function(){
+      api('/rest/v1/rpc/jag_staff_client_set',{method:'POST',body:JSON.stringify({p_user:uid,p_paused:!p.paused_by_staff})})
+      .then(function(r){ return r.json(); }).then(function(x){ if(x&&x.ok){ c.paused_by_staff=!p.paused_by_staff; toast(c.paused_by_staff?'Alert emails paused':'Alert emails resumed',true); renderClients(); openClient(uid); } else toast('Could not update.'); });
+    };
+    $('cd-savenote').onclick=function(){
+      api('/rest/v1/rpc/jag_staff_client_set',{method:'POST',body:JSON.stringify({p_user:uid,p_note:$('cd-note').value})})
+      .then(function(r){ return r.json(); }).then(function(x){ toast(x&&x.ok?'Note saved':'Could not save note', !!(x&&x.ok)); });
+    };
+    $('cd-del').onclick=function(){
+      if(prompt('This deletes '+(c.name||c.email)+'\'s login, saved homes, searches and alerts. Their lead stays in Leads.\n\nType DELETE to confirm.')!=='DELETE') return;
+      api('/rest/v1/rpc/jag_staff_delete_client',{method:'POST',body:JSON.stringify({p_user:uid})})
+      .then(function(r){ return r.json(); }).then(function(x){ if(x&&x.ok){ toast('Account deleted',true); $('cdlg').classList.remove('on'); clients.rows=null; loadClients(); } else toast('Could not delete: '+((x&&x.reason)||'error')); });
+    };
+  }).catch(function(){ $('cd-body').innerHTML='<p>Could not load this client.</p>'; });
 }
 
 /* ---------------- deals (read-only) ----------------
@@ -1490,7 +1632,7 @@ $('lp-copy-email').addEventListener('click', function(){ var b=this; if(lender.l
 $('lp-again').addEventListener('click', function(){ lenderReset(); $('d-lender').hidden=false; loadRecentLenders(); $('lp-to').focus(); });
 
 $('refresh').addEventListener('click', function(){
-  if(state.tab==='deals'){ deals.rows=null; loadDeals(); } else resetAndLoad();
+  if(state.tab==='deals'){ deals.rows=null; loadDeals(); } else if(state.tab==='clients'){ clients.rows=null; loadClients(); } else resetAndLoad();
 });
 $('tabs').addEventListener('click', function(e){ var b=e.target.closest('[data-tab]'); if(b) setTab(b.dataset.tab); });
 $('dealchips').addEventListener('click', function(e){
@@ -1571,7 +1713,7 @@ if(!CRM.url || !CRM.anonKey){ show('setup'); }
 else{
   var saved=null;
   try{ saved=JSON.parse(sessionStorage.getItem('jag_admin')||'null'); }catch(e){}
-  try{ state.tab = sessionStorage.getItem('jag_admin_tab')==='deals' ? 'deals' : 'leads'; }catch(e){}
+  try{ var st_=sessionStorage.getItem('jag_admin_tab'); state.tab = (st_==='deals'||st_==='clients') ? st_ : 'leads'; }catch(e){}
   if(saved && saved.t){
     state.token=saved.t; state.email=saved.e; state.refresh=saved.r||null; state.exp=saved.x||0;
     scheduleRefresh(); show('app'); resetAndLoad();
