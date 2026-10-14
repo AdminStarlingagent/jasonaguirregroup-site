@@ -129,6 +129,12 @@ td .em{font-size:12.5px;color:var(--muted)}
 .cnote{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;min-height:60px}
 .pill{display:inline-block;font-size:11px;font-weight:800;border-radius:99px;padding:3px 9px;background:var(--card,#f3f3f6)}
 .pill.off{background:#fdecef;color:#a30d26}
+.score{display:inline-block;min-width:38px;text-align:center;font-weight:800;font-size:13px;border-radius:8px;padding:3px 7px;background:#f3f3f6;color:#5f5e68;font-variant-numeric:tabular-nums}
+.score.warm{background:#fff4d6;color:#7a4b00}
+.score.hot{background:#c8102e;color:#fff}
+.why{margin:0;padding:0;list-style:none}
+.why li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.why li b{font-variant-numeric:tabular-nums}
 #clientsview .tablecard{overflow-x:auto}
 #clientsview table{min-width:820px}
 /* ---- drawer ---- */
@@ -366,6 +372,7 @@ td .em{font-size:12.5px;color:var(--muted)}
         <input id="cq" placeholder="Search name, email, phone, ZIP…"></label>
       <div class="chips" id="clientchips">
         <button class="chip on" data-cfilter="all">All</button>
+        <button class="chip" data-cfilter="hot">Hot (70+)</button>
         <button class="chip" data-cfilter="active">Active this week</button>
         <button class="chip" data-cfilter="searches">Has saved searches</button>
         <button class="chip" data-cfilter="paused">Alerts paused</button>
@@ -373,7 +380,7 @@ td .em{font-size:12.5px;color:var(--muted)}
     </div>
     <div class="tablecard">
       <table>
-        <thead><tr><th>Signed up</th><th>Client</th><th>Phone</th><th>Saved</th><th>Searches</th><th>Views (30d)</th><th>ZIPs</th><th>Alerts</th><th>Last seen</th></tr></thead>
+        <thead><tr><th>Signed up</th><th>Client</th><th title="Active buyer score, 0-100, updated hourly">Score</th><th>Phone</th><th>Saved</th><th>Searches</th><th>Views (30d)</th><th>ZIPs</th><th>Alerts</th><th>Last seen</th></tr></thead>
         <tbody id="crows"></tbody>
       </table>
       <div class="empty" id="cempty" style="display:none">No client accounts yet. They appear here when someone signs up on the home search.</div>
@@ -808,12 +815,29 @@ function loadClients(){
   if(clients.loading) return; clients.loading=true;
   api('/rest/v1/rpc/jag_staff_clients',{method:'POST',body:'{}'})
   .then(function(r){ if(r.status===401){ signOut(); throw 0; } return r.json(); })
-  .then(function(j){ clients.loading=false; clients.rows=(j&&j.ok&&Array.isArray(j.clients))?j.clients:[]; renderClients(); })
+  .then(function(j){ clients.rows=(j&&j.ok&&Array.isArray(j.clients))?j.clients:[];
+    /* active buyer score (jag_client_scores); the list still works if that table isn't there yet */
+    return api('/rest/v1/jag_client_scores?select=*',{method:'GET'}).then(function(r){ return r.ok?r.json():[]; }).catch(function(){ return []; })
+    .then(function(sc){ var m={}; (sc||[]).forEach(function(x){ m[x.user_id]=x; }); clients.rows.forEach(function(c){ c.sc=m[c.user_id]||null; });
+      clients.rows.sort(function(a,b){ return ((b.sc&&b.sc.score)||0)-((a.sc&&a.sc.score)||0) || new Date(b.last_seen_at)-new Date(a.last_seen_at); });
+      clients.loading=false; renderClients(); }); })
   .catch(function(e){ clients.loading=false; if(e!==0){ clients.rows=[]; renderClients(); toast('Could not load client accounts. Has the client-accounts SQL been run?'); } });
+}
+var TAGL={price:'Price-focused',area:'Area-focused',ready:'Ready to act'};
+function scoreBadge(sc){ if(!sc) return '<span class="score">—</span>'; var v=+sc.score||0; return '<span class="score'+(v>=70?' hot':v>=40?' warm':'')+'">'+v+'</span>'; }
+function hourLbl(h){ if(h==null) return ''; var hh=((h+11)%12)+1; return hh+' '+(h<12?'AM':'PM'); }
+function scoreHtml(c){
+  var sc=c.sc; if(!sc) return '<h3>Active buyer score</h3><p class="dt">Not scored yet. Scores update every hour at :15.</p>';
+  var tags=(sc.tags||[]).map(function(t){ return '<span class="pill">'+esc(TAGL[t]||t)+(t==='area'&&sc.top_zip?' · '+esc(sc.top_zip):'')+'</span>'; }).join(' ');
+  var why=(sc.reasons||[]).map(function(r){ return '<li><span>'+esc(r.why)+'</span><b>'+(r.pts>0?'+':'')+r.pts+'</b></li>'; }).join('');
+  return '<h3>Active buyer score: '+scoreBadge(sc)+'</h3>'+(tags?'<p>'+tags+'</p>':'')+
+    '<p class="dt">'+(sc.best_hour!=null?'Usually browses around '+hourLbl(sc.best_hour)+' · ':'')+(sc.last_hot_at?'Flagged hot '+crel(sc.last_hot_at)+' · ':'')+'Updated '+crel(sc.scored_at)+'</p>'+
+    (why?'<ul class="why">'+why+'</ul>':'<p class="dt">No recent activity.</p>');
 }
 function clientFiltered(){
   var q=clients.q.toLowerCase(), wk=Date.now()-7*864e5;
   return (clients.rows||[]).filter(function(c){
+    if(clients.filter==='hot' && !(c.sc&&c.sc.score>=70)) return false;
     if(clients.filter==='active' && new Date(c.last_seen_at).getTime()<wk) return false;
     if(clients.filter==='searches' && !(c.searches>0)) return false;
     if(clients.filter==='paused' && !(c.paused_by_staff||c.alert_freq==='off')) return false;
@@ -832,7 +856,7 @@ function renderClients(){
   $('crows').innerHTML=rows.map(function(c){
     var al=c.paused_by_staff?'<span class="pill off">Paused by team</span>':c.alert_freq==='off'?'<span class="pill off">Off</span>':'<span class="pill">'+(c.alert_freq==='daily'?'Daily':'Instant')+'</span>';
     return '<tr class="lead" data-uid="'+esc(c.user_id)+'"><td class="dt">'+shortDay(c.created_at)+'</td><td><span class="nm">'+esc(c.name||'—')+'</span><span class="em">'+esc(c.email)+'</span></td>'+
-      '<td>'+esc(c.phone||'')+'</td><td>'+(c.favorites||0)+'</td><td>'+(c.searches||0)+'</td><td>'+(c.views_30d||0)+'</td><td>'+esc((c.zips||[]).slice(0,4).join(', '))+'</td><td>'+al+'</td><td class="dt">'+crel(c.last_seen_at)+'</td></tr>';
+      '<td>'+scoreBadge(c.sc)+'</td><td>'+esc(c.phone||'')+'</td><td>'+(c.favorites||0)+'</td><td>'+(c.searches||0)+'</td><td>'+(c.views_30d||0)+'</td><td>'+esc((c.zips||[]).slice(0,4).join(', '))+'</td><td>'+al+'</td><td class="dt">'+crel(c.last_seen_at)+'</td></tr>';
   }).join('');
 }
 $('cq').addEventListener('input',function(){ clients.q=this.value; renderClients(); });
@@ -855,12 +879,14 @@ function openClient(uid){
       '<button type="button" onclick="location.href=\'mailto:'+esc(c.email)+'\'">Email</button>'+
       '<button type="button" id="cd-pause">'+(p.paused_by_staff?'Resume alert emails':'Pause alert emails')+'</button>'+
       '<button type="button" class="del" id="cd-del">Delete account</button></div>';
+    h+=scoreHtml(c);
     h+='<h3>Team note</h3><textarea class="cnote" id="cd-note" placeholder="Only the team sees this">'+esc(p.staff_note||'')+'</textarea><div class="cact"><button type="button" id="cd-savenote">Save note</button></div>';
     h+='<h3>Saved homes ('+j.favorites.length+')</h3>'+(j.favorites.length?'<div class="cgrid">'+j.favorites.map(function(f){ var s=f.snap||{};
       return '<a class="cfav" href="homes#'+encodeURIComponent(f.mls)+'" target="_blank" rel="noopener"><i style="background-image:url(\''+(s.photo?CDN_+esc(s.photo)+'?class=small':'')+'\')"></i><span><b>'+cmoney(f.last_price||s.price)+'</b> · '+esc([s.beds!=null?s.beds+' bd':'',s.baths!=null?s.baths+' ba':''].filter(Boolean).join(' '))+'<br>'+esc(s.addr||'')+(s.zip?' '+esc(s.zip):'')+(f.last_status&&f.last_status!=='Active'?'<br><b>'+esc(f.last_status)+'</b>':'')+'</span></a>'; }).join('')+'</div>':'<p class="dt">None yet.</p>');
     h+='<h3>Saved searches ('+j.searches.length+')</h3>'+(j.searches.length?'<ul class="clist">'+j.searches.map(function(s){ return '<li><span>'+esc(s.label)+(s.alerts?'':' <span class="pill off">alerts off</span>')+'</span><time>'+shortDay(s.created_at)+'</time></li>'; }).join('')+'</ul>':'<p class="dt">None yet.</p>');
     h+='<h3>Recent activity</h3>'+(j.activity.length?'<ul class="clist">'+j.activity.slice(0,25).map(function(a){
-      var what=a.kind==='view'?'Viewed '+(a.mls?'<a href="homes#'+encodeURIComponent(a.mls)+'" target="_blank" rel="noopener">MLS '+esc(a.mls)+'</a>':'a home')+' · '+cmoney(a.price)+(a.beds!=null?' · '+a.beds+' bd':'')+(a.zip?' · '+esc(a.zip):''):'Searched '+esc(a.zip||a.city||'');
+      var AK={calc:'Used the payment calculator',photos:'Looked through photos',eval:'Clicked "see what I qualify for"',form_open:'Opened a showing/contact form',inquiry:'Sent a showing/contact/offer request',alert_return:'Came back from an alert email',value:'Checked a home value'};
+      var what=AK[a.kind]?AK[a.kind]+(a.mls?' · MLS '+esc(a.mls):''):a.kind==='view'?'Viewed '+(a.mls?'<a href="homes#'+encodeURIComponent(a.mls)+'" target="_blank" rel="noopener">MLS '+esc(a.mls)+'</a>':'a home')+' · '+cmoney(a.price)+(a.beds!=null?' · '+a.beds+' bd':'')+(a.zip?' · '+esc(a.zip):''):'Searched '+esc(a.zip||a.city||'');
       return '<li><span>'+what+'</span><time>'+crel(a.created_at)+'</time></li>'; }).join('')+'</ul>':'<p class="dt">No activity yet.</p>');
     h+='<h3>Alerts sent ('+j.alerts.length+')</h3>'+(j.alerts.length?'<ul class="clist">'+j.alerts.slice(0,25).map(function(a){ var d=a.detail||{}, s=d.snap||{};
       var what=a.kind==='new'?(d.smart?'New match (from their activity)':'New match: '+esc(d.label||'')):a.kind==='price'?'Price '+cmoney(d.old_price)+' → '+cmoney(d.new_price):'Status → '+esc(d.new_status||'');

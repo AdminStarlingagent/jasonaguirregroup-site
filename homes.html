@@ -645,6 +645,24 @@ function hot(i,on){
   var c=document.querySelector('.c[data-i="'+i+'"]'); if(c) c.classList.toggle('hot',on);
   var p=document.querySelector('.pin[data-i="'+i+'"]'); if(p) p.classList.toggle('hot',on);
 }
+/* Signed-in client signals for the active buyer score (once per home and kind per page load). */
+var acted={};
+function act(kind,l){
+  try{
+    if(!window.JagAccount||!JagAccount.user()) return;
+    var m=l&&l.mlsNumber?String(l.mlsNumber):'', k=kind+':'+m; if(acted[k]) return; acted[k]=1;
+    var la=(l&&l.address)||{};
+    JagAccount.logActivity({kind:kind,mls:m||null,zip:la.zip||null,city:la.city?String(la.city).slice(0,60):null,price:(l&&l.listPrice)||null});
+  }catch(e){}
+}
+(function(){ /* came back from an alert email: links carry ?src=alert */
+  try{
+    if(new URLSearchParams(location.search).get('src')!=='alert') return;
+    if(sessionStorage.getItem('jag_alert_ret')) return;
+    setTimeout(function(){ if(window.JagAccount&&JagAccount.user()){ sessionStorage.setItem('jag_alert_ret','1'); act('alert_return',null); } },1500);
+  }catch(e){}
+})();
+document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('#sheet a[href^="apply.html"]'); if(a&&cur) act('eval',cur); });
 /* Anonymous attention signal (MLS number + kind only) — feeds "featured homes" on the homepage. */
 var logged={};
 function logEvent(mls,kind){
@@ -787,7 +805,7 @@ function timeOpts(sel){
 }
 /* Tour / contact / offer form in a small dialog */
 function openForm(kind,l,pre){
-  pre=pre||{}; var days=tourDays(), full=fullAddr(l);
+  pre=pre||{}; act('form_open',l); var days=tourDays(), full=fullAddr(l);
   var title={tour:t('fm_tour'),contact:t('fm_contact'),offer:t('fm_offer')}[kind];
   var msg=(kind==='offer'?t('fm_msg_offer'):t('fm_msg'))+full+'.';
   $('fm').innerHTML='<div class="fmbox" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><button class="x" type="button" aria-label="Cerrar">×</button><h3>'+title+'</h3>'+
@@ -812,7 +830,7 @@ function openForm(kind,l,pre){
       Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice};
     if(kind==='tour'){ var dd=days[+form.day.value]; data['Preferred Day']=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); data['Preferred Time']=form.time.value+' Central'; }
     if(window.jagCapture) window.jagCapture('home-search',data);
-    logEvent(l.mlsNumber,'inquiry');
+    logEvent(l.mlsNumber,'inquiry'); act('inquiry',l);
     form.innerHTML='<div class="ok">'+t('thanks')+(isLease(l)?'':'<a class="oklink" href="'+esc(evalUrl(l))+'">'+t('ev_after')+'</a>')+'</div>';
   });
 }
@@ -834,7 +852,7 @@ function loadValue(l){
 
 /* ---------- home detail ---------- */
 var cur=null, lbn=0;
-function showLB(n){ lbn=(n+cur.images.length)%cur.images.length; $('lbi').src=img(cur.images[lbn],'large'); $('lbc').textContent=(lbn+1)+' / '+cur.images.length; $('lb').classList.add('on'); }
+function showLB(n){ act('photos',cur); lbn=(n+cur.images.length)%cur.images.length; $('lbi').src=img(cur.images[lbn],'large'); $('lbc').textContent=(lbn+1)+' / '+cur.images.length; $('lb').classList.add('on'); }
 $('lb').querySelector('.lp').onclick=function(){ showLB(lbn-1); };
 $('lb').querySelector('.ln').onclick=function(){ showLB(lbn+1); };
 $('lb').querySelector('.lx').onclick=function(){ $('lb').classList.remove('on'); };
@@ -924,13 +942,13 @@ function openDetail(i){
       $('pleg').innerHTML=rows.map(function(r){ return '<li><i style="background:'+r[2]+'"></i><span>'+t(r[0]+'_l')+'</span><b>'+(r[1]>0?money(r[1]):'$0')+'</b></li>'; }).join('');
     };
     $('ins').value=Math.round(P*INSRATE/100); $('dnamt').value=Math.round(P*dpct/100); setFeed(l);
-    $('dn').onchange=function(){ if(this.value==='c') return; dpct=+this.value; $('dnamt').value=Math.round(P*dpct/100); calc(); };
-    $('dnamt').oninput=function(){ var a=Math.min(Math.max(0,+this.value||0),P); dpct=a/P*100; var m=[3.5,5,10,15,20].filter(function(x){return Math.abs(x-dpct)<0.05;})[0]; $('dn').value=m?String(m):'c'; if(!m) $('dn').options[5].textContent=dpct.toFixed(1)+'%'; calc(); };
-    ['rt','tm'].forEach(function(id){ $(id).oninput=calc; $(id).onchange=calc; });
-    ['tx','ins','hoa'].forEach(function(id){ $(id).oninput=function(){ touched[id]=1; if(id==='tx') $('txsrc').textContent=''; if(id==='hoa') $('hoasrc').textContent=''; calc(); }; });
+    $('dn').onchange=function(){ act('calc',l); if(this.value==='c') return; dpct=+this.value; $('dnamt').value=Math.round(P*dpct/100); calc(); };
+    $('dnamt').oninput=function(){ act('calc',l); var a=Math.min(Math.max(0,+this.value||0),P); dpct=a/P*100; var m=[3.5,5,10,15,20].filter(function(x){return Math.abs(x-dpct)<0.05;})[0]; $('dn').value=m?String(m):'c'; if(!m) $('dn').options[5].textContent=dpct.toFixed(1)+'%'; calc(); };
+    ['rt','tm'].forEach(function(id){ $(id).oninput=$(id).onchange=function(){ act('calc',l); calc(); }; });
+    ['tx','ins','hoa'].forEach(function(id){ $(id).oninput=function(){ act('calc',l); touched[id]=1; if(id==='tx') $('txsrc').textContent=''; if(id==='hoa') $('hoasrc').textContent=''; calc(); }; });
     l._setFeed=function(f){ setFeed(f); calc(); };
     calc();
-    $('mvbtn').onclick=function(){ loadValue(l); };
+    $('mvbtn').onclick=function(){ act('value',l); loadValue(l); };
     if(mvCache[l.mlsNumber]) loadValue(l);
   }
   $('ov').classList.add('on'); $('ov').scrollTop=0; document.body.style.overflow='hidden';
