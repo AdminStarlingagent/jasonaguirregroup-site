@@ -392,6 +392,8 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 <script src="jag-capture.js"></script>
 <script src="jag-account.js"></script>
 <script src="jag-install.js" defer></script>
+<script src="jag-share.js"></script>
+<script src="jag-chat.js" defer></script>
 <script>
 /* ============================================================
    JAG home search. Listings come through the JAG proxy (Supabase
@@ -833,7 +835,7 @@ function openForm(kind,l,pre){
     if(n.length<2||ph.length<10){ form.querySelector('.err').style.display='block'; return; }
     var data={__name:n,Phone:form.phone.value.trim(),Email:form.email.value.trim()||null,'Preferred Language':lang==='es'?'Spanish':'English',
       Request:{tour:'Tour request',contact:'Agent contact',offer:'Offer request'}[kind],Message:form.msg.value.trim().slice(0,600)||null,
-      Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice};
+      Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice,Agent:(window.JAG_AGENT?JAG_AGENT.name:null)};
     if(kind==='tour'){ var dd=days[+form.day.value]; data['Preferred Day']=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); data['Preferred Time']=form.time.value+' Central'; }
     if(window.jagCapture) window.jagCapture('home-search',data);
     logEvent(l.mlsNumber,'inquiry'); act('inquiry',l);
@@ -922,9 +924,15 @@ function openDetail(i){
     '<div class="mbar"><button type="button" class="bigbtn" data-f="tour">'+t('tour')+'</button><button type="button" class="outbtn" data-f="contact">'+t('fm_contact')+'</button></div>';
   var s=$('sheet');
   s.querySelector('.back').onclick=closeDetail;
+  window.JAG_CHAT_CTX={mls:String(l.mlsNumber), address:full, price:l.listPrice||null};
+  if(window.JagShare){ JagShare.onAgent(function(){ var sd=s.querySelector('aside.side'); if(sd&&!sd.querySelector('.ja-card')) sd.insertAdjacentHTML('afterbegin',JagShare.agentCard()); }); }
   s.querySelector('.mos').addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) showLB(+b.getAttribute('data-k')); });
   $('dfav').onclick=function(){ var on=toggleFav(l.mlsNumber); this.classList.toggle('on',on); this.querySelector('span').textContent=t(on?'saved':'savehome'); var h=document.querySelector('.c[data-i="'+i+'"] .heart'); if(h) h.classList.toggle('on',on); };
+  if(window.JagShare&&JagShare.me()) $('dshare').querySelector('span').textContent=(lang==='es'?'Enviar a cliente':'Send to client');
   $('dshare').onclick=function(){ var sp=this.querySelector('span'), u=location.href.split('#')[0]+'#'+l.mlsNumber;
+    if(window.JagShare&&JagShare.me()){ var dd=l.details||{}, la=l.address||{};
+      JagShare.open({kind:'listing', mls:String(l.mlsNumber), title:(lang==='es'?'Enviar esta casa':'Send this home'), label:full,
+        summary:[money(l.listPrice), dd.numBedrooms!=null?dd.numBedrooms+(lang==='es'?' rec':' bd'):'', dd.numBathrooms!=null?dd.numBathrooms+(lang==='es'?' baños':' ba'):'', la.city||''].filter(Boolean).join(' · ')}); return; }
     if(navigator.share) navigator.share({title:full,url:u}).catch(function(){});
     else if(navigator.clipboard) navigator.clipboard.writeText(u).then(function(){ sp.textContent=t('copied'); }).catch(function(){}); };
   if($('mr')) $('mr').onclick=function(){ var c=$('ds').classList.toggle('clip'); this.textContent=c?t('more'):t('less'); };
@@ -963,7 +971,7 @@ function openDetail(i){
     .then(function(j){ var f=j&&j.listings&&j.listings[0]; if(!f||cur!==l||!$('facts')) return; $('facts').innerHTML=factsHtml(f); $('phist').innerHTML=historyHtml(f); if(l._setFeed) l._setFeed(f); })
     .catch(function(){});
 }
-function closeDetail(){ $('ov').classList.remove('on'); $('lb').classList.remove('on'); $('fm').classList.remove('on'); document.body.style.overflow=''; }
+function closeDetail(){ window.JAG_CHAT_CTX=null; $('ov').classList.remove('on'); $('lb').classList.remove('on'); $('fm').classList.remove('on'); document.body.style.overflow=''; }
 $('ov').addEventListener('click',function(e){ if(e.target===$('ov')) closeDetail(); });
 document.addEventListener('keydown',function(e){
   if($('lb').classList.contains('on')){ if(e.key==='Escape') $('lb').classList.remove('on'); else if(e.key==='ArrowLeft') showLB(lbn-1); else if(e.key==='ArrowRight') showLB(lbn+1); return; }

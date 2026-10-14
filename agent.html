@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agent Hub — JAG Real Estate</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JAG Agent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Agent Hub: a phone-first work screen. Dark header with the agent's identity, then three tabs. */
+:root{
+  --ink:#17161c; --paper:#ffffff; --card:#f5f5f7; --line:#e8e8ec;
+  --red:#c8102e; --red-d:#a30d26; --red-t:#fdecef;
+  --blue:#2653d9; --blue-t:#eaf0ff; --green:#0f8a4d; --green-t:#e7f5ee;
+  --amber:#7a4b00; --amber-t:#fff4d6;
+  --muted:#6a6972; --soft:#8a8992;
+  --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--card);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px}
+[hidden]{display:none!important}
+
+/* sign in */
+.si{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.si-box{width:100%;max-width:400px;background:var(--paper);border-radius:22px;padding:28px 22px;box-shadow:0 10px 40px rgba(23,22,28,.08);display:flex;flex-direction:column;gap:14px}
+.lock{display:flex;flex-direction:column;line-height:1;align-self:flex-start}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:25px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--red);padding-top:3px}
+.si h1{margin:6px 0 0;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.si p{margin:0;color:var(--muted);font-size:14.5px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fld input{height:50px;border:2px solid var(--line);border-radius:12px;padding:0 14px;font-weight:600;font-size:16px;width:100%}
+.fld input:focus{outline:none;border-color:var(--ink)}
+.btn{border:0;border-radius:99px;background:var(--red);color:#fff;font-weight:700;font-size:15px;padding:14px 18px}
+.btn:hover{background:var(--red-d)}.btn:disabled{opacity:.55}
+.btn.ghost{background:var(--card);color:var(--ink)}
+.err{color:var(--red-d);font-weight:700;font-size:13.5px;margin:0}
+.ok{color:var(--green);font-weight:700;font-size:13.5px;margin:0}
+
+/* header */
+.hd{background:var(--ink);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+.hd .wrap{display:flex;align-items:center;gap:12px;padding-block:14px}
+.hd img,.hd .ph{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#2c2b33;flex:0 0 48px}
+.hd b{display:block;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.hd small{font-size:12.5px;opacity:.75}
+.hd .out{margin-left:auto;border:1px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:99px;padding:8px 13px;font-size:13px;font-weight:700}
+.tabs{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:4px}
+.tabs button{flex:1;border:0;background:none;padding:14px 6px 12px;font-weight:700;font-size:14.5px;color:var(--muted);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--red)}
+main{padding-block:16px 60px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--paper);border-radius:14px;padding:12px 14px}
+.stat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.stat span{font-size:12px;color:var(--muted);font-weight:600}
+
+/* filters */
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.bar input{flex:1 1 200px;min-width:0;height:44px;border:2px solid var(--line);border-radius:12px;padding:0 12px;font-weight:600;background:var(--paper)}
+.chip{border:2px solid var(--line);background:var(--paper);border-radius:99px;padding:8px 13px;font-weight:700;font-size:13.5px}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* client cards */
+.list{display:flex;flex-direction:column;gap:10px}
+.cl{background:var(--paper);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;border-left:5px solid var(--line)}
+.cl.hot{border-left-color:var(--red)}.cl.warm{border-left-color:#e3a21a}
+.cl-top{display:flex;gap:10px;align-items:flex-start}
+.cl-top .who{min-width:0;flex:1}
+.cl-top b{font-size:16.5px;font-weight:800;display:block;overflow-wrap:anywhere}
+.cl-top small{color:var(--muted);font-size:13px}
+.score{flex:0 0 auto;min-width:52px;text-align:center;border-radius:12px;padding:6px 8px;background:var(--card)}
+.score b{display:block;font-size:20px;font-weight:800;line-height:1.1}
+.score span{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.score.hot{background:var(--red);color:#fff}.score.hot span{color:rgba(255,255,255,.85)}
+.score.warm{background:var(--amber-t);color:var(--amber)}
+.facts{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:12.5px;font-weight:700;border-radius:99px;padding:4px 10px;background:var(--card)}
+.pill.g{background:var(--green-t);color:var(--green)}.pill.b{background:var(--blue-t);color:var(--blue)}.pill.r{background:var(--red-t);color:var(--red-d)}
+.home{display:block;font-size:13.5px;background:var(--card);border-radius:12px;padding:9px 11px;text-decoration:none}
+.home b{font-weight:800}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.acts a,.acts button{flex:1 1 auto;text-align:center;border:0;border-radius:99px;padding:10px 12px;font-weight:700;font-size:13.5px;text-decoration:none;background:var(--card);color:var(--ink)}
+.acts .call{background:var(--ink);color:#fff}
+.det{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.det h4{margin:6px 0 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.det ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.det li{display:flex;justify-content:space-between;gap:10px}
+.det li span{min-width:0;overflow-wrap:anywhere}
+.det time{color:var(--soft);white-space:nowrap;font-size:12.5px}
+.empty{background:var(--paper);border-radius:16px;padding:26px;text-align:center;color:var(--muted);font-weight:600}
+
+/* share */
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px}
+.sh{background:var(--paper);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.sh h3{margin:0;font-size:16.5px;font-weight:800}
+.sh p{margin:0;color:var(--muted);font-size:13.5px}
+.sh input{height:46px;border:2px solid var(--line);border-radius:12px;padding:0 12px;font-weight:600;width:100%}
+.sh .row{display:flex;gap:8px}.sh .row input{flex:1;min-width:0}
+.me{background:var(--paper);border-radius:16px;padding:14px 16px;margin-top:12px;font-size:13.5px;color:var(--muted)}
+.me b{color:var(--ink)}
+.links .ln{background:var(--paper);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center}
+.ln .t{min-width:0;flex:1}.ln .t b{display:block;font-size:14px;overflow-wrap:anywhere}.ln .t small{color:var(--muted);font-size:12.5px}
+.ln .o{text-align:center;min-width:56px}.ln .o b{display:block;font-size:20px;font-weight:800}.ln .o span{font-size:11px;color:var(--muted);font-weight:700}
+.note{font-size:12.5px;color:var(--muted);margin:12px 2px 0}
+</style>
+</head>
+<body>
+
+<!-- sign in -->
+<section class="si" id="signin" hidden>
+  <form class="si-box" id="si-form" novalidate>
+    <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span>
+    <h1>Agent Hub</h1>
+    <p id="si-msg">Sign in with the email on your Follow Up Boss account. We'll email you a code, no password needed.</p>
+    <div class="fld" id="f-email"><label for="si-email">Email</label><input id="si-email" type="email" autocomplete="email" inputmode="email" placeholder="you@jasonhoustonrealty.com"></div>
+    <div class="fld" id="f-code" hidden><label for="si-code">Code from your email</label><input id="si-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" class="num"></div>
+    <p class="err" id="si-err" hidden></p>
+    <button class="btn" type="submit" id="si-btn">Email me a code</button>
+    <button class="btn ghost" type="button" id="si-back" hidden>Use a different email</button>
+  </form>
+</section>
+
+<!-- app -->
+<div id="app" hidden>
+  <header class="hd"><div class="wrap">
+    <span id="hd-ph"></span>
+    <div><b id="hd-name"></b><small id="hd-sub"></small></div>
+    <button class="out" type="button" id="out">Sign out</button>
+  </div></header>
+  <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
+    <button type="button" data-tab="clients" class="on">Clients</button>
+    <button type="button" data-tab="share">Share</button>
+    <button type="button" data-tab="links">My links</button>
+  </div></nav>
+  <main class="wrap">
+    <section id="t-clients">
+      <div class="stats" id="stats"></div>
+      <div class="bar">
+        <input id="q" type="search" placeholder="Search name, phone, ZIP…" aria-label="Search clients">
+      </div>
+      <div class="bar" id="chips">
+        <button type="button" class="chip on" data-f="all">All</button>
+        <button type="button" class="chip" data-f="mine">Mine</button>
+        <button type="button" class="chip" data-f="hot">Hot (70+)</button>
+        <button type="button" class="chip" data-f="week">Active this week</button>
+      </div>
+      <div class="list" id="list"><div class="empty">Loading clients…</div></div>
+      <p class="note">Score (0-100) = how actively a client is shopping on our website right now. Updated every hour. "Mine" = clients who signed up through one of your links.</p>
+    </section>
+
+    <section id="t-share" hidden>
+      <div class="sh-grid">
+        <div class="sh">
+          <h3>Send a home</h3>
+          <p>Type the MLS # or paste the home's link from our site. Your name and number go on it.</p>
+          <div class="row"><input id="sh-mls" placeholder="MLS # or link" aria-label="MLS number or link"><button class="btn" type="button" id="sh-mls-go">Send</button></div>
+          <p class="err" id="sh-mls-err" hidden>Type an MLS number or paste a link from jasonaguirregroup.company/homes.</p>
+        </div>
+        <div class="sh">
+          <h3>Browse and send</h3>
+          <p>Search homes like a client. On any home, tap <b>Send to client</b> and it goes out with your number.</p>
+          <a class="btn" href="homes" style="text-align:center;text-decoration:none">Open home search</a>
+        </div>
+        <div class="sh">
+          <h3>Send a home search</h3>
+          <p>Area and budget. Clients create an account and get alerts on new homes.</p>
+          <input id="sh-q" placeholder="City or ZIP (e.g. Katy or 77083)" aria-label="City or ZIP">
+          <div class="row"><input id="sh-max" inputmode="numeric" placeholder="Max price (e.g. 300000)" aria-label="Max price"><input id="sh-beds" inputmode="numeric" placeholder="Beds" aria-label="Minimum bedrooms" style="max-width:90px"></div>
+          <button class="btn" type="button" id="sh-search-go">Send search</button>
+        </div>
+        <div class="sh">
+          <h3>Invite to our home search</h3>
+          <p>For any lead: one link to search all of Houston, save favorites and get alerts.</p>
+          <button class="btn" type="button" id="sh-site-go">Send invite</button>
+        </div>
+      </div>
+      <div class="me" id="me-card"></div>
+    </section>
+
+    <section id="t-links" hidden>
+      <div class="list links" id="links"></div>
+      <p class="note">Each time a client opens one of your links it counts here (your own opens don't count).</p>
+    </section>
+  </main>
+</div>
+
+<script src="jag-capture.js"></script>
+<script src="jag-share.js"></script>
+<script>
+(function(){
+  var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function ls(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
+  var fmtPhone = JagShare.fmtPhone;
+  function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
+  function money(n){ return n ? '$' + Math.round(n).toLocaleString('en-US') : ''; }
+  function ago(iso){
+    if(!iso) return 'never';
+    var m = (Date.now() - new Date(iso).getTime()) / 60000;
+    if(m < 2) return 'just now'; if(m < 60) return Math.floor(m) + ' min ago'; if(m < 1440) return Math.floor(m / 60) + ' h ago';
+    var d = Math.floor(m / 1440); return d === 1 ? 'yesterday' : d < 30 ? d + ' days ago' : new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  function hourLbl(h){ return h == null ? '' : ((h + 11) % 12 + 1) + ' ' + (h < 12 ? 'AM' : 'PM'); }
+
+  function rpc(name, args){
+    return JagShare.token().then(function(t){
+      if(!t) throw new Error('signin');
+      return fetch(BASE + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+    }).then(function(r){ if(r.status === 401) throw new Error('signin'); return r.json(); });
+  }
+
+  /* ---------------- sign in (emailed code) ---------------- */
+  var email = '';
+  function showSignIn(msg){
+    $('app').hidden = true; $('signin').hidden = false;
+    $('f-code').hidden = true; $('f-email').hidden = false; $('si-back').hidden = true; $('si-btn').textContent = 'Email me a code';
+    if(msg){ $('si-err').textContent = msg; $('si-err').hidden = false; }
+  }
+  $('si-back').onclick = function(){ showSignIn(); $('si-err').hidden = true; };
+  $('si-form').addEventListener('submit', function(e){
+    e.preventDefault(); $('si-err').hidden = true;
+    var codeStep = !$('f-code').hidden;
+    if(!codeStep){
+      email = $('si-email').value.trim().toLowerCase();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $('si-err').textContent = 'Type your email.'; $('si-err').hidden = false; return; }
+      $('si-btn').disabled = true;
+      fetch(BASE + '/auth/v1/otp', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, create_user: true }) })
+        .then(function(r){ $('si-btn').disabled = false; if(!r.ok) throw 0;
+          $('f-email').hidden = true; $('f-code').hidden = false; $('si-back').hidden = false; $('si-btn').textContent = 'Sign in';
+          $('si-msg').textContent = 'We sent a code to ' + email + '. It can take a minute; check spam too.'; $('si-code').focus(); })
+        .catch(function(){ $('si-btn').disabled = false; $('si-err').textContent = 'Could not send the code. Wait a minute and try again.'; $('si-err').hidden = false; });
+    } else {
+      var code = $('si-code').value.replace(/\D/g, '');
+      if(code.length < 6){ $('si-err').textContent = 'Type the code from your email.'; $('si-err').hidden = false; return; }
+      $('si-btn').disabled = true;
+      fetch(BASE + '/auth/v1/verify', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'email', email: email, token: code }) })
+        .then(function(r){ return r.json(); }).then(function(j){
+          $('si-btn').disabled = false;
+          if(!j || !j.access_token){ $('si-err').textContent = 'That code didn\'t work. Check it or ask for a new one.'; $('si-err').hidden = false; return; }
+          ls('jag_agent', { t: j.access_token, r: j.refresh_token, x: Date.now() + (j.expires_in || 3600) * 1000, code: 'pending' });
+          start();
+        }).catch(function(){ $('si-btn').disabled = false; $('si-err').textContent = 'Something went wrong. Try again.'; $('si-err').hidden = false; });
+    }
+  });
+  $('out').onclick = function(){ ls('jag_agent', null); location.reload(); };
+
+  /* ---------------- app ---------------- */
+  var me = null, rows = [], shares = [], filter = 'all', q = '', open = {};
+  function start(){
+    if(!ls('jag_agent')){ showSignIn(); return; }
+    rpc('jag_agent_me').then(function(j){
+      if(!j || !j.ok){
+        ls('jag_agent', null);
+        showSignIn(j && j.reason === 'not_agent' ? (j.email || 'This email') + ' isn\'t on the JAG team in Follow Up Boss. Use the email on your FUB account, or ask Jason to add you.' : null);
+        return;
+      }
+      me = j.agent;
+      var s = ls('jag_agent'); Object.assign(s, { code: me.code, name: me.name, first_name: me.first_name, phone: me.phone, photo_url: me.photo_url }); ls('jag_agent', s);
+      $('signin').hidden = true; $('app').hidden = false;
+      $('hd-ph').innerHTML = me.photo_url ? '<img src="' + esc(me.photo_url) + '" alt="">' : '<span class="ph"></span>';
+      $('hd-name').textContent = me.name;
+      $('hd-sub').textContent = 'Clients see: ' + (me.phone ? fmtPhone(me.phone) : 'no number in FUB yet');
+      $('me-card').innerHTML = 'What clients see on homes you send: <b>' + esc(me.name) + '</b> · <b class="num">' + esc(me.phone ? fmtPhone(me.phone) : 'no number') + '</b>' + (me.photo_url ? ' and your photo' : '') +
+        '. It comes from your Follow Up Boss profile (updated every morning); change it there.';
+      load();
+    }).catch(function(){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); });
+  }
+  function load(){
+    rpc('jag_agent_clients').then(function(j){
+      if(!j || !j.ok){ $('list').innerHTML = '<div class="empty">Could not load clients.</div>'; return; }
+      rows = j.clients || []; shares = j.shares || [];
+      paint(); paintLinks();
+    }).catch(function(e){ if(String(e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); } else $('list').innerHTML = '<div class="empty">Could not load clients. Pull down to refresh.</div>'; });
+  }
+
+  function filtered(){
+    var s = q.toLowerCase(), wk = Date.now() - 7 * 864e5;
+    return rows.filter(function(c){
+      if(filter === 'mine' && c.agent_code !== me.code) return false;
+      if(filter === 'hot' && !(c.score >= 70)) return false;
+      if(filter === 'week' && !(c.days_7 > 0)) return false;
+      if(s && [c.name, c.email, c.phone, c.top_zip, (c.homes || []).map(function(h){ return h.zip + ' ' + h.city; }).join(' ')].join(' ').toLowerCase().indexOf(s) < 0) return false;
+      return true;
+    });
+  }
+  function paint(){
+    var hot = rows.filter(function(c){ return c.score >= 70; }).length, wk = rows.filter(function(c){ return c.days_7 > 0; }).length,
+        mine = rows.filter(function(c){ return c.agent_code === me.code; }).length, opens = shares.reduce(function(a, x){ return a + (x.opens || 0); }, 0);
+    $('stats').innerHTML = '<div class="stat"><b class="num">' + hot + '</b><span>Hot right now</span></div><div class="stat"><b class="num">' + wk + '</b><span>Active this week</span></div>' +
+      '<div class="stat"><b class="num">' + mine + '</b><span>Signed up from your links</span></div><div class="stat"><b class="num">' + opens + '</b><span>Opens of your links</span></div>';
+    var list = filtered();
+    if(!list.length){ $('list').innerHTML = '<div class="empty">' + (rows.length ? 'No clients match.' : 'No website accounts yet. Share your links so clients sign up.') + '</div>'; return; }
+    $('list').innerHTML = list.map(card).join('');
+  }
+  var TAGL = { price: 'Price-focused', area: 'Area-focused', ready: 'Ready to act' };
+  function card(c){
+    var sc = c.score || 0, cls = sc >= 70 ? 'hot' : sc >= 40 ? 'warm' : '';
+    var ph = digits(c.phone), first = (c.name || '').split(' ')[0] || '';
+    var top = (c.homes || [])[0];
+    var tags = (c.tags || []).map(function(t){ return '<span class="pill r">' + esc(TAGL[t] || t) + (t === 'area' && c.top_zip ? ' · ' + esc(c.top_zip) : '') + '</span>'; }).join('');
+    var owner = c.agent_code ? (c.agent_code === me.code ? '<span class="pill b">Your client</span>' : '<span class="pill">via ' + esc(c.agent_code) + '</span>') : '';
+    var h = '<article class="cl ' + cls + '" data-u="' + esc(c.user_id) + '">' +
+      '<div class="cl-top"><div class="who"><b>' + esc(c.name || c.email) + '</b><small>' + esc(c.lang === 'en' ? 'English' : 'Español') + ' · last on the site ' + esc(ago(c.last_seen_at)) + '</small></div>' +
+      '<div class="score ' + cls + '"><b class="num">' + sc + '</b><span>score</span></div></div>' +
+      '<div class="facts"><span class="pill g num">' + (c.days_7 || 0) + ' day' + (c.days_7 === 1 ? '' : 's') + ' this week</span><span class="pill num">' + (c.days_30 || 0) + ' day' + (c.days_30 === 1 ? '' : 's') + ' this month</span>' +
+      '<span class="pill num">' + (c.views_30 || 0) + ' home' + (c.views_30 === 1 ? '' : 's') + ' viewed</span><span class="pill num">' + (c.favorites || 0) + ' saved</span>' +
+      (c.best_hour != null ? '<span class="pill">Online ~' + hourLbl(c.best_hour) + '</span>' : '') + tags + owner + '</div>' +
+      (top ? '<a class="home" href="homes#' + encodeURIComponent(top.mls) + '" target="_blank" rel="noopener">Keeps looking at: <b>MLS ' + esc(top.mls) + '</b>' + (top.city ? ' · ' + esc(top.city) : '') + (top.price ? ' · ' + money(top.price) : '') + ' · viewed ' + top.views + 'x</a>' : '') +
+      '<div class="acts">' + (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a><a href="sms:+1' + ph + '">Text</a>' : '') +
+      (c.email ? '<a href="mailto:' + esc(c.email) + '">Email</a>' : '') +
+      (c.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + c.fub_person_id + '" target="_blank" rel="noopener">FUB</a>' : '') +
+      '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide activity' : 'Activity') + '</button></div>' +
+      (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
+      '</article>';
+    return h;
+  }
+  var KIND = { view: 'Viewed', search: 'Searched', calc: 'Used payment calculator', photos: 'Looked at photos', eval: 'Clicked "see what I qualify for"', form_open: 'Opened showing form', inquiry: 'Sent a showing/contact request', alert_return: 'Came back from an alert email', value: 'Checked home value' };
+  function detail(uid){
+    rpc('jag_agent_client_detail', { p_user: uid }).then(function(j){
+      if(!j || !j.ok){ open[uid] = 'Could not load.'; paint(); return; }
+      var h = '';
+      h += '<h4>Saved homes (' + j.favorites.length + ')</h4>' + (j.favorites.length ? '<ul>' + j.favorites.slice(0, 10).map(function(f){ var s = f.snap || {};
+        return '<li><span><a href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">' + esc(s.addr || 'MLS ' + f.mls) + '</a>' + (s.city ? ', ' + esc(s.city) : '') + ' · ' + money(f.last_price || s.price) + (f.last_status && f.last_status !== 'Active' ? ' · ' + esc(f.last_status) : '') + '</span><time>' + ago(f.saved_at) + '</time></li>'; }).join('') + '</ul>' : '<span>None yet.</span>');
+      h += '<h4>Saved searches (' + j.searches.length + ')</h4>' + (j.searches.length ? '<ul>' + j.searches.map(function(s){ return '<li><span>' + esc(s.label) + '</span><time>' + ago(s.created_at) + '</time></li>'; }).join('') + '</ul>' : '<span>None yet.</span>');
+      h += '<h4>Recent activity</h4>' + (j.activity.length ? '<ul>' + j.activity.slice(0, 20).map(function(a){
+        var w = (KIND[a.kind] || a.kind) + (a.mls ? ' · <a href="homes#' + encodeURIComponent(a.mls) + '" target="_blank" rel="noopener">MLS ' + esc(a.mls) + '</a>' : '') + (a.kind === 'search' ? ' ' + esc(a.zip || a.city || '') : '') + (a.price ? ' · ' + money(a.price) : '');
+        return '<li><span>' + w + '</span><time>' + ago(a.created_at) + '</time></li>'; }).join('') + '</ul>' : '<span>No activity yet.</span>');
+      open[uid] = h; paint();
+    }).catch(function(){ open[uid] = 'Could not load.'; paint(); });
+  }
+  $('list').addEventListener('click', function(e){
+    var b = e.target.closest('[data-more]'); if(!b) return;
+    var u = b.getAttribute('data-more');
+    if(open[u]){ delete open[u]; paint(); return; }
+    open[u] = true; paint(); detail(u);
+  });
+  $('q').addEventListener('input', function(){ q = this.value; paint(); });
+  $('chips').addEventListener('click', function(e){ var b = e.target.closest('[data-f]'); if(!b) return; filter = b.getAttribute('data-f'); this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x === b); }); paint(); });
+
+  function paintLinks(){
+    if(!shares.length){ $('links').innerHTML = '<div class="empty">You haven\'t sent any links yet. Use the Share tab.</div>'; return; }
+    var KL = { listing: 'Home', search: 'Search', site: 'Invite' };
+    $('links').innerHTML = shares.map(function(s){
+      return '<div class="ln"><div class="t"><b>' + esc(KL[s.kind] || s.kind) + (s.mls ? ' · MLS ' + esc(s.mls) : '') + '</b><small>' + esc(s.label || '') + (s.label ? ' · ' : '') + 'sent ' + ago(s.created_at) + (s.last_open_at ? ' · last opened ' + ago(s.last_open_at) : '') + '</small></div>' +
+        '<div class="o"><b class="num">' + (s.opens || 0) + '</b><span>opens</span></div></div>';
+    }).join('');
+  }
+
+  /* ---------------- share tab ---------------- */
+  $('sh-mls-go').onclick = function(){
+    var v = $('sh-mls').value.trim(), m = '';
+    var hm = v.match(/#([A-Za-z0-9-]{3,24})\s*$/); if(hm) m = hm[1];
+    if(!m && /^[A-Za-z0-9-]{3,24}$/.test(v)) m = v;
+    $('sh-mls-err').hidden = !!m; if(!m) return;
+    JagShare.open({ kind: 'listing', mls: m, title: 'Send this home', label: 'MLS ' + m });
+  };
+  $('sh-search-go').onclick = function(){
+    var area = $('sh-q').value.trim(), max = digits($('sh-max').value), beds = digits($('sh-beds').value);
+    var sum = [area, max ? 'up to ' + money(+max) : '', beds ? beds + '+ bd' : ''].filter(Boolean).join(' · ');
+    JagShare.open({ kind: 'search', title: 'Send a home search', label: sum || 'Home search', summary: [area, max ? 'hasta ' + money(+max) : '', beds ? beds + '+ rec' : ''].filter(Boolean).join(' · '),
+      query: { q: area || null, maxp: max || null, beds: beds || null } });
+  };
+  $('sh-site-go').onclick = function(){ JagShare.open({ kind: 'site', title: 'Invite to our home search', label: 'Home search invite' }); };
+
+  document.querySelector('.tabs').addEventListener('click', function(e){
+    var b = e.target.closest('[data-tab]'); if(!b) return;
+    var t = b.getAttribute('data-tab');
+    this.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x === b); });
+    ['clients', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
+    if(t !== 'share') load();
+  });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me) load(); });
+
+  start();
+})();
+</script>
+</body>
+</html>
