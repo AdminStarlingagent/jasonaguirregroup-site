@@ -87,11 +87,11 @@ begin
   ), pts as (
     select p.*,
       array_remove(array[
-        case when p.homes > 0 then jsonb_build_object('pts', least(p.homes * 3, 18), 'why', 'Viewed ' || p.homes || ' homes in 14 days') end,
+        case when p.homes > 0 then jsonb_build_object('pts', least(p.homes * 3, 18), 'why', 'Viewed ' || p.homes || case when p.homes = 1 then ' home in 14 days' else ' homes in 14 days' end) end,
         case when p.repeat_max >= 3 then jsonb_build_object('pts', 20, 'why', 'Viewed the same home ' || p.repeat_max || ' times') end,
         case when p.fav7 > 0 then jsonb_build_object('pts', 15, 'why', 'Saved a home this week') end,
-        case when p.fav_all > 0 then jsonb_build_object('pts', least(p.fav_all * 2, 10), 'why', p.fav_all || ' saved homes') end,
-        case when p.searches > 0 then jsonb_build_object('pts', least(p.searches * 5, 10), 'why', p.searches || ' saved searches') end,
+        case when p.fav_all > 0 then jsonb_build_object('pts', least(p.fav_all * 2, 10), 'why', p.fav_all || case when p.fav_all = 1 then ' saved home' else ' saved homes' end) end,
+        case when p.searches > 0 then jsonb_build_object('pts', least(p.searches * 5, 10), 'why', p.searches || case when p.searches = 1 then ' saved search' else ' saved searches' end) end,
         case when p.calc > 0 then jsonb_build_object('pts', 10, 'why', 'Used the payment calculator') end,
         case when p.photos > 0 then jsonb_build_object('pts', 5, 'why', 'Went through listing photos') end,
         case when p.valu > 0 then jsonb_build_object('pts', 5, 'why', 'Checked a home value estimate') end,
@@ -99,7 +99,7 @@ begin
         case when p.inquiry > 0 then jsonb_build_object('pts', 30, 'why', 'Sent a showing, contact or offer request') end,
         case when p.inquiry = 0 and p.form_open > 0 then jsonb_build_object('pts', 10, 'why', 'Started a showing request but did not send it') end,
         case when p.alert_ret > 0 then jsonb_build_object('pts', 10, 'why', 'Came back from an alert email') end,
-        case when p.days7 > 0 then jsonb_build_object('pts', least(p.days7 * 3, 15), 'why', 'Active ' || p.days7 || ' days this week') end,
+        case when p.days7 > 0 then jsonb_build_object('pts', least(p.days7 * 3, 15), 'why', 'Active ' || p.days7 || case when p.days7 = 1 then ' day this week' else ' days this week' end) end,
         case when p.last_act < now() - interval '14 days' then jsonb_build_object('pts', -30, 'why', 'No visit in 14+ days')
              when p.last_act < now() - interval '7 days' then jsonb_build_object('pts', -15, 'why', 'No visit in 7+ days') end
       ], null) as parts
