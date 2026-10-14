@@ -1,0 +1,31 @@
+{
+ "name": "JAG Real Estate",
+ "short_name": "JAG Casas",
+ "description": "Busca casas, guarda tus favoritas y recibe avisos. Jason Aguirre Group · eXp Realty.",
+ "lang": "es",
+ "start_url": "/homes?src=app",
+ "scope": "/",
+ "display": "standalone",
+ "background_color": "#ffffff",
+ "theme_color": "#ffffff",
+ "icons": [
+  {
+   "src": "/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
