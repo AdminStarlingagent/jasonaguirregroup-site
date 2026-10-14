@@ -308,6 +308,86 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   .mbar .bigbtn,.mbar .outbtn{font-size:14.5px;padding:12px 6px}
   .sheet.sm{margin:0;border-radius:0;min-height:100%}
 }
+
+/* ===== 2026-10 redesign: three planes, one signal color (red = tap), huge vs tiny ===== */
+:focus-visible{outline-color:var(--buy)}
+#map .leaflet-tile-pane{filter:grayscale(1) contrast(.92) brightness(1.04)}
+.pin{background:#fff;color:var(--buy);border:2px solid var(--buy);border-radius:99px;padding:3px 9px;font-size:12px;box-shadow:0 4px 12px rgba(23,22,28,.28)}
+.pin.seen{background:#fff;color:#8a8992;border-color:#b9b6b0}
+.pin.hot,.pin.seen.hot{background:var(--buy);color:#fff;border-color:var(--buy)}
+.pill{border:2px solid var(--buy);color:var(--buy);border-radius:99px;background:#fff}
+.pill:hover{background:var(--buy-t)}
+.pill.set{background:var(--buy);color:#fff;border-color:var(--buy)}
+.pill.set .dot{background:#fff}
+.savebtn,.q input{border-radius:99px}
+.q input{background:#f6f5f3}
+.list h1{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.sub b{font-size:13px}
+.c{border-radius:22px;box-shadow:none;border:2px solid #ebe9e5;padding:8px;transition:border-color .15s,box-shadow .15s}
+.c:hover,.c.hot{border-color:var(--buy);box-shadow:0 18px 40px rgba(23,22,28,.14)}
+.c .ph{border-radius:15px}
+.c .tag{background:var(--ink);border-radius:99px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:5px 9px}
+.heart{width:40px;height:40px;right:8px;top:8px;border-radius:50%;background:#fff;box-shadow:0 4px 12px rgba(23,22,28,.2);display:grid;place-items:center}
+.heart svg{width:19px;height:19px;fill:none;stroke:var(--buy);stroke-width:2.2;filter:none}
+.heart.on svg{fill:var(--buy)}
+.c .nav{color:var(--buy)}
+.c .bd{padding:10px 6px 4px}
+.c .pr{font-size:34px;letter-spacing:-.05em;line-height:1;display:block}
+.c .pm{display:block;margin-top:6px;font-size:11px;letter-spacing:.04em;color:var(--muted)}
+.c .sp{margin-top:8px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.c .sp b{font-weight:800}
+.c .sp em{display:none}
+.c .ad{font-size:13px;margin-top:4px}
+.c .br{font-size:11px}
+.pager button{border:2px solid var(--buy);border-radius:99px}
+/* detail stage */
+.stg{position:relative;padding:8px 24px 36px;overflow:hidden}
+.stg-bg{position:relative;z-index:0;font-size:clamp(80px,15vw,210px);font-weight:800;letter-spacing:-.065em;line-height:.86;color:#efedea;white-space:nowrap;user-select:none}
+.stg-ph{position:relative;z-index:1;margin:clamp(-120px,-7vw,-48px) 0 0 32%;height:min(56vh,520px)}
+.stg-img{display:block;width:100%;height:100%;border:0;padding:0;border-radius:28px;background:var(--card) center/cover no-repeat;cursor:zoom-in}
+.stg-ph .all{position:absolute;right:16px;bottom:16px;border:0;border-radius:99px;background:#fff;color:var(--buy);font-weight:800;font-size:13px;padding:12px 18px;box-shadow:0 6px 20px rgba(23,22,28,.2)}
+.stg-card{position:relative;z-index:3;width:min(420px,calc(100% - 24px));margin:-300px 0 0 3%;background:#fff;border-radius:24px;padding:26px;box-shadow:0 24px 60px rgba(23,22,28,.18),0 2px 8px rgba(23,22,28,.06);display:flex;flex-direction:column;gap:14px}
+.stg-k{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.stg-pr{margin:0;font-size:clamp(46px,5vw,62px);font-weight:800;letter-spacing:-.05em;line-height:.95}
+.stg-pr small{font-size:15px;letter-spacing:0;margin-left:4px}
+.stg-ad{font-size:14px;line-height:1.45;color:#45444c}
+.stg-sp{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.stg-sp i{font-style:normal;color:#b9b6b0}
+.stg-est{font-size:12px;color:var(--muted)}
+.stg-est span{color:var(--ink);font-weight:800}
+.stg-card .bigbtn{border-radius:16px;padding:16px 12px;font-size:16px}
+.stg-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stg-2 .outbtn{border:2px solid var(--buy);border-radius:14px;font-size:14px;padding:11px 8px}
+.stg-ev{text-align:center;color:var(--buy);font-weight:800;font-size:14px;padding:4px 0}
+.tabs{margin-top:28px}
+.dw h3{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
+.chips div{background:#fff;border:1px solid #ebe9e5;border-radius:14px;font-size:15px}
+.chips small{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.more,.linkbtn,.estl a,.oklink{color:var(--buy)}
+.evalbox{background:#f6f5f3;border:0;border-radius:22px;padding:20px}
+.evalbox p,.evalbox small{color:#45444c}
+.evalbtn,.toast a{background:var(--buy);border-radius:14px}
+.evalbtn:hover{background:var(--buy-d)}
+.box{border-radius:22px}
+.pay{background:#f6f5f3;border-color:#ebe9e5}
+.pay .big{color:var(--ink)}
+.pay select,.pay input{border-color:#d9d6d1}
+.pay p{color:var(--muted)}
+.payw{border-radius:22px;background:#f6f5f3}
+.payl .big{font-size:44px;letter-spacing:-.04em}
+.payl small,.payr label,.pgrid label{font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.payr{border-radius:18px}
+.bigbtn,.outbtn{border-radius:14px}
+@media (max-width:860px){
+  .stg{padding:4px 12px 0}
+  .stg-ph{margin:-26px 0 0 0;height:300px}
+  .stg-img{border-radius:22px}
+  .stg-card{margin:-64px auto 0;width:calc(100% - 24px);padding:20px;gap:12px}
+  .stg-2,.stg-card>.bigbtn{display:none}
+  .tabs{margin-top:16px}
+  .mbar .bigbtn,.mbar .outbtn{border-radius:14px}
+  .mbar .outbtn{border-width:2px}
+}
 </style>
 </head>
 <body>
@@ -881,15 +961,22 @@ function openDetail(i){
       '<span class="lock"><b>JAG</b><i>Real Estate</i></span>'+
       '<button class="act'+(favs[l.mlsNumber]?' on':'')+'" type="button" id="dfav">'+HEART+'<span>'+t(favs[l.mlsNumber]?'saved':'savehome')+'</span></button>'+
       '<button class="act" type="button" id="dshare"><svg viewBox="0 0 24 24"><path d="M12 15V4m0 0l-4 4m4-4l4 4M5 13v6h14v-6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>'+t('share')+'</span></button></div>'+
-    '<div class="mos">'+l.images.slice(0,5).map(function(p,k){ return '<button type="button" data-k="'+k+'" aria-label="'+(k+1)+'" style="background-image:url(\''+img(p,k?'small':'medium')+'\')"></button>'; }).join('')+
-      (l.images.length>1?'<button type="button" class="all" data-k="0">'+t('allph')+l.images.length+t('photos')+'</button>':'')+'</div>'+
+    '<div class="stg"><div class="stg-bg" aria-hidden="true">'+money(l.listPrice)+'</div>'+
+      '<div class="stg-ph"><button type="button" class="stg-img" data-k="0" aria-label="'+t('allph')+l.images.length+t('photos')+'" style="background-image:url(\''+img(l.images[0],'large')+'\')"></button>'+
+        (l.images.length>1?'<button type="button" class="all" data-k="0">'+t('allph')+l.images.length+t('photos')+'</button>':'')+'</div>'+
+      '<div class="stg-card"><div class="stg-k">'+t(lease?'forrent':'forsale')+' · MLS '+esc(l.mlsNumber)+'</div>'+
+        '<h2 class="stg-pr">'+money(l.listPrice)+(lease?'<small>'+t('mo')+'</small>':'')+'</h2>'+
+        '<div class="stg-ad">'+esc(full)+'</div>'+
+        '<div class="stg-sp">'+[d.numBedrooms!=null?d.numBedrooms+' '+t('bd'):'',d.numBathrooms!=null?d.numBathrooms+' '+t('ba'):'',d.sqft?num(d.sqft)+' '+t('sqft'):'',d.yearBuilt||''].filter(Boolean).map(function(x){return '<span>'+esc(x)+'</span>';}).join('<i>/</i>')+'</div>'+
+        (lease?'':'<div class="stg-est">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'</div>')+
+        '<button type="button" class="bigbtn" data-f="tour">'+t('tour')+'</button>'+
+        '<div class="stg-2">'+(lease?'':'<button type="button" class="outbtn" data-f="offer">'+t('offer')+'</button>')+'<button type="button" class="outbtn" data-f="contact">'+t('fm_contact')+'</button></div>'+
+        (lease?'':'<a class="stg-ev" href="'+esc(evalUrl(l))+'">'+t('ev_h')+' →</a>')+
+      '</div></div>'+
     '<nav class="tabs" id="tabs"><button type="button" data-s="sec-over">'+t('tb_over')+'</button><button type="button" data-s="sec-facts">'+t('tb_facts')+'</button>'+
       (lease?'':'<button type="button" data-s="sec-val">'+t('tb_val')+'</button><button type="button" data-s="sec-pay">'+t('tb_pay')+'</button>')+'</nav>'+
     '<div class="dw"><div>'+
-      '<section id="sec-over"><div class="hero"><h2>'+money(l.listPrice)+(lease?'<small style="font-size:16px">'+t('mo')+'</small>':'')+'</h2>'+
-        (d.numBedrooms!=null?'<span class="f"><b>'+d.numBedrooms+'</b>'+t('bd')+'</span>':'')+(d.numBathrooms!=null?'<span class="f"><b>'+d.numBathrooms+'</b>'+t('ba')+'</span>':'')+(d.sqft?'<span class="f"><b>'+num(d.sqft)+'</b>'+t('sqft')+'</span>':'')+'</div>'+
-      '<div class="ad2">'+esc(full)+'</div>'+
-      (lease?'':'<span class="estl">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'<a href="'+esc(evalUrl(l))+'">'+t('ev_link')+' ›</a></span>')+
+      '<section id="sec-over">'+
       '<div class="chips">'+chips.filter(function(c){return c[0]!=null&&c[0]!=='';}).map(function(c){return '<div><span><small>'+t(c[1])+'</small>'+esc(c[0])+'</span></div>';}).join('')+'</div>'+
       (desc?'<h3>'+t('about')+'</h3><div class="desc clip" id="ds">'+esc(desc)+'</div><button class="more" type="button" id="mr">'+t('more')+'</button>':'')+'</section>'+
       '<section id="sec-tour"><h3>'+t('tr_h')+'</h3><p class="mvp">'+t('tr_p')+'</p>'+
@@ -916,9 +1003,6 @@ function openDetail(i){
       '<p class="credit">'+t('listed')+'<b>'+esc(credit(l))+'</b>'+(agentContact(l)?'<br>'+t('agentc')+agentContact(l):'')+'<br>MLS# '+esc(l.mlsNumber)+(updated(l)?' · '+t('upd')+esc(updated(l)):'')+'</p>'+
       '<div class="foot"><b>Jason Aguirre Group · eXp Realty</b><nav><a href="iabs.html">TREC Information About Brokerage Services</a><a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a></nav><p>'+t('use')+'</p><p>'+t('idx')+'</p></div>'+
     '</div><aside class="side">'+
-      '<div class="box actbox"><button type="button" class="bigbtn" data-f="tour">'+t('tour')+'<small>'+t('tr_sub')+'</small></button>'+
-        '<button type="button" class="outbtn" data-f="contact">'+t('fm_contact')+'</button>'+
-        (lease?'':'<button type="button" class="linkbtn" data-f="offer">'+t('offer')+' ›</button>')+'<p class="actnote">'+t('act_note')+'</p></div>'+
       (lease?'':'<div class="evalbox"><h4>'+t('ev_h')+'</h4><p>'+t('ev_p')+'</p><a class="evalbtn" href="'+esc(evalUrl(l))+'">'+t('ev_btn')+'</a><small>'+t('ev_fine')+'</small></div>')+
     '</aside></div>'+
     '<div class="mbar"><button type="button" class="bigbtn" data-f="tour">'+t('tour')+'</button><button type="button" class="outbtn" data-f="contact">'+t('fm_contact')+'</button></div>';
@@ -926,7 +1010,7 @@ function openDetail(i){
   s.querySelector('.back').onclick=closeDetail;
   window.JAG_CHAT_CTX={mls:String(l.mlsNumber), address:full, price:l.listPrice||null};
   if(window.JagShare){ JagShare.onAgent(function(){ var sd=s.querySelector('aside.side'); if(sd&&!sd.querySelector('.ja-card')) sd.insertAdjacentHTML('afterbegin',JagShare.agentCard()); }); }
-  s.querySelector('.mos').addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) showLB(+b.getAttribute('data-k')); });
+  s.querySelector('.stg-ph').addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) showLB(+b.getAttribute('data-k')); });
   $('dfav').onclick=function(){ var on=toggleFav(l.mlsNumber); this.classList.toggle('on',on); this.querySelector('span').textContent=t(on?'saved':'savehome'); var h=document.querySelector('.c[data-i="'+i+'"] .heart'); if(h) h.classList.toggle('on',on); };
   if(window.JagShare&&JagShare.me()) $('dshare').querySelector('span').textContent=(lang==='es'?'Enviar a cliente':'Send to client');
   $('dshare').onclick=function(){ var sp=this.querySelector('span'), u=location.href.split('#')[0]+'#'+l.mlsNumber;
