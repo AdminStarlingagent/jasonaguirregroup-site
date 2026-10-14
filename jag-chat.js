@@ -8,7 +8,7 @@
    ============================================================ */
 (function(){
   if(window.__jagChat) return; window.__jagChat = true;
-  var HOOK = 'https://starlingagent.app.n8n.cloud/webhook/aecb9bc9-7228-484b-9b0e-f8d119c1d159';
+  var HOOK = 'https://toomuchtaco.app.n8n.cloud/webhook/jag-website-chat';
   var TEAM_PHONE = '(832) 702-3574';
   var MAX_MSGS = 25;
 
