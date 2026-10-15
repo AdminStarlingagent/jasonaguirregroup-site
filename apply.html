@@ -145,6 +145,11 @@ h1.title{font-size:clamp(28px,4.8vw,36px);font-weight:600;letter-spacing:-.015em
 .done-card{text-align:center;padding-top:26px}
 .done-check{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:#e7f5ee;display:grid;place-items:center;color:#0f8a4d}
 .done-check svg{width:30px;height:30px}
+.done-links{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.done-links .call-btn{background:#c8102e;color:#fff;width:100%}
+.done-links .call-btn:hover{background:#a30d26}
+.done-back{color:#c8102e;font-weight:800;text-decoration:none;padding:8px 4px}
+.done-back:hover{text-decoration:underline}
 .call-btn{display:flex;align-items:center;justify-content:center;text-decoration:none;max-width:420px;margin-left:auto;margin-right:auto}
 .msg{display:none;color:var(--warn);font-size:14.5px;font-weight:500;margin:-6px 0 16px 20px}
 .msg.show{display:block}
@@ -845,8 +850,9 @@ en:{
   sendingTitle:'Sending your application\u2026',
   sendingHint:'One moment \u2014 do not close this page.',
   doneTitle:'Application received!',
-  doneBody:function(n){ return (n?n+', we':'We')+' have everything Kat and the team need. Someone from our team will call you today to go over your options. If it\u2019s easier, you can also call us right now.'; },
-  doneCall:'Call us now \u2014 (832) 702-3574',
+  doneBody:function(n){ return (n?n+', we':'We')+' have everything Kat and the team need. Someone from our team will call you today to go over your options. In the meantime, keep looking at homes and save the ones you like.'; },
+  doneCall:'See homes for sale',
+  doneBack:'Back to the home you were looking at',
   ofPrice:p=>'\u2248 '+p+'% of the purchase price',
   ltv:p=>'Estimated LTV: '+p+'%',
   downLess:'Your down payment should be less than the purchase price.'
@@ -922,8 +928,9 @@ es:{
   sendingTitle:'Enviando su solicitud\u2026',
   sendingHint:'Un momento \u2014 no cierre esta p\u00e1gina.',
   doneTitle:'\u00a1Solicitud recibida!',
-  doneBody:function(n){ return (n?n+', ya':'Ya')+' tenemos todo lo que Kat y el equipo necesitan. Alguien de nuestro equipo le llamar\u00e1 hoy mismo para revisar sus opciones. Si le es m\u00e1s f\u00e1cil, tambi\u00e9n puede llamarnos ahora.'; },
-  doneCall:'Ll\u00e1menos ahora \u2014 (832) 702-3574',
+  doneBody:function(n){ return (n?n+', ya':'Ya')+' tenemos todo lo que Kat y el equipo necesitan. Alguien de nuestro equipo le llamar\u00e1 hoy mismo para revisar sus opciones. Mientras tanto, siga viendo casas y guarde las que le gusten.'; },
+  doneCall:'Ver casas en venta',
+  doneBack:'Volver a la casa que estaba viendo',
   ofPrice:p=>'\u2248 '+p+'% del precio de compra',
   ltv:p=>'LTV estimado: '+p+'%',
   downLess:'Su enganche debe ser menor que el precio de compra.'
@@ -1620,11 +1627,25 @@ async function finishAll(){
   done.innerHTML = '<div class="done-check">'+IC.shield+'</div>'
     + '<h1 class="title" style="text-align:center">'+ui('doneTitle')+'</h1>'
     + '<p class="hint" style="text-align:center">'+ui('doneBody')(A.first||'')+'</p>';
-  const call = el('a','next call-btn', ui('doneCall'));
-  call.href = 'tel:' + CONFIG.phoneTel;
-  done.appendChild(call);
+  done.appendChild(homesLinks());
   stage.replaceChildren(done);
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* After applying: send them back to the home search (and to the home they came from, if any). */
+function homesLinks(){
+  const wrap = el('div','done-links');
+  let mls = '';
+  try{ mls = (JSON.parse(sessionStorage.getItem('jag_home')||'null')||{}).mls || ''; }catch(e){}
+  const go = el('a','next call-btn', ui('doneCall'));
+  go.href = 'homes';
+  wrap.appendChild(go);
+  if(mls){
+    const back = el('a','done-back', ui('doneBack'));
+    back.href = 'homes#' + encodeURIComponent(mls);
+    wrap.appendChild(back);
+  }
+  return wrap;
 }
 
 async function submitAll(){
@@ -1698,6 +1719,7 @@ async function submitAll(){
 
   if(isBuy(A)) scrollBox.appendChild(buildCalculator());
 
+  scrollBox.appendChild(homesLinks());
   const again = el('button','next restart', ui('restart'));
   again.style.alignSelf='center';
   again.addEventListener('click',()=>location.reload());
