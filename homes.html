@@ -383,7 +383,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   .stg-ph{margin:-26px 0 0 0;height:300px}
   .stg-img{border-radius:22px}
   .stg-card{margin:-64px auto 0;width:calc(100% - 24px);padding:20px;gap:12px}
-  .stg-2,.stg-card>.bigbtn{display:none}
+  .stg-card>.bigbtn{display:none}
   .tabs{margin-top:16px}
   .mbar .bigbtn,.mbar .outbtn{border-radius:14px}
   .mbar .outbtn{border-width:2px}
@@ -763,6 +763,14 @@ function logEvent(mls,kind){
       body:JSON.stringify({p_mls:mls,p_kind:kind})}).catch(function(){});
   }catch(e){}
 }
+/* the full offer worksheet, prefilled with this home */
+function offerUrl(l){
+  var d=l.details||{}, u=new URLSearchParams({lang:lang,mls:l.mlsNumber,addr:fullAddr(l),price:Math.round(l.listPrice||0)});
+  if(l.images&&l.images[0]) u.set('ph',l.images[0]);
+  if(d.numBedrooms!=null) u.set('bd',d.numBedrooms); if(d.numBathrooms!=null) u.set('ba',d.numBathrooms); if(d.sqft) u.set('sf',d.sqft);
+  if(d.propertyType) u.set('type',d.style||d.propertyType);
+  return 'offer.html?'+u.toString();
+}
 function evalUrl(l){
   var u=new URLSearchParams(); if(lang==='es') u.set('lang','es');
   if(l){ var a=l.address||{}; u.set('home',addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip); u.set('mls',l.mlsNumber); u.set('price',Math.round(l.listPrice)); }
@@ -1024,7 +1032,7 @@ function openDetail(i){
   $('days').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; pick.day=+b.getAttribute('data-k'); [].forEach.call($('days').children,function(c){ c.classList.toggle('on',c===b); }); });
   $('trtime').onchange=function(){ pick.time=this.value; };
   $('trgo').onclick=function(){ openForm('tour',l,pick); };
-  s.querySelectorAll('[data-f]').forEach(function(b){ b.addEventListener('click',function(){ openForm(b.getAttribute('data-f'),l,pick); }); });
+  s.querySelectorAll('[data-f]').forEach(function(b){ b.addEventListener('click',function(){ var k=b.getAttribute('data-f'); if(k==='offer'){ act('form_open',l); location.href=offerUrl(l); return; } openForm(k,l,pick); }); });
   if(!lease){
     var P=l.listPrice, touched={}, dpct=3.5;
     var setFeed=function(f){ /* taxes and HOA from the listing when it has them; otherwise an estimate the buyer can change */

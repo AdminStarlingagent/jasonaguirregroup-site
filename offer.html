@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hacer una oferta · Jason Aguirre Group</title>
+<meta name="description" content="Prepare su oferta en minutos. Jason Aguirre Group · eXp Realty.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ffffff">
+<style>
+:root{--ink:#17161c;--paper:#fff;--soft:#f6f5f3;--line:#e7e5e1;--muted:#5b5a62;--red:#c8102e;--red-d:#a30d26;--red-t:#fdecef}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);
+  -webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:var(--red)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:760px;margin:0 auto;padding:16px 18px}
+.lock{display:flex;flex-direction:column;line-height:1;text-decoration:none;color:var(--ink)}
+.lock small{font-size:7px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:24px;font-weight:800;letter-spacing:-.03em;border-bottom:3px solid var(--red);padding-bottom:1px}
+.lock i{font-style:normal;font-size:7.5px;letter-spacing:.32em;font-weight:700;text-transform:uppercase;margin-top:3px}
+.tr{display:flex;align-items:center;gap:10px}
+.langs{display:flex;border:2px solid var(--red);border-radius:99px;overflow:hidden}
+.langs button{border:0;background:#fff;color:var(--red);font-size:12px;font-weight:800;padding:7px 11px;min-height:36px}
+.langs button.on{background:var(--red);color:#fff}
+main{max-width:760px;margin:0 auto;padding:0 18px 120px}
+.prog{display:flex;gap:4px;margin:4px 0 22px}
+.prog i{flex:1;height:5px;border-radius:99px;background:var(--line)}
+.prog i.on{background:var(--ink)}
+.k{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.02;letter-spacing:-.045em;margin:8px 0 10px;font-weight:800}
+.lead{font-size:15px;color:#45444c;margin:0 0 22px;max-width:560px}
+/* the property card: big price behind, photo, floating details */
+.home{position:relative;margin:0 0 26px}
+.home .bg{font-size:clamp(64px,15vw,128px);font-weight:800;letter-spacing:-.065em;line-height:.85;color:#efedea;white-space:nowrap;overflow:hidden;user-select:none}
+.home .ph{margin:-28px 0 0 22%;height:210px;border-radius:24px;background:var(--soft) center/cover no-repeat;position:relative;z-index:1}
+.home .cd{position:relative;z-index:2;margin:-70px 0 0;width:min(360px,92%);background:#fff;border-radius:20px;padding:16px 18px;box-shadow:0 18px 44px rgba(23,22,28,.16)}
+.home .cd b{display:block;font-size:30px;letter-spacing:-.04em;line-height:1}
+.home .cd span{display:block;font-size:13px;color:#45444c;margin-top:6px}
+.home .cd small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-top:8px}
+.home.noimg .ph{display:none}.home.noimg .cd{margin-top:-24px}
+/* fields */
+.f{margin:0 0 18px}
+.f label,.lbl{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+.f input,.f select,.f textarea{width:100%;min-height:52px;border:1px solid #d9d6d1;border-radius:14px;background:var(--soft);padding:0 16px;font-size:16px}
+.f textarea{padding:12px 16px;min-height:96px;resize:vertical}
+.f input:focus,.f select:focus,.f textarea:focus{outline:3px solid var(--red-t);border-color:var(--red)}
+.f .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+.f.bad input,.f.bad select{border-color:var(--red)}
+.f .err{display:none;color:var(--red);font-size:12.5px;font-weight:700;margin-top:6px}
+.f.bad .err{display:block}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.money{position:relative}
+.money::before{content:"$";position:absolute;left:16px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted)}
+.money input{padding-left:30px}
+.bigin input{font-size:clamp(32px,8vw,46px);font-weight:800;letter-spacing:-.04em;min-height:84px;padding-left:40px}
+.bigin.money::before{font-size:28px;left:16px}
+.ratio{font-size:13px;color:var(--muted);margin-top:8px}
+.ratio b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 16px;border-radius:99px;border:2px solid var(--red);background:#fff;color:var(--red);font-weight:700;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--red);color:#fff}
+.chips.sm .chip{min-height:38px;padding:0 13px;font-size:13px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;min-height:58px;padding:12px 16px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:left;font-weight:700;font-size:15px;width:100%}
+.opt small{display:block;font-weight:500;font-size:12.5px;color:var(--muted)}
+.opt i{flex:0 0 22px;height:22px;border-radius:50%;border:2px solid var(--red)}
+.opt[aria-pressed="true"]{border-color:var(--red);background:var(--red-t)}
+.opt[aria-pressed="true"] i{background:var(--red);box-shadow:inset 0 0 0 4px #fff}
+.ack{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--soft);font-size:14px;cursor:pointer}
+.ack input{width:22px;height:22px;flex:none;accent-color:var(--red);margin-top:1px}
+.panel{background:var(--soft);border-radius:22px;padding:20px;margin:0 0 18px}
+.tip{border:2px dashed #d9d6d1;border-radius:18px;padding:16px;margin:14px 0 0;font-size:14px;color:#2c2b31}
+.tip b{display:block;margin-bottom:6px}
+.rev{display:grid;gap:0;border-radius:18px;border:1px solid var(--line);overflow:hidden;margin:0 0 18px}
+.rev div{display:flex;justify-content:space-between;gap:14px;padding:12px 16px;border-top:1px solid var(--line);font-size:14px}
+.rev div:first-child{border-top:0}
+.rev span{color:var(--muted)}
+.rev b{text-align:right}
+.fine{font-size:11.5px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;box-shadow:0 -8px 30px rgba(23,22,28,.08);padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));z-index:20}
+.bar .in{max-width:760px;margin:0 auto;display:flex;gap:10px}
+.btn{flex:1;min-height:56px;border:0;border-radius:16px;background:var(--red);color:#fff;font-weight:800;font-size:16px}
+.btn:hover{background:var(--red-d)}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.alt{flex:0 0 auto;padding:0 20px;background:#fff;color:var(--red);border:2px solid var(--red)}
+.done{text-align:center;padding-top:10px}
+.done .ok{width:64px;height:64px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;margin:0 auto 16px}
+.done .ok svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.actions{display:grid;gap:10px;max-width:440px;margin:22px auto 0}
+.actions a,.actions button{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:16px;font-weight:800;font-size:15px;text-decoration:none;border:2px solid var(--red)}
+.actions .p{background:var(--red);color:#fff}
+.actions .s{background:#fff;color:var(--red)}
+.actions .l{border:0;background:none;color:var(--red);min-height:44px}
+footer{max-width:760px;margin:0 auto;padding:18px 18px 130px;font-size:11.5px;color:var(--muted);line-height:1.7;border-top:1px solid var(--line)}
+footer a{color:var(--muted)}
+@media(max-width:560px){.two{grid-template-columns:minmax(0,1fr)}.home .ph{margin-left:0;height:180px}.home .cd{margin:-56px auto 0}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="lock" href="index.html" aria-label="Jason Aguirre Group"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></a>
+  <div class="tr">
+    <span class="langs" role="group" aria-label="Idioma / Language"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
+    <span id="acct"></span>
+  </div>
+</header>
+<main id="main" aria-live="polite"></main>
+<div class="bar" id="bar"><div class="in"><button type="button" class="btn alt" id="back"></button><button type="button" class="btn" id="next"></button></div></div>
+<footer>Jason Aguirre Group · eXp Realty, LLC · Igualdad de Oportunidades de Vivienda ·
+  <a href="iabs.html">TREC Information About Brokerage Services</a> ·
+  <a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a> ·
+  <a href="privacy-terms.html">Privacidad y términos</a></footer>
+
+<script src="jag-capture.js"></script>
+<script src="jag-account.js"></script>
+<script src="jag-offer.js"></script>
+<script>
+(function(){
+var SB='https://nyaxywghbpphjhwcmspd.supabase.co', KEY='sb_publishable_a3LN_l283LN8J-bJTEO8hQ_U40t09eh', CDN='https://cdn.repliers.io/';
+var W3='0c030dec-75ac-44a3-8a41-3dca53bb4529';
+var qs=new URLSearchParams(location.search);
+var lang=(qs.get('lang')==='en'||qs.get('lang')==='es')?qs.get('lang'):(function(){ try{ return localStorage.getItem('jag_lang')==='en'?'en':'es'; }catch(e){ return 'es'; } })();
+try{ localStorage.setItem('jag_lang',lang); }catch(e){}
+
+var T={
+ es:{back:'Atrás',next:'Continuar',send:'Enviar mi oferta',sending:'Enviando…',step:'Paso ',of:' de ',
+  s0k:'Su oferta',s0h:'Hagamos su oferta.',s0p:'Le toma unos 3 minutos. Usted elige el precio y las condiciones; Jason Aguirre y el equipo preparan los documentos oficiales.',
+  addr:'Dirección de la casa',addr_ph:'Calle, ciudad, código postal',list:'Precio de lista',need:'Escriba la dirección de la casa.',
+  ack:'Entiendo que esto es un borrador para preparar mi oferta, no una oferta ni un contrato. Nada se envía al vendedor hasta que yo firme los documentos oficiales.',ack_err:'Marque la casilla para continuar.',
+  s1k:'El precio',s1h:'¿Cuánto quiere ofrecer?',offer:'Precio de oferta',of_list:' del precio de lista',bad_price:'Escriba el precio que quiere ofrecer.',
+  c_list:'Precio de lista',earnest:'Depósito de buena fe (earnest money)',earnest_h:'Normalmente 1% del precio. Se abona a su compra al cerrar.',
+  s2k:'Cómo va a pagar',s2h:'¿Cómo va a comprar?',fin:'Con préstamo',fin_s:'Hipoteca: FHA, convencional, VA, ITIN…',cash:'En efectivo',cash_s:'Sin préstamo',
+  loan:'Tipo de préstamo',ln:{fha:'FHA',conv:'Convencional',va:'VA',itin:'ITIN',dk:'No sé todavía'},down:'Enganche',down_ph:'Ej. 3.5% o $10,000',
+  pre_q:'¿Ya tiene su pre-aprobación?',pof_q:'¿Tiene comprobante de fondos? (estado de cuenta)',
+  p_yes:'Sí, la tengo',p_work:'Estoy trabajando en ella',p_no:'Todavía no',lender:'Prestamista (opcional)',pick:'Elija una opción.',
+  s3k:'Protecciones y fechas',s3h:'Proteja su compra.',cont:'Condiciones de la oferta',
+  ct:{insp:'Inspección',appr:'Avalúo',fin:'Financiamiento',sale:'Venta de mi casa actual'},
+  opt:'Periodo de opción (días)',opt_h:'En Texas, días para inspeccionar y poder retirarse. Lo común es 5 a 10.',close:'Fecha deseada de cierre',notes:'Notas para el equipo (opcional)',notes_ph:'Peticiones, preguntas, términos especiales…',
+  s4k:'Revise su oferta',s4h:'Así se ve su oferta.',tip_h:'Haga su oferta más fuerte',
+  tip_p:function(lv){ return 'Con su pre-aprobación, esta oferta subiría a <b style="display:inline">'+lv+'</b>. Los vendedores prefieren compradores que ya comprobaron que pueden cerrar.'; },
+  tip_f:function(lv){ return 'Con su comprobante de fondos, esta oferta subiría a <b style="display:inline">'+lv+'</b>.'; },
+  r_home:'Casa',r_price:'Oferta',r_earn:'Depósito',r_pay:'Pago',r_proof:'Pre-aprobación / fondos',r_opt:'Periodo de opción',r_close:'Cierre',r_cont:'Condiciones',days:' días',
+  s5k:'Último paso',s5h:'¿A dónde le enviamos su oferta?',s5p:'Jason Aguirre y el equipo le contactan para preparar los documentos oficiales.',
+  name:'Nombre completo',phone:'Teléfono celular',email:'Correo electrónico',co:'Co-comprador (opcional)',co_h:'Otra persona que estará en el título.',
+  bad_name:'Escriba su nombre.',bad_phone:'Escriba un teléfono de 10 dígitos.',bad_email:'Escriba un correo válido.',
+  consent:'Al enviar, acepta que Jason Aguirre Group le contacte por llamada, texto o correo sobre su oferta. Pueden aplicar tarifas de mensajes.',
+  dk:'¡Listo!',dh:'Recibimos su oferta.',dp:'Jason Aguirre y el equipo la revisan y le contactan pronto para preparar los documentos oficiales. Vea el estado de su oferta en su portal en cualquier momento.',
+  d_portal:'Ver mi oferta en mi portal',d_pre:'Obtener mi pre-aprobación gratis',d_up:'Subir mi pre-aprobación o comprobante',d_homes:'Seguir viendo casas',
+  fail:'No pudimos enviar su oferta. Revise su conexión e intente de nuevo.',many:'Recibimos varias ofertas desde este teléfono. Espere un momento o llámenos.',
+  cash_lbl:'Efectivo',fin_lbl:'Préstamo'},
+ en:{back:'Back',next:'Continue',send:'Send my offer',sending:'Sending…',step:'Step ',of:' of ',
+  s0k:'Your offer',s0h:"Let's write your offer.",s0p:'It takes about 3 minutes. You choose the price and terms; Jason Aguirre and the team prepare the official documents.',
+  addr:'Home address',addr_ph:'Street, city, ZIP',list:'List price',need:'Enter the home address.',
+  ack:'I understand this is a draft to prepare my offer, not an offer or a contract. Nothing goes to the seller until I sign the official documents.',ack_err:'Check the box to continue.',
+  s1k:'The price',s1h:'How much do you want to offer?',offer:'Offer price',of_list:' of list price',bad_price:'Enter the price you want to offer.',
+  c_list:'List price',earnest:'Earnest money',earnest_h:'Usually 1% of the price. It goes toward your purchase at closing.',
+  s2k:'How you will pay',s2h:'How are you buying?',fin:'With a loan',fin_s:'Mortgage: FHA, conventional, VA, ITIN…',cash:'Cash',cash_s:'No loan',
+  loan:'Loan type',ln:{fha:'FHA',conv:'Conventional',va:'VA',itin:'ITIN',dk:'Not sure yet'},down:'Down payment',down_ph:'e.g. 3.5% or $10,000',
+  pre_q:'Do you have your pre-approval?',pof_q:'Do you have proof of funds? (bank statement)',
+  p_yes:'Yes, I have it',p_work:"I'm working on it",p_no:'Not yet',lender:'Lender (optional)',pick:'Choose one.',
+  s3k:'Protections and dates',s3h:'Protect your purchase.',cont:'Offer conditions',
+  ct:{insp:'Inspection',appr:'Appraisal',fin:'Financing',sale:'Sale of my current home'},
+  opt:'Option period (days)',opt_h:'In Texas, days to inspect and be able to walk away. 5 to 10 is common.',close:'Target closing date',notes:'Notes for the team (optional)',notes_ph:'Requests, questions, special terms…',
+  s4k:'Review your offer',s4h:'Here is your offer.',tip_h:'Make your offer stronger',
+  tip_p:function(lv){ return 'With your pre-approval, this offer would rise to <b style="display:inline">'+lv+'</b>. Sellers prefer buyers who have shown they can close.'; },
+  tip_f:function(lv){ return 'With your proof of funds, this offer would rise to <b style="display:inline">'+lv+'</b>.'; },
+  r_home:'Home',r_price:'Offer',r_earn:'Earnest money',r_pay:'Paying',r_proof:'Pre-approval / funds',r_opt:'Option period',r_close:'Closing',r_cont:'Conditions',days:' days',
+  s5k:'Last step',s5h:'Where should we send your offer?',s5p:'Jason Aguirre and the team will contact you to prepare the official documents.',
+  name:'Full name',phone:'Mobile phone',email:'Email',co:'Co-buyer (optional)',co_h:'Anyone else who will be on title.',
+  bad_name:'Enter your name.',bad_phone:'Enter a 10-digit phone.',bad_email:'Enter a valid email.',
+  consent:'By sending, you agree that Jason Aguirre Group may contact you by call, text or email about your offer. Message rates may apply.',
+  dk:'Done!',dh:'We received your offer.',dp:'Jason Aguirre and the team will review it and contact you soon to prepare the official documents. Check your offer status in your portal anytime.',
+  d_portal:'See my offer in my portal',d_pre:'Get my free pre-approval',d_up:'Upload my pre-approval or proof',d_homes:'Keep looking at homes',
+  fail:'We could not send your offer. Check your connection and try again.',many:'We received several offers from this phone. Please wait a moment or call us.',
+  cash_lbl:'Cash',fin_lbl:'Loan'}
+};
+function t(k){ return T[lang][k]; }
+function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function num(v){ v=Number(String(v==null?'':v).replace(/[^0-9.]/g,'')); return isFinite(v)?v:0; }
+function money(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+function iso(d){ return d.toISOString().slice(0,10); }
+function $(id){ return document.getElementById(id); }
+
+/* ---------- state, prefilled from the listing ---------- */
+var listP=num(qs.get('price'));
+var D={ mls:(qs.get('mls')||'').replace(/[^A-Za-z0-9-]/g,'').slice(0,24), address:(qs.get('addr')||'').slice(0,200), list_price:listP||'',
+  photo:(qs.get('ph')||'').replace(/[^A-Za-z0-9/._-]/g,''), beds:qs.get('bd')||'', baths:qs.get('ba')||'', sqft:qs.get('sf')||'',
+  property_type:(qs.get('type')||'').slice(0,40), ack:false,
+  offer_price:listP||'', earnest:listP?Math.max(500,Math.round(listP*0.01/500)*500):'',
+  financing:'', loan_type:'', down_payment:'', proof:'', lender:'',
+  contingencies:['insp'], option_days:7, close_date:iso(new Date(Date.now()+35*864e5)), notes:'',
+  name:'', phone:'', email:'', co_buyer:'' };
+var step=0, N=6, busy=false;
+
+function ref(){ try{ var r=JSON.parse(localStorage.getItem('jag_ref')||'null'); return r&&r.code&&Date.now()-(r.at||0)<60*864e5?r.code:null; }catch(e){ return null; } }
+function contText(){ return D.contingencies.map(function(k){ return T[lang].ct[k]; }); }
+function strengthObj(){ return {offer_price:D.offer_price,list_price:D.list_price,earnest:D.earnest,financing:D.financing,proof:D.proof,
+  contingencies:contText(),option_days:D.option_days,close_date:D.close_date}; }
+
+/* ---------- screens ---------- */
+function prog(){ var h='<div class="prog" aria-hidden="true">'; for(var k=0;k<N;k++) h+='<i class="'+(k<=step?'on':'')+'"></i>'; return h+'</div><div class="k">'+t('step')+(step+1)+t('of')+N+' · '+t('s'+step+'k')+'</div>'; }
+function homeCard(){
+  if(!D.address && !D.list_price) return '';
+  var sp=[D.beds?D.beds+(lang==='es'?' rec':' bd'):'',D.baths?D.baths+(lang==='es'?' baños':' ba'):'',D.sqft?Number(D.sqft).toLocaleString('en-US')+(lang==='es'?' pies²':' sqft'):''].filter(Boolean).join(' · ');
+  return '<div class="home'+(D.photo?'':' noimg')+'"><div class="bg" aria-hidden="true">'+(D.list_price?money(D.list_price):'')+'</div>'+
+    (D.photo?'<div class="ph" role="img" aria-label="'+esc(D.address)+'" style="background-image:url(\''+CDN+esc(D.photo)+'?class=medium\')"></div>':'')+
+    '<div class="cd"><b>'+(D.list_price?money(D.list_price):'')+'</b><span>'+esc(D.address)+'</span>'+(sp?'<small>'+esc(sp)+'</small>':'')+'</div></div>';
+}
+function opt(name,val,label,sub){ return '<button type="button" class="opt" data-o="'+name+'" data-v="'+val+'" aria-pressed="'+(D[name]===val)+'"><i></i><span>'+label+(sub?'<small>'+sub+'</small>':'')+'</span></button>'; }
+function field(id,label,html,hint,err){ return '<div class="f" id="f_'+id+'"><label for="'+id+'">'+label+'</label>'+html+(hint?'<div class="hint">'+hint+'</div>':'')+(err?'<div class="err">'+err+'</div>':'')+'</div>'; }
+
+function render(){
+  var m=$('main'), h='';
+  if(step===0){
+    h=prog()+'<h1>'+t('s0h')+'</h1><p class="lead">'+t('s0p')+'</p>'+homeCard();
+    if(!D.mls) h+=field('address',t('addr'),'<input id="address" autocomplete="street-address" placeholder="'+t('addr_ph')+'" value="'+esc(D.address)+'">','',t('need'))+
+      field('list_price',t('list')+(lang==='es'?' (si lo sabe)':' (if you know it)'),'<div class="money"><input id="list_price" inputmode="numeric" value="'+esc(D.list_price)+'"></div>');
+    h+='<div class="f" id="f_ack"><label class="ack"><input type="checkbox" id="ack"'+(D.ack?' checked':'')+'><span>'+t('ack')+'</span></label><div class="err">'+t('ack_err')+'</div></div>';
+  }else if(step===1){
+    var r=D.list_price&&num(D.offer_price)?num(D.offer_price)/num(D.list_price):0;
+    h=prog()+'<h1>'+t('s1h')+'</h1>'+
+      field('offer_price',t('offer'),'<div class="money bigin"><input id="offer_price" inputmode="numeric" value="'+esc(D.offer_price?Number(num(D.offer_price)).toLocaleString('en-US'):'')+'"></div>'+
+        (D.list_price?'<div class="ratio" id="ratio">'+(r?'<b>'+(r*100).toFixed(1)+'%</b>'+t('of_list'):'')+'</div>':''),'',t('bad_price'))+
+      (D.list_price?'<div class="chips sm" style="margin:-6px 0 22px">'+[[1,t('c_list')],[0.98,'−2%'],[0.95,'−5%'],[1.01,'+1%']].map(function(c){
+        var v=Math.round(num(D.list_price)*c[0]/500)*500; return '<button type="button" class="chip" data-price="'+v+'" aria-pressed="'+(num(D.offer_price)===v)+'">'+c[1]+'</button>'; }).join('')+'</div>':'')+
+      field('earnest',t('earnest'),'<div class="money"><input id="earnest" inputmode="numeric" value="'+esc(D.earnest?Number(num(D.earnest)).toLocaleString('en-US'):'')+'"></div>',t('earnest_h'));
+  }else if(step===2){
+    var cash=D.financing==='cash';
+    h=prog()+'<h1>'+t('s2h')+'</h1><div class="f" id="f_financing"><div class="opts">'+opt('financing','financed',t('fin'),t('fin_s'))+opt('financing','cash',t('cash'),t('cash_s'))+'</div><div class="err">'+t('pick')+'</div></div>';
+    if(D.financing==='financed') h+='<div class="f"><span class="lbl">'+t('loan')+'</span><div class="chips">'+['fha','conv','va','itin','dk'].map(function(k){
+        return '<button type="button" class="chip" data-loan="'+k+'" aria-pressed="'+(D.loan_type===k)+'">'+T[lang].ln[k]+'</button>'; }).join('')+'</div></div>'+
+      '<div class="two">'+field('down_payment',t('down'),'<input id="down_payment" value="'+esc(D.down_payment)+'" placeholder="'+t('down_ph')+'">')+
+        field('lender',t('lender'),'<input id="lender" value="'+esc(D.lender)+'">')+'</div>';
+    if(D.financing) h+='<div class="f" id="f_proof"><span class="lbl">'+(cash?t('pof_q'):t('pre_q'))+'</span><div class="opts">'+
+      opt('proof','yes',t('p_yes'))+opt('proof','working',t('p_work'))+opt('proof','no',t('p_no'))+'</div><div class="err">'+t('pick')+'</div></div>';
+  }else if(step===3){
+    var cs=D.financing==='cash'?['insp','appr','sale']:['insp','appr','fin','sale'];
+    h=prog()+'<h1>'+t('s3h')+'</h1><div class="f"><span class="lbl">'+t('cont')+'</span><div class="chips">'+cs.map(function(k){
+      return '<button type="button" class="chip" data-cont="'+k+'" aria-pressed="'+(D.contingencies.indexOf(k)>=0)+'">'+T[lang].ct[k]+'</button>'; }).join('')+'</div></div>'+
+      '<div class="two">'+field('option_days',t('opt'),'<input id="option_days" inputmode="numeric" value="'+esc(D.option_days)+'">',t('opt_h'))+
+      field('close_date',t('close'),'<input id="close_date" type="date" value="'+esc(D.close_date)+'" min="'+iso(new Date())+'">')+'</div>'+
+      field('notes',t('notes'),'<textarea id="notes" placeholder="'+t('notes_ph')+'">'+esc(D.notes)+'</textarea>');
+  }else if(step===4){
+    var so=strengthObj(), st=JagOffer.strength(so), cmp=JagOffer.compare(so), L=JagOffer.text();
+    var proofTxt={yes:t('p_yes'),working:t('p_work'),no:t('p_no')}[D.proof]||'—';
+    h=prog()+'<h1>'+t('s4h')+'</h1>'+homeCard()+
+      '<div class="panel">'+JagOffer.meter(st.level,{big:true})+
+      (D.proof!=='yes'&&cmp.better?'<div class="tip"><b>'+t('tip_h')+'</b>'+(D.financing==='cash'?t('tip_f')(L.lv[cmp.with.level]):t('tip_p')(L.lv[cmp.with.level]))+
+        '<div style="margin-top:10px">'+JagOffer.meter(cmp.with.level,{title:cmp.label})+'</div></div>':'')+
+      '<p class="fine">'+L.fine+'</p></div>'+
+      '<div class="rev">'+[[t('r_home'),D.address||'—'],[t('r_price'),D.offer_price?money(num(D.offer_price)):'—'],[t('r_earn'),D.earnest?money(num(D.earnest)):'—'],
+        [t('r_pay'),D.financing==='cash'?t('cash_lbl'):(t('fin_lbl')+(D.loan_type?' · '+T[lang].ln[D.loan_type]:''))],[t('r_proof'),proofTxt],
+        [t('r_opt'),D.option_days?D.option_days+t('days'):'—'],[t('r_close'),D.close_date||'—'],[t('r_cont'),contText().join(', ')||'—']]
+        .map(function(r){ return '<div><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>'; }).join('')+'</div>';
+  }else if(step===5){
+    h=prog()+'<h1>'+t('s5h')+'</h1><p class="lead">'+t('s5p')+'</p>'+
+      field('name',t('name'),'<input id="name" autocomplete="name" value="'+esc(D.name)+'">','',t('bad_name'))+
+      '<div class="two">'+field('phone',t('phone'),'<input id="phone" type="tel" autocomplete="tel" inputmode="tel" value="'+esc(D.phone)+'">','',t('bad_phone'))+
+      field('email',t('email'),'<input id="email" type="email" autocomplete="email" inputmode="email" value="'+esc(D.email)+'">','',t('bad_email'))+'</div>'+
+      field('co_buyer',t('co'),'<input id="co_buyer" value="'+esc(D.co_buyer)+'">',t('co_h'))+'<p class="fine">'+t('consent')+'</p>';
+  }else{ return renderDone(); }
+  m.innerHTML=h;
+  $('bar').hidden=false;
+  $('back').textContent=t('back'); $('back').style.display=step?'':'none';
+  $('next').textContent=step===N-1?t('send'):t('next'); $('next').disabled=false;
+  wire();
+}
+function renderDone(){
+  $('bar').hidden=true;
+  var signed=!!(window.JagAccount&&JagAccount.user());
+  var preUrl='apply.html?'+new URLSearchParams({lang:lang,home:D.address||'',mls:D.mls||'',price:String(Math.round(num(D.offer_price))||'')}).toString();
+  $('main').innerHTML='<div class="done"><div class="ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>'+
+    '<div class="k">'+t('dk')+'</div><h1>'+t('dh')+'</h1><p class="lead" style="margin:0 auto">'+t('dp')+'</p>'+
+    '<div class="actions"><button type="button" class="p" id="portal">'+t('d_portal')+'</button>'+
+    (D.proof!=='yes'&&D.financing==='financed'?'<a class="s" href="'+esc(preUrl)+'">'+t('d_pre')+'</a>':'')+
+    (D.proof==='yes'?'<a class="s" href="account.html#offers">'+t('d_up')+'</a>':'')+
+    '<a class="l" href="homes">'+t('d_homes')+'</a></div></div>';
+  $('portal').onclick=function(){
+    if(signed){ location.href='account.html#offers'; return; }
+    JagAccount.requireSignIn('why_offer',D.email).then(function(){ location.href='account.html#offers'; }).catch(function(){});
+  };
+}
+function wire(){
+  var m=$('main');
+  m.querySelectorAll('input,textarea,select').forEach(function(el){
+    el.addEventListener('input',function(){
+      var k=el.id; if(k==='ack') return;
+      D[k]=el.value; var fg=el.closest('.f'); if(fg) fg.classList.remove('bad');
+      if(k==='offer_price'||k==='earnest'||k==='list_price'){ var v=num(el.value); if(k!=='list_price'){ el.value=v?v.toLocaleString('en-US'):''; } D[k]=v||''; }
+      if(k==='offer_price'&&$('ratio')){ var r=num(D.list_price)?num(D.offer_price)/num(D.list_price):0; $('ratio').innerHTML=r?'<b>'+(r*100).toFixed(1)+'%</b>'+t('of_list'):'';
+        m.querySelectorAll('[data-price]').forEach(function(b){ b.setAttribute('aria-pressed',String(+b.dataset.price===num(D.offer_price))); }); }
+    });
+  });
+  var ack=$('ack'); if(ack) ack.onchange=function(){ D.ack=ack.checked; $('f_ack').classList.remove('bad'); };
+  m.querySelectorAll('[data-price]').forEach(function(b){ b.onclick=function(){ D.offer_price=+b.dataset.price; render(); }; });
+  m.querySelectorAll('[data-o]').forEach(function(b){ b.onclick=function(){
+    var k=b.dataset.o; D[k]=b.dataset.v;
+    if(k==='financing'){ D.contingencies=D.contingencies.filter(function(c){ return D.financing==='cash'?c!=='fin':true; });
+      if(D.financing==='financed'&&D.contingencies.indexOf('fin')<0) D.contingencies.push('fin'); }
+    render(); }; });
+  m.querySelectorAll('[data-loan]').forEach(function(b){ b.onclick=function(){ D.loan_type=b.dataset.loan; render(); }; });
+  m.querySelectorAll('[data-cont]').forEach(function(b){ b.onclick=function(){ var k=b.dataset.cont, i=D.contingencies.indexOf(k);
+    if(i>=0) D.contingencies.splice(i,1); else D.contingencies.push(k); b.setAttribute('aria-pressed',String(i<0)); }; });
+}
+function bad(id){ var f=$('f_'+id); if(f){ f.classList.add('bad'); var i=f.querySelector('input,select,textarea'); if(i) i.focus(); } return false; }
+function valid(){
+  if(step===0){ if(!D.mls&&!String(D.address).trim()) return bad('address'); if(!D.ack) return bad('ack'); }
+  if(step===1&&!(num(D.offer_price)>0)) return bad('offer_price');
+  if(step===2){ if(!D.financing) return bad('financing'); if(!D.proof) return bad('proof'); }
+  if(step===5){
+    if(!String(D.name).trim()) return bad('name');
+    if(String(D.phone).replace(/\D/g,'').length<10) return bad('phone');
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(D.email).trim())) return bad('email');
+  }
+  return true;
+}
+$('next').onclick=function(){ if(busy||!valid()) return; if(step<N-1){ step++; render(); window.scrollTo({top:0,behavior:'smooth'}); } else submit(); };
+$('back').onclick=function(){ if(step>0){ step--; render(); window.scrollTo({top:0,behavior:'smooth'}); } };
+
+function submit(){
+  busy=true; $('next').disabled=true; $('next').textContent=t('sending');
+  var p={ name:String(D.name).trim(), phone:String(D.phone).replace(/\D/g,''), email:String(D.email).trim().toLowerCase(), co_buyer:D.co_buyer, lang:lang,
+    mls:D.mls, address:D.address, list_price:D.list_price, property_type:D.property_type, offer_price:num(D.offer_price), earnest:num(D.earnest),
+    financing:D.financing, loan_type:D.loan_type?T.en.ln[D.loan_type]:'', down_payment:D.down_payment, lender:D.lender, proof:D.proof,
+    contingencies:D.contingencies.map(function(k){ return T.es.ct[k]; }), option_days:D.option_days, close_date:D.close_date, notes:D.notes,
+    agent_code:ref(), source:location.pathname+location.search };
+  var tok=window.JagAccount&&JagAccount.user()?JagAccount.token():Promise.resolve(null);
+  Promise.resolve(tok).then(function(tk){
+    return fetch(SB+'/rest/v1/rpc/jag_offer_submit',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+(tk||KEY),'Content-Type':'application/json'},body:JSON.stringify({p:p})});
+  }).then(function(r){ return r.json(); }).then(function(j){
+    if(!j||!j.ok){ busy=false; $('next').disabled=false; $('next').textContent=t('send'); alert(j&&j.reason==='too_many'?t('many'):t('fail')); return; }
+    try{ var so=strengthObj(); emailTeam(p, JagOffer.text().lv[JagOffer.strength(so).level]); }catch(e){}
+    try{ if(window.JagAccount&&JagAccount.user()) JagAccount.logActivity({kind:'inquiry',mls:D.mls||null,price:num(D.offer_price)||null}); }catch(e){}
+    step=N; render(); window.scrollTo({top:0,behavior:'smooth'});
+  }).catch(function(){ busy=false; $('next').disabled=false; $('next').textContent=t('send'); alert(t('fail')); });
+}
+function emailTeam(p, lvl){
+  function l(k,v){ return v?k+': '+v+'\n':''; }
+  var msg='NEW BUYER OFFER (website worksheet, not a binding offer)\n\n'+l('Buyer',p.name)+l('Phone',p.phone)+l('Email',p.email)+l('Co-buyer',p.co_buyer)+l('Language',p.lang)+
+    '\n'+l('Home',p.address)+l('MLS',p.mls)+l('List price',p.list_price?money(p.list_price):'')+l('Offer price',money(p.offer_price))+l('Earnest money',p.earnest?money(p.earnest):'')+
+    '\n'+l('Paying',p.financing)+l('Loan type',p.loan_type)+l('Down payment',p.down_payment)+l('Lender',p.lender)+l('Pre-approval / proof of funds',p.proof)+
+    '\n'+l('Conditions',p.contingencies.join(', '))+l('Option days',p.option_days)+l('Target closing',p.close_date)+l('Notes',p.notes)+l('Agent link',p.agent_code)+
+    '\nOffer strength shown to the buyer: '+lvl+'\nUpdate its status in the admin Offers tab.';
+  fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+    body:JSON.stringify({access_key:W3,subject:'New Buyer Offer: '+p.name+(p.address?' — '+p.address:''),from_name:'Jason Aguirre Group — eXp Realty',replyto:p.email,botcheck:false,message:msg})}).catch(function(){});
+}
+
+/* ---------- language + signed-in prefill ---------- */
+function paintLang(){ document.documentElement.lang=lang; document.querySelectorAll('[data-lang]').forEach(function(b){ b.classList.toggle('on',b.dataset.lang===lang); }); }
+document.querySelectorAll('[data-lang]').forEach(function(b){ b.onclick=function(){ lang=b.dataset.lang; try{ localStorage.setItem('jag_lang',lang); }catch(e){} paintLang(); if(window.JagAccount&&JagAccount.relabel) JagAccount.relabel(); render(); }; });
+paintLang();
+if(window.JagAccount){
+  JagAccount.mountButton($('acct'));
+  var fill=function(){ var u=JagAccount.user(), pr=JagAccount.profile(); if(!u) return;
+    if(!D.email) D.email=u.email||''; if(pr){ if(!D.name) D.name=pr.name||''; if(!D.phone) D.phone=pr.phone||''; } };
+  fill(); if(JagAccount.user()&&JagAccount.getProfile) JagAccount.getProfile().then(fill).catch(function(){});
+  JagAccount.onChange(fill);
+}
+render();
+})();
+</script>
+
+</body>
+</html>

@@ -119,6 +119,58 @@ main{padding-block:16px 60px}
 .ln .t{min-width:0;flex:1}.ln .t b{display:block;font-size:14px;overflow-wrap:anywhere}.ln .t small{color:var(--muted);font-size:12.5px}
 .ln .o{text-align:center;min-width:56px}.ln .o b{display:block;font-size:20px;font-weight:800}.ln .o span{font-size:11px;color:var(--muted);font-weight:700}
 .note{font-size:12.5px;color:var(--muted);margin:12px 2px 0}
+
+/* ===== 2026-10: match the client site: paper + ink, red only for things you tap, huge numbers with tiny labels ===== */
+:focus-visible{outline-color:var(--red)}
+body{background:var(--paper)}
+.hd{background:var(--paper);color:var(--ink);border-bottom:1px solid var(--line)}
+.hd img,.hd .ph{background:#efedea}
+.hd small{opacity:1;color:var(--muted)}
+.hd .out{border:2px solid var(--red);color:var(--red);min-height:40px}
+.tabs button{font-size:14px}
+.tabs .tc{display:inline-block;min-width:20px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;padding:1px 6px;margin-left:4px}
+.tabs .tc:empty{display:none}
+.stat{background:#f6f5f3;border-radius:20px;padding:14px 16px}
+.stat b{font-size:36px;letter-spacing:-.05em;line-height:1}
+.stat span{display:block;margin-top:6px;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.bar input,.sh input,.fld input{background:#f6f5f3;border:1px solid #d9d6d1;border-radius:14px}
+.bar input:focus,.sh input:focus{outline:3px solid var(--red-t);border-color:var(--red)}
+.chip{border:2px solid var(--red);color:var(--red);min-height:40px}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.cl{border:2px solid #ebe9e5;border-left:2px solid #ebe9e5;border-radius:22px;padding:16px}
+.cl.hot,.cl.warm{border-left-color:#ebe9e5}
+.cl.hot{border-color:var(--ink)}
+.cl-top b{font-size:20px;letter-spacing:-.02em}
+.score{background:#f6f5f3;border-radius:16px;min-width:64px}
+.score b{font-size:30px;letter-spacing:-.04em}
+.score span{font-size:9px;letter-spacing:.14em}
+.score.hot{background:var(--ink);color:#fff}
+.score.warm{background:#efedea;color:var(--ink)}
+.pill,.pill.g,.pill.b,.pill.r{background:#f6f5f3;color:var(--ink);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.prio{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-radius:99px;padding:5px 10px}
+.prio.p1{background:var(--ink);color:#fff}.prio.p2{background:#efedea;color:var(--ink)}.prio.p3{background:#f6f5f3;color:var(--muted)}
+.home{background:#f6f5f3;border-radius:14px}
+.acts a,.acts button{background:#fff;color:var(--red);border:2px solid var(--red);min-height:44px}
+.acts .call{background:var(--red);color:#fff;border-color:var(--red)}
+.det h4{font-size:10px;letter-spacing:.14em}
+.det a,.lk{color:var(--red);font-weight:700}
+.lk{border:0;background:none;padding:2px 6px;font-size:13px;min-height:32px}
+.pa{white-space:nowrap}
+.empty{background:#f6f5f3;border-radius:20px}
+.sh,.me,.links .ln{background:#f6f5f3;border-radius:20px}
+.ln .o b{font-size:26px;letter-spacing:-.04em}
+.of{border:2px solid #ebe9e5;border-radius:22px;padding:16px;background:var(--paper);display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.det .of{margin:6px 0}
+.of-who{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.of-who b{font-size:17px}
+.of-p{font-size:36px;font-weight:800;letter-spacing:-.05em;line-height:1.05;margin-top:4px}
+.of-p small{font-size:12px;font-weight:700;letter-spacing:0;color:var(--muted);margin-left:8px}
+.of-a{font-size:13px;color:#3f3e47}
+.of-a a{color:var(--red);font-weight:700}
+.ost{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+.ost .chip{min-height:36px;padding:6px 11px;font-size:12.5px}
+.onote{width:100%;min-height:60px;border:1px solid #d9d6d1;border-radius:14px;background:#f6f5f3;padding:10px 12px;font:inherit;font-size:14px;resize:vertical;margin-bottom:8px}
+.ofm{color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
@@ -146,6 +198,7 @@ main{padding-block:16px 60px}
   </div></header>
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
     <button type="button" data-tab="clients" class="on">Clients</button>
+    <button type="button" data-tab="offers">Offers <span class="tc" id="tc-offers"></span></button>
     <button type="button" data-tab="share">Share</button>
     <button type="button" data-tab="links">My links</button>
   </div></nav>
@@ -157,14 +210,24 @@ main{padding-block:16px 60px}
       </div>
       <div class="bar" id="chips">
         <button type="button" class="chip on" data-f="all">All</button>
+        <button type="button" class="chip" data-f="prio">Priority</button>
         <button type="button" class="chip" data-f="mine">Mine</button>
         <button type="button" class="chip" data-f="hot">Hot (70+)</button>
         <button type="button" class="chip" data-f="week">Active this week</button>
       </div>
       <div class="list" id="list"><div class="empty">Loading clients…</div></div>
-      <p class="note">Score (0-100) = how actively a client is shopping on our website right now. Updated every hour. "Mine" = clients who signed up through one of your links.</p>
+      <p class="note">Clients are sorted by priority: <b>verified</b> buyers first (pre-approval or proof of funds checked by the team), then buyers <b>in contact</b> with us, then everyone else by score. Score (0-100) = how actively a client is shopping on our website right now, updated hourly. "Mine" = clients who signed up through one of your links.</p>
     </section>
 
+    <section id="t-offers" hidden>
+      <div class="bar" id="ochips">
+        <button type="button" class="chip on" data-of="open">Open</button>
+        <button type="button" class="chip" data-of="all">All</button>
+        <button type="button" class="chip" data-of="won">Accepted</button>
+      </div>
+      <div class="list" id="offers"><div class="empty">Loading offers…</div></div>
+      <p class="note">Verified buyers (pre-approval or proof of funds checked by the team) are listed first, then buyers already in contact with us. The status and note you set show up in the client's portal.</p>
+    </section>
     <section id="t-share" hidden>
       <div class="sh-grid">
         <div class="sh">
@@ -203,6 +266,7 @@ main{padding-block:16px 60px}
 
 <script src="jag-capture.js"></script>
 <script src="jag-share.js"></script>
+<script src="jag-offer.js"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -287,7 +351,7 @@ main{padding-block:16px 60px}
     rpc('jag_agent_clients').then(function(j){
       if(!j || !j.ok){ $('list').innerHTML = '<div class="empty">Could not load clients.</div>'; return; }
       rows = j.clients || []; shares = j.shares || [];
-      paint(); paintLinks();
+      paint(); paintLinks(); loadOffers();
     }).catch(function(e){ if(String(e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); } else $('list').innerHTML = '<div class="empty">Could not load clients. Pull down to refresh.</div>'; });
   }
 
@@ -295,6 +359,7 @@ main{padding-block:16px 60px}
     var s = q.toLowerCase(), wk = Date.now() - 7 * 864e5;
     return rows.filter(function(c){
       if(filter === 'mine' && c.agent_code !== me.code) return false;
+      if(filter === 'prio' && !(c.tier <= 2)) return false;
       if(filter === 'hot' && !(c.score >= 70)) return false;
       if(filter === 'week' && !(c.days_7 > 0)) return false;
       if(s && [c.name, c.email, c.phone, c.top_zip, (c.homes || []).map(function(h){ return h.zip + ' ' + h.city; }).join(' ')].join(' ').toLowerCase().indexOf(s) < 0) return false;
@@ -303,9 +368,9 @@ main{padding-block:16px 60px}
   }
   function paint(){
     var hot = rows.filter(function(c){ return c.score >= 70; }).length, wk = rows.filter(function(c){ return c.days_7 > 0; }).length,
-        mine = rows.filter(function(c){ return c.agent_code === me.code; }).length, opens = shares.reduce(function(a, x){ return a + (x.opens || 0); }, 0);
-    $('stats').innerHTML = '<div class="stat"><b class="num">' + hot + '</b><span>Hot right now</span></div><div class="stat"><b class="num">' + wk + '</b><span>Active this week</span></div>' +
-      '<div class="stat"><b class="num">' + mine + '</b><span>Signed up from your links</span></div><div class="stat"><b class="num">' + opens + '</b><span>Opens of your links</span></div>';
+        mine = rows.filter(function(c){ return c.agent_code === me.code; }).length, ver = rows.filter(function(c){ return c.tier === 1; }).length;
+    $('stats').innerHTML = '<div class="stat"><b class="num">' + ver + '</b><span>Verified buyers</span></div><div class="stat"><b class="num">' + hot + '</b><span>Hot right now</span></div>' +
+      '<div class="stat"><b class="num">' + wk + '</b><span>Active this week</span></div><div class="stat"><b class="num">' + mine + '</b><span>From your links</span></div>';
     var list = filtered();
     if(!list.length){ $('list').innerHTML = '<div class="empty">' + (rows.length ? 'No clients match.' : 'No website accounts yet. Share your links so clients sign up.') + '</div>'; return; }
     $('list').innerHTML = list.map(card).join('');
@@ -316,18 +381,23 @@ main{padding-block:16px 60px}
     var ph = digits(c.phone), first = (c.name || '').split(' ')[0] || '';
     var top = (c.homes || [])[0];
     var tags = (c.tags || []).map(function(t){ return '<span class="pill r">' + esc(TAGL[t] || t) + (t === 'area' && c.top_zip ? ' · ' + esc(c.top_zip) : '') + '</span>'; }).join('');
+    var pr = c.priority || {};
+    var prio = pr.proof ? '<span class="prio p1">Verified ' + (pr.proof === 'pof' ? 'proof of funds' : 'pre-approval') + ' ✓</span>' :
+      pr.proof_pending ? '<span class="prio p2">Proof uploaded: review it</span>' : pr.in_contact ? '<span class="prio p2">In contact</span>' : '';
+    var offerPill = pr.offers ? '<span class="pill">' + pr.offers + ' offer' + (pr.offers === 1 ? '' : 's') + (pr.last_offer ? ' · ' + esc(JagOffer.text().st[pr.last_offer] || pr.last_offer) : '') + '</span>' : '';
     var owner = c.agent_code ? (c.agent_code === me.code ? '<span class="pill b">Your client</span>' : '<span class="pill">via ' + esc(c.agent_code) + '</span>') : '';
     var h = '<article class="cl ' + cls + '" data-u="' + esc(c.user_id) + '">' +
+      (prio ? '<div>' + prio + '</div>' : '') +
       '<div class="cl-top"><div class="who"><b>' + esc(c.name || c.email) + '</b><small>' + esc(c.lang === 'en' ? 'English' : 'Español') + ' · last on the site ' + esc(ago(c.last_seen_at)) + '</small></div>' +
       '<div class="score ' + cls + '"><b class="num">' + sc + '</b><span>score</span></div></div>' +
       '<div class="facts"><span class="pill g num">' + (c.days_7 || 0) + ' day' + (c.days_7 === 1 ? '' : 's') + ' this week</span><span class="pill num">' + (c.days_30 || 0) + ' day' + (c.days_30 === 1 ? '' : 's') + ' this month</span>' +
       '<span class="pill num">' + (c.views_30 || 0) + ' home' + (c.views_30 === 1 ? '' : 's') + ' viewed</span><span class="pill num">' + (c.favorites || 0) + ' saved</span>' +
-      (c.best_hour != null ? '<span class="pill">Online ~' + hourLbl(c.best_hour) + '</span>' : '') + tags + owner + '</div>' +
+      (c.best_hour != null ? '<span class="pill">Online ~' + hourLbl(c.best_hour) + '</span>' : '') + offerPill + tags + owner + '</div>' +
       (top ? '<a class="home" href="homes#' + encodeURIComponent(top.mls) + '" target="_blank" rel="noopener">Keeps looking at: <b>MLS ' + esc(top.mls) + '</b>' + (top.city ? ' · ' + esc(top.city) : '') + (top.price ? ' · ' + money(top.price) : '') + ' · viewed ' + top.views + 'x</a>' : '') +
       '<div class="acts">' + (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a><a href="sms:+1' + ph + '">Text</a>' : '') +
       (c.email ? '<a href="mailto:' + esc(c.email) + '">Email</a>' : '') +
       (c.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + c.fub_person_id + '" target="_blank" rel="noopener">FUB</a>' : '') +
-      '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide activity' : 'Activity') + '</button></div>' +
+      '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide details' : 'Offers & activity') + '</button></div>' +
       (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
       '</article>';
     return h;
@@ -337,6 +407,11 @@ main{padding-block:16px 60px}
     rpc('jag_agent_client_detail', { p_user: uid }).then(function(j){
       if(!j || !j.ok){ open[uid] = 'Could not load.'; paint(); return; }
       var h = '';
+      if((j.proof || []).length) h += '<h4>Pre-approval / proof of funds</h4><ul>' + j.proof.map(function(p){
+        return '<li><span>' + (p.kind === 'pof' ? 'Proof of funds' : 'Pre-approval') + ' · ' + esc(p.file_name || '') + ' · <b>' + esc(p.status) + '</b></span><span class="pa">' +
+          '<button type="button" class="lk" data-view="' + esc(p.path) + '">View</button>' +
+          (p.status !== 'verified' ? '<button type="button" class="lk" data-pv="' + esc(p.id) + '" data-u="' + esc(uid) + '">Verify</button>' : '') + '</span></li>'; }).join('') + '</ul>';
+      if((j.offers || []).length) h += '<h4>Offers (' + j.offers.length + ')</h4>' + j.offers.map(function(o){ var c = rows.filter(function(x){ return x.user_id === uid; })[0]; o.priority = c ? c.priority : null; return offerBox(o); }).join('');
       h += '<h4>Saved homes (' + j.favorites.length + ')</h4>' + (j.favorites.length ? '<ul>' + j.favorites.slice(0, 10).map(function(f){ var s = f.snap || {};
         return '<li><span><a href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">' + esc(s.addr || 'MLS ' + f.mls) + '</a>' + (s.city ? ', ' + esc(s.city) : '') + ' · ' + money(f.last_price || s.price) + (f.last_status && f.last_status !== 'Active' ? ' · ' + esc(f.last_status) : '') + '</span><time>' + ago(f.saved_at) + '</time></li>'; }).join('') + '</ul>' : '<span>None yet.</span>');
       h += '<h4>Saved searches (' + j.searches.length + ')</h4>' + (j.searches.length ? '<ul>' + j.searches.map(function(s){ return '<li><span>' + esc(s.label) + '</span><time>' + ago(s.created_at) + '</time></li>'; }).join('') + '</ul>' : '<span>None yet.</span>');
@@ -347,6 +422,10 @@ main{padding-block:16px 60px}
     }).catch(function(){ open[uid] = 'Could not load.'; paint(); });
   }
   $('list').addEventListener('click', function(e){
+    if(offerClick(e)) return;
+    var pv = e.target.closest('[data-pv]');
+    if(pv){ pv.disabled = true; rpc('jag_proof_review', { p_id: pv.getAttribute('data-pv'), p_status: 'verified' }).then(function(j){
+      if(j && j.ok){ var u = pv.getAttribute('data-u'); open[u] = true; detail(u); load(); } else pv.disabled = false; }).catch(function(){ pv.disabled = false; }); return; }
     var b = e.target.closest('[data-more]'); if(!b) return;
     var u = b.getAttribute('data-more');
     if(open[u]){ delete open[u]; paint(); return; }
@@ -354,6 +433,61 @@ main{padding-block:16px 60px}
   });
   $('q').addEventListener('input', function(){ q = this.value; paint(); });
   $('chips').addEventListener('click', function(e){ var b = e.target.closest('[data-f]'); if(!b) return; filter = b.getAttribute('data-f'); this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x === b); }); paint(); });
+
+  /* ---------------- offers: status the client sees ---------------- */
+  var OST = [['submitted','Received'],['reviewing','In review'],['sent','Sent to seller'],['countered','Counteroffer'],['accepted','Accepted'],['declined','Declined'],['withdrawn','Withdrawn']];
+  var offersAll = [], ofilter = 'open';
+  function prioRank(o){ var p = o.priority; return !p ? 3 : p.proof ? 1 : (p.in_contact || p.proof_pending) ? 2 : 3; }
+  function offerBox(o){
+    var p = o.priority, st = JagOffer.strength({ offer_price: o.offer_price, list_price: o.list_price, earnest: o.earnest, financing: o.financing, proof: o.proof,
+      proof_verified: !!(p && p.proof), contingencies: o.contingencies || [], option_days: o.option_days, close_date: o.close_date });
+    var badge = p && p.proof ? '<span class="prio p1">Verified ' + (p.proof === 'pof' ? 'proof of funds' : 'pre-approval') + ' ✓</span>' :
+      p && (p.in_contact || p.proof_pending) ? '<span class="prio p2">' + (p.proof_pending ? 'Proof uploaded: review it' : 'In contact') + '</span>' : '<span class="prio p3">' + (p ? 'Not verified' : 'No account yet') + '</span>';
+    var pct = o.list_price && o.offer_price ? (o.offer_price / o.list_price * 100).toFixed(1) + '% of list' : '';
+    var ph = digits(o.phone);
+    return '<div class="of" data-oid="' + esc(o.id) + '">' + (o.name ? '<div class="of-who"><b>' + esc(o.name) + '</b>' + badge + '</div>' : badge) +
+      '<div class="of-p">' + money(o.offer_price) + '<small>' + esc(pct) + '</small></div>' +
+      '<div class="of-a">' + esc(o.address || '') + (o.mls ? ' · <a href="homes#' + encodeURIComponent(o.mls) + '" target="_blank" rel="noopener">MLS ' + esc(o.mls) + '</a>' : '') + '</div>' +
+      '<div class="of-a">' + (o.financing === 'cash' ? 'Cash' : 'Financed' + (o.loan_type ? ' · ' + esc(o.loan_type) : '')) + ' · proof: ' + esc(o.proof || '—') +
+        (o.earnest ? ' · earnest ' + money(o.earnest) : '') + (o.option_days ? ' · option ' + o.option_days + 'd' : '') + ' · sent ' + ago(o.created_at) + '</div>' +
+      '<div style="margin:10px 0">' + JagOffer.meter(st.level, { title: 'Strength shown to client' }) + '</div>' +
+      '<div class="ost">' + OST.map(function(x){ return '<button type="button" class="chip' + (o.status === x[0] ? ' on' : '') + '" data-ost="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<textarea class="onote" placeholder="Note for the client (shows in their portal)">' + esc(o.status_note || '') + '</textarea>' +
+      '<div class="acts">' + (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a><a href="sms:+1' + ph + '">Text</a>' : '') +
+        '<button type="button" class="call" data-osave="1">Update offer</button></div>' +
+      (o.status_at ? '<small class="ofm">Last update ' + ago(o.status_at) + (o.status_by ? ' by ' + esc(o.status_by) : '') + '</small>' : '') + '</div>';
+  }
+  function offerClick(e){
+    var st = e.target.closest('[data-ost]'), sv = e.target.closest('[data-osave]'), vw = e.target.closest('[data-view]');
+    if(vw){ var w = window.open('about:blank', '_blank');
+      JagShare.token().then(function(t){ return fetch(BASE + '/storage/v1/object/sign/client-proof/' + vw.getAttribute('data-view').split('/').map(encodeURIComponent).join('/'),
+        { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 300 }) }); })
+        .then(function(r){ return r.json(); }).then(function(j){ var u = j && (j.signedURL || j.signedUrl); if(u) w.location = BASE + '/storage/v1' + u; else w.close(); }).catch(function(){ w.close(); });
+      return true; }
+    if(st){ var box = st.closest('.of'); box.querySelectorAll('[data-ost]').forEach(function(x){ x.classList.toggle('on', x === st); }); return true; }
+    if(sv){ var b2 = sv.closest('.of'), on = b2.querySelector('[data-ost].on');
+      sv.disabled = true; sv.textContent = 'Saving…';
+      rpc('jag_offer_set_status', { p_id: b2.getAttribute('data-oid'), p_status: on ? on.getAttribute('data-ost') : 'submitted', p_note: b2.querySelector('.onote').value })
+        .then(function(j){ sv.disabled = false; sv.textContent = j && j.ok ? 'Saved ✓' : 'Could not save'; if(j && j.ok) setTimeout(loadOffers, 900); })
+        .catch(function(){ sv.disabled = false; sv.textContent = 'Could not save'; });
+      return true; }
+    return false;
+  }
+  function loadOffers(){
+    rpc('jag_offers_team').then(function(j){
+      offersAll = (j && j.ok && j.offers) || [];
+      offersAll.sort(function(a, b){ return prioRank(a) - prioRank(b) || new Date(b.created_at) - new Date(a.created_at); });
+      paintOffers();
+    }).catch(function(){ $('offers').innerHTML = '<div class="empty">Could not load offers.</div>'; });
+  }
+  function paintOffers(){
+    var openN = offersAll.filter(function(o){ return /^(submitted|reviewing|sent|countered)$/.test(o.status); }).length;
+    $('tc-offers').textContent = openN ? openN : '';
+    var list = offersAll.filter(function(o){ return ofilter === 'all' ? true : ofilter === 'won' ? o.status === 'accepted' : /^(submitted|reviewing|sent|countered)$/.test(o.status); });
+    $('offers').innerHTML = list.length ? list.map(offerBox).join('') : '<div class="empty">No offers here yet. Offers from the website show up the moment a client sends one.</div>';
+  }
+  $('offers').addEventListener('click', offerClick);
+  $('ochips').addEventListener('click', function(e){ var b = e.target.closest('[data-of]'); if(!b) return; ofilter = b.getAttribute('data-of'); this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x === b); }); paintOffers(); });
 
   function paintLinks(){
     if(!shares.length){ $('links').innerHTML = '<div class="empty">You haven\'t sent any links yet. Use the Share tab.</div>'; return; }
@@ -384,7 +518,7 @@ main{padding-block:16px 60px}
     var b = e.target.closest('[data-tab]'); if(!b) return;
     var t = b.getAttribute('data-tab');
     this.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x === b); });
-    ['clients', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
+    ['clients', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
     if(t !== 'share') load();
   });
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && me) load(); });

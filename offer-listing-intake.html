@@ -137,17 +137,17 @@ textarea{min-height:84px;resize:vertical}
     <div class="inner" data-screen="landing" id="landing">
       <div class="cfgwarn" id="cfgwarn">⚙️ Setup note (only you see this): add a destination near the top of this file — your free <b>WEB3FORMS_ACCESS_KEY</b> (emails you) and/or your <b>GHL_WEBHOOK_URL</b> (sends into GoHighLevel). Fill either or both; submissions won't send until one is set.</div>
       <h1>Let's get started</h1>
-      <p class="sub">Are you looking to buy or sell? Pick one — it takes about 2 minutes and goes straight to Jay.</p>
+      <p class="sub">Are you looking to buy or sell? Pick one — it takes about 2 minutes and goes straight to Jason.</p>
       <div class="picks">
-        <button class="pick" data-choose="buyer" type="button">
+        <button class="pick" type="button" onclick="location.href='offer.html'">
           <span class="ico">🏠</span>
           <b>I'm buying</b>
-          <small>Send Jay the offer you'd like to make on a home.</small>
+          <small>Send Jason the offer you'd like to make on a home.</small>
         </button>
         <button class="pick" data-choose="seller" type="button">
           <span class="ico">🔑</span>
           <b>I'm selling</b>
-          <small>Tell Jay about the home you're thinking of listing.</small>
+          <small>Tell Jason about the home you're thinking of listing.</small>
         </button>
       </div>
     </div>
@@ -164,8 +164,8 @@ textarea{min-height:84px;resize:vertical}
           <section class="step active" data-step>
             <div class="stepcount">Step 1 of 7</div>
             <h1>Before we begin</h1>
-            <p class="sub">A quick worksheet so Jay can prepare your offer.</p>
-            <div class="notice"><b>This is a worksheet, not a contract.</b> You're giving Jay the details he needs to prepare your offer. Nothing here is a binding offer — no offer exists until Jay prepares official documents and you sign them. This goes to Jay only, never to the seller.</div>
+            <p class="sub">A quick worksheet so Jason can prepare your offer.</p>
+            <div class="notice"><b>This is a worksheet, not a contract.</b> You're giving Jason the details he needs to prepare your offer. Nothing here is a binding offer — no offer exists until Jason prepares official documents and you sign them. This goes to Jason only, never to the seller.</div>
             <label class="ack"><input type="checkbox" data-f="acknowledgment" data-req><span>I understand this is a draft request, not a legally binding offer.</span></label>
             <div class="err ackerr" style="margin-top:8px">Please confirm to continue.</div>
           </section>
@@ -173,7 +173,7 @@ textarea{min-height:84px;resize:vertical}
           <section class="step" data-step>
             <div class="stepcount">Step 2 of 7</div>
             <h1>Your information</h1>
-            <p class="sub">So Jay can reach you and prepare documents.</p>
+            <p class="sub">So Jason can reach you and prepare documents.</p>
             <div class="two">
               <div class="fg"><label class="fl">First name <span class="req-star">*</span></label><input type="text" data-f="firstName" data-req><div class="err">Required</div></div>
               <div class="fg"><label class="fl">Last name <span class="req-star">*</span></label><input type="text" data-f="lastName" data-req><div class="err">Required</div></div>
@@ -223,7 +223,7 @@ textarea{min-height:84px;resize:vertical}
               <div class="fg"><label class="fl">Lender name</label><input type="text" data-f="lenderName"></div>
               <div class="fg"><label class="fl">Pre-approval / proof of funds ready?</label>
                 <select data-f="preApprovalReady"><option value="">Select…</option><option>Yes — ready to send</option><option>Working on it</option><option>Not yet</option></select>
-                <div class="hint">🔒 Don't upload it here — Jay will text you a private upload link.</div>
+                <div class="hint">🔒 Don't upload it here — Jason will text you a private upload link.</div>
               </div>
             </div>
           </section>
@@ -246,21 +246,21 @@ textarea{min-height:84px;resize:vertical}
           <section class="step" data-step>
             <div class="stepcount">Step 7 of 7</div>
             <h1>Anything else, then review</h1>
-            <p class="sub">Add notes for Jay, then check your details.</p>
+            <p class="sub">Add notes for Jason, then check your details.</p>
             <div class="fg"><label class="fl">Additional notes <span class="opt">(optional)</span></label><textarea data-f="additionalNotes" placeholder="Requests, questions, special terms…"></textarea></div>
             <div class="rev" data-review></div>
-            <div class="notice" style="margin-top:12px">Submitting sends this to <b>Jay only</b>. He'll review and prepare your official documents for signature.</div>
+            <div class="notice" style="margin-top:12px">Submitting sends this to <b>Jason only</b>. He'll review and prepare your official documents for signature.</div>
           </section>
 
           <section class="step" data-done>
             <div class="done"><div class="big">✓</div><h1>Your offer draft is in!</h1>
-            <p class="sub" style="font-size:1rem">Jay has been notified and will review your details, then send official documents to sign. Watch your phone and email.</p></div>
+            <p class="sub" style="font-size:1rem">Jason has been notified and will review your details, then send official documents to sign. Watch your phone and email.</p></div>
           </section>
 
           <div class="nav" data-nav>
             <button type="button" class="btn hidden" data-back>← Back</button>
             <button type="button" class="btn primary" data-next>Continue →</button>
-            <button type="submit" class="btn primary hidden" data-submit>Submit to Jay</button>
+            <button type="submit" class="btn primary hidden" data-submit>Submit to Jason</button>
           </div>
         </form>
       </div>
@@ -278,8 +278,8 @@ textarea{min-height:84px;resize:vertical}
           <section class="step active" data-step>
             <div class="stepcount">Step 1 of 6</div>
             <h1>Let's talk about your home</h1>
-            <p class="sub">A few quick questions so Jay can prepare for your listing.</p>
-            <div class="notice"><b>This is an inquiry, not a listing agreement.</b> You're sharing details so Jay can review your home and reach out. Price, commission, and terms are decided together later — nothing here commits you to anything.</div>
+            <p class="sub">A few quick questions so Jason can prepare for your listing.</p>
+            <div class="notice"><b>This is an inquiry, not a listing agreement.</b> You're sharing details so Jason can review your home and reach out. Price, commission, and terms are decided together later — nothing here commits you to anything.</div>
             <label class="ack"><input type="checkbox" data-f="acknowledgment" data-req><span>Got it — this is a request to discuss listing, not a binding agreement.</span></label>
             <div class="err ackerr" style="margin-top:8px">Please confirm to continue.</div>
           </section>
@@ -287,7 +287,7 @@ textarea{min-height:84px;resize:vertical}
           <section class="step" data-step>
             <div class="stepcount">Step 2 of 6</div>
             <h1>Your information</h1>
-            <p class="sub">So Jay can get back to you.</p>
+            <p class="sub">So Jason can get back to you.</p>
             <div class="two">
               <div class="fg"><label class="fl">First name <span class="req-star">*</span></label><input type="text" data-f="firstName" data-req><div class="err">Required</div></div>
               <div class="fg"><label class="fl">Last name <span class="req-star">*</span></label><input type="text" data-f="lastName" data-req><div class="err">Required</div></div>
@@ -316,7 +316,7 @@ textarea{min-height:84px;resize:vertical}
           <section class="step" data-step>
             <div class="stepcount">Step 4 of 6</div>
             <h1>Condition &amp; highlights</h1>
-            <p class="sub">Helps Jay price and market it.</p>
+            <p class="sub">Helps Jason price and market it.</p>
             <div class="fg"><label class="fl">Overall condition</label>
               <div class="choices">
                 <label class="choice"><input type="radio" name="condition" value="Move-in ready"><span>Move-in ready</span></label>
@@ -332,7 +332,7 @@ textarea{min-height:84px;resize:vertical}
             <div class="stepcount">Step 5 of 6</div>
             <h1>Your goals</h1>
             <p class="sub">No commitment — just what you're hoping for.</p>
-            <div class="fg"><label class="fl">Hoped-for list price <span class="opt">(optional)</span></label><input type="number" data-f="desiredListPrice" placeholder="$" min="0"><div class="hint">A ballpark is fine — Jay will share a market analysis.</div></div>
+            <div class="fg"><label class="fl">Hoped-for list price <span class="opt">(optional)</span></label><input type="number" data-f="desiredListPrice" placeholder="$" min="0"><div class="hint">A ballpark is fine — Jason will share a market analysis.</div></div>
             <div class="fg"><label class="fl">How soon do you want to sell?</label>
               <select data-f="timeline"><option value="">Select…</option><option>ASAP</option><option>1–3 months</option><option>3–6 months</option><option>6–12 months</option><option>Just exploring</option></select>
             </div>
@@ -361,22 +361,22 @@ textarea{min-height:84px;resize:vertical}
                 <label class="choice"><input type="radio" name="workingWithAgent" value="No"><span>No</span></label>
                 <label class="choice"><input type="radio" name="workingWithAgent" value="Yes"><span>Yes</span></label>
               </div>
-              <div class="hint">If yes, Jay will respect that and won't interfere.</div>
+              <div class="hint">If yes, Jason will respect that and won't interfere.</div>
             </div>
             <div class="fg"><label class="fl">Anything else? <span class="opt">(optional)</span></label><textarea data-f="additionalNotes" placeholder="Reason for selling, questions, special situations…"></textarea></div>
             <div class="rev" data-review></div>
-            <div class="notice" style="margin-top:12px">This goes to <b>Jay only</b>. He'll review your home and reach out about listing it.</div>
+            <div class="notice" style="margin-top:12px">This goes to <b>Jason only</b>. He'll review your home and reach out about listing it.</div>
           </section>
 
           <section class="step" data-done>
-            <div class="done"><div class="big">✓</div><h1>Thanks — it's on its way to Jay!</h1>
-            <p class="sub" style="font-size:1rem">Jay has your home details and will reach out soon with next steps and a market analysis. Watch your phone and email.</p></div>
+            <div class="done"><div class="big">✓</div><h1>Thanks — it's on its way to Jason!</h1>
+            <p class="sub" style="font-size:1rem">Jason has your home details and will reach out soon with next steps and a market analysis. Watch your phone and email.</p></div>
           </section>
 
           <div class="nav" data-nav>
             <button type="button" class="btn hidden" data-back>← Back</button>
             <button type="button" class="btn primary" data-next>Continue →</button>
-            <button type="submit" class="btn primary hidden" data-submit>Send to Jay</button>
+            <button type="submit" class="btn primary hidden" data-submit>Send to Jason</button>
           </div>
         </form>
       </div>
@@ -511,7 +511,7 @@ textarea{min-height:84px;resize:vertical}
   function nl(l,v){return v?(l+': '+v+'\n'):'';}
 
   flows.buyer=Flow('flow-buyer',{
-    submitLabel:'Submit to Jay',
+    submitLabel:'Submit to Jason',
     init:function(form){
       form.querySelectorAll('input[name=payingWith]').forEach(function(r){
         r.addEventListener('change',function(){ form.querySelector('[data-fin]').style.display=(r.value==='Financed'&&r.checked)?'block':'none'; });
@@ -533,7 +533,7 @@ textarea{min-height:84px;resize:vertical}
   });
 
   flows.seller=Flow('flow-seller',{
-    submitLabel:'Send to Jay',
+    submitLabel:'Send to Jason',
     collect:function(f,val,radioVal,form){
       return {formType:'Seller / Listing Inquiry', submittedAt:new Date().toLocaleString(),
         acknowledgment:f('acknowledgment').checked?'Yes':'No',

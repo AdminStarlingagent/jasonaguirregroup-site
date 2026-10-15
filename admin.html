@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js?v=3"></script>
 <script src="jag-file-format.js?v=4"></script>
+<script src="jag-offer.js?v=1"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
    forward to reset-password.html with the token hash intact so users can set a new password. */
@@ -269,6 +270,18 @@ td .em{font-size:12.5px;color:var(--muted)}
   .hin .who{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
   .ghostbtn{padding:7px 12px;font-size:12.5px}
 }
+.pri{font-size:11px;font-weight:800;border-radius:99px;padding:4px 10px;white-space:nowrap}
+.pri.p1{background:var(--ink);color:#fff}.pri.p2{background:#f0eeeb;color:var(--ink)}.pri.p3{background:#f6f5f3;color:var(--muted)}
+.ofp{border:1px solid var(--line);border-radius:14px;padding:14px}
+.ofp-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.ofp-h b{font-size:28px;letter-spacing:-.04em}
+.ofp-h span{color:var(--muted);font-size:13px}
+.ofp-a{font-size:13px;color:#3f3e47;margin-top:4px}
+.ofp-st{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 10px}
+.ofp-st .chip.on{background:var(--buy);border-color:var(--buy)}
+.pq{border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 16px;background:#fff}
+.pq-r{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f1f1f4;font-size:13.5px}
+.pq-r span{flex:1 1 260px}.pq-r b{display:block}
 </style>
 </head>
 <body>
@@ -367,6 +380,7 @@ td .em{font-size:12.5px;color:var(--muted)}
 
   <section id="clientsview" hidden>
     <div class="stats" id="clientstats"></div>
+    <div id="proofq"></div>
     <div class="toolbar">
       <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>
         <input id="cq" placeholder="Search name, email, phone, ZIP…"></label>
@@ -438,6 +452,7 @@ td .em{font-size:12.5px;color:var(--muted)}
       </div>
     </div>
     <div class="shares" id="d-shares"></div>
+    <div id="d-offer"></div>
     <div class="sect">Status</div>
     <select class="statussel" id="d-status">
       <option>New</option><option>Contacted</option><option>Working</option><option>Credit</option><option>Won</option><option>Lost</option>
@@ -808,11 +823,78 @@ function setTab(t){
    People who created an account on /homes. Read through jag_staff_clients() / jag_staff_client_detail(),
    which only answer for team logins. Team can pause a client's alert emails, keep a note, or delete the account. */
 var clients = { rows:null, q:'', filter:'all', loading:false };
+/* ---------------- website offers: status the client sees, buyer priority, proof review ---------------- */
+var teamOffers={data:null,at:0};
+function loadTeamOffers(force){
+  if(!force && teamOffers.data && Date.now()-teamOffers.at<30000) return Promise.resolve(teamOffers.data);
+  return api('/rest/v1/rpc/jag_offers_team',{method:'POST',body:'{}'}).then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){ teamOffers.data=(j&&j.ok)?j:{offers:[],proof:[]}; teamOffers.at=Date.now(); return teamOffers.data; })
+    .catch(function(){ return {offers:[],proof:[]}; });
+}
+var OFFER_ST=[['submitted','Received'],['reviewing','In review'],['sent','Sent to seller'],['countered','Counteroffer'],['accepted','Accepted'],['declined','Declined'],['withdrawn','Withdrawn']];
+function prioHtml(pr){
+  if(!pr) return '<span class="pri p3">No account yet</span>';
+  if(pr.proof) return '<span class="pri p1">Verified '+(pr.proof==='pof'?'proof of funds':'pre-approval')+' ✓</span>';
+  if(pr.proof_pending) return '<span class="pri p2">Proof uploaded, needs review</span>';
+  if(pr.in_contact) return '<span class="pri p2">In contact</span>';
+  return '<span class="pri p3">Not verified</span>';
+}
+function loadOfferPanel(r){
+  var box=$('d-offer'); box.innerHTML='<div class="sect">Offer</div><p class="dt">Loading…</p>';
+  loadTeamOffers(true).then(function(d){
+    if(state.open!==r) return;
+    var o=(d.offers||[]).filter(function(x){ return x.lead_id===r.id; })[0];
+    if(!o){ box.innerHTML=''; return; }
+    var st=window.JagOffer?JagOffer.strength({offer_price:o.offer_price,list_price:o.list_price,earnest:o.earnest,financing:o.financing,proof:o.proof,
+      proof_verified:!!(o.priority&&o.priority.proof),contingencies:o.contingencies||[],option_days:o.option_days,close_date:o.close_date}):null;
+    var pct=o.list_price&&o.offer_price?(o.offer_price/o.list_price*100).toFixed(1)+'% of list':'';
+    box.innerHTML='<div class="sect">Offer · status the client sees in their portal</div>'+
+      '<div class="ofp"><div class="ofp-h"><b>$'+Math.round(o.offer_price||0).toLocaleString('en-US')+'</b><span>'+esc(pct)+'</span>'+prioHtml(o.priority)+'</div>'+
+      '<div class="ofp-a">'+esc(o.address||'')+(o.mls?' · MLS '+esc(o.mls):'')+'</div>'+
+      '<div class="ofp-a">'+esc(o.financing==='cash'?'Cash':'Financed'+(o.loan_type?' · '+o.loan_type:''))+' · pre-approval/proof: '+esc(o.proof||'—')+
+        (o.earnest?' · earnest $'+Math.round(o.earnest).toLocaleString('en-US'):'')+(o.option_days?' · option '+o.option_days+'d':'')+(o.close_date?' · close '+esc(o.close_date):'')+'</div>'+
+      (st?'<div style="margin:10px 0 2px">'+JagOffer.meter(st.level,{title:'Strength shown to client'})+'</div>':'')+
+      '<div class="ofp-st" role="group" aria-label="Offer status">'+OFFER_ST.map(function(x){ return '<button type="button" class="chip'+(o.status===x[0]?' on':'')+'" data-ost="'+x[0]+'">'+x[1]+'</button>'; }).join('')+'</div>'+
+      '<textarea class="noteta" id="ofp-note" placeholder="Note for the client (shows in their portal), e.g. Seller countered at $285,000. We will call you today." style="min-height:64px">'+esc(o.status_note||'')+'</textarea>'+
+      '<div style="display:flex;gap:10px;align-items:center;margin-top:8px"><button type="button" class="savebtn" id="ofp-save">Update offer</button><span class="dt" id="ofp-by">'+
+        (o.status_at?'Last update '+fmtDate(o.status_at)+(o.status_by?' by '+esc(o.status_by):''):'')+'</span></div></div>';
+    var pick=o.status;
+    box.querySelectorAll('[data-ost]').forEach(function(b){ b.onclick=function(){ pick=b.dataset.ost; box.querySelectorAll('[data-ost]').forEach(function(x){ x.classList.toggle('on',x===b); }); }; });
+    $('ofp-save').onclick=function(){
+      var btn=this; btn.disabled=true;
+      api('/rest/v1/rpc/jag_offer_set_status',{method:'POST',body:JSON.stringify({p_id:o.id,p_status:pick,p_note:$('ofp-note').value})})
+        .then(function(res){ return res.json(); }).then(function(j){ btn.disabled=false;
+          if(j&&j.ok){ toast('Offer updated. The client sees it in their portal.',true); o.status=pick; if(pick==='accepted'||pick==='declined'){ r.status=pick==='accepted'?'Won':'Lost'; $('d-status').value=r.status; } }
+          else toast('Could not update the offer.'); })
+        .catch(function(){ btn.disabled=false; toast('Could not update the offer.'); });
+    };
+  });
+}
+function renderProofQueue(d){
+  var box=$('proofq'); if(!box) return;
+  var pend=((d&&d.proof)||[]).filter(function(p){ return p.status==='pending'; });
+  if(!pend.length){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="pq"><div class="sect" style="margin-top:0">Proof to verify ('+pend.length+') · verified buyers get priority in the Agent Hub</div>'+
+    pend.map(function(p){ return '<div class="pq-r" data-pid="'+esc(p.id)+'"><span><b>'+esc(p.name||p.email||'Client')+'</b>'+esc(p.kind==='pof'?'Proof of funds':'Pre-approval')+' · '+esc(p.file_name||'')+' · '+shortDay(p.uploaded_at)+'</span>'+
+      '<button type="button" class="linkbtn" data-view="'+esc(p.path)+'">View</button><button type="button" class="savebtn" data-ver="verified">Verify</button><button type="button" class="linkbtn" data-ver="rejected">Ask for another</button></div>'; }).join('')+'</div>';
+  box.onclick=function(e){
+    var v=e.target.closest('[data-view]'), a=e.target.closest('[data-ver]');
+    if(v){ var w=window.open('about:blank','_blank');
+      api('/storage/v1/object/sign/client-proof/'+v.dataset.view.split('/').map(encodeURIComponent).join('/'),{method:'POST',body:JSON.stringify({expiresIn:300})})
+        .then(function(r){ return r.json(); }).then(function(j){ if(j&&(j.signedURL||j.signedUrl)) w.location=base()+'/storage/v1'+(j.signedURL||j.signedUrl); else { w.close(); toast('Could not open the file.'); } })
+        .catch(function(){ w.close(); toast('Could not open the file.'); }); return; }
+    if(a){ var row=a.closest('[data-pid]'), note=a.dataset.ver==='rejected'?(prompt('What should the client upload instead? (they see this)','Please upload a current pre-approval letter with your name.')||''):'';
+      api('/rest/v1/rpc/jag_proof_review',{method:'POST',body:JSON.stringify({p_id:row.dataset.pid,p_status:a.dataset.ver,p_note:note})})
+        .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok){ toast(a.dataset.ver==='verified'?'Verified. This buyer now shows as priority.':'Sent back to the client.',true); loadTeamOffers(true).then(renderProofQueue); } else toast('Could not save.'); })
+        .catch(function(){ toast('Could not save.'); }); }
+  };
+}
+
 var CDN_='https://cdn.repliers.io/';
 function cmoney(n){ return n==null?'':'$'+Math.round(n).toLocaleString('en-US'); }
 function crel(iso){ if(!iso) return '—'; var d=(Date.now()-new Date(iso).getTime())/864e5; if(d<1) return 'today'; if(d<2) return 'yesterday'; if(d<30) return Math.floor(d)+' days ago'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 function loadClients(){
-  if(clients.loading) return; clients.loading=true;
+  if(clients.loading) return; clients.loading=true; loadTeamOffers(true).then(renderProofQueue);
   api('/rest/v1/rpc/jag_staff_clients',{method:'POST',body:'{}'})
   .then(function(r){ if(r.status===401){ signOut(); throw 0; } return r.json(); })
   .then(function(j){ clients.rows=(j&&j.ok&&Array.isArray(j.clients))?j.clients:[];
@@ -1125,7 +1207,8 @@ function openDrawer(id){
   }
   $('d-quick').innerHTML = q.join('');
   $('d-pdf-btn').addEventListener('click', savePdf);
-  lenderReset(); $('d-shares').innerHTML='';
+  lenderReset(); $('d-shares').innerHTML=''; $('d-offer').innerHTML='';
+  if(r.type==='Buyer Offer') loadOfferPanel(r);
   if(r.type==='Mortgage Application'){
     $('d-lender-btn').addEventListener('click', function(){
       var open = $('d-lender').hidden;

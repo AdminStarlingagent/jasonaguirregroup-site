@@ -152,6 +152,37 @@ footer b{color:var(--ink)}
   .wrap{padding:0 16px}
   .grid{grid-template-columns:1fr}
 }
+.of-empty{background:#f6f5f3;border-radius:22px;padding:24px;text-align:center}
+.of-empty p{margin:0 0 14px;color:#45444c}
+.of-card{border:2px solid #ebe9e5;border-radius:22px;padding:18px 18px 16px;margin:0 0 16px;display:flex;flex-direction:column;gap:6px}
+.of-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.of-st{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;border-radius:99px;padding:5px 10px;background:#17161c;color:#fff}
+.of-st.of-submitted,.of-st.of-reviewing,.of-st.of-sent{background:#f0eeeb;color:#17161c}
+.of-st.of-declined,.of-st.of-withdrawn{background:#f0eeeb;color:#6a6972}
+.of-when{font-size:11px;color:#6a6972}
+.of-price{font-size:clamp(34px,8vw,44px);font-weight:800;letter-spacing:-.05em;line-height:1;margin-top:4px}
+.of-addr{font-size:14px;color:#2c2b31}
+.of-meta{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5b5a62}
+.of-note{background:#f6f5f3;border-radius:14px;padding:10px 12px;font-size:14px;margin-top:4px}
+.of-note b{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5b5a62;margin-bottom:3px}
+.of-m{background:#f6f5f3;border-radius:16px;padding:14px;margin-top:6px}
+.of-cmp{border-top:1px dashed #d9d6d1;margin-top:12px;padding-top:12px}
+.of-fine{font-size:11px;color:#6a6972;margin:10px 0 0}
+.of-link{display:inline-block;margin-top:10px;color:var(--buy);font-weight:800;text-decoration:none;font-size:14px;min-height:24px}
+.pf{background:#f6f5f3;border-radius:22px;padding:20px;margin-top:8px}
+.pf h2{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#5b5a62;margin:0 0 8px}
+.pf p{margin:0 0 14px;font-size:14px;color:#2c2b31}
+.pf-prio{display:inline-block;background:#17161c;color:#fff;border-radius:99px;font-size:12px;font-weight:800;padding:6px 12px;margin:0 0 10px}
+.pf-btns{display:flex;flex-wrap:wrap;gap:10px}
+.pf-b{cursor:pointer;min-height:48px;display:inline-flex;align-items:center}
+.btn.alt.pf-b{box-shadow:inset 0 0 0 2px var(--buy);color:var(--buy)}
+.pf-msg{font-size:13px;font-weight:700;margin-top:10px;min-height:18px}
+.pf-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.pf-list li{background:#fff;border-radius:14px;padding:10px 12px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;font-size:13px}
+.pf-list li b{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#5b5a62}
+.pf-list em{font-style:normal;font-weight:800}
+.pf-list em.pf-verified{color:#17161c}.pf-list em.pf-pending{color:#6a6972}.pf-list em.pf-rejected{color:var(--buy)}
+.pf-list small{flex-basis:100%;color:#5b5a62}
 </style>
 </head>
 <body>
@@ -191,6 +222,7 @@ footer b{color:var(--ink)}
     <div class="hello"><h1 id="hi"></h1><p data-t="hi_p"></p></div>
     <nav class="tabs" id="tabs">
       <a href="#saved" data-tab="saved"><span data-t="tab_saved"></span><span class="ct" id="ct_saved"></span></a>
+      <a href="#offers" data-tab="offers"><span data-t="tab_offers"></span><span class="ct" id="ct_offers"></span></a>
       <a href="#searches" data-tab="searches"><span data-t="tab_searches"></span><span class="ct" id="ct_searches"></span></a>
       <a href="#picks" data-tab="picks"><span data-t="tab_picks"></span></a>
       <a href="#alerts" data-tab="alerts"><span data-t="tab_alerts"></span><span class="ct" id="ct_alerts"></span></a>
@@ -198,6 +230,7 @@ footer b{color:var(--ink)}
     </nav>
 
     <section data-pane="saved"><p class="sub" data-t="saved_sub"></p><div id="saved" class="grid"></div></section>
+    <section data-pane="offers"><div id="offers"></div><div id="proof"></div></section>
     <section data-pane="searches"><p class="sub" data-t="ss_sub"></p><div id="searches"></div></section>
     <section data-pane="picks"><p class="sub" id="picks_sub"></p><div id="picks" class="grid"></div></section>
     <section data-pane="alerts"><p class="sub" data-t="al_sub"></p><div id="alerts"></div></section>
@@ -248,6 +281,12 @@ var T={
  es:{nav_buy:'Comprar',nav_rent:'Rentar',nav_sell:'Vender',nav_loan:'Préstamo',nav_team:'Conoce al equipo',
   g_h:'Su cuenta de JAG',g_p:'Inicie sesión con su correo. Sin contraseña: le enviamos un código.',g_1:'Guarde casas y vea si cambian de precio',g_2:'Reciba avisos de casas nuevas en las zonas que le interesan',g_3:'Vea casas recomendadas según lo que le gusta',g_btn:'Iniciar sesión o crear cuenta',g_browse:'Seguir buscando casas ›',
   hi:'Hola',hi_p:'Sus casas, búsquedas y avisos en un solo lugar.',
+  tab_offers:'Mis ofertas',of_none:'Todavía no ha hecho ofertas. Cuando encuentre una casa que le guste, toque «Hacer una oferta».',of_find:'Buscar casas',
+  of_sent:'Enviada el ',of_list:'Precio de lista ',of_note:'Nota del equipo',of_pre:'Obtener mi pre-aprobación gratis',
+  pf_h:'Pre-aprobación y comprobante de fondos',pf_p:'Suba su carta de pre-aprobación o, si compra en efectivo, un estado de cuenta. Su agente lo verifica y le da prioridad a su búsqueda y a sus ofertas. Solo nuestro equipo puede verlo.',
+  pf_pre:'Subir pre-aprobación',pf_pof:'Subir comprobante de fondos',pf_kind:{preapproval:'Pre-aprobación',pof:'Comprobante de fondos'},
+  pf_st:{pending:'En revisión',verified:'Verificado ✓',rejected:'Necesitamos otro documento'},pf_up:'Subiendo…',pf_ok:'Documento recibido. Su agente lo revisará pronto.',
+  pf_big:'El archivo es muy grande (máximo 10 MB).',pf_type:'Suba un PDF o una foto (JPG o PNG).',pf_err:'No pudimos subir el archivo. Intente de nuevo.',pf_prio:'Comprador verificado: su agente le da prioridad.',
   tab_saved:'Casas guardadas',tab_searches:'Búsquedas guardadas',tab_picks:'Para usted',tab_alerts:'Avisos',tab_settings:'Mi perfil',
   saved_sub:'Le avisamos si alguna baja de precio o cambia de estado.',ss_sub:'Le escribimos cuando sale una casa nueva que coincide.',al_sub:'Casas nuevas y cambios de precio o estado.',
   e_saved:'Todavía no ha guardado casas',e_saved_p:'Toque el corazón en cualquier casa para guardarla aquí.',e_ss:'Todavía no tiene búsquedas guardadas',e_ss_p:'En la búsqueda de casas, ponga sus filtros y toque «Guardar búsqueda».',e_go:'Buscar casas',
@@ -268,6 +307,12 @@ var T={
  en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_team:'Meet the team',
   g_h:'Your JAG account',g_p:'Sign in with your email. No password: we send you a code.',g_1:'Save homes and see price changes',g_2:'Get alerts on new homes in the areas you like',g_3:'See homes picked for you based on what you like',g_btn:'Sign in or create account',g_browse:'Keep browsing homes ›',
   hi:'Hi',hi_p:'Your homes, searches and alerts in one place.',
+  tab_offers:'My offers',of_none:'You have not made any offers yet. When you find a home you like, tap “Make an offer”.',of_find:'Search homes',
+  of_sent:'Sent ',of_list:'List price ',of_note:'Note from the team',of_pre:'Get my free pre-approval',
+  pf_h:'Pre-approval and proof of funds',pf_p:'Upload your pre-approval letter or, if you are paying cash, a bank statement. Your agent verifies it and gives your search and offers priority. Only our team can see it.',
+  pf_pre:'Upload pre-approval',pf_pof:'Upload proof of funds',pf_kind:{preapproval:'Pre-approval',pof:'Proof of funds'},
+  pf_st:{pending:'In review',verified:'Verified ✓',rejected:'We need a different document'},pf_up:'Uploading…',pf_ok:'Document received. Your agent will review it soon.',
+  pf_big:'That file is too large (10 MB max).',pf_type:'Upload a PDF or a photo (JPG or PNG).',pf_err:'We could not upload the file. Please try again.',pf_prio:'Verified buyer: your agent gives you priority.',
   tab_saved:'Saved homes',tab_searches:'Saved searches',tab_picks:'For you',tab_alerts:'Alerts',tab_settings:'My profile',
   saved_sub:'We let you know if any drop in price or change status.',ss_sub:'We email you when a new matching home hits the market.',al_sub:'New homes and price or status changes.',
   e_saved:'No saved homes yet',e_saved_p:'Tap the heart on any home to save it here.',e_ss:'No saved searches yet',e_ss_p:'In home search, set your filters and tap “Save search”.',e_go:'Search homes',
@@ -445,7 +490,7 @@ $('dlg_yes').onclick=function(){
 
 /* ---------- tabs ---------- */
 function setTab(k){
-  if(!/^(saved|searches|picks|alerts|settings)$/.test(k)) k='saved';
+  if(!/^(saved|offers|searches|picks|alerts|settings)$/.test(k)) k='saved';
   tab=k;
   document.querySelectorAll('#tabs a').forEach(function(a){ a.classList.toggle('on',a.getAttribute('data-tab')===k); });
   document.querySelectorAll('section[data-pane]').forEach(function(s){ s.classList.toggle('on',s.getAttribute('data-pane')===k); });
@@ -455,13 +500,69 @@ function setTab(k){
 }
 window.addEventListener('hashchange',function(){ setTab(location.hash.slice(1)); });
 
-function paintAll(){ paintSaved(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); }
+function paintAll(){ paintSaved(); paintOffers(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); }
+
+/* ---------- offers + proof (pre-approval / proof of funds) ---------- */
+function money(n){ return '$'+Math.round(Number(n)||0).toLocaleString('en-US'); }
+function loadOffers(){
+  return A.rpc('jag_my_offers').then(function(j){ D.offers=(j&&j.offers)||[]; D.proof=(j&&j.proof)||[]; }).catch(function(){ D.offers=D.offers||[]; D.proof=D.proof||[]; }).then(paintOffers);
+}
+function verifiedKind(){ var v=(D.proof||[]).filter(function(p){ return p.status==='verified'; }); return v.length?v[0].kind:null; }
+function paintOffers(){
+  var box=$('offers'), pb=$('proof'); if(!box) return;
+  var ct=$('ct_offers'); if(ct) ct.textContent=D.offers&&D.offers.length?D.offers.length:'';
+  if(!D.offers){ box.innerHTML=''; pb.innerHTML=''; return; }
+  var vk=verifiedKind(), L=window.JagOffer?JagOffer.text():null;
+  if(!D.offers.length) box.innerHTML='<div class="of-empty"><p>'+t('of_none')+'</p><a class="btn" href="homes">'+t('of_find')+'</a></div>';
+  else box.innerHTML=D.offers.map(function(o){
+    var proofOk=vk&&((o.financing==='cash'&&vk==='pof')||(o.financing!=='cash'&&vk==='preapproval'));
+    var so={offer_price:o.offer_price,list_price:o.list_price,earnest:o.earnest,financing:o.financing,proof:proofOk?'yes':o.proof,proof_verified:!!proofOk,
+      contingencies:o.contingencies||[],option_days:o.option_days,close_date:o.close_date};
+    var st=JagOffer.strength(so), cmp=JagOffer.compare(so);
+    var when=new Date(o.created_at).toLocaleDateString(lang==='es'?'es-MX':'en-US',{month:'short',day:'numeric'});
+    return '<article class="of-card">'+
+      '<div class="of-top"><span class="of-st of-'+esc(o.status)+'">'+esc(JagOffer.statusText(o.status))+'</span><span class="of-when">'+t('of_sent')+esc(when)+'</span></div>'+
+      '<div class="of-price">'+money(o.offer_price)+'</div>'+
+      '<div class="of-addr">'+esc(o.address||'')+'</div>'+
+      (o.list_price?'<div class="of-meta">'+t('of_list')+money(o.list_price)+(o.mls?' · MLS '+esc(o.mls):'')+'</div>':'')+
+      (o.status_note?'<div class="of-note"><b>'+t('of_note')+'</b>'+esc(o.status_note)+'</div>':'')+
+      '<div class="of-m">'+JagOffer.meter(st.level)+
+      (!proofOk&&cmp.better&&/^(submitted|reviewing|countered)$/.test(o.status)?'<div class="of-cmp">'+JagOffer.meter(cmp.with.level,{title:cmp.label})+
+        (o.financing!=='cash'?'<a class="of-link" href="apply.html?'+new URLSearchParams({lang:lang,home:o.address||'',mls:o.mls||'',price:String(Math.round(o.offer_price||0))}).toString()+'">'+t('of_pre')+' →</a>':'')+'</div>':'')+
+      '<p class="of-fine">'+L.fine+'</p></div>'+
+      (o.mls?'<a class="of-link" href="homes#'+encodeURIComponent(o.mls)+'">'+(lang==='es'?'Ver la casa':'See the home')+' →</a>':'')+
+    '</article>';
+  }).join('');
+  var K=T[lang];
+  pb.innerHTML='<div class="pf"><h2>'+t('pf_h')+'</h2>'+(vk?'<div class="pf-prio">'+t('pf_prio')+'</div>':'')+'<p>'+t('pf_p')+'</p>'+
+    '<div class="pf-btns"><label class="btn pf-b">'+t('pf_pre')+'<input type="file" accept="application/pdf,image/*" data-kind="preapproval" hidden></label>'+
+    '<label class="btn alt pf-b">'+t('pf_pof')+'<input type="file" accept="application/pdf,image/*" data-kind="pof" hidden></label></div>'+
+    '<div class="pf-msg" id="pf_msg" role="status"></div>'+
+    ((D.proof||[]).length?'<ul class="pf-list">'+D.proof.map(function(p){
+      return '<li><span><b>'+esc(K.pf_kind[p.kind]||p.kind)+'</b>'+esc(p.file_name||'')+'</span><em class="pf-'+esc(p.status)+'">'+esc(K.pf_st[p.status]||p.status)+'</em>'+
+        (p.note?'<small>'+esc(p.note)+'</small>':'')+'</li>'; }).join('')+'</ul>':'')+'</div>';
+  pb.querySelectorAll('input[type=file]').forEach(function(inp){ inp.onchange=function(){ if(inp.files&&inp.files[0]) uploadProof(inp.dataset.kind, inp.files[0]); inp.value=''; }; });
+}
+function uploadProof(kind, file){
+  var msg=$('pf_msg');
+  if(file.size>10485760){ msg.textContent=t('pf_big'); return; }
+  if(!/^(application\/pdf|image\/(jpeg|png|heic|heif|webp))$/.test(file.type||'')){ msg.textContent=t('pf_type'); return; }
+  msg.textContent=t('pf_up');
+  var u=A.user(), safe=(file.name||'doc').replace(/[^A-Za-z0-9._-]/g,'_').slice(-80), path=u.id+'/'+Date.now()+'-'+safe;
+  A.token().then(function(tk){
+    return fetch('https://nyaxywghbpphjhwcmspd.supabase.co/storage/v1/object/client-proof/'+path,{method:'POST',
+      headers:{apikey:'sb_publishable_a3LN_l283LN8J-bJTEO8hQ_U40t09eh',Authorization:'Bearer '+tk,'Content-Type':file.type,'x-upsert':'false'},body:file});
+  }).then(function(r){ if(!r.ok) throw new Error('up'); return A.rpc('jag_proof_add',{p_kind:kind,p_path:path,p_name:file.name||safe}); })
+    .then(function(j){ if(!j||!j.ok) throw new Error('add'); return loadOffers(); })
+    .then(function(){ var m=$('pf_msg'); if(m) m.textContent=t('pf_ok'); })
+    .catch(function(){ var m=$('pf_msg'); if(m) m.textContent=t('pf_err'); });
+}
 
 function start(){
   var u=A&&A.user();
   $('gate').hidden=!!u; $('app').hidden=!u;
   if(!u) return;
-  D={favs:null,searches:null,alerts:null,activity:null,picks:null,profile:A.profile()};
+  D={favs:null,searches:null,alerts:null,activity:null,picks:null,offers:null,proof:null,profile:A.profile()};
   paintAll(); setTab(location.hash.slice(1));
   A.getProfile().then(function(p){ D.profile=p; paintProfile(); }).catch(function(){});
   Promise.all([
@@ -470,11 +571,13 @@ function start(){
     A.alerts().then(function(r){ D.alerts=r||[]; }).catch(function(){ D.alerts=[]; }),
     A.activity(300).then(function(r){ D.activity=r||[]; }).catch(function(){ D.activity=[]; })
   ]).then(function(){ paintAll(); setTab(tab); loadPicks(); });
+  loadOffers();
 }
 $('gatebtn').onclick=function(){ A.requireSignIn().catch(function(){}); };
 if(A){ A.mountButton($('acct')); A.onChange(start); }
 applyLang(); start();
 </script>
+<script src="jag-offer.js"></script>
 <script src="jag-chat.js" defer></script>
 </body>
 </html>

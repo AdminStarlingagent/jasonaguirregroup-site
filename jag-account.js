@@ -16,14 +16,14 @@
       h2:'Revise su correo', p2:'Le enviamos un código a ', code:'Código del correo', verify:'Entrar', resend:'Reenviar código', other:'Usar otro correo',
       h3:'¡Bienvenido! ¿Cómo se llama?', p3:'Así sabemos cómo dirigirnos a usted. El teléfono es opcional.', name:'Nombre', phone:'Teléfono (opcional)', done:'Listo', skip:'Ahora no',
       bademail:'Escriba un correo válido.', badcode:'Ese código no funcionó o ya venció. Intente otra vez o pida uno nuevo.', wait:'Espere un momento antes de pedir otro código.', neterr:'No pudimos conectar. Intente de nuevo.',
-      why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
+      why_offer:'Entre a su portal para ver el estado de su oferta. Le enviamos un código a su correo.', why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
     en:{ signin:'Sign in', account:'My account', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
       h1:'Sign in or create your account', p1:'Save homes, get alerts on new listings and see picks for you. No password: we email you a code.',
       email:'Email', send:'Email me a code', terms:'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. You can delete your account any time.',
       h2:'Check your email', p2:'We sent a code to ', code:'Code from the email', verify:'Sign in', resend:'Resend code', other:'Use a different email',
       h3:'Welcome! What is your name?', p3:'So we know how to address you. Phone is optional.', name:'Name', phone:'Phone (optional)', done:'Done', skip:'Not now',
       bademail:'Enter a valid email.', badcode:'That code did not work or expired. Try again or request a new one.', wait:'Please wait a moment before requesting another code.', neterr:'We could not connect. Please try again.',
-      why_fav:'Sign in to save this home and get alerts if the price changes.', why_search:'Sign in to save this search and get alerts on new homes.', sent_again:'Code sent again.', close:'Close' }
+      why_offer:'Open your portal to see your offer status. We will email you a code.', why_fav:'Sign in to save this home and get alerts if the price changes.', why_search:'Sign in to save this search and get alerts on new homes.', sent_again:'Code sent again.', close:'Close' }
   };
   function lang(){ try{ var v=localStorage.getItem('jag_lang'); if(v==='en'||v==='es') return v; }catch(e){} return 'es'; }
   function t(k){ return (T[lang()]||T.es)[k]; }
@@ -206,9 +206,11 @@
     if(pending){ var p=pending; pending=null; p.resolve(api.user()); }
   }
   /* open the sign-in window; resolves once signed in (rejects if closed) */
-  function requireSignIn(reason){
+  function requireSignIn(reason, presetEmail){
     if(S) return Promise.resolve(api.user());
-    ensureModal(); why=reason?t(reason)||reason:''; step='email'; render(); ov.classList.add('on');
+    ensureModal(); why=reason?t(reason)||reason:''; step='email';
+    if(presetEmail && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(presetEmail).trim())) email=String(presetEmail).trim().toLowerCase();
+    render(); ov.classList.add('on');
     return new Promise(function(res,rej){ pending={resolve:res,reject:rej}; });
   }
 
