@@ -145,6 +145,13 @@ h1.title{font-size:clamp(28px,4.8vw,36px);font-weight:600;letter-spacing:-.015em
 .done-card{text-align:center;padding-top:26px}
 .done-check{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:#e7f5ee;display:grid;place-items:center;color:#0f8a4d}
 .done-check svg{width:30px;height:30px}
+.est-card{text-align:center;background:#f6f5f3;border-radius:22px;padding:22px 18px;margin:22px auto 18px;max-width:440px}
+.est-k{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#5b5a62}
+.est-n{font-size:clamp(34px,9vw,46px);font-weight:800;letter-spacing:-.045em;line-height:1.02;margin:8px 0 10px;color:#17161c}
+.est-n b{white-space:nowrap;font-weight:800}
+.est-n span{color:#b9b6b0;font-weight:700}
+.est-p{margin:0 0 8px;font-size:15px;line-height:1.5;color:#2c2b31}
+.est-fine{margin:10px 0 0;font-size:11.5px;line-height:1.5;color:#6a6972}
 .done-links{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
 .done-links .call-btn{background:#c8102e;color:#fff;width:100%}
 .done-links .call-btn:hover{background:#a30d26}
@@ -853,6 +860,12 @@ en:{
   doneBody:function(n){ return (n?n+', we':'We')+' have everything Kat and the team need. Someone from our team will call you today to go over your options. In the meantime, keep looking at homes and save the ones you like.'; },
   doneCall:'See homes for sale',
   doneBack:'Back to the home you were looking at',
+  doneUpTo:p=>'See homes up to '+p,
+  estK:'Your estimate',
+  estP:'Based on the income you shared, you could qualify for a home in this price range.',
+  estItin:'With an ITIN, lenders usually ask for a down payment of about 10% to 20%.',
+  estLow:'We need a few more details to give you a range. Kat will call you with a plan and the next steps.',
+  estFine:'This is an estimate, not a loan approval or offer. Your credit, debts and down payment can move this number up or down. Kat will confirm it with you.',
   ofPrice:p=>'\u2248 '+p+'% of the purchase price',
   ltv:p=>'Estimated LTV: '+p+'%',
   downLess:'Your down payment should be less than the purchase price.'
@@ -931,6 +944,12 @@ es:{
   doneBody:function(n){ return (n?n+', ya':'Ya')+' tenemos todo lo que Kat y el equipo necesitan. Alguien de nuestro equipo le llamar\u00e1 hoy mismo para revisar sus opciones. Mientras tanto, siga viendo casas y guarde las que le gusten.'; },
   doneCall:'Ver casas en venta',
   doneBack:'Volver a la casa que estaba viendo',
+  doneUpTo:p=>'Ver casas hasta '+p,
+  estK:'Su estimado',
+  estP:'Con base en el ingreso que nos comparti\u00f3, podr\u00eda calificar para una casa en este rango de precio.',
+  estItin:'Con ITIN, los prestamistas normalmente piden un enganche de 10% a 20%.',
+  estLow:'Necesitamos unos detalles m\u00e1s para darle un rango. Kat le llamar\u00e1 con un plan y los siguientes pasos.',
+  estFine:'Esto es un estimado, no una aprobaci\u00f3n ni una oferta de pr\u00e9stamo. Su cr\u00e9dito, deudas y enganche pueden subir o bajar este n\u00famero. Kat lo confirmar\u00e1 con usted.',
   ofPrice:p=>'\u2248 '+p+'% del precio de compra',
   ltv:p=>'LTV estimado: '+p+'%',
   downLess:'Su enganche debe ser menor que el precio de compra.'
@@ -1537,6 +1556,7 @@ function buildPayload(){
     'Own or Rent': A.ownRent || '',
     'Work Status': A.work || '',
     'Gross Monthly Income': money(A.income),
+    'Estimate Shown to Client': (function(){ var e=estimateRange(); return !e ? 'Not shown' : e.low ? 'No range shown (income too low for an estimate)' : money(e.lo)+' - '+money(e.hi)+(e.itin?' (ITIN, 10% down)':' (FHA, 3.5% down)'); })(),
     'SMS Consent': A.smsConsent ? 'Yes' : 'No',
     'Submitted At': new Date().toLocaleString('en-US'),
     'Source Page': location.href
@@ -1627,18 +1647,53 @@ async function finishAll(){
   done.innerHTML = '<div class="done-check">'+IC.shield+'</div>'
     + '<h1 class="title" style="text-align:center">'+ui('doneTitle')+'</h1>'
     + '<p class="hint" style="text-align:center">'+ui('doneBody')(A.first||'')+'</p>';
+  const est = estimateCard(); if(est) done.appendChild(est);
   done.appendChild(homesLinks());
   stage.replaceChildren(done);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* After applying: send them back to the home search (and to the home they came from, if any). */
+/* Buying-power ESTIMATE shown at the end (a range, never a rate).
+   Payment budget = 30%–40% of gross monthly income (ITIN 27%–36%), minus known monthly debts,
+   FHA 3.5% down for SSN buyers, ITIN 10% down; taxes+insurance from CONFIG.CALC. */
+function estimateRange(){
+  if(!isBuy(A)) return null;
+  const inc = totalIncome(), debts = totalDebts();
+  if(!(inc>0)) return null;
+  const itin = A.status==='ITIN (Tax ID number)';
+  const rate = (CONFIG.CALC.rateDefault + (itin ? CONFIG.CALC.itinRateAdd : 0))/100/12;
+  const pf = rate/(1-Math.pow(1+rate,-360));
+  const d = itin ? 0.10 : 0.035, ufmip = itin ? 0 : 0.0175, mi = itin ? 0 : 0.0055;
+  const carry = (CONFIG.CALC.taxPct + CONFIG.CALC.insPct)/100/12;
+  const k = (1-d)*((1+ufmip)*pf + mi/12) + carry;          // monthly cost per $1 of price
+  const price = b => Math.max(0, Math.floor((b/k)/5000)*5000);
+  const lo = price((itin?0.27:0.30)*inc - debts), hi = price((itin?0.36:0.40)*inc - debts);   // ITIN lenders are stricter on DTI
+  if(hi < 80000) return {low:true, itin};
+  return {lo:Math.max(lo, Math.round(hi*0.8/5000)*5000), hi, itin};
+}
+function estimateCard(){
+  const e = estimateRange(); if(!e) return null;
+  const c = el('div','est-card');
+  if(e.low){
+    c.innerHTML = '<div class="est-k">'+ui('estK')+'</div><p class="est-p">'+ui('estLow')+'</p>';
+    return c;
+  }
+  c.innerHTML = '<div class="est-k">'+ui('estK')+'</div>'
+    + '<div class="est-n"><b>'+money(e.lo)+' <span>\u2013</span></b> <b>'+money(e.hi)+'</b></div>'
+    + '<p class="est-p">'+ui('estP')+'</p>'
+    + (e.itin ? '<p class="est-p">'+ui('estItin')+'</p>' : '')
+    + '<p class="est-fine">'+ui('estFine')+'</p>';
+  return c;
+}
+
 function homesLinks(){
   const wrap = el('div','done-links');
   let mls = '';
   try{ mls = (JSON.parse(sessionStorage.getItem('jag_home')||'null')||{}).mls || ''; }catch(e){}
-  const go = el('a','next call-btn', ui('doneCall'));
-  go.href = 'homes';
+  const e = estimateRange();
+  const go = el('a','next call-btn', e && e.hi ? ui('doneUpTo')(money(e.hi)) : ui('doneCall'));
+  go.href = 'homes' + (e && e.hi ? '?maxp=' + e.hi : '');
   wrap.appendChild(go);
   if(mls){
     const back = el('a','done-back', ui('doneBack'));
@@ -1717,7 +1772,7 @@ async function submitAll(){
     '<div class="recap">'+rows.map(r=>'<div><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>').join('')+'</div>');
   scrollBox.appendChild(box);
 
-  if(isBuy(A)) scrollBox.appendChild(buildCalculator());
+  { const est = estimateCard(); if(est) scrollBox.appendChild(est); }
 
   scrollBox.appendChild(homesLinks());
   const again = el('button','next restart', ui('restart'));
