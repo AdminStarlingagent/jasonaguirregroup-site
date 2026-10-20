@@ -60,6 +60,12 @@ header.site{
 .notecard.show{display:flex}
 .notecard svg{width:20px;height:20px;flex:0 0 20px;margin-top:1px}
 
+/* gentle tip shown above the options (family co-borrower, income tip) */
+.infocard{display:flex;align-items:flex-start;gap:12px;background:#fdf6e7;border:1px solid #f1e0b8;color:#3f3416;border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.5;margin:-8px 0 22px}
+.infocard .ii{font-size:20px;line-height:1.2;flex:0 0 auto}
+.infocard b{display:block;font-weight:700;margin-bottom:2px;color:#2e2610}
+.infocard p{margin:0}
+
 /* buying-power calculator */
 .calc{align-self:stretch;border:1px solid var(--line);border-radius:16px;padding:20px;margin:4px 0 8px;animation:up .4s ease}
 .calc h4{margin:0 0 3px;font-size:17px;font-weight:600}
@@ -301,6 +307,14 @@ const CONFIG = {
     taxPct      : 2.2,    // annual property tax, % of home value
     insPct      : 0.6,    // annual homeowners insurance, % of home value
     itinRateAdd : 1.0     // ITIN portfolio loans priced this much above the slider rate (%)
+  },
+
+  /* Income tip. A buyer applying alone who makes less than minIncome a month sees a gentle
+     "add a family member or other income" screen after the income question. They can always
+     continue on their own. Keep these the same as TIER in admin.html. */
+  QUALIFY : {
+    minIncome    : 4500,  // under this (and applying alone) → show the tip
+    nurtureBelow : 3000   // household income under this → lead goes to Nurture in the admin
   }
 };
 
@@ -366,6 +380,7 @@ function cap(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
 function coRef(a){
   var map = {
     'Spouse/Partner': {en:'your spouse',        es:'su esposo(a)'},
+    'Son/Daughter':   {en:'your son or daughter', es:'su hijo(a)'},
     'Parent':         {en:'your parent',        es:'su padre o madre'},
     'Sibling':        {en:'your sibling',       es:'su hermano(a)'},
     'Other family':   {en:'your family member', es:'su familiar'},
@@ -373,6 +388,25 @@ function coRef(a){
   };
   return map[a.coRelation] || {en:'your co-borrower', es:'su co-prestatario'};
 }
+
+/* Who can apply with them — same list on both screens that ask it. */
+const CO_RELATIONS = [
+  {v:'Spouse/Partner', lb:{en:'My spouse / partner',   es:'Mi esposo(a) / pareja'}},
+  {v:'Son/Daughter',   lb:{en:'My son or daughter',    es:'Mi hijo(a)'}},
+  {v:'Parent',         lb:{en:'My parent',             es:'Mi padre o madre'}},
+  {v:'Sibling',        lb:{en:'My sibling',            es:'Mi hermano(a)'}},
+  {v:'Other family',   lb:{en:'Other family',          es:'Otro familiar'}},
+  {v:'Friend',         lb:{en:'A friend',              es:'Un amigo(a)'}}
+];
+
+/* Income tip: a buyer applying alone under CONFIG.QUALIFY.minIncome a month.
+   Only looks at their own job income (known before the tip), so the screen never
+   appears or disappears behind them while they move forward. */
+function lowIncShown(a){
+  var inc = +a.income||0;
+  return isBuy(a) && inc>0 && inc<CONFIG.QUALIFY.minIncome && (a.hasCoBorrower!=='Yes' || !!a.coFromNudge);
+}
+function otherInc(a){ return (lowIncShown(a) && a.lowIncAction==='Other income') ? (+a.otherIncome||0) : 0; }
 
 const STEPS = [
   /* -------- 1) language (kept per Jason) -------- */
@@ -460,22 +494,21 @@ const STEPS = [
 
   /* -------- 5) applying together? (Kat asks before going deeper) -------- */
   { id:'hasCoB', type:'single', key:'hasCoBorrower',
-    title:{en:'Will you apply together with someone?', es:'\u00bfVa a aplicar junto con alguien?'},
-    hint:{en:'A spouse, parent, sibling, or partner \u2014 their income counts too.',
-          es:'Su esposo(a), un padre, hermano o pareja \u2014 su ingreso tambi\u00e9n cuenta.'},
-    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No, just me',es:'No, solo yo'}}]},
+    title:{en:'Will anyone in your family apply with you?', es:'\u00bfAlguien de su familia va a aplicar con usted?'},
+    hint:{en:'Your spouse, son or daughter, or a parent \u2014 their income counts too.',
+          es:'Su esposo(a), hijo(a), padre o madre \u2014 su ingreso tambi\u00e9n cuenta.'},
+    info:{ icon:'\ud83d\udca1',
+      title:{en:'Did you know?', es:'\u00bfSab\u00eda que\u2026?'},
+      body:{en:'Many families qualify for their home by adding a son or daughter to the application. Their income adds to yours, and with FHA loans they don\u2019t have to live in the home to help.',
+            es:'Muchas familias califican para su casa agregando a un hijo o hija a la solicitud. Su ingreso se suma al suyo, y con pr\u00e9stamos FHA no tienen que vivir en la casa para ayudar.'}},
+    options:[{v:'Yes',lb:{en:'Yes, add them',es:'S\u00ed, agregar'}},{v:'No',lb:{en:'No, just me',es:'No, solo yo'}}],
+    onNext:function(a){ if(a.hasCoBorrower==='Yes') a.coFromNudge=false; }},
 
-  { id:'coRelation', type:'single', key:'coRelation', when:a=>a.hasCoBorrower==='Yes',
+  { id:'coRelation', type:'single', key:'coRelation', when:a=>a.hasCoBorrower==='Yes'&&!a.coFromNudge,
     title:{en:'Who will apply with you?', es:'\u00bfQui\u00e9n va a aplicar con usted?'},
-    options:[
-      {v:'Spouse/Partner', lb:{en:'My spouse / partner', es:'Mi esposo(a) / pareja'}},
-      {v:'Parent',         lb:{en:'My parent',           es:'Mi padre o madre'}},
-      {v:'Sibling',        lb:{en:'My sibling',          es:'Mi hermano(a)'}},
-      {v:'Other family',   lb:{en:'Other family',        es:'Otro familiar'}},
-      {v:'Friend',         lb:{en:'A friend',            es:'Un amigo(a)'}}
-    ]},
+    options:CO_RELATIONS},
 
-  { id:'marital', type:'single', key:'marital', when:a=>a.hasCoBorrower==='Yes'&&a.coRelation==='Spouse/Partner',
+  { id:'marital', type:'single', key:'marital', when:a=>a.hasCoBorrower==='Yes'&&!a.coFromNudge&&a.coRelation==='Spouse/Partner',
     title:{en:'Are you legally married?', es:'\u00bfEst\u00e1n legalmente casados?'},
     options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
 
@@ -623,14 +656,77 @@ const STEPS = [
   { id:'income', type:'currency', key:'income',
     when:a=>!(a.work==='Employed'&&(a.payType==='By the hour'||a.payType==='Salary')),
     title:{en:"About how much do you make each month?", es:'\u00bfComo cu\u00e1nto gana al mes, m\u00e1s o menos?'},
-    hint:{en:'Before taxes \u2014 your best guess is fine. Include pension or Social Security if you get it.',
-          es:'Antes de impuestos \u2014 un estimado est\u00e1 bien. Incluya pensi\u00f3n o Seguro Social si lo recibe.'},
+    hint:{en:'Before taxes \u2014 your best guess is fine. Count everything: side work, Social Security, disability, pension, or child support.',
+          es:'Antes de impuestos \u2014 un estimado est\u00e1 bien. Cuente todo: trabajos extra, Seguro Social, discapacidad, pensi\u00f3n o manutenci\u00f3n de hijos.'},
     label:{en:'Monthly income', es:'Ingreso mensual'}, ph:'e.g. 3,200',
     err:{en:'Please enter about how much you make each month.', es:'Por favor ingrese como cu\u00e1nto gana al mes.'},
     helper:function(a){
       var v=+a.income||0;
       return v>0 ? ui('perYear')(money(v*12)) : '';
     }},
+
+  /* -------- 7b) monthly debts \u2014 lenders look at debts as much as income -------- */
+  { id:'debts', type:'currency', key:'debts', allowZero:true,
+    title:{en:'How much do you pay each month in debts?', es:'\u00bfCu\u00e1nto paga al mes en deudas?'},
+    hint:{en:'Car payments, credit cards (the minimum payment), and personal or student loans. Don\u2019t count rent. No debts? Type 0.',
+          es:'Pagos de carro, tarjetas de cr\u00e9dito (el pago m\u00ednimo) y pr\u00e9stamos personales o de estudiante. No cuente la renta. \u00bfNo tiene deudas? Escriba 0.'},
+    label:{en:'Monthly debt payments', es:'Pagos de deudas al mes'}, ph:'e.g. 450',
+    err:{en:'Please enter your monthly debt payments \u2014 or 0 if you have none.',
+         es:'Por favor escriba lo que paga al mes en deudas \u2014 o 0 si no tiene.'}},
+
+  /* -------- 7c) income tip: applying alone under CONFIG.QUALIFY.minIncome -------- */
+  { id:'lowInc', type:'single', key:'lowIncAction', when:lowIncShown,
+    title:{en:'You\u2019re closer than you think!', es:'\u00a1Est\u00e1 m\u00e1s cerca de lo que cree!'},
+    hint:{en:'With a little more income, many families qualify. Adding a son, daughter, or spouse is the most common way to do it.',
+          es:'Con un poco m\u00e1s de ingreso, muchas familias logran calificar. Agregar a un hijo, hija o esposo(a) es la forma m\u00e1s com\u00fan de hacerlo.'},
+    info:{ icon:'\ud83c\udfe1',
+      title:{en:'Family can help', es:'Su familia puede ayudar'},
+      body:{en:'With FHA loans, a son, daughter, or parent can be on the loan even if they don\u2019t live in the home.',
+            es:'Con pr\u00e9stamos FHA, un hijo(a), padre o madre puede estar en el pr\u00e9stamo aunque no viva en la casa.'}},
+    options:[
+      {v:'Add family member', lb:{en:'Add a family member',  es:'Agregar a un familiar'}, icon:IC.person},
+      {v:'Other income',      lb:{en:'I have other income',  es:'Tengo otros ingresos'},  icon:IC.coins},
+      {v:'Continue alone',    lb:{en:'Continue on my own',   es:'Continuar solo(a)'},     icon:IC.check}
+    ],
+    notes:{
+      'Add family member':{en:'Perfect \u2014 we just need a few details about them.',
+                           es:'Perfecto \u2014 solo necesitamos unos datos de su familiar.'},
+      'Continue alone':{en:'That\u2019s okay \u2014 send your application and our team will reach out with a plan.',
+                        es:'Est\u00e1 bien \u2014 env\u00ede su solicitud y nuestro equipo le contactar\u00e1 con un plan.'}
+    },
+    onNext:function(a){
+      if(a.lowIncAction==='Add family member'){ a.hasCoBorrower='Yes'; a.coFromNudge=true; }
+      else if(a.coFromNudge){ a.hasCoBorrower='No'; a.coFromNudge=false; }   // changed their mind
+    }},
+
+  { id:'otherIncome', type:'currency', key:'otherIncome', when:a=>lowIncShown(a)&&a.lowIncAction==='Other income',
+    title:{en:'How much other income do you get each month?', es:'\u00bfCu\u00e1nto recibe al mes de otros ingresos?'},
+    hint:{en:'A second job, side work, Social Security, disability, pension, or child support. Your best guess is fine.',
+          es:'Un segundo trabajo, trabajos extra, Seguro Social, discapacidad, pensi\u00f3n o manutenci\u00f3n de hijos. Un estimado est\u00e1 bien.'},
+    label:{en:'Other monthly income', es:'Otros ingresos al mes'}, ph:'e.g. 800',
+    err:{en:'Please enter about how much \u2014 your best guess is fine.', es:'Por favor ingrese como cu\u00e1nto \u2014 un estimado est\u00e1 bien.'},
+    helper:function(a){
+      var v=+a.otherIncome||0, b=+a.income||0;
+      return v>0 ? ui('withOther')(money(b+v)) : '';
+    }},
+
+  { id:'otherIncomeSrc', type:'single', key:'otherIncomeSrc', when:a=>lowIncShown(a)&&a.lowIncAction==='Other income',
+    title:{en:'Where does that income come from?', es:'\u00bfDe d\u00f3nde viene ese ingreso?'},
+    options:[
+      {v:'Second job or side work',   lb:{en:'A second job or side work',     es:'Un segundo trabajo o trabajos extra'}},
+      {v:'Social Security / disability', lb:{en:'Social Security or disability', es:'Seguro Social o discapacidad'}},
+      {v:'Pension / retirement',      lb:{en:'Pension or retirement',         es:'Pensi\u00f3n o jubilaci\u00f3n'}},
+      {v:'Child support / alimony',   lb:{en:'Child support or alimony',      es:'Manutenci\u00f3n de hijos o pensi\u00f3n alimenticia'}},
+      {v:'Other',                     lb:{en:'Something else',                es:'Otra cosa'}}
+    ]},
+
+  { id:'coRelationLate', type:'single', key:'coRelation', when:a=>a.hasCoBorrower==='Yes'&&!!a.coFromNudge,
+    title:{en:'Who will you add?', es:'\u00bfA qui\u00e9n va a agregar?'},
+    options:CO_RELATIONS},
+
+  { id:'maritalLate', type:'single', key:'marital', when:a=>a.hasCoBorrower==='Yes'&&!!a.coFromNudge&&a.coRelation==='Spouse/Partner',
+    title:{en:'Are you legally married?', es:'\u00bfEst\u00e1n legalmente casados?'},
+    options:[{v:'Yes',lb:{en:'Yes',es:'S\u00ed'}},{v:'No',lb:{en:'No',es:'No'}}]},
 
   /* -------- 8) "ahora necesito la información de su esposo(a)" — the co-borrower, Kat's exact list -------- */
   { id:'coName', type:'group', when:a=>a.hasCoBorrower==='Yes',
@@ -742,7 +838,15 @@ const STEPS = [
           es:'Antes de impuestos \u2014 su ingreso se suma al suyo para calificar.'},
     label:{en:'Co-borrower monthly income', es:'Ingreso mensual del co-prestatario'}, ph:'e.g. 4,000',
     err:{en:'Please enter their monthly income \u2014 your best guess is fine.',
-         es:'Por favor ingrese su ingreso mensual \u2014 un estimado est\u00e1 bien.'},
+         es:'Por favor ingrese su ingreso mensual \u2014 un estimado est\u00e1 bien.'}},
+
+  { id:'coDebts', type:'currency', key:'coDebts', allowZero:true, when:a=>a.hasCoBorrower==='Yes',
+    titleFn:function(a){ var r=coRef(a); return {en:'How much does '+r.en+' pay each month in debts?', es:'\u00bfCu\u00e1nto paga '+r.es+' al mes en deudas?'}; },
+    hint:{en:'Their car payment, credit cards (minimum payment), and loans. No debts? Type 0.',
+          es:'Su pago de carro, tarjetas de cr\u00e9dito (pago m\u00ednimo) y pr\u00e9stamos. \u00bfNo tiene deudas? Escriba 0.'},
+    label:{en:'Their monthly debt payments', es:'Sus pagos de deudas al mes'}, ph:'e.g. 300',
+    err:{en:'Please enter their monthly debt payments \u2014 or 0.',
+         es:'Por favor escriba lo que paga al mes en deudas \u2014 o 0.'},
     button:'confirm'}
 ];
 
@@ -846,6 +950,8 @@ en:{
   cNote:(t,i)=>'Assumes a 30-yr fixed loan, '+t+'% property tax and '+i+'% insurance (Texas estimates). Estimate only — not a preapproval, rate quote, or commitment to lend.',
   perYear:a=>'\u2248 '+a+' per year',
   perMonthApprox:a=>'\u2248 '+a+' a month \u2014 we did the math for you',
+  withOther:a=>'\u2248 '+a+' a month in total',
+  doneBodySoon:function(n){ return (n?n+', we':'We')+' have your application. Our team will reach out soon with a plan and your next steps. In the meantime, keep looking at homes and save the ones you like.'; },
   months:['January','February','March','April','May','June','July','August','September','October','November','December'],
   dobMonth:'Month', dobDay:'Day', dobYear:'Year',
   dobErr:'Please pick the month, day, and year.',
@@ -930,6 +1036,8 @@ es:{
   cNote:(t,i)=>'Asume pr\u00e9stamo fijo a 30 a\u00f1os, '+t+'% de impuesto predial y '+i+'% de seguro (estimados de Texas). Solo un estimado — no es una preaprobaci\u00f3n, cotizaci\u00f3n de tasa, ni compromiso de prestar.',
   perYear:a=>'\u2248 '+a+' al a\u00f1o',
   perMonthApprox:a=>'\u2248 '+a+' al mes \u2014 nosotros hicimos la cuenta por usted',
+  withOther:a=>'\u2248 '+a+' al mes en total',
+  doneBodySoon:function(n){ return (n?n+', ya':'Ya')+' recibimos su solicitud. Nuestro equipo le contactar\u00e1 pronto con un plan y sus siguientes pasos. Mientras tanto, siga viendo casas y guarde las que le gusten.'; },
   months:['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
   dobMonth:'Mes', dobDay:'D\u00eda', dobYear:'A\u00f1o',
   dobErr:'Por favor elija el mes, el d\u00eda y el a\u00f1o.',
@@ -993,6 +1101,15 @@ function renderStep(){
   wrap.appendChild(el('h1','title', tx(s.titleFn ? s.titleFn(A) : s.title)));
   if(s.question) wrap.appendChild(el('p','question', tx(s.question)));
   if(s.hint) wrap.appendChild(el('p','hint', tx(s.hint)));
+  if(s.info){
+    const ic = el('div','infocard');
+    ic.appendChild(el('span','ii', s.info.icon||'💡'));
+    const tb = el('div');
+    tb.appendChild(el('b', null, esc(tx(s.info.title))));
+    tb.appendChild(el('p', null, esc(tx(s.info.body))));
+    ic.appendChild(tb);
+    wrap.appendChild(ic);
+  }
 
   let validate = ()=>true;
 
@@ -1556,6 +1673,7 @@ function buildPayload(){
     'Own or Rent': A.ownRent || '',
     'Work Status': A.work || '',
     'Gross Monthly Income': money(A.income),
+    'Monthly Debts': (A.debts!=null && A.debts!=='') ? money(A.debts) : '',
     'Estimate Shown to Client': (function(){ var e=estimateRange(); return !e ? 'Not shown' : e.low ? 'No range shown (income too low for an estimate)' : money(e.lo)+' - '+money(e.hi)+(e.itin?' (ITIN, 10% down)':' (FHA, 3.5% down)'); })(),
     'SMS Consent': A.smsConsent ? 'Yes' : 'No',
     'Submitted At': new Date().toLocaleString('en-US'),
@@ -1563,7 +1681,7 @@ function buildPayload(){
   };
   if(A.addrYears==='Less than 2 years' && A.prevAddress) p['Previous Address'] = A.prevAddress;
   if(A.ownRent==='Renting') p['Monthly Rent'] = money(A.rentAmt);
-  if(A.marital) p['Legally Married'] = A.marital;
+  if(A.marital && A.hasCoBorrower==='Yes' && A.coRelation==='Spouse/Partner') p['Legally Married'] = A.marital;
   if(A.status==='Work Permit (EAD)' && A.permitValid) p['Work Permit Status'] = A.permitValid;
   // tax id: NEVER the full number here — email + CRM payload get a mask only
   var tShape = A.status==='ITIN (Tax ID number)' ? 'ITIN' : 'SSN';
@@ -1601,7 +1719,19 @@ function buildPayload(){
     p[cShape] = digits(A.coTaxId||'').length===9 ? ('\u2022\u2022\u2022-\u2022\u2022-'+digits(A.coTaxId).slice(5)+' (encrypted on file)')
                : (A.coTaxIdSkipped ? 'Will provide by phone' : 'Not provided');
     p['Co-borrower Monthly Income'] = money(A.coIncome);
-    p['Combined Monthly Income'] = money(totalIncome());
+    if(A.coDebts!=null && A.coDebts!=='') p['Co-borrower Monthly Debts'] = money(A.coDebts);
+  }
+  // other income (from the income tip) + household totals
+  if(otherInc(A)>0){
+    p['Other Monthly Income'] = money(otherInc(A));
+    if(A.otherIncomeSrc) p['Other Income Source'] = A.otherIncomeSrc;
+  }
+  if(totalIncome() !== (+A.income||0)) p['Combined Monthly Income'] = money(totalIncome());
+  if(A.hasCoBorrower==='Yes' && ((A.debts!=null && A.debts!=='') || (A.coDebts!=null && A.coDebts!==''))) p['Combined Monthly Debts'] = money(totalDebts());
+  if(lowIncShown(A) && A.lowIncAction){
+    p['Low-Income Tip'] = ({ 'Add family member':'Saw the tip and added a family member',
+                             'Other income':'Saw the tip and added other income',
+                             'Continue alone':'Saw the tip and continued on their own' })[A.lowIncAction] || A.lowIncAction;
   }
 
   try{ // home the buyer was looking at on /homes (link carries it; kept for this visit)
@@ -1646,7 +1776,7 @@ async function finishAll(){
   const done = el('div','step done-card');
   done.innerHTML = '<div class="done-check">'+IC.shield+'</div>'
     + '<h1 class="title" style="text-align:center">'+ui('doneTitle')+'</h1>'
-    + '<p class="hint" style="text-align:center">'+ui('doneBody')(A.first||'')+'</p>';
+    + '<p class="hint" style="text-align:center">'+esc(( (totalIncome()>0 && totalIncome()<CONFIG.QUALIFY.nurtureBelow) ? ui('doneBodySoon') : ui('doneBody') )(A.first||''))+'</p>';
   const est = estimateCard(); if(est) done.appendChild(est);
   done.appendChild(homesLinks());
   stage.replaceChildren(done);
@@ -1784,7 +1914,7 @@ async function submitAll(){
 /* ================================================================
    BUYING-POWER CALCULATOR (FHA / Conventional / ITIN)
    ================================================================ */
-function totalIncome(){ return (+A.income||0) + (A.hasCoBorrower==='Yes' ? (+A.coIncome||0) : 0); }
+function totalIncome(){ return (+A.income||0) + otherInc(A) + (A.hasCoBorrower==='Yes' ? (+A.coIncome||0) : 0); }
 function totalDebts(){ return (+A.debts||0) + (A.hasCoBorrower==='Yes' ? (+A.coDebts||0) : 0); }
 
 function programsFor(status){

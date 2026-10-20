@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="jag-capture.js?v=3"></script>
-<script src="jag-file-format.js?v=4"></script>
+<script src="jag-file-format.js?v=5"></script>
 <script src="jag-offer.js?v=1"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
@@ -93,6 +93,16 @@ td .em{font-size:12.5px;color:var(--muted)}
 .statussel{border:1.5px solid var(--line);border-radius:99px;padding:6px 10px;font-size:12.5px;font-weight:700;background:#fff;cursor:pointer}
 .s-New{color:var(--loan)} .s-Contacted{color:var(--amber)} .s-Working{color:#7c3aed} .s-Credit{color:#0d9488} .s-Won{color:var(--sell)} .s-Lost{color:var(--soft)}
 .figsub{display:block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)}
+/* income tier: A $4,500+ / B $3,000-$4,499 / C under $3,000 (Nurture) */
+.tier{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.03em;padding:3px 8px;border-radius:99px;white-space:nowrap;vertical-align:1px}
+.tier-A{background:var(--sell-t);color:var(--sell)} .tier-B{background:var(--amber-t);color:var(--amber)} .tier-C{background:#ececf1;color:#55545d}
+td.inc{white-space:nowrap;font-weight:700}
+td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;margin-top:2px}
+.legend{font-size:12.5px;color:var(--muted);margin:-4px 2px 12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.legend[hidden],.nurturebar[hidden]{display:none}
+.nurturebar{background:#fff;border:1px solid var(--line);border-left:3px solid #8a8992;border-radius:12px;padding:12px 16px;margin:0 0 14px;font-size:13.5px;color:#3f3e47;line-height:1.5}
+.tierbox p{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
+.tierbox .tl{font-size:14.5px;font-weight:700}
 .estbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .estrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .estrow .dollar{font-weight:800;font-size:17px}
@@ -262,7 +272,8 @@ td .em{font-size:12.5px;color:var(--muted)}
 .ds-sent{background:var(--loan-t);color:var(--loan)} .ds-drafting{background:var(--card);color:var(--muted)}
 
 @media(max-width:760px){
-  th:nth-child(4),td:nth-child(4),th:nth-child(6),td:nth-child(6){display:none}
+  #leadsview th:nth-child(4),#leadsview td:nth-child(4),#leadsview th:nth-child(7),#leadsview td:nth-child(7){display:none}
+  #clientsview th:nth-child(4),#clientsview td:nth-child(4),#clientsview th:nth-child(6),#clientsview td:nth-child(6){display:none}
   .deal{padding:14px}
   /* phones: header buttons wrap instead of pushing the page sideways */
   .wrap{padding:0 16px}
@@ -327,6 +338,7 @@ td .em{font-size:12.5px;color:var(--muted)}
 <div class="app wrap" id="app">
   <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
     <button type="button" class="tab on" id="tab-leads" data-tab="leads" role="tab" aria-selected="true">Leads</button>
+    <button type="button" class="tab" id="tab-nurture" data-tab="nurture" role="tab" aria-selected="false" title="Applications under $3,000 a month household income">Nurture <span class="tabcount" id="nurturecount"></span></button>
     <button type="button" class="tab" id="tab-deals" data-tab="deals" role="tab" aria-selected="false">Deals <span class="tabcount" id="dealcount"></span></button>
     <button type="button" class="tab" id="tab-clients" data-tab="clients" role="tab" aria-selected="false">Client accounts <span class="tabcount" id="clientcount"></span></button>
   </nav>
@@ -350,9 +362,18 @@ td .em{font-size:12.5px;color:var(--muted)}
     </select>
   </div>
 
+  <p class="legend" id="tierlegend"><span><b>Income tier</b> (household, per month):</span>
+    <span><span class="tier tier-A">A</span> $4,500+</span>
+    <span><span class="tier tier-B">B</span> $3,000&ndash;$4,499</span>
+    <span><span class="tier tier-C">C</span> under $3,000, kept in the Nurture tab</span></p>
+  <div class="nurturebar" id="nurturebar" hidden>
+    <b>Nurture</b> holds applications with <b>under $3,000 a month</b> in household income, so your main Leads list stays clean.
+    Nothing is lost. When you start working one, set its status to <b>Working</b>, <b>Credit</b> or <b>Won</b> and it moves back to Leads.
+  </div>
+
   <div class="tablecard">
     <table>
-      <thead><tr><th>Received</th><th>Lead</th><th>Type</th><th>Phone</th><th>Key figure</th><th>Lang</th><th>Status</th></tr></thead>
+      <thead><tr><th>Received</th><th>Lead</th><th>Type</th><th>Phone</th><th>Key figure</th><th title="Household income a month, and its tier">Income</th><th>Lang</th><th>Status</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
     <div class="empty" id="empty" style="display:none">No inquiries match — new submissions land here automatically.</div>
@@ -410,7 +431,7 @@ td .em{font-size:12.5px;color:var(--muted)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-13.1</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-19.1</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -469,6 +490,10 @@ td .em{font-size:12.5px;color:var(--muted)}
         <p class="estnote" id="d-est-note"></p>
       </div>
     </div>
+    <div id="d-tierwrap" hidden>
+      <div class="sect">Income tier</div>
+      <div class="estbox tierbox" id="d-tier"></div>
+    </div>
     <div id="d-kv"></div>
     <div class="sect">Team notes</div>
     <textarea class="noteta" id="d-notes" placeholder="e.g. Called 7/2 — wants to see homes in Katy this weekend…"></textarea>
@@ -518,16 +543,23 @@ function keyFigure(r){
          p.offerPrice||p.price||p['Automated Estimate']||p.estimate||'—';
 }
 /* ---------------- estimated qualifying amount ----------------
-   Rough number from what the application collects (income + SSN/ITIN path). The application does
-   not ask for debts, credit score or down payment, so this is a starting point for the call,
+   Rough number from what the application collects (income, monthly debts, SSN/ITIN path).
+   Older applications have no debts on file, so those hold back 10% of income instead.
+   Credit score and down payment are not asked, so this is a starting point for the call,
    not a pre-approval. Change the assumptions here. */
 var EST = {
   rate:6.75,        /* interest rate, % (same default as the calculator settings in apply.html) */
   taxPct:2.2,       /* yearly property tax, % of price */
   insPct:0.6,       /* yearly home insurance, % of price */
   itinRateAdd:1.0,  /* ITIN loans priced this much above the rate, % */
-  debtHold:0.10     /* share of income held back for car/card payments, since debts are unknown */
+  debtHold:0.10     /* share of income held back for car/card payments when debts are unknown */
 };
+/* ---------------- income tier ----------------
+   Household income a month (borrower + co-borrower + other income).
+   Keep these the same as CONFIG.QUALIFY in apply.html. */
+var TIER = { ready:4500, nurtureBelow:3000 };
+/* a Tier C lead leaves Nurture once the team moves it to one of these */
+var TIER_ACTIVE = { Working:1, Credit:1, Won:1 };
 function num(v){ var n=parseFloat(String(v==null?'':v).replace(/[^0-9.]/g,'')); return isFinite(n)?n:0; }
 function fmtMoney(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
 function leadIncome(p){
@@ -539,21 +571,42 @@ function leadIncome(p){
   }
   return inc;
 }
+function hasVal(v){ return !(v==null || v===''); }
+function debtsKnown(p){ return hasVal(p['Monthly Debts']) || hasVal(p['Combined Monthly Debts']); }
+function leadDebts(p){ return hasVal(p['Combined Monthly Debts']) ? num(p['Combined Monthly Debts']) : num(p['Monthly Debts']); }
+function tierOf(r){
+  if(!r || r.type!=='Mortgage Application') return null;
+  var inc=leadIncome(r.payload||{});
+  if(!(inc>0)) return null;
+  return inc>=TIER.ready ? 'A' : inc>=TIER.nurtureBelow ? 'B' : 'C';
+}
+function inNurture(r){ return tierOf(r)==='C' && !TIER_ACTIVE[r.status]; }
+function tierPill(t){ return t ? '<span class="tier tier-'+t+'">'+t+'</span>' : ''; }
+function incomeCell(r){
+  var t=tierOf(r);
+  if(!t) return '<td class="inc" style="color:var(--soft);font-weight:400">\u2014</td>';
+  var p=r.payload||{}, bits=[];
+  if(p['Co-borrower']==='Yes') bits.push('with co-borrower');
+  if(hasVal(p['Other Monthly Income'])) bits.push('with other income');
+  return '<td class="inc">'+esc(fmtMoney(leadIncome(p)))+' '+tierPill(t)+(bits.length?'<small>'+esc(bits.join(', '))+'</small>':'')+'</td>';
+}
 function autoEstimate(r){
   if(r.type!=='Mortgage Application') return null;
   var p=r.payload||{}, income=leadIncome(p);
   if(!(income>0)) return null;
+  var known=debtsKnown(p), debts=known?leadDebts(p):0;
   var itin = /ITIN/i.test(String(p['Qualifying With']||''));
   var pr = itin ? {name:'ITIN', down:0.03,  dti:0.45, mi:0,      ufmip:0,      rateAdd:EST.itinRateAdd}
                 : {name:'FHA',  down:0.035, dti:0.55, mi:0.0055, ufmip:0.0175, rateAdd:0};
-  var share = pr.dti-EST.debtHold;
-  var budget = share*income;                                   /* monthly housing payment they can carry */
+  var budget = known ? (pr.dti*income - debts)                /* monthly housing payment they can carry */
+                     : (pr.dti-EST.debtHold)*income;
+  var share = budget/income;
   var rm = (EST.rate+pr.rateAdd)/100/12;
   var pf = rm/(1-Math.pow(1+rm,-360));                         /* principal + interest per $1 of loan */
   var perDollar = (1-pr.down)*((1+pr.ufmip)*pf + pr.mi/12) + (EST.taxPct+EST.insPct)/100/12;
   var price = Math.floor(budget/perDollar/1000)*1000;
   if(!(price>0)) return null;
-  return { amount:price, program:pr.name, income:income, payment:budget, share:share, rate:EST.rate+pr.rateAdd };
+  return { amount:price, program:pr.name, income:income, payment:budget, share:share, rate:EST.rate+pr.rateAdd, debts:debts, debtsKnown:known };
 }
 function savedEstimate(r){ var n=(r.est_amount==null||r.est_amount==='')?NaN:Number(r.est_amount); return n>0?n:null; }
 /* what the Key figure column shows: {text, sub} */
@@ -755,8 +808,11 @@ function patch(id, body, cb){
 
 /* ---------------- render ---------------- */
 function filtered(){
-  var q=state.q.toLowerCase();
+  var q=state.q.toLowerCase(), nurtureTab=(state.tab==='nurture');
   return state.rows.filter(function(r){
+    var nur=inNurture(r);
+    if(nurtureTab && !nur) return false;
+    if(!nurtureTab && nur && !q) return false;      /* a search on Leads still finds everyone */
     if(state.type && r.type!==state.type) return false;
     if(state.status && r.status!==state.status) return false;
     if(q){
@@ -793,28 +849,38 @@ function render(){
       '<td>'+esc(r.phone||'—')+'</td>'+
       '<td class="figure" data-fig title="'+(r.type==='Mortgage Application'?'Click to edit this amount':'')+'">'+
         (function(f){ return esc(f.text)+(f.sub?('<span class="figsub">'+esc(f.sub)+'</span>'):''); })(figureFor(r))+'</td>'+
+      incomeCell(r)+
       '<td>'+esc(r.lang||'—')+'</td>'+
       '<td><select class="statussel s-'+esc(r.status)+'" data-status>'+
         ['New','Contacted','Working','Credit','Won','Lost'].map(function(s){return '<option'+(s===r.status?' selected':'')+'>'+s+'</option>';}).join('')+
       '</select></td>';
     tb.appendChild(tr);
   });
+  $('empty').textContent = state.tab==='nurture'
+    ? 'Nothing in Nurture. Applications under $3,000 a month household income land here.'
+    : 'No inquiries match \u2014 new submissions land here automatically.';
   $('empty').style.display = rows.length? 'none':'block';
   $('morebar').style.display = state.done? 'none':'block';
+  var nc=state.rows.filter(inNurture).length;
+  $('nurturecount').textContent = nc ? String(nc) : '';
 }
 
 /* ---------------- tabs ---------------- */
 function setTab(t){
-  if(t!=='deals' && t!=='clients') t='leads';
+  if(t!=='deals' && t!=='clients' && t!=='nurture') t='leads';
+  var leadsLike = (t==='leads' || t==='nurture');
   state.tab=t;
-  $('leadsview').hidden = t!=='leads';
+  $('leadsview').hidden = !leadsLike;
   $('dealsview').hidden = t!=='deals';
   $('clientsview').hidden = t!=='clients';
+  $('tierlegend').hidden = t!=='leads';
+  $('nurturebar').hidden = t!=='nurture';
   if(t==='clients' && !clients.rows) loadClients();
-  ['leads','deals','clients'].forEach(function(k){
+  ['leads','nurture','deals','clients'].forEach(function(k){
     var b=$('tab-'+k); b.classList.toggle('on', k===t); b.setAttribute('aria-selected', k===t?'true':'false');
   });
-  $('exportcsv').style.display = (t==='leads') ? 'inline-block' : 'none';
+  if(leadsLike && state.rows.length) render();
+  $('exportcsv').style.display = leadsLike ? 'inline-block' : 'none';
   try{ sessionStorage.setItem('jag_admin_tab', t); }catch(e){}
   if(t==='deals' && !deals.rows) loadDeals();
 }
@@ -1219,6 +1285,7 @@ function openDrawer(id){
   }
   $('d-status').value = r.status;
   fillEstimate(r);
+  fillTier(r);
   renderDetails(r);
   $('d-delwrap').hidden = !canDelete();
   $('d-delconfirm').hidden = true; $('d-del').hidden = false;
@@ -1233,7 +1300,7 @@ function openDrawer(id){
    Borrower, Employment and income, Housing, Co-borrower. Plus a Submission group for the team. */
 var NAME_KEYS = { 'First Name':1, 'Middle Name':1, 'Last Name':1 };
 var BIG_KEYS  = { 'Gross Monthly Income':1, 'Combined Monthly Income':1, 'Co-borrower Monthly Income':1 };
-var SUBMIT_KEYS = ['Submitted At','SMS Consent','Source Page'];
+var SUBMIT_KEYS = ['Low-Income Tip','Submitted At','SMS Consent','Source Page'];
 function detailSections(r){
   var p=r.payload||{}, F=window.JAG_FILE;
   var secs = F ? F.sections(p) : [{ title:'Details', rows:Object.keys(p).filter(function(k){
@@ -1418,7 +1485,7 @@ function buildLeadPdf(r){
   if(r.type==='Mortgage Application'){
     cards.push(['Estimated qualifying amount', (f.text&&f.text!=='\u2014')?f.text:'Not set', (f.text&&f.text!=='\u2014'&&f.sub)?f.sub:'']);
     var inc=p['Combined Monthly Income']||p['Gross Monthly Income'];
-    if(inc) cards.push([p['Combined Monthly Income']?'Combined monthly income':'Monthly income', String(inc)]);
+    if(inc) cards.push([p['Combined Monthly Income']?'Combined monthly income':'Monthly income', String(inc), tierOf(r)?'Tier '+tierOf(r):'']);
   }else if(f.text && f.text!=='\u2014'){ cards.push(['Key figure', f.text]); }
   var cg=10, cw=(R-L-cg*(cards.length-1))/cards.length, chh=54;
   cards.forEach(function(c,i){
@@ -1520,6 +1587,24 @@ function deleteOpenLead(){
     });
   }).catch(function(){ done(); toast('NOT deleted. Could not reach the database. Check your connection and try again.'); });
 }
+function fillTier(r){
+  var t=tierOf(r);
+  $('d-tierwrap').hidden = !t;
+  if(!t) return;
+  var p=r.payload||{}, inc=leadIncome(p);
+  var words={A:'Ready \u2014 $4,500+ a month', B:'Close \u2014 $3,000 to $4,499 a month', C:'Nurture \u2014 under $3,000 a month'}[t];
+  var h='<div class="tl">'+tierPill(t)+' '+esc(words)+'</div>';
+  var line=esc(fmtMoney(inc))+' a month household income';
+  if(p['Co-borrower']==='Yes') line+=' (includes the co-borrower)';
+  else if(hasVal(p['Other Monthly Income'])) line+=' (includes '+esc(String(p['Other Monthly Income']))+' other income)';
+  line+= debtsKnown(p) ? ' \u00b7 '+esc(fmtMoney(leadDebts(p)))+' a month in debts' : ' \u00b7 debts not on this application';
+  h+='<p>'+line+'.</p>';
+  if(t==='C') h+= inNurture(r)
+    ? '<p>This client is in the <b>Nurture</b> tab. Set the status to Working, Credit or Won to move them back to Leads.</p>'
+    : '<p>Back on the Leads list because the status is '+esc(r.status)+'.</p>';
+  if(hasVal(p['Low-Income Tip'])) h+='<p>On the application: '+esc(String(p['Low-Income Tip']).toLowerCase())+'.</p>';
+  $('d-tier').innerHTML=h;
+}
 function fillEstimate(r){
   var isApp = r.type==='Mortgage Application';
   $('d-estwrap').hidden = !isApp;
@@ -1530,9 +1615,11 @@ function fillEstimate(r){
   $('d-est-auto').style.display = saved ? '' : 'none';
   var note;
   if(a){
-    note = 'Auto estimate: '+fmtMoney(a.amount)+' ('+a.program+'). Based on '+fmtMoney(a.income)+' a month income, a house payment up to '+
+    note = 'Auto estimate: '+fmtMoney(a.amount)+' ('+a.program+'). Based on '+fmtMoney(a.income)+' a month income'+
+      (a.debtsKnown ? ' and '+fmtMoney(a.debts)+' a month in debts' : '')+', a house payment up to '+
       fmtMoney(a.payment)+' ('+Math.round(a.share*100)+'% of income), '+a.rate.toFixed(2)+'% rate, minimum down payment, Texas taxes and insurance. '+
-      'Debts, credit score and down payment are not on the application, so confirm with the lender.';
+      (a.debtsKnown ? 'Credit score and down payment are not on the application, so confirm with the lender.'
+                    : 'This application has no debts on it, so 10% of income is held back for them. Confirm with the lender.');
     if(saved) note = 'Showing the amount your team entered. '+note;
   }else{
     note = 'No income on this application, so there is no auto estimate. Type an amount and save it.';
@@ -1692,11 +1779,11 @@ function exportCSV(){
   var keys={};
   rows.forEach(function(r){ Object.keys(r.payload||{}).forEach(function(k){ if(k!=='access_key'&&k!=='botcheck') keys[k]=1; }); });
   var pk=Object.keys(keys).sort();
-  var head=['Received','Type','Name','Email','Phone','Lang','Status','Est. Qualifying Amount','Notes','Source'].concat(pk);
+  var head=['Received','Type','Name','Email','Phone','Lang','Status','Est. Qualifying Amount','Income Tier','Notes','Source'].concat(pk);
   function cell(v){ v=v==null?'':String(v); return '"'+v.replace(/"/g,'""')+'"'; }
   var lines=[head.map(cell).join(',')];
   rows.forEach(function(r){
-    var row=[r.created_at,r.type,r.name,r.email,r.phone,r.lang,r.status,(function(f){return r.type==='Mortgage Application'&&f.text!=='\u2014'?f.text:'';})(figureFor(r)),r.notes,r.source]
+    var row=[r.created_at,r.type,r.name,r.email,r.phone,r.lang,r.status,(function(f){return r.type==='Mortgage Application'&&f.text!=='\u2014'?f.text:'';})(figureFor(r)),tierOf(r)||'',r.notes,r.source]
       .concat(pk.map(function(k){var v=(r.payload||{})[k]; return typeof v==='object'?JSON.stringify(v):v;}));
     lines.push(row.map(cell).join(','));
   });
@@ -1777,8 +1864,14 @@ $('rows').addEventListener('change', function(e){
   var row=state.rows.filter(function(r){ return r.id===id; })[0]; if(!row) return;
   var prev=row.status;
   sel.className='statussel s-'+v; row.status=v;
+  var wasNur=inNurture(Object.assign({}, row, {status:prev}));
   patch(id,{status:v},function(ok){
-    if(ok){ toast('Status saved: '+v, true); if(state.open===row) $('d-status').value=v; }
+    if(ok){
+      var nowNur=inNurture(row);
+      toast('Status saved: '+v+(wasNur&&!nowNur?' \u2014 moved to Leads':(!wasNur&&nowNur?' \u2014 moved to Nurture':'')), true);
+      if(state.open===row){ $('d-status').value=v; fillTier(row); }
+      if(wasNur!==nowNur) render();
+    }
     else { row.status=prev; render(); if(state.open===row) $('d-status').value=prev; }
   });
 });
@@ -1786,9 +1879,12 @@ $('d-status').addEventListener('change', function(){
   if(!state.open) return;
   var row=state.open, v=this.value, prev=row.status, box=this;
   row.status=v;
+  var wasNur=inNurture(Object.assign({}, row, {status:prev}));
   patch(row.id,{status:v},function(ok){
-    if(ok) toast('Status saved: '+v, true);
+    if(ok){ var nowNur=inNurture(row);
+      toast('Status saved: '+v+(wasNur&&!nowNur?' \u2014 moved to Leads':(!wasNur&&nowNur?' \u2014 moved to Nurture':'')), true); }
     else { row.status=prev; if(state.open===row) box.value=prev; }
+    if(state.open===row) fillTier(row);
     render();
   });
 });
@@ -1822,7 +1918,7 @@ if(!CRM.url || !CRM.anonKey){ show('setup'); }
 else{
   var saved=null;
   try{ saved=JSON.parse(sessionStorage.getItem('jag_admin')||'null'); }catch(e){}
-  try{ var st_=sessionStorage.getItem('jag_admin_tab'); state.tab = (st_==='deals'||st_==='clients') ? st_ : 'leads'; }catch(e){}
+  try{ var st_=sessionStorage.getItem('jag_admin_tab'); state.tab = (st_==='deals'||st_==='clients'||st_==='nurture') ? st_ : 'leads'; }catch(e){}
   if(saved && saved.t){
     state.token=saved.t; state.email=saved.e; state.refresh=saved.r||null; state.exp=saved.x||0;
     scheduleRefresh(); show('app'); resetAndLoad();

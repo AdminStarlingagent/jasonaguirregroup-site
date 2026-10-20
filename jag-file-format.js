@@ -8,7 +8,7 @@ window.JAG_FILE = (function(){
 
   /* never shown to a lender */
   var SKIP = { access_key:1, botcheck:1, from_name:1, subject:1, __name:1,
-               'SMS Consent':1, 'Source Page':1, 'Submitted At':1 };
+               'SMS Consent':1, 'Source Page':1, 'Submitted At':1, 'Low-Income Tip':1 };
 
   var SECTIONS = [
     ['Borrower', [
@@ -18,7 +18,8 @@ window.JAG_FILE = (function(){
     ['Employment and income', [
       'Work Status','Employer','Job Title','Employer City','Job Start Year',
       'Time at Job/Business','Pay Type','Pay Rate','Hours per Week','Salary',
-      'Business Name','Business Type','Previous Employer','Gross Monthly Income' ]],
+      'Business Name','Business Type','Previous Employer','Gross Monthly Income',
+      'Other Monthly Income','Other Income Source','Monthly Debts' ]],
     ['Housing', [
       'Mailing Address','Years at Current Address','Own or Rent','Monthly Rent',
       'Previous Address' ]],
@@ -27,7 +28,9 @@ window.JAG_FILE = (function(){
       'Co-borrower Relationship','Co-borrower Qualifying With','Co-borrower SSN',
       'Co-borrower ITIN','Co-borrower Work Status','Co-borrower Employer',
       'Co-borrower Job Start Year','Co-borrower Pay Rate','Co-borrower Hours per Week',
-      'Co-borrower Monthly Income','Combined Monthly Income' ]]
+      'Co-borrower Monthly Income','Co-borrower Monthly Debts' ]],
+    ['Household totals', [
+      'Combined Monthly Income','Combined Monthly Debts' ]]
   ];
 
   var TAX_KEYS = { 'SSN':'borrower', 'ITIN':'borrower',
