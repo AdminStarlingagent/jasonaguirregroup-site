@@ -302,6 +302,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <a class="lock" href="index.html"><small>Est. 2018</small><b>JAG</b><i>Admin</i></a>
     <span class="who" id="who"></span>
     <button class="ghostbtn" id="copyapply" style="display:none" title="Copy the application link to send to a client">&#128279; Copy application link</button>
+    <a class="ghostbtn" id="toscreener" href="screener.html" style="display:none;text-decoration:none" title="Live call screener: script, route, PDF and Follow Up Boss">&#128222; Screener</a>
     <button class="ghostbtn" id="refresh" style="display:none">Refresh</button>
     <button class="ghostbtn" id="exportcsv" style="display:none">Export CSV</button>
     <button class="ghostbtn" id="signout" style="display:none">Sign out</button>
@@ -686,7 +687,7 @@ function show(view){
   $('loginview').style.display = view==='login'?'grid':'none';
   $('app').style.display       = view==='app'?'block':'none';
   var on = view==='app';
-  ['copyapply','refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
+  ['copyapply','toscreener','refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
   $('who').textContent = on ? (state.email||'') : '';
   if(on) setTab(state.tab||'leads');
 }
