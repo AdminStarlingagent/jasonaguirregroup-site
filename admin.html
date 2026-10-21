@@ -293,6 +293,24 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 .pq{border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 16px;background:#fff}
 .pq-r{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f1f1f4;font-size:13.5px}
 .pq-r span{flex:1 1 260px}.pq-r b{display:block}
+.t-scr{background:#fdecef;color:#c8102e}
+.muted{color:var(--muted)}
+.leadscr{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-top:4px}
+.sechead{font-size:15px;font-weight:800;margin:22px 2px 10px}
+#screensview .tablecard,#teamview .tablecard{overflow-x:auto}
+#screensview table,#teamview table{min-width:760px}
+.teamnote{background:var(--loan-t);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;margin:0 0 16px}
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.switch span{position:relative;width:40px;height:23px;border-radius:99px;background:#d6d5dd;transition:background .15s;flex:none}
+.switch span::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked+span{background:var(--sell)} .switch input:checked+span::after{transform:translateX(17px)}
+.switch input:focus-visible+span{outline:2px solid var(--ink);outline-offset:2px}
+.switch.locked{cursor:default;opacity:.75}
+.addform{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0}
+.addform input{flex:1;min-width:220px;border:1.5px solid var(--line);border-radius:99px;padding:10px 16px;font:inherit;font-size:14px}
+.addform .solid{width:auto;padding:12px 22px;margin:0}
+.loginalt{margin:14px 0 0;font-size:13.5px;text-align:center}.loginalt a{color:var(--loan);font-weight:700}
 </style>
 </head>
 <body>
@@ -332,6 +350,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <div class="field"><label>Password</label><input type="password" id="li-pass" autocomplete="current-password"></div>
     <button class="solid" id="li-btn">Sign in</button>
     <p class="autherr" id="li-err">Wrong email or password — try again.</p>
+    <p class="loginalt" id="li-alt">Team member without a password? <a href="signin" target="_top">Sign in with an emailed code</a></p>
   </div>
 </div>
 
@@ -342,6 +361,8 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <button type="button" class="tab" id="tab-nurture" data-tab="nurture" role="tab" aria-selected="false" title="Applications under $3,000 a month household income">Nurture <span class="tabcount" id="nurturecount"></span></button>
     <button type="button" class="tab" id="tab-deals" data-tab="deals" role="tab" aria-selected="false">Deals <span class="tabcount" id="dealcount"></span></button>
     <button type="button" class="tab" id="tab-clients" data-tab="clients" role="tab" aria-selected="false">Client accounts <span class="tabcount" id="clientcount"></span></button>
+    <button type="button" class="tab" id="tab-screens" data-tab="screens" role="tab" aria-selected="false" title="Call screenings by the team and the agent report">Screenings <span class="tabcount" id="screencount" title="Hot leads that have not sent the loan app yet"></span></button>
+    <button type="button" class="tab" id="tab-team" data-tab="team" role="tab" aria-selected="false">Team access</button>
   </nav>
 
   <section id="leadsview">
@@ -351,6 +372,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
       <input id="q" placeholder="Search name, phone, email, address…"></label>
     <div class="chips" id="typechips">
       <button class="chip on" data-type="">All</button>
+      <button class="chip" data-type="Screened" title="Hot leads from the call screener">🔥 Screened</button>
       <button class="chip" data-type="Mortgage Application">Mortgage apps</button>
       <button class="chip" data-type="Buyer Offer">Offers</button>
       <button class="chip" data-type="Seller Listing">Seller leads</button>
@@ -383,6 +405,40 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
   </section>
 
   <!-- deals: what the closings assistant is tracking (read-only) -->
+  <section id="screensview" hidden>
+    <div class="stats" id="scrstats"></div>
+    <div class="toolbar">
+      <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>
+        <input id="sq" placeholder="Search client, phone, agent…"></label>
+      <div class="chips">
+        <select class="chip" id="s-agent" aria-label="Agent"><option value="">All agents</option></select>
+        <select class="chip" id="s-range" aria-label="Date range"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
+        <button type="button" class="chip" id="s-hot">🔥 Hot only</button>
+        <button type="button" class="chip" id="s-csv">Export report</button>
+      </div>
+    </div>
+    <h3 class="sechead">Agent performance</h3>
+    <div class="tablecard"><table>
+      <thead><tr><th>Agent</th><th>Screenings</th><th>Hot</th><th title="Suggested route">Ready / Review / Prep</th><th>Avg readiness</th><th>Sent to FUB</th><th title="The client later sent the Home Loan application">Finished loan app</th><th>App rate</th><th>Last screening</th></tr></thead>
+      <tbody id="srep"></tbody></table></div>
+    <h3 class="sechead">All screenings</h3>
+    <div class="tablecard"><table>
+      <thead><tr><th>Date</th><th>Client</th><th>Agent</th><th>Readiness</th><th>Route</th><th>Follow Up Boss</th><th>Loan app</th><th></th></tr></thead>
+      <tbody id="srows"></tbody></table></div>
+    <div class="empty" id="sempty" style="display:none">No screenings in this range.</div>
+  </section>
+
+  <section id="teamview" hidden>
+    <p class="teamnote" id="teamnote"></p>
+    <div class="tablecard"><table>
+      <thead><tr><th>Person</th><th>Email</th><th>Has signed in</th><th>Access</th></tr></thead>
+      <tbody id="trows"></tbody></table></div>
+    <form class="addform" id="t-add" hidden>
+      <input id="t-email" type="email" placeholder="Give admin access to another email…" aria-label="Email">
+      <button class="solid" type="submit">Give access</button>
+    </form>
+  </section>
+
   <section id="dealsview" hidden>
     <div class="stats" id="dealstats"></div>
     <div class="toolbar">
@@ -522,7 +578,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 'use strict';
 var CRM = window.JAG_CRM || {url:'',anonKey:''};
 var PAGE = 200;
-var state = { token:null, refresh:null, exp:0, email:null, rows:[], offset:0, type:'', status:'', q:'', open:null, done:false, tab:'leads' };
+var state = { token:null, refresh:null, exp:0, email:null, rows:[], offset:0, type:'', status:'', q:'', open:null, done:false, tab:'leads', store:'admin' };
 
 var $ = function(id){ return document.getElementById(id); };
 function base(){ return (CRM.url||'').replace(/\/+$/,''); }
@@ -533,14 +589,14 @@ function fmtDate(iso){
   return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 }
 function typeClass(t){
-  return t==='Mortgage Application'?'t-loan': t==='Buyer Offer'?'t-buy': t==='Seller Listing'?'t-sell':'t-val';
+  return t==='Mortgage Application'?'t-loan': t==='Screened'?'t-scr': t==='Buyer Offer'?'t-buy': t==='Seller Listing'?'t-sell':'t-val';
 }
 function typeShort(t){
-  return t==='Mortgage Application'?'Mortgage app': t==='Buyer Offer'?'Offer': t==='Seller Listing'?'Seller lead':'Home value';
+  return t==='Mortgage Application'?'Mortgage app': t==='Screened'?'🔥 Screened': t==='Buyer Offer'?'Offer': t==='Seller Listing'?'Seller lead':'Home value';
 }
 function keyFigure(r){
   var p=r.payload||{};
-  return p['Est. Buying Power (FHA)']||p['Est. Buying Power (ITIN Home Loan)']||p['Purchase Price']||
+  return p['Est. Buying Power (FHA)']||p['Est. Buying Power (ITIN Home Loan)']||p['Est. Buying Power (Screener)']||p['Purchase Price']||
          p.offerPrice||p.price||p['Automated Estimate']||p.estimate||'—';
 }
 /* ---------------- estimated qualifying amount ----------------
@@ -576,12 +632,12 @@ function hasVal(v){ return !(v==null || v===''); }
 function debtsKnown(p){ return hasVal(p['Monthly Debts']) || hasVal(p['Combined Monthly Debts']); }
 function leadDebts(p){ return hasVal(p['Combined Monthly Debts']) ? num(p['Combined Monthly Debts']) : num(p['Monthly Debts']); }
 function tierOf(r){
-  if(!r || r.type!=='Mortgage Application') return null;
+  if(!r || (r.type!=='Mortgage Application' && r.type!=='Screened')) return null;
   var inc=leadIncome(r.payload||{});
   if(!(inc>0)) return null;
   return inc>=TIER.ready ? 'A' : inc>=TIER.nurtureBelow ? 'B' : 'C';
 }
-function inNurture(r){ return tierOf(r)==='C' && !TIER_ACTIVE[r.status]; }
+function inNurture(r){ return r.type==='Mortgage Application' && tierOf(r)==='C' && !TIER_ACTIVE[r.status]; }
 function tierPill(t){ return t ? '<span class="tier tier-'+t+'">'+t+'</span>' : ''; }
 function incomeCell(r){
   var t=tierOf(r);
@@ -617,6 +673,10 @@ function figureFor(r){
     if(saved) return { text:fmtMoney(saved), sub:'Edited' };
     var a=autoEstimate(r);
     if(a) return { text:fmtMoney(a.amount), sub:'Est. '+a.program };
+  }
+  if(r.type==='Screened'){
+    var se=savedEstimate(r), rd=(r.payload||{})['Readiness'];
+    if(se) return { text:fmtMoney(se), sub:'Screener est.'+(rd?' · '+rd+' ready':'') };
   }
   return { text:keyFigure(r), sub:'' };
 }
@@ -713,7 +773,20 @@ function signIn(){
    itself in the background and again right before any request that needs it. */
 var refreshing=null, refreshTimer=null;
 function saveSession(){
-  try{ sessionStorage.setItem('jag_admin', JSON.stringify({t:state.token,e:state.email,r:state.refresh,x:state.exp})); }catch(e){}
+  try{
+    if(state.store==='agent'){   /* signed in with an emailed code on /signin: same login as the Agent Hub and the screener */
+      var a=null; try{ a=JSON.parse(localStorage.getItem('jag_agent')||'null'); }catch(x){}
+      a=Object.assign(a||{code:'pending'}, {t:state.token, r:state.refresh, x:state.exp, e:state.email});
+      localStorage.setItem('jag_agent', JSON.stringify(a));
+    } else sessionStorage.setItem('jag_admin', JSON.stringify({t:state.token,e:state.email,r:state.refresh,x:state.exp}));
+  }catch(e){}
+}
+/* the Agent Hub or the screener may have renewed the shared code login; use their newer token */
+function adoptStored(){
+  if(state.store!=='agent') return false;
+  var a=null; try{ a=JSON.parse(localStorage.getItem('jag_agent')||'null'); }catch(x){}
+  if(a && a.t && a.r && a.t!==state.token && (a.x||0)>(state.exp||0)){ state.token=a.t; state.refresh=a.r; state.exp=a.x; scheduleRefresh(); return true; }
+  return false;
 }
 function setSession(j, email){
   state.token = j.access_token;
@@ -723,6 +796,7 @@ function setSession(j, email){
   saveSession(); scheduleRefresh();
 }
 function refreshSession(){
+  if(adoptStored() && state.exp-Date.now()>60000) return Promise.resolve(true);
   if(refreshing) return refreshing;
   if(!state.refresh) return Promise.resolve(false);
   refreshing = fetch(base()+'/auth/v1/token?grant_type=refresh_token',{
@@ -741,6 +815,7 @@ function scheduleRefresh(){
   refreshTimer = setTimeout(refreshSession, Math.max(5000, state.exp-Date.now()-5*60*1000));
 }
 function freshToken(){
+  adoptStored();
   if(state.refresh && state.exp && state.exp-Date.now()<60000) return refreshSession();
   return Promise.resolve(true);
 }
@@ -765,7 +840,8 @@ function signOut(){
   clearTimeout(refreshTimer);
   state.token=null; state.refresh=null; state.exp=0; state.email=null; state.rows=[];
   deals.rows=null; deals.offers=[]; deals.urls={}; clients.rows=null;
-  try{ sessionStorage.removeItem('jag_admin'); }catch(e){}
+  try{ sessionStorage.removeItem('jag_admin'); if(state.store==='agent') localStorage.removeItem('jag_agent'); }catch(e){}
+  state.store='admin';
   show('login');
 }
 
@@ -826,16 +902,17 @@ function filtered(){
 function render(){
   var rows=filtered();
   /* stats over everything loaded */
-  var week=Date.now()-7*864e5, c={all:state.rows.length,nw:0,ma:0,bo:0,sl:0,hv:0};
+  var week=Date.now()-7*864e5, c={all:state.rows.length,nw:0,ma:0,bo:0,sl:0,hv:0,sc:0};
   state.rows.forEach(function(r){
     if(new Date(r.created_at).getTime()>week) c.nw++;
     if(r.type==='Mortgage Application')c.ma++; else if(r.type==='Buyer Offer')c.bo++;
-    else if(r.type==='Seller Listing')c.sl++; else c.hv++;
+    else if(r.type==='Seller Listing')c.sl++; else if(r.type==='Screened')c.sc++; else c.hv++;
   });
   $('stats').innerHTML =
     '<div class="stat"><b>'+c.all+'</b><span>Total inquiries</span></div>'+
     '<div class="stat"><b>'+c.nw+'</b><span>New this week</span></div>'+
     '<div class="stat"><b><i style="background:var(--loan)"></i>'+c.ma+'</b><span>Mortgage apps</span></div>'+
+    '<div class="stat"><b><i style="background:var(--buy)"></i>'+c.sc+'</b><span>🔥 Screened (hot)</span></div>'+
     '<div class="stat"><b><i style="background:var(--buy)"></i>'+c.bo+'</b><span>Offers</span></div>'+
     '<div class="stat"><b><i style="background:var(--teal)"></i>'+c.sl+'</b><span>Seller leads</span></div>'+
     '<div class="stat"><b><i style="background:var(--sell)"></i>'+c.hv+'</b><span>Home values</span></div>';
@@ -846,7 +923,7 @@ function render(){
     tr.innerHTML =
       '<td class="dt">'+esc(fmtDate(r.created_at))+'</td>'+
       '<td><span class="nm">'+esc(r.name||'(no name)')+'</span><span class="em">'+esc(r.email||'')+'</span></td>'+
-      '<td><span class="typechip '+typeClass(r.type)+'">'+esc(typeShort(r.type))+'</span></td>'+
+      '<td><span class="typechip '+typeClass(r.type)+'">'+esc(typeShort(r.type))+'</span>'+((r.payload||{})['Screened By']&&r.type!=='Screened'?'<span class="leadscr">Screened by '+esc((r.payload||{})['Screened By'])+'</span>':'')+'</td>'+
       '<td>'+esc(r.phone||'—')+'</td>'+
       '<td class="figure" data-fig title="'+(r.type==='Mortgage Application'?'Click to edit this amount':'')+'">'+
         (function(f){ return esc(f.text)+(f.sub?('<span class="figsub">'+esc(f.sub)+'</span>'):''); })(figureFor(r))+'</td>'+
@@ -868,16 +945,20 @@ function render(){
 
 /* ---------------- tabs ---------------- */
 function setTab(t){
-  if(t!=='deals' && t!=='clients' && t!=='nurture') t='leads';
+  if(t!=='deals' && t!=='clients' && t!=='nurture' && t!=='screens' && t!=='team') t='leads';
   var leadsLike = (t==='leads' || t==='nurture');
   state.tab=t;
   $('leadsview').hidden = !leadsLike;
   $('dealsview').hidden = t!=='deals';
   $('clientsview').hidden = t!=='clients';
+  $('screensview').hidden = t!=='screens';
+  $('teamview').hidden = t!=='team';
+  if(t==='screens' && !screens.rows) loadScreens();
+  if(t==='team') loadTeam();
   $('tierlegend').hidden = t!=='leads';
   $('nurturebar').hidden = t!=='nurture';
   if(t==='clients' && !clients.rows) loadClients();
-  ['leads','nurture','deals','clients'].forEach(function(k){
+  ['leads','nurture','deals','clients','screens','team'].forEach(function(k){
     var b=$('tab-'+k); b.classList.toggle('on', k===t); b.setAttribute('aria-selected', k===t?'true':'false');
   });
   if(leadsLike && state.rows.length) render();
@@ -1268,6 +1349,7 @@ function openDrawer(id){
                q.push('<a class="qbtn q-text" href="sms:'+esc(r.phone)+'">Text</a>'); }
   if(r.email){ var ml = mailLink(r.email);
                q.push('<a class="qbtn q-mail" href="'+esc(ml.href)+'" target="'+ml.target+'" rel="noopener">Email</a>'); }
+  if((r.payload||{})['Screening']) q.push('<a class="qbtn q-lender" href="'+esc(r.payload['Screening'])+'" target="_blank" rel="noopener">Open screening</a>');
   q.push('<button type="button" class="qbtn q-pdf" id="d-pdf-btn">Save PDF</button>');
   if(r.type==='Mortgage Application'){
     q.push('<button type="button" class="qbtn q-lender" id="d-lender-btn" aria-expanded="false" aria-controls="d-lender">Send to lender</button>');
@@ -1829,7 +1911,8 @@ $('lp-copy-email').addEventListener('click', function(){ var b=this; if(lender.l
 $('lp-again').addEventListener('click', function(){ lenderReset(); $('d-lender').hidden=false; loadRecentLenders(); $('lp-to').focus(); });
 
 $('refresh').addEventListener('click', function(){
-  if(state.tab==='deals'){ deals.rows=null; loadDeals(); } else if(state.tab==='clients'){ clients.rows=null; loadClients(); } else resetAndLoad();
+  if(state.tab==='deals'){ deals.rows=null; loadDeals(); } else if(state.tab==='clients'){ clients.rows=null; loadClients(); }
+  else if(state.tab==='screens'){ loadScreens(); } else if(state.tab==='team'){ loadTeam(); } else resetAndLoad();
 });
 $('tabs').addEventListener('click', function(e){ var b=e.target.closest('[data-tab]'); if(b) setTab(b.dataset.tab); });
 $('dealchips').addEventListener('click', function(e){
@@ -1914,15 +1997,151 @@ $('d-close').addEventListener('click', closeDrawer);
 $('scrim').addEventListener('click', closeDrawer);
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDrawer(); });
 
+/* ---------------- screenings (call screener) + agent report ----------------
+   Admin-access people see every screening (database rule); the report groups them by the agent who made the call.
+   "Finished loan app" = the client later sent the Home Loan application (linked automatically by phone or email). */
+var screens = { rows:null, range:30, agent:'', hot:false, q:'', loading:false };
+var LANE_NAME = { listo:'Ready', revision:'Review', prep:'Prep' };
+function loadScreens(){
+  if(screens.loading) return; screens.loading=true;
+  var since = new Date(Date.now()-screens.range*864e5).toISOString();
+  $('srows').innerHTML='<tr><td colspan="8" class="muted" style="padding:22px">Loading screenings…</td></tr>';
+  api('/rest/v1/jag_screenings?select=id,created_at,created_by,screener,client_name,phone,lane,score,hot,est_max,fub_status,fub_person_id,app_at,status&created_at=gte.'+encodeURIComponent(since)+'&order=created_at.desc&limit=2000')
+  .then(function(r){ return r.ok ? r.json() : []; })
+  .then(function(rows){ screens.rows = Array.isArray(rows)?rows:[]; screens.loading=false; paintScreenAgents(); renderScreens(); })
+  .catch(function(){ screens.loading=false; screens.rows=[]; renderScreens(); });
+}
+function agentOf(s){ return String(s.screener||'').trim() || 'Unknown'; }
+function paintScreenAgents(){
+  var sel=$('s-agent'), cur=screens.agent, names={};
+  (screens.rows||[]).forEach(function(s){ names[agentOf(s)]=1; });
+  sel.innerHTML='<option value="">All agents</option>'+Object.keys(names).sort().map(function(n){ return '<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>'; }).join('');
+}
+function screensFiltered(){
+  var q=screens.q.toLowerCase();
+  return (screens.rows||[]).filter(function(s){
+    if(screens.agent && agentOf(s)!==screens.agent) return false;
+    if(screens.hot && !s.hot) return false;
+    if(q && ((s.client_name||'')+' '+(s.phone||'')+' '+agentOf(s)).toLowerCase().indexOf(q)===-1) return false;
+    return true;
+  });
+}
+function screenReport(rows){
+  var by={};
+  rows.forEach(function(s){
+    var k=agentOf(s), a=by[k]||(by[k]={agent:k,n:0,hot:0,listo:0,revision:0,prep:0,scoreSum:0,scoreN:0,fub:0,apps:0,last:null});
+    a.n++; if(s.hot) a.hot++; if(a[s.lane]!=null) a[s.lane]++;
+    if(s.score!=null){ a.scoreSum+=s.score; a.scoreN++; }
+    if(s.fub_status==='sent') a.fub++; if(s.app_at) a.apps++;
+    if(!a.last || s.created_at>a.last) a.last=s.created_at;
+  });
+  return Object.keys(by).map(function(k){ return by[k]; }).sort(function(a,b){ return b.n-a.n; });
+}
+function pct(a,b){ return b ? Math.round(a/b*100)+'%' : '—'; }
+function renderScreens(){
+  var rows=screensFiltered(), rep=screenReport(rows);
+  var tot=rows.length, hot=rows.filter(function(s){return s.hot;}).length, apps=rows.filter(function(s){return s.app_at;}).length;
+  var sc=rows.filter(function(s){return s.score!=null;}), avg=sc.length?Math.round(sc.reduce(function(a,s){return a+s.score;},0)/sc.length):null;
+  $('scrstats').innerHTML=
+    '<div class="stat"><b>'+tot+'</b><span>Screenings ('+screens.range+' days)</span></div>'+
+    '<div class="stat"><b><i style="background:var(--buy)"></i>'+hot+'</b><span>Hot leads · '+pct(hot,tot)+'</span></div>'+
+    '<div class="stat"><b><i style="background:var(--sell)"></i>'+apps+'</b><span>Finished loan app · '+pct(apps,tot)+'</span></div>'+
+    '<div class="stat"><b>'+(avg==null?'—':avg+'%')+'</b><span>Avg readiness</span></div>'+
+    '<div class="stat"><b>'+rep.length+'</b><span>Agents calling</span></div>';
+  $('srep').innerHTML = rep.length ? rep.map(function(a){
+    return '<tr><td><b>'+esc(a.agent)+'</b></td><td>'+a.n+'</td><td>'+a.hot+' <small class="muted">'+pct(a.hot,a.n)+'</small></td>'+
+      '<td>'+a.listo+' / '+a.revision+' / '+a.prep+'</td><td>'+(a.scoreN?Math.round(a.scoreSum/a.scoreN)+'%':'—')+'</td>'+
+      '<td>'+a.fub+'</td><td><b>'+a.apps+'</b></td><td>'+pct(a.apps,a.n)+'</td><td>'+(a.last?esc(fmtDate(a.last)):'—')+'</td></tr>';
+  }).join('') : '<tr><td colspan="9" class="muted" style="padding:18px">No screenings in this range yet.</td></tr>';
+  $('srows').innerHTML = rows.map(function(s){
+    var fub = s.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/'+encodeURIComponent(s.fub_person_id)+'" target="_blank" rel="noopener">Open</a>' : (s.fub_status==='error'?'<span style="color:var(--buy)">Not sent</span>':'—');
+    return '<tr><td class="dt">'+esc(fmtDate(s.created_at))+'</td>'+
+      '<td><span class="nm">'+esc(s.client_name||'(no name)')+'</span><span class="em">'+esc(s.phone||'')+'</span></td>'+
+      '<td>'+esc(agentOf(s))+'</td>'+
+      '<td><b>'+(s.score==null?'—':s.score+'%')+'</b>'+(s.hot?' <span class="typechip t-scr">🔥 Hot</span>':'')+'</td>'+
+      '<td>'+esc(LANE_NAME[s.lane]||s.lane||'')+'</td><td>'+fub+'</td>'+
+      '<td>'+(s.app_at?'<span class="typechip t-val">✓ '+esc(shortDay(s.app_at))+'</span>':'<span class="muted">Not yet</span>')+'</td>'+
+      '<td><a class="linkbtn" href="screener.html#s='+encodeURIComponent(s.id)+'" target="_blank" rel="noopener">View</a></td></tr>';
+  }).join('');
+  $('sempty').style.display = rows.length ? 'none' : 'block';
+  $('screencount').textContent = (screens.rows||[]).filter(function(s){ return s.hot && !s.app_at; }).length || '';
+}
+function exportScreenReport(){
+  var rep=screenReport(screensFiltered());
+  var lines=[['Agent','Screenings','Hot','Ready','Review','Prep','Avg readiness','Sent to FUB','Finished loan app','App rate','Last screening']];
+  rep.forEach(function(a){ lines.push([a.agent,a.n,a.hot,a.listo,a.revision,a.prep,a.scoreN?Math.round(a.scoreSum/a.scoreN):'',a.fub,a.apps,pct(a.apps,a.n),a.last||'']); });
+  var csv=lines.map(function(r){ return r.map(function(v){ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(','); }).join('\n');
+  var blob=new Blob([csv],{type:'text/csv'}), a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='jag-screening-report-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+$('s-agent').addEventListener('change', function(){ screens.agent=this.value; renderScreens(); });
+$('s-range').addEventListener('change', function(){ screens.range=Number(this.value)||30; loadScreens(); });
+$('s-hot').addEventListener('click', function(){ screens.hot=!screens.hot; this.classList.toggle('on', screens.hot); renderScreens(); });
+$('sq').addEventListener('input', function(){ screens.q=this.value.trim(); renderScreens(); });
+$('s-csv').addEventListener('click', exportScreenReport);
+
+/* ---------------- team access: who sees applications, screenings and this admin ----------------
+   Only the owner (Jason) can change it. Everyone else on the team signs in to the screener and the Agent Hub
+   and only sees their own screenings. */
+var team = { data:null, busy:false };
+function loadTeam(){
+  $('trows').innerHTML='<tr><td colspan="4" class="muted" style="padding:22px">Loading team…</td></tr>';
+  api('/rest/v1/rpc/jag_team_access',{method:'POST',body:'{}'}).then(function(r){ return r.ok?r.json():null; })
+  .then(function(j){ team.data=j; renderTeam(); }).catch(function(){ team.data=null; renderTeam(); });
+}
+function renderTeam(){
+  var j=team.data;
+  if(!j || !j.ok){ $('trows').innerHTML='<tr><td colspan="4" class="muted" style="padding:22px">Could not load the team. Refresh and try again.</td></tr>'; return; }
+  var owner=!!j.owner;
+  $('teamnote').innerHTML = owner
+    ? 'Turn on <b>Admin access</b> for anyone who should see every Home Loan application, every call screening and this admin page. Everyone else on the team can still use the call screener and the Agent Hub, and only sees their <b>own</b> screenings.'
+    : 'Only Jason can change who has admin access. People with admin access see every application and screening; everyone else only sees their own screenings.';
+  $('t-add').hidden = !owner;
+  $('trows').innerHTML = (j.people||[]).map(function(p){
+    var locked = !owner || p.role==='owner';
+    return '<tr><td><b>'+esc(p.name||p.email)+'</b>'+(p.role==='owner'?' <span class="typechip t-loan">Owner</span>':'')+(p.agent?'':' <small class="muted">not in Follow Up Boss team</small>')+'</td>'+
+      '<td>'+esc(p.email||'')+'</td><td>'+(p.has_login?'Yes':'<span class="muted">Not yet</span>')+'</td>'+
+      '<td><label class="switch'+(locked?' locked':'')+'"><input type="checkbox" data-acc="'+esc(p.email||'')+'"'+(p.access?' checked':'')+(locked?' disabled':'')+'><span></span>'+(p.access?'Admin access':'Own screenings only')+'</label></td></tr>';
+  }).join('');
+  $('trows').querySelectorAll('[data-acc]').forEach(function(cb){
+    cb.addEventListener('change', function(){ setAccess(this.dataset.acc, this.checked, this); });
+  });
+}
+function setAccess(email, on, cb){
+  if(team.busy) return; team.busy=true;
+  api('/rest/v1/rpc/jag_set_access',{method:'POST',body:JSON.stringify({p_email:email,p_on:on})})
+  .then(function(r){ return r.ok?r.json():null; }).then(function(j){
+    team.busy=false;
+    if(j && j.ok){ toast((on?'Admin access on for ':'Admin access off for ')+email, true); loadTeam(); }
+    else { if(cb) cb.checked=!on; toast(j && j.reason==='owner_only' ? 'Only Jason can change access.' : j && j.reason==='owner_locked' ? 'The owner always keeps access.' : 'Could not change access. Try again.'); }
+  }).catch(function(){ team.busy=false; if(cb) cb.checked=!on; toast('Could not reach the database. Try again.'); });
+}
+$('t-add').addEventListener('submit', function(e){
+  e.preventDefault(); var v=$('t-email').value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){ toast('Type a full email address.'); return; }
+  setAccess(v, true); $('t-email').value='';
+});
+
 /* ---------------- boot ---------------- */
 if(!CRM.url || !CRM.anonKey){ show('setup'); }
 else{
   var saved=null;
   try{ saved=JSON.parse(sessionStorage.getItem('jag_admin')||'null'); }catch(e){}
-  try{ var st_=sessionStorage.getItem('jag_admin_tab'); state.tab = (st_==='deals'||st_==='clients'||st_==='nurture') ? st_ : 'leads'; }catch(e){}
+  try{ var st_=sessionStorage.getItem('jag_admin_tab'); state.tab = (st_==='deals'||st_==='clients'||st_==='nurture'||st_==='screens'||st_==='team') ? st_ : 'leads'; }catch(e){}
+  var agentS=null; try{ agentS=JSON.parse(localStorage.getItem('jag_agent')||'null'); }catch(e){}
   if(saved && saved.t){
     state.token=saved.t; state.email=saved.e; state.refresh=saved.r||null; state.exp=saved.x||0;
     scheduleRefresh(); show('app'); resetAndLoad();
+  }
+  else if(agentS && agentS.t && agentS.r){
+    /* signed in with an emailed code: only people Jason gave admin access get in */
+    state.store='agent'; state.token=agentS.t; state.refresh=agentS.r; state.exp=agentS.x||0; state.email=agentS.e||'';
+    scheduleRefresh();
+    api('/rest/v1/rpc/jag_is_staff',{method:'POST',body:'{}'}).then(function(r){ return r.ok?r.json():false; }).then(function(ok){
+      if(ok===true){ show('app'); resetAndLoad(); }
+      else { state.store='admin'; state.token=null; show('login'); $('li-err').textContent='Your team login does not have admin access. Ask Jason to turn it on.'; $('li-err').classList.add('show'); }
+    }).catch(function(){ state.store='admin'; show('login'); });
   }
   else show('login');
 }

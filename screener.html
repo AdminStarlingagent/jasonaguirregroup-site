@@ -1356,6 +1356,7 @@ body.fab #stage{margin-bottom:110px}
     if (!(s.c_phone || '').replace(/\D/g, '') && !(s.c_email || '').includes('@')) { $('#msg').textContent = t('Agrega el teléfono o el correo del cliente para encontrarlo en Follow Up Boss.', "Add the client's phone or email so we can find them in Follow Up Boss."); return; }
     const r = evaluate(s), btn = $('#submit'); btn.disabled = true;
     const answers = Object.fromEntries(Object.entries(s).filter(([k]) => !k.startsWith('__')));
+    answers.calc_monthly = Math.round(r.monthly || 0); answers.calc_debts = Math.round(r.debts || 0);
     let follow = null; if (s.follow) { const d = new Date(s.follow); if (!isNaN(d)) follow = d.toISOString(); }
     try {
       const res = await api('/rest/v1/jag_screenings', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify({
@@ -1378,7 +1379,7 @@ body.fab #stage{margin-bottom:110px}
   // ===== Submitted list =====
   let sent = [], filter = 'pending';
   async function loadSent() {
-    const res = await api('/rest/v1/jag_screenings?select=id,created_at,screener,client_name,phone,lane,status,fub_status,fub_person_id,fub_created,fub_error,answers&order=created_at.desc&limit=200');
+    const res = await api('/rest/v1/jag_screenings?select=id,created_at,screener,client_name,phone,lane,status,fub_status,fub_person_id,fub_created,fub_error,answers,hot,score,app_at&order=created_at.desc&limit=200');
     sent = res.ok ? await res.json() : [];
     const n = sent.filter(d => d.status !== 'revisada').length;
     $('#sent-n').hidden = !n; $('#sent-n').textContent = n;
@@ -1390,7 +1391,7 @@ body.fab #stage{margin-bottom:110px}
     const ok = await loadSent();
     const fl = [['pending', ['Por revisar', 'To review']], ['all', ['Todas', 'All']], ['listo', ['Listo', 'Ready']], ['revision', ['Revisión', 'Review']], ['prep', ['Preparación', 'Prep']]];
     const rows = sent.filter(d => filter === 'all' || (filter === 'pending' ? d.status !== 'revisada' : d.lane === filter));
-    stage.innerHTML = `<div class="step"><h1 class="title">${t('Enviadas a revisión', 'Sent for review')}</h1><p class="lead">${t('Las llamadas que el equipo mandó a revisar, la más reciente arriba.', 'Calls the team sent for review, newest first.')}</p>
+    stage.innerHTML = `<div class="step"><h1 class="title">${t('Enviadas a revisión', 'Sent for review')}</h1><p class="lead">${t('Tus llamadas enviadas, la más reciente arriba. Si tienes acceso de admin, ves las de todo el equipo.', 'Your submitted calls, newest first. With admin access you see the whole team.')}</p>
       <div class="filters">${fl.map(([k, l]) => `<button class="chip${k === filter ? ' on' : ''}" type="button" data-f2="${k}">${esc(tx(l))}</button>`).join('')}</div>
       <div id="rows"></div><button class="ghost" type="button" id="backcall">${t('Nueva llamada', 'New call')}</button></div>`;
     stage.querySelectorAll('[data-f2]').forEach(b => b.onclick = () => { filter = b.dataset.f2; renderSent(); });
@@ -1401,7 +1402,8 @@ body.fab #stage{margin-bottom:110px}
     rows.forEach(d => {
       const el = document.createElement('div'); el.className = 'item';
       const when = new Date(d.created_at).toLocaleString(locale(), { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-      const fubTag = d.fub_status === 'sent' ? `<span class="tag listo">FUB ✓</span>` : d.fub_status === 'error' ? `<span class="tag prep">${t('FUB pendiente', 'FUB pending')}</span>` : '';
+      const extraTag = (d.app_at ? `<span class="tag listo">✅ ${t('Llenó la aplicación', 'Sent the loan app')}</span>` : '') + (d.hot ? `<span class="tag prep" style="background:#fdecef;color:#c8102e">🔥 ${d.score != null ? d.score + '%' : ''}</span>` : '');
+      const fubTag = extraTag + (d.fub_status === 'sent' ? `<span class="tag listo">FUB ✓</span>` : d.fub_status === 'error' ? `<span class="tag prep">${t('FUB pendiente', 'FUB pending')}</span>` : '');
       el.innerHTML = `<div><div class="who"><span class="tag ${d.lane}">${esc(LN(d.lane) ? LN(d.lane).name : '—')}</span>${d.status === 'revisada' ? `<span class="tag done">${t('Revisada', 'Reviewed')}</span>` : ''}${fubTag}${esc(d.client_name || t('Sin nombre', 'No name'))}</div><div class="meta">${esc(when)} · ${esc(d.screener || t('equipo', 'team'))}${d.phone ? ' · ' + esc(d.phone) : ''}</div></div><div class="acts"></div><div class="why"></div>`;
       el.querySelector('.why').textContent = d.answers ? evaluate(d.answers).sig.filter(x => x.lvl !== 'ok').slice(0, 3).map(x => x.t).join(' · ') : '';
       const open = document.createElement('button'); open.className = 'chip'; open.type = 'button'; open.textContent = t('Abrir', 'Open');
