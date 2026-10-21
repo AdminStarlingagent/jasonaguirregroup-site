@@ -599,9 +599,17 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
   // ===== Supabase session (same login as admin.html; shared within the browser tab) =====
   const CRM = window.JAG_CRM || {};
   const BASE = (CRM.url || '').replace(/\/+$/, '');
-  const sess = { token: null, refresh: null, exp: 0, email: null };
+  const sess = { token: null, refresh: null, exp: 0, email: null, store: 'admin' };
   let refreshing = null, refreshTimer = null;
-  function saveSession() { try { sessionStorage.setItem('jag_admin', JSON.stringify({ t: sess.token, e: sess.email, r: sess.refresh, x: sess.exp })); } catch (e) {} }
+  function saveSession() {
+    try {
+      if (sess.store === 'agent') {   // same sign-in as the Agent Hub (/agent), kept on this device
+        let a = null; try { a = JSON.parse(localStorage.getItem('jag_agent') || 'null'); } catch (e) {}
+        a = Object.assign(a || { code: 'pending' }, { t: sess.token, r: sess.refresh, x: sess.exp, e: sess.email });
+        localStorage.setItem('jag_agent', JSON.stringify(a));
+      } else sessionStorage.setItem('jag_admin', JSON.stringify({ t: sess.token, e: sess.email, r: sess.refresh, x: sess.exp }));
+    } catch (e) {}
+  }
   function setSession(j, email) {
     sess.token = j.access_token; if (j.refresh_token) sess.refresh = j.refresh_token;
     sess.exp = j.expires_at ? j.expires_at * 1000 : Date.now() + ((j.expires_in || 3600) * 1000);
@@ -624,30 +632,65 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     if (res.status === 401 && await refreshSession()) res = await go();
     return res;
   }
-  function renderLogin(msg) {
+  function renderLogin(msg, usePass) {
     show('login');
+    const sub = usePass
+      ? t('Para cuentas del admin de JAG.', 'For JAG admin accounts.')
+      : t('Usa el correo de tu cuenta de Follow Up Boss. Te mandamos un código de 6 dígitos, sin contraseña.', 'Use the email on your Follow Up Boss account. We email you a 6-digit code, no password needed.');
     stage.innerHTML = `<div class="step"><h1 class="title">${t('Entra con tu cuenta del equipo', 'Sign in with your team account')}</h1>
-      <p class="lead">${t('Es la misma cuenta del admin de JAG. Si no tienes una, pídesela a Jason.', "It's the same login as the JAG admin. If you don't have one, ask Jason.")}</p>
+      <p class="lead">${sub}</p>
       ${field('li_email', ['Correo', 'Email'], 'txt')}
-      <div class="field"><label for="li_pass">${t('Contraseña', 'Password')}</label><input id="li_pass" type="password" autocomplete="current-password"></div>
-      <button class="next" type="button" id="li_btn">${t('Entrar', 'Sign in')}</button><p class="msg" id="msg">${esc(msg || '')}</p></div>`;
+      ${usePass
+        ? `<div class="field"><label for="li_pass">${t('Contraseña', 'Password')}</label><input id="li_pass" type="password" autocomplete="current-password"></div>`
+        : `<div class="field" id="li_codewrap" style="display:none"><label for="li_code">${t('Código del correo', 'Code from the email')}</label><input id="li_code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></div>`}
+      <button class="next" type="button" id="li_btn">${usePass ? t('Entrar', 'Sign in') : t('Envíame un código', 'Email me a code')}</button>
+      <p class="msg" id="msg">${esc(msg || '')}</p>
+      <p class="lead" style="margin-top:14px;font-size:14px"><a href="#" id="li_mode" style="color:var(--ink);font-weight:600">${usePass ? t('Entrar con código por correo', 'Sign in with an emailed code') : t('Tengo contraseña del admin', 'I have an admin password')}</a></p></div>`;
+    stage.querySelectorAll('[data-f]').forEach(i => i.removeAttribute('data-f'));   // login fields are not part of the screening
+    const H = { apikey: CRM.anonKey, 'Content-Type': 'application/json' };
+    const say = (m) => { $('#msg').textContent = m; };
+    const getEmail = () => ($('#li_email').value || '').trim().toLowerCase();
+    $('#li_mode').onclick = (e) => { e.preventDefault(); renderLogin('', !usePass); };
+    let codeSent = false;
     const go = async () => {
-      const email = ($('#li_email').value || '').trim(), pass = $('#li_pass').value;
-      if (!email || !pass) { $('#msg').textContent = t('Escribe tu correo y contraseña.', 'Enter your email and password.'); return; }
+      const email = getEmail();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say(t('Escribe tu correo.', 'Type your email.')); return; }
       $('#li_btn').disabled = true;
       try {
-        const r = await fetch(BASE + '/auth/v1/token?grant_type=password', { method: 'POST', headers: { apikey: CRM.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass }) });
-        const j = await r.json();
-        if (j && j.access_token) { setSession(j, email); boot(); return; }
-        $('#msg').textContent = t('Correo o contraseña incorrectos.', 'Wrong email or password.');
-      } catch (e) { $('#msg').textContent = t('No hay conexión. Inténtalo otra vez.', 'No connection. Try again.'); }
+        if (usePass) {
+          const pass = $('#li_pass').value;
+          if (!pass) { say(t('Escribe tu contraseña.', 'Type your password.')); $('#li_btn').disabled = false; return; }
+          const r = await fetch(BASE + '/auth/v1/token?grant_type=password', { method: 'POST', headers: H, body: JSON.stringify({ email, password: pass }) });
+          const j = await r.json();
+          if (j && j.access_token) { sess.store = 'admin'; setSession(j, email); boot(); return; }
+          say(t('Correo o contraseña incorrectos.', 'Wrong email or password.'));
+        } else if (!codeSent) {
+          const r = await fetch(BASE + '/auth/v1/otp', { method: 'POST', headers: H, body: JSON.stringify({ email, create_user: true }) });
+          if (!r.ok) throw 0;
+          codeSent = true; $('#li_codewrap').style.display = ''; $('#li_email').readOnly = true; $('#li_btn').textContent = t('Entrar', 'Sign in');
+          say(t('Te mandamos un código a ' + email + '. Puede tardar un minuto; revisa spam también.', 'We sent a code to ' + email + '. It can take a minute; check spam too.'));
+          $('#li_code').focus();
+        } else {
+          const code = ($('#li_code').value || '').replace(/\D/g, '');
+          if (code.length < 6) { say(t('Escribe el código del correo.', 'Type the code from your email.')); $('#li_btn').disabled = false; return; }
+          const r = await fetch(BASE + '/auth/v1/verify', { method: 'POST', headers: H, body: JSON.stringify({ type: 'email', email, token: code }) });
+          const j = await r.json();
+          if (j && j.access_token) { sess.store = 'agent'; setSession(j, email); boot(); return; }
+          say(t('Ese código no funcionó. Revísalo o pide uno nuevo.', "That code didn't work. Check it or ask for a new one."));
+        }
+      } catch (e) { say(usePass || codeSent ? t('No hay conexión. Inténtalo otra vez.', 'No connection. Try again.') : t('No se pudo mandar el código. Espera un minuto y vuelve a intentar.', 'Could not send the code. Wait a minute and try again.')); }
       $('#li_btn').disabled = false;
     };
     $('#li_btn').onclick = go;
-    $('#li_pass').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    stage.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') go(); }));
   }
-  function signOut() { clearTimeout(refreshTimer); sess.token = sess.refresh = sess.email = null; sess.exp = 0; try { sessionStorage.removeItem('jag_admin'); } catch (e) {} renderLogin(); }
-  $('#signout').onclick = signOut;
+  function signOut(msg) {
+    clearTimeout(refreshTimer);
+    try { if (sess.store === 'agent') localStorage.removeItem('jag_agent'); else sessionStorage.removeItem('jag_admin'); } catch (e) {}
+    sess.token = sess.refresh = sess.email = null; sess.exp = 0; sess.store = 'admin';
+    renderLogin(typeof msg === 'string' ? msg : '');
+  }
+  $('#signout').onclick = () => signOut();
 
   // ===== Submit: save in Supabase, then log in Follow Up Boss =====
   let current = null;   // the saved row being shown
@@ -756,7 +799,24 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
 
   // ===== Start =====
   function defaultCaller() { try { return localStorage.getItem('jag-screener-caller') || ''; } catch (e) { return ''; } }
-  function boot() {
+  async function boot() {
+    stage.innerHTML = `<p class="lead">${t('Entrando…', 'Signing in…')}</p>`;
+    let me = null;
+    try {
+      const r = await api('/rest/v1/rpc/jag_agent_me', { method: 'POST', body: '{}' });
+      if (r.status === 401) { signOut(t('Tu sesión venció. Entra otra vez.', 'Your sign-in expired. Sign in again.')); return; }
+      const j = await r.json();
+      if (j && j.ok) me = j.agent;
+      else {
+        const r2 = await api('/rest/v1/rpc/jag_is_team', { method: 'POST', body: '{}' });
+        if ((await r2.json()) !== true) {
+          signOut(t((sess.email || 'Ese correo') + ' no está en el equipo JAG en Follow Up Boss. Usa el correo de tu cuenta de FUB o pídele a Jason que te agregue.',
+                    (sess.email || 'That email') + " isn't on the JAG team in Follow Up Boss. Use the email on your FUB account, or ask Jason to add you."));
+          return;
+        }
+      }
+    } catch (e) { stage.innerHTML = `<p class="lead">${t('No hay conexión. Recarga la página.', 'No connection. Reload the page.')}</p>`; return; }
+    if (me && me.name && !defaultCaller()) s.screener = me.name;
     $('#signout').hidden = false;
     loadSent().catch(() => {});
     const m = (location.hash || '').match(/^#s=([0-9a-f-]{36})$/i);
@@ -767,6 +827,8 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
   chrome();
   if (!BASE || !CRM.anonKey) { stage.innerHTML = '<p class="lead">Supabase is not configured.</p>'; return; }
   let saved = null; try { saved = JSON.parse(sessionStorage.getItem('jag_admin') || 'null'); } catch (e) {}
+  let agentSaved = null; try { agentSaved = JSON.parse(localStorage.getItem('jag_agent') || 'null'); } catch (e) {}
+  if (!(saved && saved.t) && agentSaved && agentSaved.t && agentSaved.r) { saved = { t: agentSaved.t, e: agentSaved.e || null, r: agentSaved.r, x: agentSaved.x || 0 }; sess.store = 'agent'; }
   if (saved && saved.t) { sess.token = saved.t; sess.email = saved.e; sess.refresh = saved.r || null; sess.exp = saved.x || 0; if (sess.refresh && sess.exp) refreshTimer = setTimeout(refreshSession, Math.max(5000, sess.exp - Date.now() - 300000)); boot(); }
   else renderLogin();
 })();
