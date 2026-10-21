@@ -172,6 +172,32 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
 .calc .cprog{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
 .calc .recap .tot{border-bottom:2px solid var(--ink)} .calc .recap .tot span,.calc .recap .tot b{color:var(--ink);font-weight:800}
 .calc .say{margin:0 0 16px}
+/* Lola */
+.lola{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1.5px solid var(--ink);border-radius:18px;padding:14px 14px 12px;margin:18px 0 6px;box-shadow:4px 4px 0 var(--ink)}
+.lola-av{flex:none;width:52px;height:52px;border-radius:12px;background:var(--card);display:grid;place-items:center;image-rendering:pixelated}
+.lola-av svg{width:44px;height:44px;display:block}
+.lola-av .lid{opacity:0;animation:lolaBlink 5s infinite}
+@keyframes lolaBlink{0%,93%{opacity:0}94%,97%{opacity:1}98%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.lola-av .lid{animation:none}}
+.lola-b{flex:1;min-width:0;font-size:14.5px;line-height:1.5}
+.lola-n{font-weight:800;font-size:14px;margin:2px 0 6px}.lola-n span{font-weight:500;color:var(--mut)}
+.lola-hi{margin:0 0 8px}
+.lola-tip{border-radius:12px;padding:10px 12px;margin:0 0 8px;background:var(--card)}
+.lola-tip p{margin:0}
+.lola-tip.warn{background:var(--prep-bg)} .lola-tip.ask{background:var(--warn-bg)} .lola-tip.good{background:var(--ok-bg)}
+.lola-say{margin-top:6px!important;font-weight:600;color:var(--ink)}
+.lola-say span,.lola-next span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.lola-link{border:0;background:none;padding:2px 0;font:inherit;font-size:13.5px;font-weight:700;color:var(--ink);text-decoration:underline;cursor:pointer;margin:0 0 8px}
+.lola-next{margin:6px 0 4px;color:var(--mut);font-size:13.5px}.lola-next span{color:var(--mut)}
+.lola-ai{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+.lola-qa{margin:0 0 10px}.lola-qa .q{margin:0 0 4px;font-weight:700}.lola-qa .a{margin:0;white-space:pre-line}
+.lola-form{display:flex;gap:8px}
+.lola-form input{flex:1;min-width:0;border:0;border-radius:12px;background:var(--card);padding:11px 12px;font:inherit;font-size:14.5px;color:var(--ink);outline:0}
+.lola-form input:focus{background:#fff;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.lola-form button{flex:none;border:0;border-radius:999px;background:var(--ink);color:#fff;font:inherit;font-size:14px;font-weight:700;padding:0 16px;cursor:pointer}
+.lola-fine{margin:6px 0 0;font-size:11.5px;color:var(--mut)}
+.lola-dots::after{content:'…';animation:lolaDots 1.2s steps(3) infinite}
+@keyframes lolaDots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
 </style>
 
 <script src="jag-capture.js?v=3"></script>
@@ -442,6 +468,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     }
   };
   const coachKey = id => id.replace(/^p[12]_/, '');
+
   let coachOpen = false; try { coachOpen = localStorage.getItem('jag-screener-coach') === '1'; } catch (e) {}
   function coachHtml(st) {
     const c = COACH[coachKey(st.id)]; if (!c) return '';
@@ -534,6 +561,128 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     $('#calc').outerHTML = calcHtml(); if (open) $('#calc details.coach').open = true; bindCalc();
     if (focusId && $('#' + focusId)) $('#' + focusId).focus();
   }
+  // ===== Lola: the team's helper. Reads the answers as they come in and says what to ask next. =====
+  // Tips run on the team's rules (instant, same every time). "Pregúntale a Lola" sends the agent's own question to AI.
+  const LOLA_SVG = `<svg aria-hidden="true" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="6" y="0" width="4" height="1" fill="#2b1d16"/><rect x="5" y="1" width="6" height="1" fill="#2b1d16"/><rect x="3" y="2" width="10" height="1" fill="#2b1d16"/><rect x="2" y="3" width="12" height="1" fill="#2b1d16"/><rect x="2" y="4" width="1" height="1" fill="#5b5a63"/><rect x="3" y="4" width="2" height="1" fill="#2b1d16"/><rect x="5" y="4" width="6" height="1" fill="#d9a07a"/><rect x="11" y="4" width="2" height="1" fill="#2b1d16"/><rect x="13" y="4" width="1" height="1" fill="#5b5a63"/><rect x="2" y="5" width="1" height="1" fill="#5b5a63"/><rect x="3" y="5" width="1" height="1" fill="#2b1d16"/><rect x="4" y="5" width="8" height="1" fill="#d9a07a"/><rect x="12" y="5" width="1" height="1" fill="#2b1d16"/><rect x="13" y="5" width="1" height="1" fill="#5b5a63"/><rect x="2" y="6" width="1" height="1" fill="#5b5a63"/><rect x="3" y="6" width="2" height="1" fill="#d9a07a"/><rect x="5" y="6" width="1" height="1" fill="#17161c"/><rect x="6" y="6" width="4" height="1" fill="#d9a07a"/><rect x="10" y="6" width="1" height="1" fill="#17161c"/><rect x="11" y="6" width="2" height="1" fill="#d9a07a"/><rect x="13" y="6" width="1" height="1" fill="#5b5a63"/><rect x="2" y="7" width="1" height="1" fill="#5b5a63"/><rect x="3" y="7" width="2" height="1" fill="#d9a07a"/><rect x="5" y="7" width="1" height="1" fill="#17161c"/><rect x="6" y="7" width="4" height="1" fill="#d9a07a"/><rect x="10" y="7" width="1" height="1" fill="#17161c"/><rect x="11" y="7" width="2" height="1" fill="#d9a07a"/><rect x="13" y="7" width="1" height="1" fill="#5b5a63"/><rect x="2" y="8" width="1" height="1" fill="#5b5a63"/><rect x="3" y="8" width="1" height="1" fill="#d9a07a"/><rect x="4" y="8" width="1" height="1" fill="#eb9c8a"/><rect x="5" y="8" width="6" height="1" fill="#d9a07a"/><rect x="11" y="8" width="1" height="1" fill="#eb9c8a"/><rect x="12" y="8" width="1" height="1" fill="#d9a07a"/><rect x="13" y="8" width="1" height="1" fill="#5b5a63"/><rect x="1" y="9" width="2" height="1" fill="#5b5a63"/><rect x="3" y="9" width="4" height="1" fill="#d9a07a"/><rect x="7" y="9" width="2" height="1" fill="#a3333d"/><rect x="9" y="9" width="4" height="1" fill="#d9a07a"/><rect x="13" y="9" width="1" height="1" fill="#5b5a63"/><rect x="1" y="10" width="1" height="1" fill="#c8102e"/><rect x="3" y="10" width="1" height="1" fill="#b9805c"/><rect x="4" y="10" width="7" height="1" fill="#d9a07a"/><rect x="11" y="10" width="1" height="1" fill="#b9805c"/><rect x="1" y="11" width="1" height="1" fill="#c8102e"/><rect x="5" y="11" width="1" height="1" fill="#b9805c"/><rect x="6" y="11" width="4" height="1" fill="#d9a07a"/><rect x="10" y="11" width="1" height="1" fill="#b9805c"/><rect x="2" y="12" width="12" height="1" fill="#c8102e"/><rect x="1" y="13" width="6" height="1" fill="#c8102e"/><rect x="7" y="13" width="2" height="1" fill="#ffffff"/><rect x="9" y="13" width="6" height="1" fill="#c8102e"/><rect x="1" y="14" width="6" height="1" fill="#c8102e"/><rect x="7" y="14" width="2" height="1" fill="#ffffff"/><rect x="9" y="14" width="6" height="1" fill="#c8102e"/><rect x="1" y="15" width="14" height="1" fill="#c8102e"/><g class="lid"><rect x="5" y="6" width="1" height="1" fill="#d9a07a"/><rect x="10" y="6" width="1" height="1" fill="#d9a07a"/></g></svg>`;
+  const anyP = (st, f) => [1, 2].filter(n => n === 1 || (st.who && st.who !== 'Solo')).some(n => f(n));
+  function lolaTips(st, r) {
+    const T = [], add = (k, lvl, at, text, ask) => T.push({ k, lvl, at, text, ask });
+    const inc = n => st[`p${n}_inc`] || '', cr = n => st[`p${n}_credit`] || '', iss = n => st[`p${n}_issues`] || [];
+    const two = st.who && st.who !== 'Solo';
+    if (two && !(st.p2_rel || '').trim())
+      add('rel', 'ask', ['who'], ['Anota quién es la otra persona (nombre o parentesco).', 'Note who the other person is (name or relationship).'], ['¿Cómo se llama la otra persona y qué es de usted?', 'What is the other person\'s name, and how are they related to you?']);
+    if (anyP(st, n => st[`p${n}_id`] === 'Ninguno'))
+      add('noid', 'warn', ['id', 'who'], ['Sin seguro social ni ITIN todavía no se puede aplicar. Busca a alguien en la familia que sí tenga.', 'Without a Social Security number or ITIN they can\'t apply yet. Look for someone in the family who has one.'], ['¿Alguien en su familia tiene seguro social o ITIN y declara taxes? ¿O está tramitando su ITIN?', 'Does anyone in your family have a Social Security number or ITIN and file taxes? Or are you applying for an ITIN?']);
+    if (!two && st.p1_id === 'ITIN')
+      add('itinalone', 'ask', ['id', 'status', 'inc', 'tax', 'tenure', 'pay', 'credit', 'issues', 'debts', 'money'], ['Con ITIN solo, normalmente piden 10% o más de enganche. Si un hijo, hija o pareja tiene seguro social y declara, aplicar juntos puede abrir más programas. Si dice que sí, regresa a "Quién aplica" y agrégalo.', 'With an ITIN alone, lenders usually want 10% or more down. If a son, daughter or partner has a Social Security number and files taxes, applying together can open more programs. If yes, go back to "Applicants" and add them.'], ['¿Alguien en casa, como un hijo, hija o su pareja, tiene seguro social y declara taxes?', 'Does anyone at home, like a son, daughter or your partner, have a Social Security number and file taxes?']);
+    if (two && st.p1_id && st.p2_id && st.p1_id !== st.p2_id && [st.p1_id, st.p2_id].includes('ITIN') && [st.p1_id, st.p2_id].includes('Seguro social'))
+      add('mixed', 'info', ['id', 'inc', 'pay'], ['Uno con seguro social y otro con ITIN: Katherine decide si conviene que aplique solo quien tiene seguro social (FHA) o los dos juntos. Anota bien cuánto gana cada uno.', 'One with a Social Security number and one with an ITIN: Katherine decides whether only the SSN holder applies (FHA) or both together. Get each person\'s income right.']);
+    if (anyP(st, n => st[`p${n}_status`] === 'Permiso de trabajo'))
+      add('permit', 'ask', ['status', 'inc'], ['Con permiso de trabajo el banco revisa las fechas.', 'With a work permit the lender checks the dates.'], ['¿Cuándo vence su permiso de trabajo? ¿Ya lo ha renovado antes?', 'When does your work permit expire? Have you renewed it before?']);
+    if (anyP(st, n => inc(n) === 'Efectivo sin declarar'))
+      add('cash', 'warn', ['inc', 'tax', 'tenure', 'credit'], ['El cash que no se declara no cuenta para el banco. Busca otro ingreso declarado en la casa, o prepáralo para declarar.', 'Unreported cash doesn\'t count for the lender. Look for other reported income at home, or help them plan to file.'], ['¿Alguien más en casa trabaja con W-2 o declara taxes? ¿Piensa declarar su ingreso este año?', 'Does anyone else at home work on a W-2 or file taxes? Do you plan to report your income this year?']);
+    if (!two && inc(1) === 'No trabaja')
+      add('nowork', 'ask', ['inc', 'credit'], ['Si el cliente no trabaja, la persona que trabaja en la casa tiene que aplicar.', 'If the client doesn\'t work, the person at home who works needs to apply.'], ['¿Quién trabaja en la casa? ¿Esa persona podría aplicar con usted?', 'Who works in the household? Could that person apply with you?']);
+    if (anyP(st, n => /1099/.test(inc(n)) && st[`p${n}_gross`] === 'Antes de gastos' && !num(st[`p${n}_net`])))
+      add('net', 'ask', ['gross', 'credit', 'issues'], ['Con 1099 el banco usa lo que quedó después de gastos. Si no lo sabe, Katherine lo saca de sus taxes.', 'For 1099 income the lender uses what\'s left after expenses. If they don\'t know, Katherine gets it from their taxes.'], ['¿Sabe cuánto le quedó después de gastos en sus taxes del año pasado? Está en la línea 31 del Schedule C.', 'Do you know how much you kept after expenses on last year\'s taxes? It\'s on line 31 of Schedule C.']);
+    if (anyP(st, n => st[`p${n}_tax`] === 'Solo 1 año'))
+      add('tax1', 'ask', ['tax', 'tenure'], ['Con 1 año de taxes a veces hay opciones. Averigua qué hacía antes.', 'With 1 year of taxes there are sometimes options. Find out what they did before.'], ['¿Qué hacía antes de ese año? ¿Le pagaban con W-2?', 'What did you do before that year? Were you paid on a W-2?']);
+    if (anyP(st, n => st[`p${n}_tax`] === 'No ha declarado'))
+      add('tax0', 'warn', ['tax', 'tenure', 'credit'], ['Sin taxes declarados el banco no puede contar ese ingreso.', 'With no tax returns filed, the lender can\'t count that income.'], ['¿Podría declarar el año pasado? Un preparador de taxes le puede ayudar y así empieza a contar.', 'Could you file last year\'s taxes? A tax preparer can help, and then that income starts to count.']);
+    if (anyP(st, n => st[`p${n}_same`] === 'Hubo un tiempo sin trabajo'))
+      add('gap', 'ask', ['same', 'pay'], ['Un tiempo sin trabajo puede necesitar una carta que lo explique.', 'A gap in work may need a letter explaining it.'], ['¿Cuánto tiempo estuvo sin trabajar y por qué?', 'How long were you out of work, and why?']);
+    if (anyP(st, n => cr(n) === 'No sabe'))
+      add('cs?', 'good', ['credit', 'issues'], ['No saber el puntaje es muy común. Si tiene una app, lo puede ver ahorita mismo.', 'Not knowing the score is very common. If they have an app, they can check it right now.'], ['¿Tiene Credit Karma o la app de su banco? Ahí puede ver un estimado de su crédito.', 'Do you have Credit Karma or your bank\'s app? It shows an estimate of your credit.']);
+    if (anyP(st, n => cr(n) === 'Menos de 580' || cr(n) === 'Sin crédito'))
+      add('lowcs', 'warn', ['credit', 'issues', 'debts'], ['Con menos de 580 o sin crédito, va a la ruta de Preparación, a menos que alguien de la familia con mejor crédito aplique. No es un no: es un plan.', 'Under 580 or no credit means the Prep route, unless a relative with better credit applies. It\'s not a no; it\'s a plan.'], ['¿Hay alguien en su familia con mejor crédito que podría aplicar con usted?', 'Is there someone in your family with better credit who could apply with you?']);
+    else if (anyP(st, n => cr(n) === '580 a 599'))
+      add('cs580', 'info', ['credit', 'issues'], ['Desde 580 hay FHA, pero algunos bancos piden más. Lo reciente en el crédito pesa mucho aquí.', 'FHA starts at 580, but some lenders ask for more. Anything recent on credit matters a lot here.']);
+    if (anyP(st, n => iss(n).some(x => ['Reposesión', 'Bancarrota', 'Desalojo o lease roto'].includes(x))))
+      add('when?', 'ask', ['issues', 'debts'], ['Reposesión, bancarrota o desalojo tienen tiempos de espera. La fecha lo cambia todo.', 'Repossession, bankruptcy or eviction come with waiting periods. The date changes everything.'], ['¿En qué mes y año pasó?', 'What month and year did it happen?']);
+    if (anyP(st, n => iss(n).includes('Debe taxes al IRS')))
+      add('irs', 'ask', ['issues', 'debts'], ['Deber al IRS no siempre detiene la compra si hay un plan de pagos al corriente.', 'Owing the IRS doesn\'t always stop a purchase if there\'s a current payment plan.'], ['¿Tiene un plan de pagos con el IRS? ¿Va al corriente?', 'Do you have a payment plan with the IRS? Are you current on it?']);
+    if (anyP(st, n => iss(n).includes('Colecciones')))
+      add('coll', 'ask', ['issues', 'debts'], ['Las colecciones no siempre son un problema; depende de cuánto y de qué son.', 'Collections aren\'t always a problem; it depends on the amount and the type.'], ['¿Más o menos de cuánto es y de qué es? Por ejemplo, médica o de celular.', 'Roughly how much is it, and what is it for? For example, medical or a phone bill.']);
+    if (r.monthly > 0 && r.debts / r.monthly > RULES.debtShare)
+      add('debt', 'ask', ['debts', 'money'], [`Las deudas son ${Math.round(r.debts / r.monthly * 100)}% del ingreso. Eso baja cuánta casa puede comprar.`, `Debts are ${Math.round(r.debts / r.monthly * 100)}% of income. That lowers how much house they can buy.`], ['¿Alguna de esas deudas se termina pronto? ¿Algún carro lo paga otra persona?', 'Do any of those debts end soon? Does someone else pay any of the cars?']);
+    if (!two && r.monthly > 0 && r.monthly < RULES.lowIncome)
+      add('lowinc', 'ask', ['debts', 'money', 'pay', 'credit'], [`Ingreso de ${money(r.monthly)} al mes. Sumar a alguien de la casa que trabaje y declare puede ayudar mucho.`, `Income of ${money(r.monthly)} a month. Adding someone at home who works and files taxes can help a lot.`], ['¿Alguien más en su casa trabaja y declara taxes, como un hijo, hija o su pareja?', 'Does anyone else in your home work and file taxes, like a son, daughter or partner?']);
+    if (st.savings != null && st.savings !== '') {
+      const price = r.price || 250000, need = price * (st.p1_id === 'ITIN' && !two ? 0.10 : 0.035) + price * 0.03;
+      if ((r.savings || 0) < need)
+        add('save', 'ask', ['money', 'other_home', 'link'], [`Para una casa de ${money(price)} se necesitan unos ${money(need)} entre enganche y gastos de cierre. Tiene ${money(r.savings || 0)}.`, `A ${money(price)} home needs about ${money(need)} for down payment and closing costs. They have ${money(r.savings || 0)}.`], ['¿Algún familiar le podría ayudar con el enganche? Con una carta de regalo se puede usar.', 'Could a relative help with the down payment? With a gift letter it can be used.']);
+    }
+    if (st.first === 'Sí, primera casa')
+      add('dpa', 'good', ['money', 'when', 'reqs'], ['Primera casa: menciona que puede haber ayuda para el enganche. El especialista le dice cuál le aplica.', 'First home: mention there may be down payment assistance. The loan specialist will say which applies.']);
+    if (st.other_home === 'Sí')
+      add('own', 'ask', ['other_home', 'link'], ['Si ya tiene casa, cambian los programas.', 'Owning a home changes the programs.'], ['¿La va a vender o a rentar? ¿Tiene préstamo FHA en esa casa?', 'Will you sell it or rent it out? Does it have an FHA loan?']);
+    if (st.when && !(st.area || '').trim())
+      add('area', 'ask', ['when', 'reqs'], ['El área cambia el precio y los impuestos.', 'The area changes prices and taxes.'], ['¿En qué área o ciudad le gustaría vivir?', 'What area or city would you like to live in?']);
+    if (st.intent === 'Solo información' || st.when === 'Más de un año')
+      add('slow', 'info', ['intent', 'when', 'reqs', 'wrap'], ['Compra a largo plazo: no presiones. Pon una fecha de seguimiento.', 'Long-term buyer: no pressure. Set a follow-up date.'], ['¿Qué le gustaría tener listo para cuando sea el momento de comprar?', 'What would you like to have ready for when it\'s time to buy?']);
+    else if (st.when === '0 a 3 meses')
+      add('fast', 'good', ['when', 'link', 'wrap'], ['Quiere comprar pronto: que llene el enlace hoy, mientras siguen en la llamada si se puede.', 'They want to buy soon: get the link filled out today, while you\'re still on the call if possible.']);
+    if (st.link === 'Enviado, sin confirmar' || st.link === 'No enviado')
+      add('link', 'ask', ['link', 'wrap'], ['El enlace confirmado es el que se llena.', 'A confirmed link is the one that gets filled out.'], ['¿Me confirma si ya le llegó el mensaje? Se lo reenvío ahorita.', 'Can you confirm you got the text? I can resend it right now.']);
+    return T;
+  }
+  let lolaOpen = false, lolaAI = [];   // lolaAI: [{q, a}] for this call
+  function lolaRank(tips, key) {
+    const w = { warn: 0, ask: 1, info: 2, good: 3 };
+    return tips.slice().sort((a, b) => ((b.at || []).includes(key) - (a.at || []).includes(key)) || (w[a.lvl] - w[b.lvl]));
+  }
+  function lolaInner(stepId) {
+    const key = stepId ? coachKey(stepId) : 'result';
+    const r = evaluate(s), tips = lolaRank(lolaTips(s, r), key);
+    const steps = active(), i = stepId ? steps.findIndex(x => x.id === stepId) : -1, nxt = i >= 0 ? steps[i + 1] : null;
+    const tipHtml1 = x => `<div class="lola-tip ${x.lvl}"><p>${esc(tx(x.text))}</p>${x.ask ? `<p class="lola-say"><span>${t('Pregunta', 'Ask')}</span>"${esc(tx(x.ask))}"</p>` : ''}</div>`;
+    const top = tips[0], rest = tips.slice(1);
+    const hello = stepId === undefined
+      ? (tips.length ? t('Antes de colgar, revisa esto:', 'Before you hang up, check this:') : t('Todo se ve completo. Manda el enlace y pon la fecha de seguimiento.', 'Everything looks complete. Send the link and set the follow-up date.'))
+      : (tips.length ? '' : t('Vas bien. Sigue con la pregunta de arriba.', 'You\'re doing great. Keep going with the question above.'));
+    return `<div class="lola-av">${LOLA_SVG}</div><div class="lola-b">
+      <div class="lola-n">Lola <span>${t('· te ayuda en la llamada', '· helps you on the call')}</span></div>
+      ${hello ? `<p class="lola-hi">${hello}</p>` : ''}
+      ${stepId === undefined ? tips.slice(0, 3).map(tipHtml1).join('') : top ? tipHtml1(top) : ''}
+      ${stepId === undefined && tips.length > 3 ? `<button type="button" class="lola-link" id="lola-more">${lolaOpen ? t('Ver menos', 'Show less') : t(`Ver ${tips.length - 3} más`, `Show ${tips.length - 3} more`)}</button><div class="lola-rest" ${lolaOpen ? '' : 'hidden'}>${tips.slice(3).map(tipHtml1).join('')}</div>` : ''}
+      ${stepId !== undefined && rest.length ? `<button type="button" class="lola-link" id="lola-more">${lolaOpen ? t('Ver menos', 'Show less') : t(`Ver ${rest.length} más`, `Show ${rest.length} more`)}</button><div class="lola-rest" ${lolaOpen ? '' : 'hidden'}>${rest.map(tipHtml1).join('')}</div>` : ''}
+      ${nxt ? `<p class="lola-next"><span>${t('Después', 'Next')}</span>${esc(tx(nxt.q))}</p>` : ''}
+      <div class="lola-ai">${lolaAI.map(x => `<div class="lola-qa"><p class="q">${esc(x.q)}</p><p class="a">${x.a == null ? `<span class="lola-dots">${t('Lola está pensando', 'Lola is thinking')}</span>` : esc(x.a)}</p></div>`).join('')}
+        <form class="lola-form" id="lola-form"><input id="lola-q" type="text" maxlength="400" autocomplete="off" placeholder="${t('Pregúntale a Lola, por ej. "su esposo tiene ITIN, ¿qué pregunto?"', 'Ask Lola, e.g. "her husband has an ITIN, what do I ask?"')}"><button type="submit" aria-label="${t('Preguntar', 'Ask')}">${t('Preguntar', 'Ask')}</button></form>
+        <p class="lola-fine">${t('Lola usa IA para estas preguntas. No escribas nombres, teléfonos ni números de seguro social.', 'Lola uses AI for these questions. Don\'t type names, phone numbers or Social Security numbers.')}</p></div>
+    </div>`;
+  }
+  function lolaHtml(stepId) { return `<div class="lola" id="lola" data-step="${esc(stepId || '')}">${lolaInner(stepId)}</div>`; }
+  function bindLola() {
+    const box = $('#lola'); if (!box) return;
+    const m = $('#lola-more'); if (m) m.onclick = () => { lolaOpen = !lolaOpen; refreshLola(); };
+    const f = $('#lola-form'); if (f) f.onsubmit = e => { e.preventDefault(); askLola(); };
+  }
+  function refreshLola(keepFocus) {
+    const box = $('#lola'); if (!box) return;
+    const typed = $('#lola-q') ? $('#lola-q').value : '';
+    const sid = box.dataset.step; box.innerHTML = lolaInner(sid || (view === 'result' ? undefined : sid));
+    if ($('#lola-q')) { $('#lola-q').value = typed; if (keepFocus) $('#lola-q').focus(); }
+    bindLola();
+  }
+  function lolaContext() {
+    const skip = /^(c_name|c_phone|c_email|notes|screener|p2_rel|follow|__)/;
+    const ans = {}; Object.keys(s).forEach(k => { if (!skip.test(k) && s[k] !== '' && s[k] != null) ans[k] = s[k]; });
+    const r = evaluate(s);
+    return { answers: ans, lane: r.lane, reasons: r.sig.map(x => x.t), missing: r.missing, monthly: Math.round(r.monthly || 0), debts: Math.round(r.debts || 0), savings: Math.round(r.savings || 0) };
+  }
+  async function askLola() {
+    const q = ($('#lola-q').value || '').trim(); if (!q) return;
+    const box = $('#lola'), step = box && box.dataset.step ? active().find(x => x.id === box.dataset.step) : null;
+    const item = { q, a: null }; lolaAI.push(item); if (lolaAI.length > 6) lolaAI.shift();
+    $('#lola-q').value = ''; refreshLola();
+    try {
+      const res = await api('/functions/v1/jag-lola', { method: 'POST', body: JSON.stringify({ question: q, lang: LANG, step: step ? tx(step.q) : (view === 'result' ? 'result' : ''), context: lolaContext() }) });
+      const j = await res.json().catch(() => null);
+      item.a = j && j.answer ? j.answer : t('No pude contestar ahorita. Pregúntale a Katherine o inténtalo otra vez.', 'I couldn\'t answer right now. Ask Katherine or try again.');
+    } catch (e) { item.a = t('No hay conexión. Inténtalo otra vez.', 'No connection. Try again.'); }
+    refreshLola(true);
+  }
 
   // ===== Render helpers =====
   const sayHtml = v => v ? `<div class="say"><span class="k">${t('Dilo así', 'Say it like this')}</span><div class="bub">"${esc(tx(v))}"</div></div>` : '';
@@ -600,10 +749,10 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     bindFields();
     $('#begin').onclick = () => {
       if (!(s.c_name || '').trim()) { $('#msg').textContent = t('Escribe el nombre del cliente para empezar.', "Enter the client's name to start."); $('#c_name').focus(); return; }
-      mode = 'live'; current = null; idx = 0; renderStep();
+      mode = 'live'; current = null; idx = 0; lolaAI = []; renderStep();
     };
-    $('#practice').onclick = () => { current = null; mode = 'practice'; if (!(s.c_name || '').trim()) s.c_name = t('Cliente de práctica', 'Practice client'); idx = 0; renderStep(); };
-    $('#example').onclick = () => { current = null; mode = 'example'; s = JSON.parse(JSON.stringify(EXAMPLE)); renderResult(); };
+    $('#practice').onclick = () => { lolaAI = []; current = null; mode = 'practice'; if (!(s.c_name || '').trim()) s.c_name = t('Cliente de práctica', 'Practice client'); idx = 0; renderStep(); };
+    $('#example').onclick = () => { lolaAI = []; lolaOpen = false; current = null; mode = 'example'; s = JSON.parse(JSON.stringify(EXAMPLE)); renderResult(); };
     const rb = $('#resume'); if (rb) rb.onclick = () => { current = null; s = draft; mode = 'live'; idx = Math.min(draft.__idx || 0, active().length - 1); renderStep(); };
     const db_ = $('#discard'); if (db_) db_.onclick = () => { clearDraft(); renderStart(); };
   }
@@ -637,9 +786,9 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       const k = `p${st.n}_gross`;
       body = optHtml(k, 'Después de gastos') + optHtml(k, 'Antes de gastos') + `<div id="netbox" ${s[k] === 'Antes de gastos' ? '' : 'hidden'}>${field(`p${st.n}_net`, ['Ganancia neta al año, si la sabe (línea 31 del Schedule C)', 'Net profit per year, if they know it (Schedule C, line 31)'], '$')}<p class="helper">${t('Si no la sabe, déjalo en blanco. Katherine la revisa con sus taxes.', "If they don't know, leave it blank. Katherine checks it against their taxes.")}</p></div><button class="next" type="button" id="nx">${cont}</button>`;
     }
-    stage.innerHTML = `<div class="step"><h2 class="q">${esc(tx(st.q))}</h2>${sayHtml(st.say)}${st.help ? `<p class="helper">${esc(tx(st.help))}</p>` : ''}${tipHtml(st.tip)}${body}<p class="msg" id="msg"></p>${coachHtml(st)}</div>`;
+    stage.innerHTML = `<div class="step"><h2 class="q">${esc(tx(st.q))}</h2>${sayHtml(st.say)}${st.help ? `<p class="helper">${esc(tx(st.help))}</p>` : ''}${tipHtml(st.tip)}${body}<p class="msg" id="msg"></p>${lolaHtml(st.id)}${coachHtml(st)}</div>`;
     if (mode === 'practice') stage.insertAdjacentHTML('afterbegin', `<p class="helper" style="margin:0 0 10px 2px;font-weight:700;color:var(--accent)">${t('Práctica · no se envía', 'Practice · nothing is sent')}</p>`);
-    bindFields(); bindCoach();
+    bindFields(); bindCoach(); bindLola();
     stage.querySelectorAll('.opt').forEach(b => b.onclick = () => choose(st, b.dataset.k, b.dataset.v));
     const nx = $('#nx'); if (nx) nx.onclick = () => next(st);
     const f = stage.querySelector('.opt, input, textarea'); if (f && st.kind !== 'info') f.focus({ preventScroll: true });
@@ -671,7 +820,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
   }
   function go(d) { idx += d; s.__idx = idx; saveDraft(); renderStep(); }
   function bindFields() { stage.querySelectorAll('[data-f]').forEach(el => el.addEventListener('input', () => { s[el.dataset.f] = el.value; changed(); })); }
-  function changed() { $('#badge').hidden = view !== 'steps' && view !== 'result'; setBadge(evaluate(s)); saveDraft(); }
+  function changed() { $('#badge').hidden = view !== 'steps' && view !== 'result'; setBadge(evaluate(s)); saveDraft(); refreshLola(); }
   $('#back').onclick = () => go(-1);
   $('#home').onclick = () => renderStart();
 
@@ -791,6 +940,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       <h1 class="title">${esc(s.c_name || t('Cliente', 'Client'))}</h1>
       <p class="lead" style="margin-bottom:14px">${[s.c_phone, o(s.source), s.screener ? t('Llamó ', 'Called by ') + s.screener : ''].filter(Boolean).map(esc).join(' · ')}</p>
       <div class="route" data-lane="${r.lane}"><div class="k">${t('Ruta sugerida · interna', 'Suggested route · internal')}</div><div class="n">${L.name}</div><p class="p"><b>${t('Dile al cliente:', 'Tell the client:')}</b> "${esc(L.say)}"</p><p class="fine">${r.missing.length ? t('Preliminar. Falta: ', 'Preliminary. Missing: ') + esc(r.missing.join(', ')) + '.' : esc(L.next)}</p></div>
+      ${lolaHtml()}
       <div class="box"><h3>${t('Por qué', 'Why')}</h3><ul class="reasons">${(r.sig.length ? r.sig : [{ lvl: 'info', t: t('Sin datos todavía.', 'No answers yet.') }]).map(x => `<li><span class="dot ${x.lvl}"></span><span>${esc(x.t)}</span></li>`).join('')}</ul></div>
       <div class="box recap"><h3>${t('Números aproximados', 'Approximate numbers')}</h3>${nums.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>
       ${calcHtml()}
@@ -800,11 +950,11 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       <p class="msg" id="msg"></p>
       <div class="box" style="margin-top:22px"><h3>${t('Corregir una respuesta', 'Fix an answer')}</h3><div class="edits">${sections.map(([label], i) => `<button class="chip" type="button" data-si="${i}">${esc(label)}</button>`).join('')}</div></div>
       <div class="btnrow"><button class="ghost" type="button" id="newcall">${t('Nueva llamada', 'New call')}</button></div></div>`;
-    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; paintFub(); bindCalc();
+    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; paintFub(); bindCalc(); bindLola();
     stage.querySelectorAll('[data-si]').forEach(b => b.onclick = () => { if (mode === 'example') mode = 'live'; if (mode === 'view') { mode = 'live'; current = null; } const lab = sections[+b.dataset.si][0]; idx = active().findIndex(x => tx(x.sect) === lab); renderStep(); });
     saveDraft();
   }
-  function newCall() { const who = s.screener; s = { screener: who || defaultCaller() || 'Adriana Pereyra' }; mode = 'live'; current = null; clearDraft(); try { history.replaceState(null, '', location.pathname); } catch (e) {} renderStart(); }
+  function newCall() { lolaAI = []; lolaOpen = false; const who = s.screener; s = { screener: who || defaultCaller() || 'Adriana Pereyra' }; mode = 'live'; current = null; clearDraft(); try { history.replaceState(null, '', location.pathname); } catch (e) {} renderStart(); }
   async function copyNote() {
     const v = $('#fub').textContent;
     try { await navigator.clipboard.writeText(v); $('#msg').textContent = t('Nota copiada. Pégala en el perfil del cliente en Follow Up Boss.', "Note copied. Paste it into the client's Follow Up Boss profile."); }
@@ -1050,7 +1200,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       el.querySelector('.acts').append(open, mark); box.append(el);
     });
   }
-  async function openRow(id) {
+  async function openRow(id) { lolaAI = []; lolaOpen = false;
     const res = await api('/rest/v1/jag_screenings?select=*&id=eq.' + encodeURIComponent(id));
     const rows = res.ok ? await res.json() : [];
     if (!rows.length) { renderStart(); return; }
