@@ -367,7 +367,7 @@ body.fab #stage{margin-bottom:110px}
       fields: [['d_car', ['Carro o troca', 'Car or truck'], '$'], ['d_cards', ['Tarjetas (pago mínimo)', 'Credit cards (minimum payment)'], '$'], ['d_loans', ['Préstamos o mueblería', 'Loans or furniture'], '$'], ['d_other', ['Child support u otros', 'Child support or other'], '$']] },
     { id: 'money', sect: ['Ahorro', 'Savings'], kind: 'fields', q: ['¿Cuánto tiene ahorrado?', 'How much do they have saved?'], say: ['¿Cuenta con algún ahorro para la compra? ¿Más o menos en qué precio está pensando?', 'Do you have any savings for the purchase? Roughly what price are you thinking?'], fields: [['savings', ['Ahorro disponible', 'Savings available'], '$'], ['price', ['Precio en mente (opcional)', 'Price in mind (optional)'], '$']] },
     { id: 'other_home', sect: ['Ahorro', 'Savings'], kind: 'one', q: ['¿Ya tiene otra casa a su nombre?', 'Do they already own a home in their name?'], opts: ['No', 'Sí'] },
-    { id: 'link', sect: ['Siguiente paso', 'Next step'], kind: 'one', q: ['Manda el enlace de evaluación', 'Send the evaluation link'], say: ['Le voy a mandar un enlace de evaluación. No revisa su crédito ni cuesta nada; es para que Katherine vea su caso. ¿Se lo mando a este mismo número? … ¿Me confirma si ya le llegó?', "I'm going to text you an evaluation link. It doesn't check your credit and it's free; it lets Katherine look at your situation. Can I send it to this number? … Can you confirm you got it?"], opts: ['Enviado y recibido', 'Enviado, sin confirmar', 'No enviado'] },
+    { id: 'link', sect: ['Siguiente paso', 'Next step'], kind: 'one', q: ['Manda el enlace de evaluación', 'Send the evaluation link'], say: ['Le voy a mandar un enlace de evaluación. No revisa su crédito ni cuesta nada; es para que el especialista de préstamos revise su caso y se comunique con usted pronto. ¿Se lo mando a este mismo número? … ¿Me confirma si ya le llegó?', "I'm going to text you an evaluation link. It doesn't check your credit and it's free; it lets our loan specialist review your situation and contact you soon. Can I send it to this number? … Can you confirm you got it?"], opts: ['Enviado y recibido', 'Enviado, sin confirmar', 'No enviado'] },
     { id: 'wrap', sect: ['Siguiente paso', 'Next step'], kind: 'fields', q: ['¿Cuándo le das seguimiento?', 'When is the follow-up?'], say: ['¿Cuándo tendría oportunidad de llenarlo? Perfecto, le escribo ese día para ver si tuvo alguna duda.', "When do you think you can fill it out? Perfect, I'll check in with you that day in case you have questions."],
       fields: [['follow', ['Día y hora del seguimiento', 'Follow-up date and time'], 'dt'], ['notes', ['Notas de la llamada', 'Call notes'], 'ta']], help: ['Lo que busca en la casa, sus dudas, quién decide. Sin números de seguro social ni cuentas.', 'What they want in a home, their questions, who decides. No Social Security or account numbers.'] }
   ];
@@ -447,8 +447,8 @@ body.fab #stage{margin-bottom:110px}
              ['El banco solo puede contar lo que está en sus taxes. Si empieza a declararlo, ese ingreso empieza a contar. Podemos ayudarle a prepararse para comprar más adelante.', 'The lender can only count what\'s on your tax returns. Once you start reporting it, that income starts to count. We can help you get ready to buy down the road.']]]
     },
     tax: {
-      why: ['Casi todos los programas piden 2 años de taxes para ver que el ingreso es estable. Con 1 año a veces hay opciones, pero eso lo revisa Katherine.',
-            'Almost every program asks for 2 years of tax returns to show stable income. With 1 year there are sometimes options, but Katherine reviews that.'],
+      why: ['Casi todos los programas piden 2 años de taxes para ver que el ingreso es estable. Con 1 año a veces hay opciones, pero eso lo revisa el especialista.',
+            'Almost every program asks for 2 years of tax returns to show stable income. With 1 year there are sometimes options, but the specialist reviews that.'],
       qa: [[['Debo taxes al IRS, ¿puedo comprar?', 'I owe the IRS. Can I still buy?'],
              ['A veces sí, si tiene un plan de pagos con el IRS y va al corriente. El especialista lo revisa con usted.', 'Sometimes yes, if you have a payment plan with the IRS and you\'re current on it. The loan specialist will review it with you.']]]
     },
@@ -462,7 +462,7 @@ body.fab #stage{margin-bottom:110px}
       why: ['Si antes hacía el mismo tipo de trabajo, el banco cuenta todo el tiempo junto. Un tiempo sin trabajo puede necesitar una carta que lo explique.',
             'If they did the same kind of work before, the lender counts all that time together. A gap without work may need a letter explaining it.'],
       qa: [[['Estuve unos meses sin trabajar, ¿es malo?', 'I was out of work for a few months. Is that bad?'],
-             ['No siempre. A veces solo piden una carta explicando por qué. Katherine lo revisa con usted.', 'Not always. Sometimes they just ask for a letter explaining why. Katherine will go over it with you.']]]
+             ['No siempre. A veces solo piden una carta explicando por qué. El especialista lo revisa con usted.', 'Not always. Sometimes they just ask for a letter explaining why. The specialist will go over it with you.']]]
     },
     pay: {
       why: ['Con esto calculamos el ingreso mensual, que es la base de cuánto pago le cabe. Por hora: tarifa × horas × 52 semanas ÷ 12 meses.',
@@ -490,7 +490,7 @@ body.fab #stage{margin-bottom:110px}
             'Recent items weigh more than old ones. A repossession, eviction or bankruptcy comes with waiting periods. Knowing now avoids surprises and tells us if the client belongs in the Prep route.'],
       stories: [['Un hijo no pudo aplicar con su papá por pagos atrasados en su carro. La hija trabajó su crédito y la familia siguió adelante con ella.', 'A son couldn\'t apply with his dad because of late car payments. The daughter worked on her credit and the family moved forward with her instead.']],
       qa: [[['Tengo una colección, ¿ya no puedo?', 'I have a collection. Does that rule me out?'],
-             ['No necesariamente. Depende de cuánto es y cuándo pasó. Katherine lo revisa con usted.', 'Not necessarily. It depends on the amount and when it happened. Katherine will review it with you.']]]
+             ['No necesariamente. Depende de cuánto es y cuándo pasó. El especialista lo revisa con usted.', 'Not necessarily. It depends on the amount and when it happened. The specialist will review it with you.']]]
     },
     debts: {
       why: ['El banco suma los pagos de deudas más el pago de la casa y lo compara con el ingreso. Entre más deudas, menos casa. Un carro a nombre de otra persona que el cliente paga sí cuenta.',
@@ -512,7 +512,7 @@ body.fab #stage{margin-bottom:110px}
       why: ['Si ya tiene casa a su nombre, cambian los programas (por ejemplo, la ayuda de primer comprador) y el banco cuenta ese pago como deuda.',
             'If they already own a home, the programs change (first-time buyer help, for example) and the lender counts that payment as debt.'],
       qa: [[['Mi nombre está en la casa de mis papás.', 'My name is on my parents\' house.'],
-             ['Qué bueno que lo menciona. Katherine revisa cómo lo ve el banco y qué opciones quedan.', 'Good that you mention it. Katherine will check how the lender sees it and what options you have.']]]
+             ['Qué bueno que lo menciona. El especialista revisa cómo lo ve el banco y qué opciones quedan.', 'Good that you mention it. The specialist will check how the lender sees it and what options you have.']]]
     },
     link: {
       why: ['El enlace es la evaluación donde el cliente pone sus datos completos. No revisa su crédito. Confirmar que le llegó mientras siguen en la llamada sube mucho la probabilidad de que lo llene.',
@@ -628,7 +628,7 @@ body.fab #stage{margin-bottom:110px}
   function lolaTips(st, r) {
     const T = [], add = (k, lvl, at, text, ask) => T.push({ k, lvl, at, text, ask });
     if (typeof readiness === 'function' && readiness(st).hot)
-      add('hot', 'hot', ['credit', 'issues', 'debts', 'money', 'other_home', 'link', 'wrap', 'result', 'pay', 'tenure', 'inc', 'tax'], ['🔥 Cliente caliente: manda el enlace de evaluación ahora, mientras siguen en la llamada, y avísale a Katherine para que lo llame hoy.', '🔥 Hot lead: send the evaluation link now, while you\'re still on the call, and let Katherine know to call them today.'], ['¿Le parece si le mando el enlace ahorita y lo llenamos juntos?', 'How about I send you the link now and we fill it out together?']);
+      add('hot', 'hot', ['credit', 'issues', 'debts', 'money', 'other_home', 'link', 'wrap', 'result', 'pay', 'tenure', 'inc', 'tax'], ['🔥 Cliente caliente: manda el enlace de evaluación ahora, mientras siguen en la llamada, y dile al cliente que el especialista se va a comunicar con él pronto.', '🔥 Hot lead: send the evaluation link now, while you\'re still on the call, and tell the client the specialist will contact them soon.'], ['¿Le parece si le mando el enlace ahorita y lo llenamos juntos?', 'How about I send you the link now and we fill it out together?']);
     const inc = n => st[`p${n}_inc`] || '', cr = n => st[`p${n}_credit`] || '', iss = n => st[`p${n}_issues`] || [];
     const two = st.who && st.who !== 'Solo';
     if (two && !(st.p2_rel || '').trim())
@@ -638,7 +638,7 @@ body.fab #stage{margin-bottom:110px}
     if (!two && st.p1_id === 'ITIN')
       add('itinalone', 'ask', ['id', 'status', 'inc', 'tax', 'tenure', 'pay', 'credit', 'issues', 'debts', 'money'], ['Con ITIN solo, normalmente piden 10% o más de enganche. Si un hijo, hija o pareja tiene seguro social y declara, aplicar juntos puede abrir más programas. Si dice que sí, regresa a "Quién aplica" y agrégalo.', 'With an ITIN alone, lenders usually want 10% or more down. If a son, daughter or partner has a Social Security number and files taxes, applying together can open more programs. If yes, go back to "Applicants" and add them.'], ['¿Alguien en casa, como un hijo, hija o su pareja, tiene seguro social y declara taxes?', 'Does anyone at home, like a son, daughter or your partner, have a Social Security number and file taxes?']);
     if (two && st.p1_id && st.p2_id && st.p1_id !== st.p2_id && [st.p1_id, st.p2_id].includes('ITIN') && [st.p1_id, st.p2_id].includes('Seguro social'))
-      add('mixed', 'info', ['id', 'inc', 'pay'], ['Uno con seguro social y otro con ITIN: Katherine decide si conviene que aplique solo quien tiene seguro social (FHA) o los dos juntos. Anota bien cuánto gana cada uno.', 'One with a Social Security number and one with an ITIN: Katherine decides whether only the SSN holder applies (FHA) or both together. Get each person\'s income right.']);
+      add('mixed', 'info', ['id', 'inc', 'pay'], ['Uno con seguro social y otro con ITIN: El especialista decide si conviene que aplique solo quien tiene seguro social (FHA) o los dos juntos. Anota bien cuánto gana cada uno.', 'One with a Social Security number and one with an ITIN: The specialist decides whether only the SSN holder applies (FHA) or both together. Get each person\'s income right.']);
     if (anyP(st, n => st[`p${n}_status`] === 'Permiso de trabajo'))
       add('permit', 'ask', ['status', 'inc'], ['Con permiso de trabajo el banco revisa las fechas.', 'With a work permit the lender checks the dates.'], ['¿Cuándo vence su permiso de trabajo? ¿Ya lo ha renovado antes?', 'When does your work permit expire? Have you renewed it before?']);
     if (anyP(st, n => inc(n) === 'Efectivo sin declarar'))
@@ -646,7 +646,7 @@ body.fab #stage{margin-bottom:110px}
     if (!two && inc(1) === 'No trabaja')
       add('nowork', 'ask', ['inc', 'credit'], ['Si el cliente no trabaja, la persona que trabaja en la casa tiene que aplicar.', 'If the client doesn\'t work, the person at home who works needs to apply.'], ['¿Quién trabaja en la casa? ¿Esa persona podría aplicar con usted?', 'Who works in the household? Could that person apply with you?']);
     if (anyP(st, n => /1099/.test(inc(n)) && st[`p${n}_gross`] === 'Antes de gastos' && !num(st[`p${n}_net`])))
-      add('net', 'ask', ['gross', 'credit', 'issues'], ['Con 1099 el banco usa lo que quedó después de gastos. Si no lo sabe, Katherine lo saca de sus taxes.', 'For 1099 income the lender uses what\'s left after expenses. If they don\'t know, Katherine gets it from their taxes.'], ['¿Sabe cuánto le quedó después de gastos en sus taxes del año pasado? Está en la línea 31 del Schedule C.', 'Do you know how much you kept after expenses on last year\'s taxes? It\'s on line 31 of Schedule C.']);
+      add('net', 'ask', ['gross', 'credit', 'issues'], ['Con 1099 el banco usa lo que quedó después de gastos. Si no lo sabe, el especialista lo saca de sus taxes.', 'For 1099 income the lender uses what\'s left after expenses. If they don\'t know, the specialist gets it from their taxes.'], ['¿Sabe cuánto le quedó después de gastos en sus taxes del año pasado? Está en la línea 31 del Schedule C.', 'Do you know how much you kept after expenses on last year\'s taxes? It\'s on line 31 of Schedule C.']);
     if (anyP(st, n => st[`p${n}_tax`] === 'Solo 1 año'))
       add('tax1', 'ask', ['tax', 'tenure'], ['Con 1 año de taxes a veces hay opciones. Averigua qué hacía antes.', 'With 1 year of taxes there are sometimes options. Find out what they did before.'], ['¿Qué hacía antes de ese año? ¿Le pagaban con W-2?', 'What did you do before that year? Were you paid on a W-2?']);
     if (anyP(st, n => st[`p${n}_tax`] === 'No ha declarado'))
@@ -881,7 +881,7 @@ body.fab #stage{margin-bottom:110px}
     try {
       const res = await api('/functions/v1/jag-lola', { method: 'POST', body: JSON.stringify({ question: q, lang: LANG, step: step ? tx(step.q) : (view === 'result' ? 'result' : ''), context: lolaContext() }) });
       const j = await res.json().catch(() => null);
-      item.a = j && j.answer ? j.answer : t('No pude contestar ahorita. Pregúntale a Katherine o inténtalo otra vez.', 'I couldn\'t answer right now. Ask Katherine or try again.');
+      item.a = j && j.answer ? j.answer : t('No pude contestar ahorita. Pregúntale al especialista o inténtalo otra vez.', 'I couldn\'t answer right now. Ask the specialist or try again.');
     } catch (e) { item.a = t('No hay conexión. Inténtalo otra vez.', 'No connection. Try again.'); }
     refreshLola(true);
   }
@@ -988,7 +988,7 @@ body.fab #stage{margin-bottom:110px}
       body = `<div class="grid2">${['Por hora', 'Al año', 'Al mes'].map(v => optHtml(`p${st.n}_pay`, v)).join('')}</div><div id="paybox">${payFields(st.n)}</div><button class="next" type="button" id="nx">${cont}</button>`;
     } else if (st.kind === 'gross') {
       const k = `p${st.n}_gross`;
-      body = optHtml(k, 'Después de gastos') + optHtml(k, 'Antes de gastos') + `<div id="netbox" ${s[k] === 'Antes de gastos' ? '' : 'hidden'}>${field(`p${st.n}_net`, ['Ganancia neta al año, si la sabe (línea 31 del Schedule C)', 'Net profit per year, if they know it (Schedule C, line 31)'], '$')}<p class="helper">${t('Si no la sabe, déjalo en blanco. Katherine la revisa con sus taxes.', "If they don't know, leave it blank. Katherine checks it against their taxes.")}</p></div><button class="next" type="button" id="nx">${cont}</button>`;
+      body = optHtml(k, 'Después de gastos') + optHtml(k, 'Antes de gastos') + `<div id="netbox" ${s[k] === 'Antes de gastos' ? '' : 'hidden'}>${field(`p${st.n}_net`, ['Ganancia neta al año, si la sabe (línea 31 del Schedule C)', 'Net profit per year, if they know it (Schedule C, line 31)'], '$')}<p class="helper">${t('Si no la sabe, déjalo en blanco. El especialista la revisa con sus taxes.', "If they don't know, leave it blank. The specialist checks it against their taxes.")}</p></div><button class="next" type="button" id="nx">${cont}</button>`;
     }
     stage.innerHTML = `<div class="step"><h2 class="q">${esc(tx(st.q))}</h2>${sayHtml(st.say)}${st.help ? `<p class="helper">${esc(tx(st.help))}</p>` : ''}${tipHtml(st.tip)}${body}<p class="msg" id="msg"></p>${lolaHtml(st.id)}${coachHtml(st)}</div>`;
     if (mode === 'practice') stage.insertAdjacentHTML('afterbegin', `<p class="helper" style="margin:0 0 10px 2px;font-weight:700;color:var(--accent)">${t('Práctica · no se envía', 'Practice · nothing is sent')}</p>`);
@@ -1052,14 +1052,14 @@ body.fab #stage{margin-bottom:110px}
       if (!st[`p${n}_inc`]) missing.push(l + t('tipo de ingreso', 'income type'));
       if (!st[`p${n}_credit`]) missing.push(l + t('crédito', 'credit'));
       const inc = income(st, n);
-      if (inc.counted) { anyCounted = true; if (inc.monthly != null) monthly += inc.monthly; else missing.push(l + t('ingreso', 'income')); if (!inc.verified) sig.push({ lvl: 'rev', t: l + t('Ingreso 1099 sin ganancia neta confirmada. Katherine la revisa con el Schedule C.', '1099 income without confirmed net profit. Katherine checks it against the Schedule C.') }); }
+      if (inc.counted) { anyCounted = true; if (inc.monthly != null) monthly += inc.monthly; else missing.push(l + t('ingreso', 'income')); if (!inc.verified) sig.push({ lvl: 'rev', t: l + t('Ingreso 1099 sin ganancia neta confirmada. El especialista la revisa con el Schedule C.', '1099 income without confirmed net profit. The specialist checks it against the Schedule C.') }); }
       if (st[`p${n}_inc`] === 'Efectivo sin declarar') sig.push({ lvl: 'info', t: l + t('Ingreso en efectivo sin declarar: el banco no lo cuenta.', "Unreported cash income: the bank doesn't count it.") });
       const tax = st[`p${n}_tax`];
       if (inc.counted && tax === 'No ha declarado') sig.push({ lvl: 'prep', t: l + t('No ha declarado taxes. Se necesitan 2 años.', 'Has not filed taxes. Two years are needed.') });
       if (inc.counted && tax === 'Solo 1 año') sig.push({ lvl: 'rev', t: l + t('Solo 1 año de taxes declarado.', 'Only 1 year of taxes filed.') });
       if (inc.counted && /1099/.test(st[`p${n}_inc`]) && st[`p${n}_tenure`] && st[`p${n}_tenure`] !== '2 años o más') sig.push({ lvl: 'rev', t: l + t('Negocio propio con menos de 2 años.', 'Self-employed for less than 2 years.') });
       const same = st[`p${n}_same`];
-      if (inc.counted && /meses/.test(st[`p${n}_tenure`] || '') && same && same !== 'Sí, lo mismo') sig.push({ lvl: 'rev', t: l + (same === 'No, algo diferente' ? t('Cambió de tipo de trabajo hace menos de 2 años.', 'Changed type of work less than 2 years ago.') : t('Hubo un tiempo sin trabajo. Katherine pide la explicación.', 'There was a gap in work. Katherine will ask for the explanation.')) });
+      if (inc.counted && /meses/.test(st[`p${n}_tenure`] || '') && same && same !== 'Sí, lo mismo') sig.push({ lvl: 'rev', t: l + (same === 'No, algo diferente' ? t('Cambió de tipo de trabajo hace menos de 2 años.', 'Changed type of work less than 2 years ago.') : t('Hubo un tiempo sin trabajo. El especialista pide la explicación.', 'There was a gap in work. The specialist will ask for the explanation.')) });
       const c = st[`p${n}_credit`]; if (c) credits.push({ n, c, v: CREDIT_MID[c] });
       const iss = st[`p${n}_issues`] || [];
       if (iss.includes('Bancarrota')) sig.push({ lvl: 'prep', t: l + t('Bancarrota en los últimos 2 años.', 'Bankruptcy in the last 2 years.') });
@@ -1069,11 +1069,11 @@ body.fab #stage{margin-bottom:110px}
     if (st.p1_inc && people.every(n => !income(st, n).counted)) sig.push({ lvl: 'prep', t: t('Nadie en la aplicación tiene ingreso declarado. El banco solo cuenta lo que está en taxes.', 'No one on the application has reported income. The bank only counts what is on tax returns.') });
     if (credits.length) {
       const known = credits.filter(x => x.v != null);
-      if (credits.some(x => x.v == null)) sig.push({ lvl: 'rev', t: t('Crédito sin confirmar. Katherine lo revisa con permiso de la persona dueña del crédito.', 'Credit not confirmed. Katherine checks it with permission from the person whose credit it is.') });
+      if (credits.some(x => x.v == null)) sig.push({ lvl: 'rev', t: t('Crédito sin confirmar. El especialista lo revisa con permiso de la persona dueña del crédito.', 'Credit not confirmed. The specialist checks it with permission from the person whose credit it is.') });
       if (known.length) {
         const low = Math.min(...known.map(x => x.v)), high = Math.max(...known.map(x => x.v));
         if (high < RULES.creditFloor) sig.push({ lvl: 'prep', t: t('Crédito bajo 580. Primero un plan para subirlo.', 'Credit under 580. First, a plan to raise it.') });
-        else if (low < RULES.creditFloor) sig.push({ lvl: 'rev', t: t('Un aplicante tiene crédito bajo 580. Katherine ve si conviene aplicar solo con el otro.', 'One applicant is under 580. Katherine decides whether to apply with only the other.') });
+        else if (low < RULES.creditFloor) sig.push({ lvl: 'rev', t: t('Un aplicante tiene crédito bajo 580. El especialista ve si conviene aplicar solo con el otro.', 'One applicant is under 580. The specialist decides whether to apply with only the other.') });
         else if (low < RULES.creditReady) sig.push({ lvl: 'rev', t: t('Crédito de 580 a 599: hay programas, pero con menos opciones.', 'Credit 580 to 599: there are programs, but fewer options.') });
       }
     }
@@ -1088,23 +1088,23 @@ body.fab #stage{margin-bottom:110px}
       } else if (savings != null) sig.push({ lvl: 'info', t: t(`ITIN: con ${money(savings)}, el 11% alcanza para un precio de unos ${money(savings / RULES.itinFundsPct)}. Solo referencia interna.`, `ITIN: with ${money(savings)}, 11% covers a price of about ${money(savings / RULES.itinFundsPct)}. Internal reference only.`) });
       else if (st.money__seen) missing.push(t('ahorro disponible', 'savings'));
     }
-    if (hasSSN && hasITIN) sig.push({ lvl: 'rev', t: t('Uno tiene ITIN y otro seguro social. Puede convenir que aplique solo quien tiene seguro social; Katherine decide.', 'One has an ITIN and the other an SSN. It may be better for only the SSN holder to apply; Katherine decides.') });
+    if (hasSSN && hasITIN) sig.push({ lvl: 'rev', t: t('Uno tiene ITIN y otro seguro social. Puede convenir que aplique solo quien tiene seguro social; el especialista decide.', 'One has an ITIN and the other an SSN. It may be better for only the SSN holder to apply; the specialist decides.') });
     if (people.some(n => st[`p${n}_id`] === 'Ninguno')) sig.push({ lvl: 'info', t: t('Un aplicante no tiene seguro social ni ITIN: no puede ir en el préstamo.', 'One applicant has neither an SSN nor an ITIN and cannot be on the loan.') });
-    if (hasSSN && savings === 0) sig.push({ lvl: 'rev', t: t('Sin ahorro. Katherine revisa programas de bajo o cero enganche y ayuda con el enganche.', 'No savings. Katherine checks low or zero down programs and down payment assistance.') });
+    if (hasSSN && savings === 0) sig.push({ lvl: 'rev', t: t('Sin ahorro. El especialista revisa programas de bajo o cero enganche y ayuda con el enganche.', 'No savings. The specialist checks low or zero down programs and down payment assistance.') });
     const debts = ['d_car', 'd_cards', 'd_loans', 'd_other'].map(k => num(st[k]) || 0).reduce((a, b) => a + b, 0);
     if (anyCounted && monthly > 0) {
       if (monthly < RULES.lowIncome) sig.push({ lvl: 'rev', t: t(`Ingreso declarado de ${money(monthly)} al mes. Preguntar si alguien más en casa trabaja y declara.`, `Reported income of ${money(monthly)} a month. Ask if anyone else at home works and files taxes.`) });
       if (debts / monthly > RULES.debtShare) sig.push({ lvl: 'rev', t: t(`Deudas de ${money(debts)} al mes, ${Math.round(debts / monthly * 100)}% del ingreso. Reducen lo que puede comprar.`, `Debts of ${money(debts)} a month, ${Math.round(debts / monthly * 100)}% of income. They lower the buying budget.`) });
     }
-    if (st.other_home === 'Sí') sig.push({ lvl: 'rev', t: t('Tiene otra casa a su nombre. Katherine revisa cómo la cuenta el banco y qué programas aplican.', 'Owns another home. Katherine checks how the bank counts it and which programs apply.') });
+    if (st.other_home === 'Sí') sig.push({ lvl: 'rev', t: t('Tiene otra casa a su nombre. El especialista revisa cómo la cuenta el banco y qué programas aplican.', 'Owns another home. The specialist checks how the bank counts it and which programs apply.') });
     if (st.intent === 'Solo información' || st.when === 'Más de un año') sig.push({ lvl: 'info', t: t('Compra a largo plazo: seguimiento con fecha, sin presión.', 'Longer-term buyer: dated follow-up, no pressure.') });
     const lane = sig.some(x => x.lvl === 'prep') ? 'prep' : sig.some(x => x.lvl === 'rev') ? 'revision' : 'listo';
     if (lane === 'listo' && !missing.length) sig.unshift({ lvl: 'ok', t: t('Taxes, trabajo, crédito y deudas dentro de lo que pide el banco.', 'Taxes, work history, credit and debts are within what the bank asks.') });
     return { lane, sig, missing, monthly: anyCounted ? monthly : 0, debts, savings, price, people };
   }
   const LN = lane => ({
-    listo: { name: t('Listo', 'Ready'), say: t('Le mando el enlace; Katherine lo llama hoy con sus opciones.', "I'll send you the link; Katherine will call you today with your options."), next: t('Manda el enlace, guarda el PDF en Follow Up Boss y etiqueta a Katherine.', 'Send the link, save the PDF in Follow Up Boss and tag Katherine.') },
-    revision: { name: t('Revisión', 'Review'), say: t('Hay un par de cosas que Katherine tiene que ver con sus números antes de hablar de programas.', 'There are a couple of things Katherine needs to look at in your numbers before we talk about programs.'), next: t('Igual que Listo, y deja en la nota qué revisar.', 'Same as Ready, and note what to review.') },
+    listo: { name: t('Listo', 'Ready'), say: t('Le mando el enlace; el especialista de préstamos se va a comunicar con usted pronto con sus opciones.', "I'll send you the link; our loan specialist will contact you soon with your options."), next: t('Manda el enlace, guarda el PDF en Follow Up Boss y etiqueta al especialista de préstamos.', 'Send the link, save the PDF in Follow Up Boss and tag the loan specialist.') },
+    revision: { name: t('Revisión', 'Review'), say: t('Hay un par de cosas que el especialista de préstamos tiene que revisar con sus números antes de hablar de programas; se va a comunicar con usted pronto.', 'There are a couple of things our loan specialist needs to review in your numbers before we talk about programs; they will contact you soon.'), next: t('Igual que Listo, y deja en la nota qué revisar.', 'Same as Ready, and note what to review.') },
     prep: { name: t('Preparación', 'Prep'), say: t('Todavía no es un no. Vamos a ver qué hay que preparar para que pueda comprar.', "This isn't a no. Let's see what we need to get ready so you can buy."), next: t('Guarda el PDF, ponlo en Nurture o Credit y crea una tarea de seguimiento con fecha.', 'Save the PDF, move them to Nurture or Credit, and create a dated follow-up task.') }
   })[lane];
 
@@ -1366,7 +1366,7 @@ body.fab #stage{margin-bottom:110px}
       try { localStorage.setItem('jag-screener-caller', s.screener || ''); } catch (e) {}
       clearDraft(); mode = 'view';
       btn.textContent = t('Enviado', 'Sent');
-      $('#msg').textContent = t('Guardado. Katherine lo ve en Enviadas.', 'Saved. Katherine sees it under Submitted.');
+      $('#msg').textContent = t('Guardado. El especialista lo ve en Enviadas.', 'Saved. The specialist sees it under Submitted.');
       paintFub(); sendToFub(current.id);
       try { history.replaceState(null, '', '#s=' + current.id); } catch (e) {}
     } catch (e) {
