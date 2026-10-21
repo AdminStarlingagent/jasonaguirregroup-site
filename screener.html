@@ -184,6 +184,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
 .lola-hi{margin:0 0 8px}
 .lola-tip{border-radius:12px;padding:10px 12px;margin:0 0 8px;background:var(--card)}
 .lola-tip p{margin:0}
+.lola-tip.hot{background:#fdecef;box-shadow:inset 0 0 0 1.5px var(--accent)}
 .lola-tip.warn{background:var(--prep-bg)} .lola-tip.ask{background:var(--warn-bg)} .lola-tip.good{background:var(--ok-bg)}
 .lola-say{margin-top:6px!important;font-weight:600;color:var(--ink)}
 .lola-say span,.lola-next span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
@@ -232,6 +233,24 @@ body.fab #lolaFab{display:inline-flex}
 #lolaShade.on{display:block}
 @media (min-width:1280px){body.rails #lolaFab{display:none}}
 body.fab #stage{margin-bottom:110px}
+/* readiness meter + hot lead toast */
+.meter{margin:12px 0 0;padding:10px 14px 12px;border-radius:14px;background:var(--card)}
+.meter .mrow{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13.5px}
+.meter .mk{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.meter .mv{font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.meter .mest{color:var(--ink);font-weight:600}.meter .mest small{color:var(--mut);font-weight:500}.meter .mest.muted{color:var(--mut);font-weight:500}
+.meter .mhot{margin-left:auto;background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:800}
+.meter .mtrack{position:relative;height:8px;border-radius:99px;background:#e2e2e8;margin-top:8px;overflow:visible}
+.meter .mfill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.3,.7,.3,1),background .3s}
+.meter .mtrack i{position:absolute;top:-3px;width:2px;height:14px;background:var(--ink);opacity:.35;border-radius:1px}
+.meter.lo .mfill{background:var(--prep)} .meter.lo .mv{color:var(--prep)}
+.meter.mid .mfill{background:#d8a21c} .meter.mid .mv{color:var(--warn)}
+.meter.hi .mfill{background:var(--ok)} .meter.hi .mv{color:var(--ok)}
+#hottoast{position:fixed;left:50%;top:14px;transform:translate(-50%,calc(-100% - 40px));visibility:hidden;z-index:90;width:min(520px,calc(100vw - 32px));background:var(--ink);color:#fff;border-radius:16px;padding:14px 18px;box-shadow:0 14px 40px rgba(0,0,0,.25);transition:transform .3s ease,visibility .3s;font-size:14.5px;line-height:1.45}
+#hottoast.on{transform:translate(-50%,0);visibility:visible}
+#hottoast b{display:block;font-size:15.5px;margin-bottom:2px}
+#hottoast span{color:#e6e5ec}#hottoast a{color:#fff;font-weight:700}
+@media (prefers-reduced-motion:reduce){#hottoast{transition:none}}
 </style>
 
 <script src="jag-capture.js?v=3"></script>
@@ -262,6 +281,7 @@ body.fab #stage{margin-bottom:110px}
       <span class="sect" id="sect"></span>
       <span class="pct" id="pct"></span>
     </div>
+    <div id="meter" hidden></div>
   </div>
 
   <main id="stage" aria-live="polite"></main>
@@ -269,6 +289,7 @@ body.fab #stage{margin-bottom:110px}
   <aside id="railR" aria-label="Lola"></aside>
   <button type="button" id="lolaFab" aria-haspopup="dialog" aria-controls="lolaSheet"><span class="av" id="lolaFabAv"></span><span id="lolaFabT">Lola</span><span class="n" id="lolaFabN"></span></button>
   <div id="lolaShade"></div>
+  <div id="hottoast" role="status" aria-live="polite"></div>
   <div id="lolaSheet" role="dialog" aria-modal="true" aria-label="Lola"><div class="grab"><span></span><button type="button" class="x" id="lolaX" aria-label="Cerrar">×</button></div><div id="lolaSheetBody"></div></div>
   <footer class="legal" id="foot"></footer>
 </div>
@@ -606,6 +627,8 @@ body.fab #stage{margin-bottom:110px}
   const anyP = (st, f) => [1, 2].filter(n => n === 1 || (st.who && st.who !== 'Solo')).some(n => f(n));
   function lolaTips(st, r) {
     const T = [], add = (k, lvl, at, text, ask) => T.push({ k, lvl, at, text, ask });
+    if (typeof readiness === 'function' && readiness(st).hot)
+      add('hot', 'hot', ['credit', 'issues', 'debts', 'money', 'other_home', 'link', 'wrap', 'result', 'pay', 'tenure', 'inc', 'tax'], ['🔥 Cliente caliente: manda el enlace de evaluación ahora, mientras siguen en la llamada, y avísale a Katherine para que lo llame hoy.', '🔥 Hot lead: send the evaluation link now, while you\'re still on the call, and let Katherine know to call them today.'], ['¿Le parece si le mando el enlace ahorita y lo llenamos juntos?', 'How about I send you the link now and we fill it out together?']);
     const inc = n => st[`p${n}_inc`] || '', cr = n => st[`p${n}_credit`] || '', iss = n => st[`p${n}_issues`] || [];
     const two = st.who && st.who !== 'Solo';
     if (two && !(st.p2_rel || '').trim())
@@ -667,7 +690,7 @@ body.fab #stage{margin-bottom:110px}
   }
   let lolaOpen = false, lolaAI = [];   // lolaAI: [{q, a}] for this call
   function lolaRank(tips, key) {
-    const w = { warn: 0, ask: 1, info: 2, good: 3 };
+    const w = { hot: -1, warn: 0, ask: 1, info: 2, good: 3 };
     return tips.slice().sort((a, b) => ((b.at || []).includes(key) - (a.at || []).includes(key)) || (w[a.lvl] - w[b.lvl]));
   }
   function lolaInner(stepId) {
@@ -696,6 +719,102 @@ body.fab #stage{margin-bottom:110px}
     const box = $('#lola'); if (!box) return;
     const m = $('#lola-more'); if (m) m.onclick = () => { lolaOpen = !lolaOpen; refreshLola(); };
     const f = $('#lola-form'); if (f) f.onsubmit = e => { e.preventDefault(); askLola(); };
+  }
+  // ===== Readiness tracker: how ready the client looks to qualify, filled in as the agent types =====
+  // 100 points: ID 20 · reported income 20 · work history 10 · credit 20 · nothing recent on credit 10 · debts vs income 10 · savings 10.
+  // Unanswered parts count 0, so the bar fills up during the call. It is a team guide, not a loan decision.
+  const HOT = { score: 70, when: ['0 a 3 meses', '3 a 6 meses'] };
+  function readiness(st) {
+    const r = evaluate(st), ppl = r.people, parts = [];
+    const best = f => Math.max(0, ...ppl.map(f));
+    const add = (k, label, pts, max, known) => parts.push({ k, label, pts: known ? pts : 0, max, known });
+    const ids = ppl.map(n => st[`p${n}_id`]).filter(Boolean);
+    add('id', [t('Seguro social o ITIN', 'SSN or ITIN')], best(n => ({ 'Seguro social': 20, 'ITIN': 12 })[st[`p${n}_id`]] || 0), 20, ids.length > 0);
+    const incPts = n => {
+      const inc = st[`p${n}_inc`] || '', tax = st[`p${n}_tax`] || '';
+      if (!inc || inc === 'Efectivo sin declarar' || inc === 'No trabaja' || tax === 'No ha declarado') return 0;
+      const yrs = tax === 'Solo 1 año' ? 0.45 : 1;
+      if (/1099/.test(inc)) { const g = st[`p${n}_gross`]; return Math.round((g === 'Después de gastos' || num(st[`p${n}_net`]) ? 16 : 11) * yrs); }
+      return Math.round(20 * yrs);
+    };
+    add('inc', [t('Ingreso declarado', 'Reported income')], best(incPts), 20, ppl.some(n => st[`p${n}_inc`]));
+    const workPts = n => {
+      const te = st[`p${n}_tenure`], same = st[`p${n}_same`];
+      if (te === '2 años o más') return 10;
+      if (!te) return 0;
+      if (same === 'Sí, lo mismo') return te === '6 a 24 meses' ? 9 : 7;
+      if (same === 'Hubo un tiempo sin trabajo') return 3;
+      return te === '6 a 24 meses' ? 6 : 4;
+    };
+    add('work', [t('Tiempo trabajando', 'Work history')], best(workPts), 10, ppl.some(n => st[`p${n}_tenure`]));
+    const CS = { '640 o más': 20, '600 a 639': 16, '580 a 599': 11, 'No sabe': 8, 'Menos de 580': 3, 'Sin crédito': 2 };
+    add('credit', [t('Crédito', 'Credit')], best(n => CS[st[`p${n}_credit`]] || 0), 20, ppl.some(n => st[`p${n}_credit`]));
+    const issPts = n => {
+      const a = st[`p${n}_issues`]; if (!a) return 0; if (!a.length) return 10;
+      if (a.some(x => ['Reposesión', 'Bancarrota', 'Desalojo o lease roto'].includes(x))) return 2;
+      if (a.includes('Debe taxes al IRS')) return 5;
+      return 6;
+    };
+    add('issues', [t('Nada reciente en el crédito', 'Nothing recent on credit')], best(issPts), 10, ppl.some(n => st[`p${n}_issues`] || st[`p${n}_issues__done`]));
+    const dtiKnown = r.monthly > 0 && (st.__debtsSeen || ['d_car', 'd_cards', 'd_loans', 'd_other', 'savings'].some(k => st[k] !== undefined && st[k] !== ''));
+    const dti = r.monthly > 0 ? r.debts / r.monthly : 1;
+    add('dti', [t('Deudas vs. ingreso', 'Debts vs. income')], dti <= 0.10 ? 10 : dti <= 0.20 ? 8 : dti <= 0.35 ? 5 : 2, 10, dtiKnown);
+    const cd = calcDefaults(st, r), est = r.monthly > 0 ? round5k(maxPrice(cd, CALC.dti.comfy)) : 0;
+    const price = r.price || est || 250000, need = price * (CALC.prog[cd.prog].down + CALC.closePct) / 100, sav = r.savings || 0;
+    add('save', [t('Ahorro para enganche', 'Savings for down payment')], sav >= need ? 10 : sav >= need * 0.5 ? 6 : sav > 0 ? 3 : 0, 10, st.savings != null && st.savings !== '');
+    const score = Math.min(100, parts.reduce((a, p) => a + p.pts, 0));
+    const buying = st.intent !== 'Solo información' && HOT.when.includes(st.when);
+    const issuesKnown = parts.find(p => p.k === 'issues').known;   // never call it hot before we know about repos, evictions or bankruptcies
+    const hot = score >= HOT.score && buying && issuesKnown && r.lane !== 'prep';
+    return { score, parts, est, hot, buying, lane: r.lane, known: parts.filter(p => p.known).length };
+  }
+  const k$ = v => v >= 1000 ? '$' + Math.round(v / 1000) + 'K' : money(v);
+  function meterHtml() {
+    const R = readiness(s), cls = R.score >= 70 ? 'hi' : R.score >= 40 ? 'mid' : 'lo';
+    return `<div class="meter ${cls}" title="${t('Guía del equipo con lo que sabemos hasta ahora. No es una aprobación.', 'Team guide based on what we know so far. Not an approval.')}">
+      <div class="mrow"><span class="mk">${t('Qué tan listo', 'Readiness')}</span><b class="mv">${R.score}%</b>
+        ${R.est ? `<span class="mest">${t('hasta ~', 'up to ~')}${k$(R.est)} <small>${t('(ejemplo)', '(example)')}</small></span>` : `<span class="mest muted">${t('falta el ingreso', 'needs income')}</span>`}
+        ${R.hot ? `<span class="mhot">🔥 ${t('Cliente caliente', 'Hot lead')}</span>` : ''}</div>
+      <div class="mtrack"><div class="mfill" style="width:${Math.max(2, R.score)}%"></div><i style="left:${HOT.score}%"></i></div></div>`;
+  }
+  function paintMeter() {
+    const m = $('#meter'); if (!m) return;
+    m.hidden = !(view === 'steps');
+    if (!m.hidden) m.innerHTML = meterHtml();
+    checkHot();
+  }
+
+  // ----- Hot lead: tell the agent and mark the client in Follow Up Boss -----
+  let toastTimer = null;
+  function toast(html, ms) {
+    const el = $('#hottoast'); el.innerHTML = html; el.classList.add('on');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), ms || 9000);
+  }
+  async function checkHot() {
+    if (view !== 'steps' && view !== 'result') return;
+    if (mode === 'view' || mode === 'example') return;
+    const R = readiness(s);
+    if (!R.hot || s.__hot) return;
+    s.__hot = mode === 'practice' ? 'practice' : 'pending';
+    const who = esc((s.c_name || t('Este cliente', 'This client')).split(' ')[0]);
+    if (mode === 'practice') { toast(`<b>🔥 ${t('Sería un cliente caliente', 'This would be a hot lead')} (${R.score}%)</b><span>${t('Práctica: no se cambia nada en Follow Up Boss.', 'Practice: nothing changes in Follow Up Boss.')}</span>`); return; }
+    toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${t('Marcándolo como Hot Prospect en Follow Up Boss…', 'Marking them Hot Prospect in Follow Up Boss…')}</span>`, 15000);
+    const phone = (s.c_phone || '').replace(/\D/g, ''), email = (s.c_email || '').trim();
+    if (phone.length < 10 && !email.includes('@')) { s.__hot = 'nocontact'; toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${t('Agrega su teléfono para marcarlo en Follow Up Boss. Al enviar se guarda como Hot Prospect.', 'Add their phone to mark them in Follow Up Boss. Sending saves them as Hot Prospect.')}</span>`, 15000); return; }
+    try {
+      const res = await api('/functions/v1/jag-screening-hot', { method: 'POST', body: JSON.stringify({ phone, email, score: R.score, est: R.est, screener: s.screener || '', lang: LANG }) });
+      const j = await res.json().catch(() => null);
+      if (!j || !j.ok) throw new Error((j && j.error) || 'error');
+      s.__hot = 'done'; s.__hotPid = j.person_id || null; saveDraft();
+      const link = j.person_id ? ` <a href="https://jasonhoustonrealty.followupboss.com/2/people/view/${encodeURIComponent(j.person_id)}" target="_blank" rel="noopener">${t('Ver en FUB', 'Open in FUB')}</a>` : '';
+      const msg = !j.found ? t('Todavía no está en Follow Up Boss: al enviar el screening se crea como Hot Prospect.', "Not in Follow Up Boss yet: sending the screening creates them as Hot Prospect.")
+        : j.changed ? t(`Listo: pasó de ${j.stage_before} a Hot Prospect en Follow Up Boss.`, `Done: moved from ${j.stage_before} to Hot Prospect in Follow Up Boss.`)
+        : t(`Ya está en la etapa ${j.stage_before}, así que no la cambié. Le agregué la etiqueta Hot lead.`, `Already at stage ${j.stage_before}, so I left it. I added the Hot lead tag.`);
+      toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${msg}${link}</span>`, 15000);
+    } catch (e) {
+      s.__hot = 'error';
+      toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${t('No pude marcarlo ahorita; al enviar el screening se guarda como Hot Prospect.', "Couldn't mark them right now; sending the screening saves them as Hot Prospect.")}</span>`, 15000);
+    }
   }
   // ----- Where coaching and Lola live: side rails on wide screens, a pop-up for Lola on smaller ones -----
   const WIDE = window.matchMedia('(min-width:1280px)');
@@ -845,6 +964,7 @@ body.fab #stage{margin-bottom:110px}
     if (idx < 0) { renderStart(); return; }
     show('steps');
     const st = steps[idx];
+    if (['money', 'other_home', 'link', 'wrap'].includes(st.id)) s.__debtsSeen = true;
     $('#fill').style.width = Math.max(3, Math.round((idx + 1) / (steps.length + 1) * 100)) + '%';
     $('#pct').textContent = t(`${idx + 1} de ${steps.length}`, `${idx + 1} of ${steps.length}`);
     $('#sect').textContent = tx(st.sect);
@@ -869,7 +989,7 @@ body.fab #stage{margin-bottom:110px}
     }
     stage.innerHTML = `<div class="step"><h2 class="q">${esc(tx(st.q))}</h2>${sayHtml(st.say)}${st.help ? `<p class="helper">${esc(tx(st.help))}</p>` : ''}${tipHtml(st.tip)}${body}<p class="msg" id="msg"></p>${lolaHtml(st.id)}${coachHtml(st)}</div>`;
     if (mode === 'practice') stage.insertAdjacentHTML('afterbegin', `<p class="helper" style="margin:0 0 10px 2px;font-weight:700;color:var(--accent)">${t('Práctica · no se envía', 'Practice · nothing is sent')}</p>`);
-    bindFields(); bindCoach(); bindLola(); placeAside();
+    bindFields(); bindCoach(); bindLola(); placeAside(); paintMeter();
     stage.querySelectorAll('.opt').forEach(b => b.onclick = () => choose(st, b.dataset.k, b.dataset.v));
     const nx = $('#nx'); if (nx) nx.onclick = () => next(st);
     const f = stage.querySelector('.opt, input, textarea'); if (f && st.kind !== 'info') f.focus({ preventScroll: true });
@@ -901,7 +1021,7 @@ body.fab #stage{margin-bottom:110px}
   }
   function go(d) { idx += d; s.__idx = idx; saveDraft(); renderStep(); }
   function bindFields() { stage.querySelectorAll('[data-f]').forEach(el => el.addEventListener('input', () => { s[el.dataset.f] = el.value; changed(); })); }
-  function changed() { $('#badge').hidden = view !== 'steps' && view !== 'result'; setBadge(evaluate(s)); saveDraft(); refreshLola(); }
+  function changed() { $('#badge').hidden = view !== 'steps' && view !== 'result'; setBadge(evaluate(s)); saveDraft(); refreshLola(); paintMeter(); }
   $('#back').onclick = () => go(-1);
   $('#home').onclick = () => renderStart();
 
@@ -1001,6 +1121,7 @@ body.fab #stage{margin-bottom:110px}
     out += `${t('Deudas', 'Debts')} ${money(r.debts)}${t('/mes', '/mo')}//${t('Ahorro', 'Savings')} ${money(r.savings)}` + (r.price ? `//${t('Precio en mente', 'Price in mind')} ${money(r.price)}` : '') + (st.area ? `//${t('Área', 'Area')}: ${st.area}` : '') + (st.when ? `//${t('Compra', 'Buying')}: ${o(st.when)}` : '') + '\n';
     const flags = r.sig.filter(x => x.lvl === 'prep' || x.lvl === 'rev').map(x => x.t);
     if (flags.length) out += t('Revisar: ', 'Review: ') + flags.join(' | ') + '\n';
+    { const R = readiness(st); out += t('Qué tan listo: ', 'Readiness: ') + R.score + '%' + (R.est ? t(' · podría comprar hasta ~', ' · could buy up to ~') + money(R.est) + t(' (ejemplo, 43% DTI)', ' (example, 43% DTI)') : '') + (R.hot ? t(' · 🔥 CLIENTE CALIENTE', ' · 🔥 HOT LEAD') : '') + '\n'; }
     out += t('Enlace: ', 'Link: ') + (o(st.link) || t('sin dato', 'unknown')) + (st.follow ? ` · ${t('Seguimiento', 'Follow-up')}: ${fmtDT(st.follow)}` : '') + '\n@Katherine Fernandez';
     return out;
   }
@@ -1016,6 +1137,7 @@ body.fab #stage{margin-bottom:110px}
     const banner = mode === 'practice' ? `<div class="infocard"><div><b>${t('Práctica', 'Practice')}</b><p>${t('Nada de esto se guarda ni se manda a Follow Up Boss. Toca "Nueva llamada" cuando tengas un cliente real.', 'None of this is saved or sent to Follow Up Boss. Tap "New call" when you have a real client.')}</p></div></div>` : mode === 'example' ? `<div class="infocard"><div><b>${t('Ejemplo', 'Example')}</b><p>${t('Este cliente es inventado para que veas el resultado. Toca "Nueva llamada" para empezar uno real.', 'This client is made up so you can see the result. Tap "New call" to start a real one.')}</p></div></div>` : mode === 'view' && current ? `<div class="infocard"><div><b>${t('Screening guardado', 'Saved screening')}</b><p>${t('Enviado el ', 'Sent on ')}${esc(new Date(current.created_at).toLocaleString(locale(), { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}${current.screener ? ' · ' + esc(current.screener) : ''}. ${t('Puedes guardar su PDF o copiar la nota. Si corriges una respuesta se guarda como un screening nuevo.', 'You can save its PDF or copy the note. Fixing an answer saves it as a new screening.')}</p></div></div>` : '';
     const nums = [[t('Ingreso declarado', 'Reported income'), r.monthly ? money(r.monthly) + t(' al mes', ' a month') : '—'], [t('Deudas', 'Debts'), money(r.debts) + t(' al mes', ' a month')], [t('Deudas / ingreso', 'Debts / income'), r.monthly ? Math.round(r.debts / r.monthly * 100) + '%' : '—'], [t('Ahorro', 'Savings'), money(r.savings)]];
     if (r.price) nums.push([t('Precio en mente', 'Price in mind'), money(r.price)]);
+    { const R = readiness(s); nums.unshift([t('Qué tan listo (guía)', 'Readiness (guide)'), R.score + '%' + (R.est ? t(' · hasta ~', ' · up to ~') + k$(R.est) : '') + (R.hot ? ' · 🔥' : '')]); }
     const sections = [...new Map(active().map(x => [tx(x.sect), x.sect])).entries()];
     stage.innerHTML = `<div class="step">${banner}
       <h1 class="title">${esc(s.c_name || t('Cliente', 'Client'))}</h1>
@@ -1031,7 +1153,7 @@ body.fab #stage{margin-bottom:110px}
       <p class="msg" id="msg"></p>
       <div class="box" style="margin-top:22px"><h3>${t('Corregir una respuesta', 'Fix an answer')}</h3><div class="edits">${sections.map(([label], i) => `<button class="chip" type="button" data-si="${i}">${esc(label)}</button>`).join('')}</div></div>
       <div class="btnrow"><button class="ghost" type="button" id="newcall">${t('Nueva llamada', 'New call')}</button></div></div>`;
-    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; placeAside(); paintFub(); bindCalc(); bindLola();
+    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; placeAside(); checkHot(); paintFub(); bindCalc(); bindLola();
     stage.querySelectorAll('[data-si]').forEach(b => b.onclick = () => { if (mode === 'example') mode = 'live'; if (mode === 'view') { mode = 'live'; current = null; } const lab = sections[+b.dataset.si][0]; idx = active().findIndex(x => tx(x.sect) === lab); renderStep(); });
     saveDraft();
   }
@@ -1073,6 +1195,7 @@ body.fab #stage{margin-bottom:110px}
     r.sig.forEach(x => { const c = x.lvl === 'prep' ? [47, 93, 158] : x.lvl === 'rev' ? [138, 106, 18] : x.lvl === 'ok' ? [29, 122, 63] : [163, 162, 172]; ensure(16); doc.setFillColor(...c); doc.circle(M + 4, y - 3.5, 3, 'F'); para(x.t); });
     if (r.missing.length) para(t('Falta preguntar: ', 'Still to ask: ') + r.missing.join(', ') + '.', mut);
     y += 6; sec(t('Números aproximados', 'Approximate numbers'));
+    { const R = readiness(s); kv(t('Qué tan listo (guía del equipo)', 'Readiness (team guide)'), R.score + '%' + (R.est ? t(' · hasta ~', ' · up to ~') + money(R.est) + t(' (ejemplo)', ' (example)') : '') + (R.hot ? t(' · cliente caliente', ' · hot lead') : '')); }
     kv(t('Ingreso declarado', 'Reported income'), r.monthly ? money(r.monthly) + t(' al mes', ' a month') : '—'); kv(t('Deudas mensuales', 'Monthly debts'), money(r.debts)); kv(t('Deudas / ingreso', 'Debts / income'), r.monthly ? Math.round(r.debts / r.monthly * 100) + '%' : '—'); kv(t('Ahorro disponible', 'Savings available'), money(r.savings)); kv(t('Precio en mente', 'Price in mind'), r.price ? money(r.price) : '');
     y += 6; sec(t('Lo que busca', 'What they want'));
     kv(t('Interés', 'Interest'), o(st.intent)); kv(t('Primera casa', 'First home'), o(st.first)); kv(t('Cuándo', 'When'), o(st.when)); kv(t('Área', 'Area'), st.area); kv(t('Aplica', 'Applying'), o(st.who) + (st.p2_rel ? ' (' + st.p2_rel + ')' : '')); kv(t('Otra casa a su nombre', 'Owns another home'), o(st.other_home));
@@ -1211,7 +1334,7 @@ body.fab #stage{margin-bottom:110px}
   function fubBox() {
     if (!current) return '';
     const st = current.fub_status;
-    if (st === 'sent') return `<div class="notecard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>${current.fub_created ? t('Cliente nuevo creado en Follow Up Boss', 'New client created in Follow Up Boss') : t('Registrado en el cliente que ya estaba en Follow Up Boss', 'Logged on the client already in Follow Up Boss')}</b><br>${current.fub_created ? t('Sin agente asignado, en el pond Calls, etapa Applied. ', 'Unassigned, in the Calls pond, stage Applied. ') : ''}${t('Con nota, etiquetas y tarea de seguimiento si pusiste fecha. ', 'With the note, tags, and a follow-up task if you set a date. ')}<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/${encodeURIComponent(current.fub_person_id)}" target="_blank" rel="noopener">${t('Abrir en Follow Up Boss', 'Open in Follow Up Boss')}</a></div></div>`;
+    if (st === 'sent') return `<div class="notecard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>${current.fub_created ? t('Cliente nuevo creado en Follow Up Boss', 'New client created in Follow Up Boss') : t('Registrado en el cliente que ya estaba en Follow Up Boss', 'Logged on the client already in Follow Up Boss')}</b><br>${current.fub_created ? (current.hot ? t('Sin agente asignado, en el pond Calls, etapa Hot Prospect 🔥. ', 'Unassigned, in the Calls pond, stage Hot Prospect 🔥. ') : t('Sin agente asignado, en el pond Calls, etapa Applied. ', 'Unassigned, in the Calls pond, stage Applied. ')) : (current.hot ? t('Marcado como cliente caliente. ', 'Marked as a hot lead. ') : '')}${t('Con nota, etiquetas y tarea de seguimiento si pusiste fecha. ', 'With the note, tags, and a follow-up task if you set a date. ')}<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/${encodeURIComponent(current.fub_person_id)}" target="_blank" rel="noopener">${t('Abrir en Follow Up Boss', 'Open in Follow Up Boss')}</a></div></div>`;
     if (st === 'error') return `<div class="infocard"><div><b>${t('Guardado, pero no entró a Follow Up Boss', "Saved, but it didn't reach Follow Up Boss")}</b><p>${esc(current.fub_error || '')}</p><button class="chip" type="button" id="retry" style="margin-top:8px">${t('Reintentar', 'Try again')}</button></div></div>`;
     return `<div class="infocard"><div><b>${t('Registrando en Follow Up Boss…', 'Logging in Follow Up Boss…')}</b></div></div>`;
   }
@@ -1234,7 +1357,7 @@ body.fab #stage{margin-bottom:110px}
     try {
       const res = await api('/rest/v1/jag_screenings', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify({
         screener: s.screener || '', client_name: s.c_name || '', phone: s.c_phone || null, email: (s.c_email || '').trim() || null, lang: LANG, lane: r.lane,
-        answers, reasons: r.sig.filter(x => x.lvl !== 'ok').map(x => x.t), missing: r.missing, note: fubNote(s, r), follow_at: follow }) });
+        answers, reasons: r.sig.filter(x => x.lvl !== 'ok').map(x => x.t), missing: r.missing, note: fubNote(s, r), follow_at: follow, score: readiness(s).score, hot: readiness(s).hot, est_max: readiness(s).est || null }) });
       if (!res.ok) throw new Error(res.status === 401 || res.status === 403 ? 'auth' : 'save');
       current = (await res.json())[0];
       try { localStorage.setItem('jag-screener-caller', s.screener || ''); } catch (e) {}
