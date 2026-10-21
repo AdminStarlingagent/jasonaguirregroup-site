@@ -198,6 +198,40 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
 .lola-fine{margin:6px 0 0;font-size:11.5px;color:var(--mut)}
 .lola-dots::after{content:'…';animation:lolaDots 1.2s steps(3) infinite}
 @keyframes lolaDots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
+/* side rails: "why we ask" on the left, Lola on the right (wide screens); Lola as a pop-up on smaller screens */
+#railL,#railR{display:none}
+@media (min-width:1280px){
+  body.rails #railL,body.rails #railR{display:block;position:fixed;top:112px;width:min(340px,calc(50vw - 305px - 48px));max-height:calc(100vh - 128px);overflow:auto;overscroll-behavior:contain;padding:0 4px 16px;scrollbar-width:thin}
+  body.rails #railL{right:calc(50% + 305px + 36px)}
+  body.rails #railR{left:calc(50% + 305px + 36px)}
+  #railL .rail-h{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin:4px 2px 10px}
+  #railL .coach{margin:0 0 14px;background:#fff}
+  #railL .coach summary{pointer-events:none;padding-bottom:8px}
+  #railL .coach summary::after{display:none}
+  #railL .infocard{margin:0 0 14px}
+  #railR .lola{margin:0;box-shadow:3px 3px 0 var(--ink)}
+  #railR .lola-form{position:sticky;bottom:-12px;background:#fff;padding:8px 0 4px}
+}
+#lolaFab{display:none;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;align-items:center;gap:8px;border:1.5px solid var(--ink);background:#fff;border-radius:999px;padding:6px 14px 6px 6px;font:inherit;font-size:14px;font-weight:800;color:var(--ink);box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+#lolaFab .av{width:34px;height:34px;border-radius:50%;background:var(--card);display:grid;place-items:center;overflow:hidden}
+#lolaFab .av svg{width:28px;height:28px}
+#lolaFab .n{min-width:20px;height:20px;border-radius:10px;background:var(--accent);color:#fff;font-size:11.5px;display:grid;place-items:center;padding:0 6px}
+#lolaFab .n:empty{display:none}
+#lolaFab.bump{animation:lolaBump .5s}
+@keyframes lolaBump{30%{transform:translateY(-6px)}60%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){#lolaFab.bump{animation:none}}
+body.fab #lolaFab{display:inline-flex}
+#lolaSheet{position:fixed;inset:auto 0 0 0;z-index:70;max-height:78vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.18);padding:10px 14px calc(14px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .22s ease;visibility:hidden}
+#lolaSheet.on{transform:none;visibility:visible}
+#lolaSheet .grab{display:flex;justify-content:space-between;align-items:center;margin:0 0 6px}
+#lolaSheet .grab span{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto}
+#lolaSheet .x{border:0;background:var(--card);border-radius:999px;width:34px;height:34px;font-size:20px;line-height:1;cursor:pointer}
+#lolaSheet .lola{margin:0;border:0;box-shadow:none;padding:4px 0 0}
+#lolaSheet .lola-form{position:sticky;bottom:-14px;background:#fff;padding:8px 0 6px}
+#lolaShade{position:fixed;inset:0;z-index:65;background:rgba(15,14,20,.35);display:none}
+#lolaShade.on{display:block}
+@media (min-width:1280px){body.rails #lolaFab{display:none}}
+body.fab #stage{margin-bottom:110px}
 </style>
 
 <script src="jag-capture.js?v=3"></script>
@@ -231,6 +265,11 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
   </div>
 
   <main id="stage" aria-live="polite"></main>
+  <aside id="railL" aria-label="Por qué preguntamos esto"></aside>
+  <aside id="railR" aria-label="Lola"></aside>
+  <button type="button" id="lolaFab" aria-haspopup="dialog" aria-controls="lolaSheet"><span class="av" id="lolaFabAv"></span><span id="lolaFabT">Lola</span><span class="n" id="lolaFabN"></span></button>
+  <div id="lolaShade"></div>
+  <div id="lolaSheet" role="dialog" aria-modal="true" aria-label="Lola"><div class="grab"><span></span><button type="button" class="x" id="lolaX" aria-label="Cerrar">×</button></div><div id="lolaSheetBody"></div></div>
   <footer class="legal" id="foot"></footer>
 </div>
 
@@ -648,7 +687,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       ${stepId !== undefined && rest.length ? `<button type="button" class="lola-link" id="lola-more">${lolaOpen ? t('Ver menos', 'Show less') : t(`Ver ${rest.length} más`, `Show ${rest.length} more`)}</button><div class="lola-rest" ${lolaOpen ? '' : 'hidden'}>${rest.map(tipHtml1).join('')}</div>` : ''}
       ${nxt ? `<p class="lola-next"><span>${t('Después', 'Next')}</span>${esc(tx(nxt.q))}</p>` : ''}
       <div class="lola-ai">${lolaAI.map(x => `<div class="lola-qa"><p class="q">${esc(x.q)}</p><p class="a">${x.a == null ? `<span class="lola-dots">${t('Lola está pensando', 'Lola is thinking')}</span>` : esc(x.a)}</p></div>`).join('')}
-        <form class="lola-form" id="lola-form"><input id="lola-q" type="text" maxlength="400" autocomplete="off" placeholder="${t('Pregúntale a Lola, por ej. "su esposo tiene ITIN, ¿qué pregunto?"', 'Ask Lola, e.g. "her husband has an ITIN, what do I ask?"')}"><button type="submit" aria-label="${t('Preguntar', 'Ask')}">${t('Preguntar', 'Ask')}</button></form>
+        <form class="lola-form" id="lola-form"><input id="lola-q" type="text" maxlength="400" autocomplete="off" placeholder="${t('Pregúntale a Lola…', 'Ask Lola…')}" title="${t('Ej.: su esposo tiene ITIN, ¿qué pregunto?', 'E.g.: her husband has an ITIN, what do I ask?')}"><button type="submit" aria-label="${t('Preguntar', 'Ask')}">${t('Preguntar', 'Ask')}</button></form>
         <p class="lola-fine">${t('Lola usa IA para estas preguntas. No escribas nombres, teléfonos ni números de seguro social.', 'Lola uses AI for these questions. Don\'t type names, phone numbers or Social Security numbers.')}</p></div>
     </div>`;
   }
@@ -658,12 +697,53 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     const m = $('#lola-more'); if (m) m.onclick = () => { lolaOpen = !lolaOpen; refreshLola(); };
     const f = $('#lola-form'); if (f) f.onsubmit = e => { e.preventDefault(); askLola(); };
   }
+  // ----- Where coaching and Lola live: side rails on wide screens, a pop-up for Lola on smaller ones -----
+  const WIDE = window.matchMedia('(min-width:1280px)');
+  let sheetOpen = false, lastTipCount = -1;
+  function placeAside() {
+    const L = $('#railL'), R = $('#railR'), body = $('#lolaSheetBody');
+    L.innerHTML = ''; R.innerHTML = '';
+    const fresh = stage.querySelector('#lola');
+    if (fresh) body.innerHTML = '';
+    const lola = fresh || body.querySelector('#lola') || null;
+    const coach = stage.querySelector('details.coach:not(.calcx)'), tip = stage.querySelector('.tipcard');
+    const active = view === 'steps' || view === 'result';
+    document.body.classList.toggle('rails', active && WIDE.matches);
+    document.body.classList.toggle('fab', active && !WIDE.matches && !!lola);
+    if (!active) { body.innerHTML = ''; closeSheet(); return; }
+    if (WIDE.matches) {
+      closeSheet();
+      if (view === 'steps' && (coach || tip)) {
+        L.insertAdjacentHTML('beforeend', `<p class="rail-h">${t('Para ti', 'For you')}</p>`);
+        if (tip) L.appendChild(tip);
+        if (coach) { coach.open = true; L.appendChild(coach); }
+      }
+      if (lola) R.appendChild(lola);
+    } else {
+      if (lola) body.appendChild(lola);
+    }
+    paintFab();
+  }
+  function paintFab() {
+    const n = (view === 'steps' || view === 'result') ? lolaRank(lolaTips(s, evaluate(s)), '').length : 0;
+    $('#lolaFabAv').innerHTML = LOLA_SVG;
+    $('#lolaFabT').textContent = t('Lola', 'Lola');
+    $('#lolaFabN').textContent = n ? String(n) : '';
+    if (lastTipCount >= 0 && n > lastTipCount) { const f = $('#lolaFab'); f.classList.remove('bump'); void f.offsetWidth; f.classList.add('bump'); }
+    lastTipCount = n;
+  }
+  function openSheet() { sheetOpen = true; $('#lolaSheet').classList.add('on'); $('#lolaShade').classList.add('on'); $('#lolaFab').setAttribute('aria-expanded', 'true'); }
+  function closeSheet() { sheetOpen = false; $('#lolaSheet').classList.remove('on'); $('#lolaShade').classList.remove('on'); $('#lolaFab').setAttribute('aria-expanded', 'false'); }
+  $('#lolaFab').onclick = () => sheetOpen ? closeSheet() : openSheet();
+  $('#lolaX').onclick = closeSheet; $('#lolaShade').onclick = closeSheet;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetOpen) closeSheet(); });
+  (WIDE.addEventListener ? WIDE.addEventListener('change', placeAside) : WIDE.addListener(placeAside));
   function refreshLola(keepFocus) {
     const box = $('#lola'); if (!box) return;
     const typed = $('#lola-q') ? $('#lola-q').value : '';
     const sid = box.dataset.step; box.innerHTML = lolaInner(sid || (view === 'result' ? undefined : sid));
     if ($('#lola-q')) { $('#lola-q').value = typed; if (keepFocus) $('#lola-q').focus(); }
-    bindLola();
+    bindLola(); paintFab();
   }
   function lolaContext() {
     const skip = /^(c_name|c_phone|c_email|notes|screener|p2_rel|follow|__)/;
@@ -686,7 +766,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
 
   // ===== Render helpers =====
   const sayHtml = v => v ? `<div class="say"><span class="k">${t('Dilo así', 'Say it like this')}</span><div class="bub">"${esc(tx(v))}"</div></div>` : '';
-  const tipHtml = v => v ? `<div class="infocard"><div><b>${esc(tx(v[0]))}</b><p>${esc(tx(v[1]))}</p></div></div>` : '';
+  const tipHtml = v => v ? `<div class="infocard tipcard"><div><b>${esc(tx(v[0]))}</b><p>${esc(tx(v[1]))}</p></div></div>` : '';
   const optHtml = (key, val, multi) => {
     const sel = multi ? (s[key] || []).includes(val) : s[key] === val;
     const sub = SUB[val] ? `<span class="sub">${esc(tx(SUB[val]))}</span>` : '';
@@ -716,6 +796,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
 
   function show(v) {
     view = v;
+    if (v !== 'steps' && v !== 'result') { document.body.classList.remove('rails', 'fab'); $('#railL').innerHTML = ''; $('#railR').innerHTML = ''; $('#lolaSheetBody').innerHTML = ''; closeSheet(); }
     $('#prog').hidden = v !== 'steps';
     const started = Object.keys(s).some(k => k !== 'screener' && s[k] !== '' && s[k] != null);
     $('#badge').hidden = !(started && (v === 'steps' || v === 'result'));
@@ -788,7 +869,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     }
     stage.innerHTML = `<div class="step"><h2 class="q">${esc(tx(st.q))}</h2>${sayHtml(st.say)}${st.help ? `<p class="helper">${esc(tx(st.help))}</p>` : ''}${tipHtml(st.tip)}${body}<p class="msg" id="msg"></p>${lolaHtml(st.id)}${coachHtml(st)}</div>`;
     if (mode === 'practice') stage.insertAdjacentHTML('afterbegin', `<p class="helper" style="margin:0 0 10px 2px;font-weight:700;color:var(--accent)">${t('Práctica · no se envía', 'Practice · nothing is sent')}</p>`);
-    bindFields(); bindCoach(); bindLola();
+    bindFields(); bindCoach(); bindLola(); placeAside();
     stage.querySelectorAll('.opt').forEach(b => b.onclick = () => choose(st, b.dataset.k, b.dataset.v));
     const nx = $('#nx'); if (nx) nx.onclick = () => next(st);
     const f = stage.querySelector('.opt, input, textarea'); if (f && st.kind !== 'info') f.focus({ preventScroll: true });
@@ -950,7 +1031,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       <p class="msg" id="msg"></p>
       <div class="box" style="margin-top:22px"><h3>${t('Corregir una respuesta', 'Fix an answer')}</h3><div class="edits">${sections.map(([label], i) => `<button class="chip" type="button" data-si="${i}">${esc(label)}</button>`).join('')}</div></div>
       <div class="btnrow"><button class="ghost" type="button" id="newcall">${t('Nueva llamada', 'New call')}</button></div></div>`;
-    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; paintFub(); bindCalc(); bindLola();
+    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; placeAside(); paintFub(); bindCalc(); bindLola();
     stage.querySelectorAll('[data-si]').forEach(b => b.onclick = () => { if (mode === 'example') mode = 'live'; if (mode === 'view') { mode = 'live'; current = null; } const lab = sections[+b.dataset.si][0]; idx = active().findIndex(x => tx(x.sect) === lab); renderStep(); });
     saveDraft();
   }
