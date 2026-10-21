@@ -152,6 +152,26 @@ ul.reasons .dot{width:9px;height:9px;border-radius:50%;margin-top:6px}
 .empty{border:1.5px dashed var(--line);border-radius:16px;padding:30px 20px;text-align:center;color:var(--mut);font-size:15px;line-height:1.55}
 footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5px;color:#8a8992;line-height:1.65}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* coaching for new agents */
+.coach{border:1px solid var(--line);border-radius:14px;margin:18px 0 6px;background:#fff}
+.coach summary{cursor:pointer;list-style:none;padding:14px 16px;font-size:14.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:10px}
+.coach summary::-webkit-details-marker{display:none}
+.coach summary::before{content:"";width:22px;height:22px;flex:none;border-radius:50%;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317161c' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M12 8v.01M12 11v5'/%3E%3C/svg%3E") center/16px no-repeat}
+.coach summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg) translateY(-3px);transition:transform .15s}
+.coach[open] summary::after{transform:rotate(225deg) translateY(-2px)}
+.coach .cbody{padding:0 16px 16px;font-size:14.5px;line-height:1.55;color:#2c2b33}
+.coach .cbody>p{margin:0 0 12px}
+.coach .ck{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:14px 0 6px}
+.coach .cf{background:var(--card);border-radius:12px;padding:2px 14px 12px;margin:0 0 10px}
+.coach .cf p{margin:0 0 6px}
+.coach .cf.story{background:var(--ok-bg)} .coach .cf.story .ck{color:var(--ok)}
+.coach .csrc{font-size:12px;color:var(--mut)}
+.coach .cqa{border-left:3px solid var(--line);padding:2px 0 2px 12px;margin:0 0 12px}
+.coach .cq{margin:0 0 4px;font-weight:700}
+.coach .ca{margin:0;color:#3a3942}
+.calc .cprog{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.calc .recap .tot{border-bottom:2px solid var(--ink)} .calc .recap .tot span,.calc .recap .tot b{color:var(--ink);font-weight:800}
+.calc .say{margin:0 0 16px}
 </style>
 
 <script src="jag-capture.js?v=3"></script>
@@ -267,6 +287,254 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
   ];
   const active = () => STEPS.filter(st => !st.when || st.when(s));
 
+  // ===== Coaching for new agents: why we ask each question and what to say if the client asks =====
+  // Keyed by step id (p1_/p2_ prefix removed). Stats carry their source; stories are real JAG clients, without names.
+  const SRC_NB = ['Neighbors Bank, encuesta a 1,011 inquilinos (2026)', 'Neighbors Bank survey of 1,011 renters (2026)'];
+  const SRC_FM = ['Fannie Mae, estudio de 3,000 personas (2019)', 'Fannie Mae study of 3,000 consumers (2019)'];
+  const COACH = {
+    source: {
+      why: ['Saber de dónde llegó te dice qué vio el cliente (un video, un anuncio, un amigo) y cómo empezar la plática. También le dice al equipo qué publicidad está funcionando.',
+            'Knowing where they came from tells you what the client saw (a video, an ad, a friend) and how to open the conversation. It also tells the team which marketing is working.'],
+      qa: [[['¿Por qué me están llamando?', 'Why are you calling me?'],
+             ['Usted nos dejó sus datos para recibir información sobre cómo comprar casa. Le llamo para explicarle cómo funciona y ver qué opciones tiene.', 'You left us your info to learn about buying a home. I\'m calling to explain how it works and see what options you have.']]]
+    },
+    intent: {
+      why: ['Hay clientes listos para comprar y otros que solo quieren entender. Los dos son buenos clientes; solo cambia el ritmo. Al que solo quiere información no lo presionamos: le damos seguimiento con fecha.',
+            'Some clients are ready to buy and some just want to understand. Both are good clients; only the pace changes. We never pressure someone who just wants information: we follow up on a set date.'],
+      qa: [[['¿Esto me compromete a algo?', 'Does this commit me to anything?'],
+             ['No. Esta llamada es solo para conocer su caso y explicarle. Usted decide si sigue.', 'No. This call is just to learn about your situation and explain. You decide whether to move forward.']]]
+    },
+    first: {
+      why: ['Para compradores de primera vez hay programas de ayuda para el enganche, y les explicamos todo desde cero. Si ya tuvo casa, preguntamos si todavía es suya, porque eso cambia los programas.',
+            'First-time buyers can get down payment assistance programs, and we explain everything from the start. If they owned before, we ask if they still own it, because that changes the programs.'],
+      fact: [['84% de los inquilinos de ingreso medio cree que necesita más enganche del que realmente se pide, y 55% cree que necesita 20%.', '84% of moderate-income renters overestimate the down payment they need, and 55% think they need 20%.'], SRC_NB],
+      qa: [[['Tuve casa hace muchos años, ¿cuento como primera vez?', 'I owned a home years ago. Do I count as a first-time buyer?'],
+             ['En muchos programas, si no ha tenido casa en los últimos 3 años, cuenta como primera vez. El especialista le confirma cuáles le aplican.', 'For many programs, if you haven\'t owned a home in the last 3 years, you count as first-time. The loan specialist confirms which ones apply.']]]
+    },
+    when: {
+      why: ['El tiempo te dice la urgencia y cuándo dar seguimiento. El área importa porque en Houston los impuestos cambian mucho de zona a zona (distrito escolar y MUD), y eso cambia el pago mensual.',
+            'Timing tells you how urgent it is and when to follow up. The area matters because Houston property taxes vary a lot by school district and MUD, which changes the monthly payment.'],
+      qa: [[['¿Y si todavía no estoy listo?', 'What if I\'m not ready yet?'],
+             ['No pasa nada. Muchos clientes empiezan 6 a 12 meses antes. Así sabe qué preparar y cuando llegue el momento ya está listo.', 'That\'s fine. Many clients start 6 to 12 months ahead. That way you know what to prepare, and you\'re ready when the time comes.']]]
+    },
+    reqs: {
+      why: ['Explicar los 5 requisitos primero quita los nervios: el cliente entiende que no es un examen y él mismo te dice dónde está. Muchos creen que no califican sin haber preguntado nunca.',
+            'Explaining the 5 requirements first takes the pressure off: the client sees it isn\'t a test and tells you where they stand. Many people assume they can\'t qualify without ever asking.'],
+      fact: [['Solo 11% de las personas sabía que hay préstamos desde un crédito de 580, y 94% de los inquilinos no sabía que FHA permite 3.5% de enganche con 580 o más.', 'Only 11% of people knew loans start at a 580 credit score, and 94% of renters didn\'t know FHA allows 3.5% down with a 580 or higher.'], [SRC_FM[0] + ' · ' + SRC_NB[0], SRC_FM[1] + ' · ' + SRC_NB[1]]],
+      qa: [[['¿Necesito 20% de enganche?', 'Do I need 20% down?'],
+             ['No. Hay programas desde 3.5% de enganche, y en algunos casos hay ayuda para el enganche. El especialista le dice cuáles le aplican.', 'No. Some programs start at 3.5% down, and sometimes there is down payment assistance. The loan specialist will tell you which ones apply.']],
+           [['¿Me van a revisar el crédito ahorita?', 'Are you checking my credit right now?'],
+             ['No. En esta llamada no revisamos nada. Eso se hace después y solo con su permiso.', 'No. We don\'t check anything on this call. That happens later and only with your permission.']]]
+    },
+    who: {
+      why: ['Muchas familias califican juntas aunque solas no. Un hijo, hija, hermano o papá con seguro social y taxes puede aplicar con el cliente y sumar su ingreso. Por eso siempre preguntamos si alguien más en casa trabaja y declara.',
+            'Many families qualify together even when one person alone can\'t. A son, daughter, sibling or parent with a Social Security number and tax returns can apply with the client and add their income. That\'s why we always ask if anyone else at home works and files taxes.'],
+      stories: [
+        ['Una mamá aplicó con su hijo y su hija, los dos con seguro social (unos $50,000 y $47,000 al año). Los aprobaron el mismo día y a la semana estaban bajo contrato en una casa nueva.', 'A mom applied with her son and daughter, both with Social Security numbers (about $50,000 and $47,000 a year). They were approved the same day and under contract on a new build within a week.'],
+        ['Los papás tenían ITIN. El papá aplicó con su hijo, que tiene seguro social y gana unos $30,000 al año con W-2, y la familia cerró su casa.', 'Both parents had ITINs. The dad applied with his son, who has a Social Security number and earns about $30,000 a year on a W-2, and the family closed on their home.'],
+        ['Un cliente le compró a sus hermanos la casa de sus papás donde ya vivía, con un regalo de equity de la familia.', 'A client bought his parents\' house, where he already lived, from his siblings with a gift of equity from the family.']
+      ],
+      qa: [[['¿Mi hijo tiene que vivir en la casa?', 'Does my son have to live in the house?'],
+             ['Depende del programa. En algunos, un familiar puede aplicar aunque no viva ahí; en otros sí tiene que vivir ahí. El especialista le explica cuál le conviene.', 'It depends on the program. In some, a relative can apply without living there; in others they must live there. The loan specialist will explain which fits best.']],
+           [['¿Le afecta el crédito a mi hijo?', 'Does it affect my son\'s credit?'],
+             ['El préstamo aparece en el crédito de los dos y los dos son responsables del pago. Por eso conviene platicarlo en familia antes.', 'The loan shows on both credit reports and both are responsible for the payment. That\'s why it\'s good to talk it over as a family first.']]]
+    },
+    id: {
+      why: ['El tipo de número decide qué préstamos aplican. Con seguro social hay más programas (FHA, convencional). Con ITIN también se puede comprar, pero normalmente piden más enganche (10% a 20%) y la tasa es más alta. Nunca pidas el número por teléfono.',
+            'The type of number decides which loans apply. With a Social Security number there are more programs (FHA, conventional). With an ITIN they can still buy, but lenders usually ask for more down (10% to 20%) and the rate is higher. Never ask for the number on the phone.'],
+      qa: [[['¿Puedo comprar con ITIN?', 'Can I buy with an ITIN?'],
+             ['Sí, hay préstamos para ITIN. Normalmente piden más enganche, como 10% o más. El especialista le explica sus opciones, y si alguien de su familia tiene seguro social, a veces pueden aplicar juntos.', 'Yes, there are ITIN loans. They usually need more down, around 10% or more. The loan specialist will explain your options, and if someone in your family has a Social Security number, you may be able to apply together.']],
+           [['¿Por qué me pregunta eso?', 'Why do you ask?'],
+             ['Porque cada banco tiene programas distintos según el tipo de número. No necesito el número, solo saber cuál tiene.', 'Because lenders have different programs depending on the type of number. I don\'t need the number, just which one you have.']]]
+    },
+    status: {
+      why: ['El banco pide el estatus para saber qué programas aplican. Un permiso de trabajo se puede usar, pero el banco revisa las fechas de vencimiento. Pregúntalo con respeto y sin juzgar.',
+            'Lenders ask for status to know which programs apply. A work permit can be used, but the lender checks its expiration dates. Ask respectfully, without judgment.'],
+      qa: [[['¿Para qué necesitan saber eso?', 'Why do you need to know that?'],
+             ['Solo para ver qué programas le aplican. Cada uno tiene sus reglas y queremos mandarle al correcto.', 'Only to see which programs apply to you. Each has its own rules and we want to point you to the right one.']]]
+    },
+    inc: {
+      why: ['El banco solo cuenta el ingreso que aparece en los taxes. W-2 es lo más sencillo. Con 1099 o negocio propio cuenta la ganancia después de gastos. El cash que no se declara no cuenta, aunque sea mucho.',
+            'Lenders only count income that shows on tax returns. W-2 is simplest. For 1099 or self-employed, they count profit after expenses. Unreported cash doesn\'t count, no matter how much it is.'],
+      stories: [['Una señora que limpia casas, con ingreso 1099 y parte en cash, declaró sus taxes y la precalificaron hasta $275,000. Compró una casa nueva en Hockley.', 'A woman who cleans houses, with 1099 income and some cash, filed her taxes and was pre-qualified up to $275,000. She bought a new build in Hockley.']],
+      qa: [[['Me pagan cash, ¿eso no cuenta?', 'I get paid cash. Doesn\'t that count?'],
+             ['El banco solo puede contar lo que está en sus taxes. Si empieza a declararlo, ese ingreso empieza a contar. Podemos ayudarle a prepararse para comprar más adelante.', 'The lender can only count what\'s on your tax returns. Once you start reporting it, that income starts to count. We can help you get ready to buy down the road.']]]
+    },
+    tax: {
+      why: ['Casi todos los programas piden 2 años de taxes para ver que el ingreso es estable. Con 1 año a veces hay opciones, pero eso lo revisa Katherine.',
+            'Almost every program asks for 2 years of tax returns to show stable income. With 1 year there are sometimes options, but Katherine reviews that.'],
+      qa: [[['Debo taxes al IRS, ¿puedo comprar?', 'I owe the IRS. Can I still buy?'],
+             ['A veces sí, si tiene un plan de pagos con el IRS y va al corriente. El especialista lo revisa con usted.', 'Sometimes yes, if you have a payment plan with the IRS and you\'re current on it. The loan specialist will review it with you.']]]
+    },
+    tenure: {
+      why: ['El banco quiere ver ingreso estable, normalmente 2 años trabajando. Cambiar de compañía haciendo lo mismo está bien. Si lleva poco tiempo, pregunta qué hacía antes.',
+            'Lenders want stable income, usually 2 years of work. Changing companies doing the same work is fine. If it\'s been a short time, ask what they did before.'],
+      qa: [[['Acabo de cambiar de trabajo, ¿ya no califico?', 'I just changed jobs. Do I no longer qualify?'],
+             ['No necesariamente. Si hace el mismo tipo de trabajo, normalmente no hay problema. El especialista lo confirma.', 'Not necessarily. If it\'s the same kind of work, it\'s usually fine. The loan specialist will confirm.']]]
+    },
+    same: {
+      why: ['Si antes hacía el mismo tipo de trabajo, el banco cuenta todo el tiempo junto. Un tiempo sin trabajo puede necesitar una carta que lo explique.',
+            'If they did the same kind of work before, the lender counts all that time together. A gap without work may need a letter explaining it.'],
+      qa: [[['Estuve unos meses sin trabajar, ¿es malo?', 'I was out of work for a few months. Is that bad?'],
+             ['No siempre. A veces solo piden una carta explicando por qué. Katherine lo revisa con usted.', 'Not always. Sometimes they just ask for a letter explaining why. Katherine will go over it with you.']]]
+    },
+    pay: {
+      why: ['Con esto calculamos el ingreso mensual, que es la base de cuánto pago le cabe. Por hora: tarifa × horas × 52 semanas ÷ 12 meses.',
+            'This gives us monthly income, which sets how much payment they can afford. Hourly: rate × hours × 52 weeks ÷ 12 months.'],
+      qa: [[['¿Por qué quiere saber cuánto gano?', 'Why do you want to know how much I make?'],
+             ['Porque el banco calcula qué pago mensual es cómodo para usted según su ingreso. Así no le enseñamos casas fuera de su presupuesto.', 'Because the lender figures out what monthly payment is comfortable for you based on your income. That way we don\'t show you homes outside your budget.']]]
+    },
+    gross: {
+      why: ['Mucha gente con 1099 dice lo que cobra, no lo que le queda. El banco usa lo que queda después de gastos, así que esta pregunta evita que el cliente se ilusione con un número que el banco no va a ver.',
+            'Many 1099 workers quote what they bill, not what they keep. Lenders use what\'s left after expenses, so this question keeps the client from counting on a number the lender won\'t see.'],
+      qa: [[['Declaro poquito para pagar menos taxes, ¿importa?', 'I report low income to pay less tax. Does it matter?'],
+             ['Es muy común. Pero el banco solo ve lo que declara, así que puede calificar para menos casa. El especialista le explica cómo prepararse para el próximo año.', 'That\'s very common. But the lender only sees what you report, so you may qualify for less home. The loan specialist can explain how to prepare for next year.']]]
+    },
+    credit: {
+      why: ['El crédito decide si califica y qué tasa le dan. Hay programas desde 580. Si no sabe su puntaje está bien: es muy común.',
+            'Credit decides whether they qualify and what rate they get. Programs start at 580. If they don\'t know their score, that\'s fine; it\'s very common.'],
+      fact: [['Más del 40% de las personas no sabe su puntaje de crédito.', 'More than 40% of people don\'t know their credit score.'], SRC_FM],
+      qa: [[['No tengo crédito, ¿puedo comprar?', 'I have no credit. Can I buy?'],
+             ['Algunos programas aceptan otro historial, como renta, luz o teléfono. Si no, podemos ayudarle a empezar su crédito. El especialista le dice qué aplica.', 'Some programs accept other history, like rent, utilities or phone bills. If not, we can help you start building credit. The loan specialist will tell you what applies.']],
+           [['¿Me baja el crédito si me lo revisan?', 'Will a credit check lower my score?'],
+             ['En esta llamada no revisamos nada. Cuando el especialista lo revise, le explica antes y le pide permiso.', 'We don\'t check anything on this call. When the loan specialist does, they\'ll explain first and ask your permission.']]]
+    },
+    issues: {
+      why: ['Lo reciente pesa más que lo viejo. Una reposesión, desalojo o bancarrota tiene tiempos de espera. Saberlo ahora evita sorpresas y nos dice si el cliente va a la ruta de Preparación.',
+            'Recent items weigh more than old ones. A repossession, eviction or bankruptcy comes with waiting periods. Knowing now avoids surprises and tells us if the client belongs in the Prep route.'],
+      stories: [['Un hijo no pudo aplicar con su papá por pagos atrasados en su carro. La hija trabajó su crédito y la familia siguió adelante con ella.', 'A son couldn\'t apply with his dad because of late car payments. The daughter worked on her credit and the family moved forward with her instead.']],
+      qa: [[['Tengo una colección, ¿ya no puedo?', 'I have a collection. Does that rule me out?'],
+             ['No necesariamente. Depende de cuánto es y cuándo pasó. Katherine lo revisa con usted.', 'Not necessarily. It depends on the amount and when it happened. Katherine will review it with you.']]]
+    },
+    debts: {
+      why: ['El banco suma los pagos de deudas más el pago de la casa y lo compara con el ingreso. Entre más deudas, menos casa. Un carro a nombre de otra persona que el cliente paga sí cuenta.',
+            'Lenders add up debt payments plus the house payment and compare it to income. More debt means less house. A car in someone else\'s name that the client pays still counts.'],
+      qa: [[['Si termino de pagar mi carro, ¿me ayuda?', 'If I pay off my car, does that help?'],
+             ['Puede ayudar, pero no haga cambios grandes sin hablar con el especialista. A veces conviene más guardar ese dinero para el enganche.', 'It can, but don\'t make big moves without talking to the loan specialist. Sometimes it\'s better to keep that money for the down payment.']],
+           [['¿Puedo sacar un carro nuevo mientras tanto?', 'Can I get a new car in the meantime?'],
+             ['Mejor espere. Una deuda nueva puede bajar lo que califica o atrasar la compra.', 'Better to wait. New debt can lower what you qualify for or delay the purchase.']]]
+    },
+    money: {
+      why: ['Además del enganche hay gastos de cierre. El ahorro nos dice qué programa es realista. Un familiar puede regalar dinero para el enganche con una carta de regalo, y hay programas de ayuda.',
+            'Besides the down payment there are closing costs. Savings tell us which program is realistic. A relative can gift money for the down payment with a gift letter, and there are assistance programs.'],
+      qa: [[['¿Puedo usar dinero que me regala mi familia?', 'Can I use money my family gives me?'],
+             ['En muchos programas sí, con una carta de regalo y mostrando de dónde salió el dinero. El especialista le explica cómo.', 'In many programs, yes, with a gift letter and showing where the money came from. The loan specialist will explain how.']],
+           [['No tengo nada ahorrado.', 'I don\'t have anything saved.'],
+             ['Está bien decirlo. Hay programas de ayuda y podemos armar un plan. Lo importante es saber dónde está hoy.', 'That\'s okay. There are assistance programs and we can build a plan. What matters is knowing where you are today.']]]
+    },
+    other_home: {
+      why: ['Si ya tiene casa a su nombre, cambian los programas (por ejemplo, la ayuda de primer comprador) y el banco cuenta ese pago como deuda.',
+            'If they already own a home, the programs change (first-time buyer help, for example) and the lender counts that payment as debt.'],
+      qa: [[['Mi nombre está en la casa de mis papás.', 'My name is on my parents\' house.'],
+             ['Qué bueno que lo menciona. Katherine revisa cómo lo ve el banco y qué opciones quedan.', 'Good that you mention it. Katherine will check how the lender sees it and what options you have.']]]
+    },
+    link: {
+      why: ['El enlace es la evaluación donde el cliente pone sus datos completos. No revisa su crédito. Confirmar que le llegó mientras siguen en la llamada sube mucho la probabilidad de que lo llene.',
+            'The link is the evaluation where the client enters their full details. It doesn\'t pull credit. Confirming it arrived while you\'re still on the call makes them much more likely to fill it out.'],
+      qa: [[['¿Por qué no me lo pregunta usted por teléfono?', 'Why not just ask me on the phone?'],
+             ['Porque ahí pone datos personales que no pedimos por teléfono, como su número de seguro social. Así queda en su expediente con el equipo.', 'Because it asks for personal details we don\'t take over the phone, like your Social Security number. That way it goes straight to your file with our team.']]]
+    },
+    wrap: {
+      why: ['Poner día y hora de seguimiento hace que el cliente lo llene. Cuando envías el screening, Follow Up Boss te crea la tarea.',
+            'Setting a follow-up day and time gets clients to finish it. When you send the screening, Follow Up Boss creates the task for you.'],
+      qa: [[['No tengo tiempo de llenarlo.', 'I don\'t have time to fill it out.'],
+             ['Toma unos minutos. Si quiere, lo llenamos juntos por teléfono cuando tenga un rato.', 'It takes a few minutes. If you\'d like, we can fill it out together on the phone when you have a moment.']]]
+    }
+  };
+  const coachKey = id => id.replace(/^p[12]_/, '');
+  let coachOpen = false; try { coachOpen = localStorage.getItem('jag-screener-coach') === '1'; } catch (e) {}
+  function coachHtml(st) {
+    const c = COACH[coachKey(st.id)]; if (!c) return '';
+    const fact = c.fact ? `<div class="cf"><span class="ck">${t('Dato', 'Fact')}</span><p>${esc(tx(c.fact[0]))}</p><p class="csrc">${t('Fuente: ', 'Source: ')}${esc(tx(c.fact[1]))}</p></div>` : '';
+    const stories = c.stories ? `<div class="cf story"><span class="ck">${t('Casos reales del equipo', 'Real team cases')}</span>${c.stories.map(x => `<p>${esc(tx(x))}</p>`).join('')}</div>` : '';
+    const qa = (c.qa || []).map(([q, a]) => `<div class="cqa"><p class="cq">${esc(tx(q))}</p><p class="ca">"${esc(tx(a))}"</p></div>`).join('');
+    return `<details class="coach"${coachOpen ? ' open' : ''}><summary>${t('¿Por qué preguntamos esto?', 'Why do we ask this?')}</summary>
+      <div class="cbody"><p>${esc(tx(c.why))}</p>${fact}${stories}${qa ? `<span class="ck">${t('Si el cliente pregunta…', 'If the client asks…')}</span>${qa}` : ''}</div></details>`;
+  }
+  function bindCoach() {
+    const d = stage.querySelector('details.coach'); if (!d) return;
+    d.addEventListener('toggle', () => { coachOpen = d.open; try { localStorage.setItem('jag-screener-coach', coachOpen ? '1' : '0'); } catch (e) {} });
+  }
+
+  // ===== Estimate calculator (practice numbers for the agent, never a quote) =====
+  // Rates: The Mortgage Reports national averages, Oct 20, 2026. ITIN rate is a rough example (ITIN loans usually price higher).
+  // Taxes: 2.4% of price a year (Harris County estimate). Insurance: 1.2% of price a year (rough Houston estimate).
+  // FHA: 3.5% down, 1.75% upfront MIP added to the loan, 0.55% annual MIP. Conventional: 5% down, ~0.6% PMI.
+  const CALC = {
+    asOf: ['20 oct 2026', 'Oct 20, 2026'],
+    taxPct: 2.4, insPct: 1.2, closePct: 3,
+    dti: { comfy: 0.43, max: 0.50 },
+    prog: {
+      fha:  { name: ['FHA (3.5% de enganche)', 'FHA (3.5% down)'], down: 3.5, rate: 7.24, ufmip: 1.75, mi: 0.55 },
+      conv: { name: ['Convencional (5% de enganche)', 'Conventional (5% down)'], down: 5, rate: 7.47, ufmip: 0, mi: 0.6 },
+      itin: { name: ['ITIN (10% de enganche)', 'ITIN (10% down)'], down: 10, rate: 9.0, ufmip: 0, mi: 0 }
+    }
+  };
+  let calc = null;   // agent's edits for the current screening
+  function calcDefaults(st, r) {
+    const ids = r.people.map(n => st[`p${n}_id`]).filter(Boolean);
+    const prog = ids.length && ids.every(x => x !== 'Seguro social') ? 'itin' : 'fha';
+    return { prog, rate: CALC.prog[prog].rate, income: r.monthly ? Math.round(r.monthly) : '', debts: Math.round(r.debts || 0), savings: Math.round(r.savings || 0), price: r.price ? Math.round(r.price) : '', taxPct: CALC.taxPct, insPct: CALC.insPct };
+  }
+  const pmtFactor = (ratePct, years) => { const i = ratePct / 100 / 12, n = years * 12; return i ? i / (1 - Math.pow(1 + i, -n)) : 1 / n; };
+  function payFor(price, c) {
+    const p = CALC.prog[c.prog], base = price * (1 - p.down / 100), loan = base * (1 + p.ufmip / 100);
+    const pi = loan * pmtFactor(+c.rate || 0, 30), tax = price * (+c.taxPct || 0) / 100 / 12, ins = price * (+c.insPct || 0) / 100 / 12, mi = base * p.mi / 100 / 12;
+    return { pi, tax, ins, mi, total: pi + tax + ins + mi, loan, down: price * p.down / 100 };
+  }
+  function maxPrice(c, dti) {
+    const room = (+c.income || 0) * dti - (+c.debts || 0); if (room <= 0) return 0;
+    return room / payFor(1, c).total;   // the payment is linear in price
+  }
+  const round5k = v => Math.floor(v / 5000) * 5000;
+  function calcHtml() {
+    const c = calc, P = CALC.prog;
+    const lo = round5k(maxPrice(c, CALC.dti.comfy)), hi = round5k(maxPrice(c, CALC.dti.max));
+    const price = +c.price || lo || 0, pay = price ? payFor(price, c) : null;
+    const cash = price ? price * P[c.prog].down / 100 + price * CALC.closePct / 100 : 0;
+    const short = price && (+c.savings || 0) < cash ? cash - (+c.savings || 0) : 0;
+    const inp = (k, label, pre, step) => `<div class="field"><label for="cx_${k}">${label}</label><div class="inrow">${pre ? `<span class="pre">${pre}</span>` : ''}<input id="cx_${k}" data-c="${k}" type="number" inputmode="decimal" min="0" step="${step || 'any'}" value="${esc(c[k])}"></div></div>`;
+    const row = (a, b, strong) => `<div${strong ? ' class="tot"' : ''}><span>${a}</span><b>${b}</b></div>`;
+    return `<div class="box calc" id="calc">
+      <h3>${t('Estimado para que entiendas los números', 'Estimate so you understand the numbers')}</h3>
+      <div class="infocard"><div><b>${t('Solo son ejemplos', 'These are only examples')}</b><p>${t('No es una aprobación ni una cotización. Tasas, impuestos y seguro cambian por cliente y por casa. Si el cliente pregunta, dile que son ejemplos y que el especialista de préstamos le da sus números reales y lo guía.', "This is not an approval or a quote. Rates, taxes and insurance change by client and by home. If the client asks, say these are examples and the loan specialist will give them their real numbers and guide them.")}</p></div></div>
+      <div class="say"><span class="k">${t('Si el cliente pregunta cuánto puede comprar', 'If the client asks how much they can buy')}</span><div class="bub">"${esc(lo ? t(`Con lo que me cuenta, casas de alrededor de ${money(lo)} podrían ser posibles, pero es solo un ejemplo. El especialista de préstamos revisa todo y le da su número exacto y su pago real.`, `Based on what you've told me, homes around ${money(lo)} could be possible, but that's just an example. The loan specialist will review everything and give you your exact number and real payment.`) : t('Eso se lo dice el especialista de préstamos después de revisar su ingreso y su crédito. Yo le ayudo a que llegue con todo listo.', "The loan specialist will tell you that after reviewing your income and credit. I'll help you get everything ready."))}"</div></div>
+      <div class="cprog">${Object.keys(P).map(k => `<button type="button" class="chip${c.prog === k ? ' on' : ''}" data-prog="${k}">${esc(tx(P[k].name))}</button>`).join('')}</div>
+      <div class="grid2">${inp('income', t('Ingreso mensual del hogar (antes de taxes)', 'Household monthly income (before taxes)'), '$')}${inp('debts', t('Deudas al mes', 'Monthly debts'), '$')}${inp('savings', t('Ahorro', 'Savings'), '$')}${inp('rate', t('Tasa de interés (ejemplo)', 'Interest rate (example)'), '%', '0.01')}</div>
+      <div class="recap">
+        ${row(t('Rango cómodo (43% de deudas/ingreso)', 'Comfortable range (43% debt-to-income)'), lo ? t('hasta ', 'up to ') + money(lo) : '—')}
+        ${row(t('Máximo aproximado (50%)', 'Rough maximum (50%)'), hi ? t('hasta ', 'up to ') + money(hi) : '—')}
+      </div>
+      <p class="helper" style="margin:8px 0 14px">${lo ? '' : t('Pon el ingreso mensual para ver el rango. Si las deudas son muy altas comparadas con el ingreso, el rango sale en cero.', 'Enter monthly income to see the range. If debts are too high for the income, the range shows zero.')}</p>
+      ${inp('price', t('Precio de casa para calcular el pago', 'Home price to estimate the payment'), '$', '1000')}
+      ${pay ? `<div class="recap">
+        ${row(t('Capital e interés', 'Principal & interest'), money(pay.pi))}
+        ${row(t('Impuestos (aprox.)', 'Property taxes (est.)'), money(pay.tax))}
+        ${row(t('Seguro de casa (aprox.)', 'Home insurance (est.)'), money(pay.ins))}
+        ${pay.mi ? row(c.prog === 'fha' ? t('Seguro hipotecario FHA', 'FHA mortgage insurance') : t('Seguro hipotecario (PMI)', 'Mortgage insurance (PMI)'), money(pay.mi)) : ''}
+        ${row(t('Pago mensual estimado', 'Estimated monthly payment'), money(pay.total), true)}
+        ${row(t('Enganche', 'Down payment'), money(pay.down))}
+        ${row(t('Enganche + gastos de cierre (aprox. 3%)', 'Down payment + closing costs (about 3%)'), money(cash))}
+      </div>` : ''}
+      ${short ? `<p class="helper" style="margin:10px 0 0">${t(`Le faltarían unos ${money(short)}. Ayuda para el enganche, un regalo de un familiar o que el vendedor pague gastos de cierre pueden cubrir parte. Eso lo ve el especialista.`, `They'd be about ${money(short)} short. Down payment assistance, a gift from a relative, or seller-paid closing costs can cover part of it. The loan specialist works that out.`)}</p>` : ''}
+      <details class="coach" style="margin-top:14px"><summary>${t('Cómo se calcula', 'How this is calculated')}</summary><div class="cbody">
+        <p>${t('El banco compara todos los pagos del mes (casa + deudas) con el ingreso antes de taxes. 43% es un rango cómodo; algunos programas como FHA pueden aprobar más alto, hasta alrededor de 50% o más, según el crédito y el ahorro.', 'Lenders compare all monthly payments (house + debts) to income before taxes. 43% is a comfortable range; some programs like FHA can approve higher, around 50% or more, depending on credit and savings.')}</p>
+        <p>${t(`Tasas de ejemplo: FHA ${P.fha.rate}% y convencional ${P.conv.rate}% (promedios nacionales del ${CALC.asOf[0]}, The Mortgage Reports). ITIN ${P.itin.rate}% es solo una referencia: suelen ser más altas. Impuestos ${c.taxPct}% del precio al año (estimado de Harris County; cambia por distrito escolar y MUD). Seguro ${c.insPct}% del precio al año. FHA suma 1.75% de seguro inicial al préstamo y 0.55% al año.`, `Example rates: FHA ${P.fha.rate}% and conventional ${P.conv.rate}% (national averages for ${CALC.asOf[1]}, The Mortgage Reports). ITIN ${P.itin.rate}% is only a reference; they usually run higher. Taxes ${c.taxPct}% of price a year (Harris County estimate; varies by school district and MUD). Insurance ${c.insPct}% of price a year. FHA adds a 1.75% upfront premium to the loan and 0.55% a year.`)}</p>
+        <div class="grid2">${inp('taxPct', t('Impuestos (% al año)', 'Taxes (% a year)'), '%', '0.1')}${inp('insPct', t('Seguro (% al año)', 'Insurance (% a year)'), '%', '0.1')}</div>
+      </div></details>
+    </div>`;
+  }
+  function bindCalc() {
+    const box = $('#calc'); if (!box) return;
+    box.querySelectorAll('[data-prog]').forEach(b => b.onclick = () => { calc.prog = b.dataset.prog; calc.rate = CALC.prog[calc.prog].rate; repaintCalc(); });
+    box.querySelectorAll('[data-c]').forEach(i => i.addEventListener('change', () => { calc[i.dataset.c] = i.value; repaintCalc(i.id); }));
+  }
+  function repaintCalc(focusId) {
+    const open = $('#calc details.coach') && $('#calc details.coach').open;
+    $('#calc').outerHTML = calcHtml(); if (open) $('#calc details.coach').open = true; bindCalc();
+    if (focusId && $('#' + focusId)) $('#' + focusId).focus();
+  }
+
   // ===== Render helpers =====
   const sayHtml = v => v ? `<div class="say"><span class="k">${t('Dilo así', 'Say it like this')}</span><div class="bub">"${esc(tx(v))}"</div></div>` : '';
   const tipHtml = v => v ? `<div class="infocard"><div><b>${esc(tx(v[0]))}</b><p>${esc(tx(v[1]))}</p></div></div>` : '';
@@ -326,6 +594,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       ${field('c_email', ['Correo (opcional)', 'Email (optional)'], 'txt')}
       ${field('screener', ['Quién llama', 'Caller'], 'txt')}
       <div class="btnrow"><button class="next" type="button" id="begin">${t('Empezar', 'Start')} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+      <button class="ghost" type="button" id="practice">${t('Practicar una llamada (no se envía)', 'Practice a call (nothing is sent)')}</button>
       <button class="ghost" type="button" id="example">${t('Ver un ejemplo terminado', 'See a finished example')}</button></div>
       <p class="msg" id="msg"></p></div>`;
     bindFields();
@@ -333,6 +602,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       if (!(s.c_name || '').trim()) { $('#msg').textContent = t('Escribe el nombre del cliente para empezar.', "Enter the client's name to start."); $('#c_name').focus(); return; }
       mode = 'live'; current = null; idx = 0; renderStep();
     };
+    $('#practice').onclick = () => { current = null; mode = 'practice'; if (!(s.c_name || '').trim()) s.c_name = t('Cliente de práctica', 'Practice client'); idx = 0; renderStep(); };
     $('#example').onclick = () => { current = null; mode = 'example'; s = JSON.parse(JSON.stringify(EXAMPLE)); renderResult(); };
     const rb = $('#resume'); if (rb) rb.onclick = () => { current = null; s = draft; mode = 'live'; idx = Math.min(draft.__idx || 0, active().length - 1); renderStep(); };
     const db_ = $('#discard'); if (db_) db_.onclick = () => { clearDraft(); renderStart(); };
@@ -367,8 +637,9 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       const k = `p${st.n}_gross`;
       body = optHtml(k, 'Después de gastos') + optHtml(k, 'Antes de gastos') + `<div id="netbox" ${s[k] === 'Antes de gastos' ? '' : 'hidden'}>${field(`p${st.n}_net`, ['Ganancia neta al año, si la sabe (línea 31 del Schedule C)', 'Net profit per year, if they know it (Schedule C, line 31)'], '$')}<p class="helper">${t('Si no la sabe, déjalo en blanco. Katherine la revisa con sus taxes.', "If they don't know, leave it blank. Katherine checks it against their taxes.")}</p></div><button class="next" type="button" id="nx">${cont}</button>`;
     }
-    stage.innerHTML = `<div class="step"><h2 class="q">${esc(tx(st.q))}</h2>${sayHtml(st.say)}${st.help ? `<p class="helper">${esc(tx(st.help))}</p>` : ''}${tipHtml(st.tip)}${body}<p class="msg" id="msg"></p></div>`;
-    bindFields();
+    stage.innerHTML = `<div class="step"><h2 class="q">${esc(tx(st.q))}</h2>${sayHtml(st.say)}${st.help ? `<p class="helper">${esc(tx(st.help))}</p>` : ''}${tipHtml(st.tip)}${body}<p class="msg" id="msg"></p>${coachHtml(st)}</div>`;
+    if (mode === 'practice') stage.insertAdjacentHTML('afterbegin', `<p class="helper" style="margin:0 0 10px 2px;font-weight:700;color:var(--accent)">${t('Práctica · no se envía', 'Practice · nothing is sent')}</p>`);
+    bindFields(); bindCoach();
     stage.querySelectorAll('.opt').forEach(b => b.onclick = () => choose(st, b.dataset.k, b.dataset.v));
     const nx = $('#nx'); if (nx) nx.onclick = () => next(st);
     const f = stage.querySelector('.opt, input, textarea'); if (f && st.kind !== 'info') f.focus({ preventScroll: true });
@@ -510,7 +781,9 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     s.money__seen = true;
     show('result');
     const r = evaluate(s), L = LN(r.lane);
-    const banner = mode === 'example' ? `<div class="infocard"><div><b>${t('Ejemplo', 'Example')}</b><p>${t('Este cliente es inventado para que veas el resultado. Toca "Nueva llamada" para empezar uno real.', 'This client is made up so you can see the result. Tap "New call" to start a real one.')}</p></div></div>` : mode === 'view' && current ? `<div class="infocard"><div><b>${t('Screening guardado', 'Saved screening')}</b><p>${t('Enviado el ', 'Sent on ')}${esc(new Date(current.created_at).toLocaleString(locale(), { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}${current.screener ? ' · ' + esc(current.screener) : ''}. ${t('Puedes guardar su PDF o copiar la nota. Si corriges una respuesta se guarda como un screening nuevo.', 'You can save its PDF or copy the note. Fixing an answer saves it as a new screening.')}</p></div></div>` : '';
+    const cd = calcDefaults(s, r), sig = JSON.stringify(cd);
+    if (!calc || calc._sig !== sig) calc = Object.assign(cd, { _sig: sig });
+    const banner = mode === 'practice' ? `<div class="infocard"><div><b>${t('Práctica', 'Practice')}</b><p>${t('Nada de esto se guarda ni se manda a Follow Up Boss. Toca "Nueva llamada" cuando tengas un cliente real.', 'None of this is saved or sent to Follow Up Boss. Tap "New call" when you have a real client.')}</p></div></div>` : mode === 'example' ? `<div class="infocard"><div><b>${t('Ejemplo', 'Example')}</b><p>${t('Este cliente es inventado para que veas el resultado. Toca "Nueva llamada" para empezar uno real.', 'This client is made up so you can see the result. Tap "New call" to start a real one.')}</p></div></div>` : mode === 'view' && current ? `<div class="infocard"><div><b>${t('Screening guardado', 'Saved screening')}</b><p>${t('Enviado el ', 'Sent on ')}${esc(new Date(current.created_at).toLocaleString(locale(), { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }))}${current.screener ? ' · ' + esc(current.screener) : ''}. ${t('Puedes guardar su PDF o copiar la nota. Si corriges una respuesta se guarda como un screening nuevo.', 'You can save its PDF or copy the note. Fixing an answer saves it as a new screening.')}</p></div></div>` : '';
     const nums = [[t('Ingreso declarado', 'Reported income'), r.monthly ? money(r.monthly) + t(' al mes', ' a month') : '—'], [t('Deudas', 'Debts'), money(r.debts) + t(' al mes', ' a month')], [t('Deudas / ingreso', 'Debts / income'), r.monthly ? Math.round(r.debts / r.monthly * 100) + '%' : '—'], [t('Ahorro', 'Savings'), money(r.savings)]];
     if (r.price) nums.push([t('Precio en mente', 'Price in mind'), money(r.price)]);
     const sections = [...new Map(active().map(x => [tx(x.sect), x.sect])).entries()];
@@ -520,13 +793,14 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       <div class="route" data-lane="${r.lane}"><div class="k">${t('Ruta sugerida · interna', 'Suggested route · internal')}</div><div class="n">${L.name}</div><p class="p"><b>${t('Dile al cliente:', 'Tell the client:')}</b> "${esc(L.say)}"</p><p class="fine">${r.missing.length ? t('Preliminar. Falta: ', 'Preliminary. Missing: ') + esc(r.missing.join(', ')) + '.' : esc(L.next)}</p></div>
       <div class="box"><h3>${t('Por qué', 'Why')}</h3><ul class="reasons">${(r.sig.length ? r.sig : [{ lvl: 'info', t: t('Sin datos todavía.', 'No answers yet.') }]).map(x => `<li><span class="dot ${x.lvl}"></span><span>${esc(x.t)}</span></li>`).join('')}</ul></div>
       <div class="box recap"><h3>${t('Números aproximados', 'Approximate numbers')}</h3>${nums.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>
+      ${calcHtml()}
       <div class="box"><h3>${t('Nota para Follow Up Boss', 'Follow Up Boss note')}</h3><p class="note" id="fub">${esc(fubNote(s, r))}</p><button class="chip" type="button" id="copy">${t('Copiar nota', 'Copy note')}</button></div>
       <div id="fubbox"></div>
-      <div class="btnrow"><button class="next" type="button" id="pdf">${t('Guardar PDF', 'Save PDF')}</button>${current ? '' : `<button class="next red" type="button" id="submit">${t('Enviar a revisión y a Follow Up Boss', 'Send for review and to Follow Up Boss')}</button>`}</div>
+      <div class="btnrow"><button class="next" type="button" id="pdf">${t('Guardar PDF', 'Save PDF')}</button>${current || mode === 'example' || mode === 'practice' ? '' : `<button class="next red" type="button" id="submit">${t('Enviar a revisión y a Follow Up Boss', 'Send for review and to Follow Up Boss')}</button>`}</div>
       <p class="msg" id="msg"></p>
       <div class="box" style="margin-top:22px"><h3>${t('Corregir una respuesta', 'Fix an answer')}</h3><div class="edits">${sections.map(([label], i) => `<button class="chip" type="button" data-si="${i}">${esc(label)}</button>`).join('')}</div></div>
       <div class="btnrow"><button class="ghost" type="button" id="newcall">${t('Nueva llamada', 'New call')}</button></div></div>`;
-    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; paintFub();
+    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; paintFub(); bindCalc();
     stage.querySelectorAll('[data-si]').forEach(b => b.onclick = () => { if (mode === 'example') mode = 'live'; if (mode === 'view') { mode = 'live'; current = null; } const lab = sections[+b.dataset.si][0]; idx = active().findIndex(x => tx(x.sect) === lab); renderStep(); });
     saveDraft();
   }
@@ -712,7 +986,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
   }
   function paintFub() { const b = $('#fubbox'); if (b) { b.innerHTML = fubBox(); const rb = $('#retry'); if (rb) rb.onclick = () => { current.fub_status = 'pending'; paintFub(); sendToFub(current.id); }; } }
   async function submit() {
-    if (mode === 'example') { $('#msg').textContent = t('Este es el ejemplo. Toca "Nueva llamada" para empezar uno real.', 'This is the example. Tap "New call" to start a real one.'); return; }
+    if (mode === 'example' || mode === 'practice') { $('#msg').textContent = t('Este es el ejemplo. Toca "Nueva llamada" para empezar uno real.', 'This is the example. Tap "New call" to start a real one.'); return; }
     if (!(s.c_phone || '').replace(/\D/g, '') && !(s.c_email || '').includes('@')) { $('#msg').textContent = t('Agrega el teléfono o el correo del cliente para encontrarlo en Follow Up Boss.', "Add the client's phone or email so we can find them in Follow Up Boss."); return; }
     const r = evaluate(s), btn = $('#submit'); btn.disabled = true;
     const answers = Object.fromEntries(Object.entries(s).filter(([k]) => !k.startsWith('__')));
