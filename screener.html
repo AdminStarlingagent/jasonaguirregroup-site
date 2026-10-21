@@ -802,7 +802,9 @@ body.fab #stage{margin-bottom:110px}
     const phone = (s.c_phone || '').replace(/\D/g, ''), email = (s.c_email || '').trim();
     if (phone.length < 10 && !email.includes('@')) { s.__hot = 'nocontact'; toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${t('Agrega su teléfono para marcarlo en Follow Up Boss. Al enviar se guarda como Hot Prospect.', 'Add their phone to mark them in Follow Up Boss. Sending saves them as Hot Prospect.')}</span>`, 15000); return; }
     try {
-      const res = await api('/functions/v1/jag-screening-hot', { method: 'POST', body: JSON.stringify({ phone, email, score: R.score, est: R.est, screener: s.screener || '', lang: LANG }) });
+      const res = await api('/functions/v1/jag-screening-hot', { method: 'POST', body: JSON.stringify({ phone, email, score: R.score, est: R.est, screener: s.screener || '', lang: LANG,
+        client: (() => { const p = (s.c_name || '').trim().split(/\s+/).filter(Boolean); return p.length ? p[0] + (p.length > 1 ? ' ' + p[p.length - 1].charAt(0) + '.' : '') : ''; })(),
+        when: s.when || '', area: (s.area || '').slice(0, 40) }) });
       const j = await res.json().catch(() => null);
       if (!j || !j.ok) throw new Error((j && j.error) || 'error');
       s.__hot = 'done'; s.__hotPid = j.person_id || null; saveDraft();
@@ -810,7 +812,8 @@ body.fab #stage{margin-bottom:110px}
       const msg = !j.found ? t('Todavía no está en Follow Up Boss: al enviar el screening se crea como Hot Prospect.', "Not in Follow Up Boss yet: sending the screening creates them as Hot Prospect.")
         : j.changed ? t(`Listo: pasó de ${j.stage_before} a Hot Prospect en Follow Up Boss.`, `Done: moved from ${j.stage_before} to Hot Prospect in Follow Up Boss.`)
         : t(`Ya está en la etapa ${j.stage_before}, así que no la cambié. Le agregué la etiqueta Hot lead.`, `Already at stage ${j.stage_before}, so I left it. I added the Hot lead tag.`);
-      toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${msg}${link}</span>`, 15000);
+      const texted = j.texted ? ' ' + t('Lola ya les mandó texto a Jason, Katherine y Verónica.', 'Lola texted Jason, Katherine and Veronica.') : '';
+      toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${msg}${texted}${link}</span>`, 15000);
     } catch (e) {
       s.__hot = 'error';
       toast(`<b>🔥 ${who} ${t('es un cliente caliente', 'is a hot lead')} (${R.score}%)</b><span>${t('No pude marcarlo ahorita; al enviar el screening se guarda como Hot Prospect.', "Couldn't mark them right now; sending the screening saves them as Hot Prospect.")}</span>`, 15000);
