@@ -216,7 +216,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       <span class="hbadge" id="badge" data-lane="" hidden><span class="d"></span><span id="badge-t"></span></span>
       <div class="langsw" role="group" aria-label="Idioma / Language"><button type="button" data-lang="es" aria-pressed="true">ES</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
       <button class="navbtn" id="go-sent" type="button"><span id="sent-label">Enviadas</span><span class="n" id="sent-n" hidden></span></button>
-      <a class="navbtn" href="admin.html" style="text-decoration:none">Admin</a>
+      <a class="navbtn" id="toadmin" href="admin.html" style="text-decoration:none">Admin</a>
       <button class="navbtn" id="signout" type="button" hidden>Salir</button>
     </div>
   </header>
@@ -1040,7 +1040,15 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
     if (email) sess.email = email; saveSession();
     clearTimeout(refreshTimer); if (sess.refresh) refreshTimer = setTimeout(refreshSession, Math.max(5000, sess.exp - Date.now() - 300000));
   }
+  // The Agent Hub (/agent) shares this sign-in on the device; take its newer token instead of refreshing an old one.
+  function adoptStored() {
+    if (sess.store !== 'agent') return false;
+    let a = null; try { a = JSON.parse(localStorage.getItem('jag_agent') || 'null'); } catch (e) {}
+    if (a && a.t && a.r && a.t !== sess.token && (a.x || 0) > (sess.exp || 0)) { sess.token = a.t; sess.refresh = a.r; sess.exp = a.x; return true; }
+    return false;
+  }
   function refreshSession() {
+    if (adoptStored() && sess.exp - Date.now() > 60000) return Promise.resolve(true);
     if (refreshing) return refreshing;
     if (!sess.refresh) return Promise.resolve(false);
     refreshing = fetch(BASE + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { apikey: CRM.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: sess.refresh }) })
@@ -1050,6 +1058,7 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
   }
   async function api(path, opts) {
     opts = opts || {};
+    adoptStored();
     if (sess.refresh && sess.exp && sess.exp - Date.now() < 60000) await refreshSession();
     const go = () => fetch(BASE + path, { method: opts.method || 'GET', headers: Object.assign({ apikey: CRM.anonKey, Authorization: 'Bearer ' + sess.token, 'Content-Type': 'application/json' }, opts.headers || {}), body: opts.body });
     let res = await go();
@@ -1231,6 +1240,9 @@ footer.legal{max-width:760px;margin:0 auto 40px;text-align:center;font-size:12.5
       if (r.status === 401) { signOut(t('Tu sesión venció. Entra otra vez.', 'Your sign-in expired. Sign in again.')); return; }
       const j = await r.json();
       if (j && j.ok) me = j.agent;
+      const isStaff = !!(j && j.staff);
+      const ta = $('#toadmin');
+      if (ta) { ta.href = isStaff || sess.store !== 'agent' ? 'admin.html' : 'agent.html'; ta.textContent = isStaff || sess.store !== 'agent' ? 'Admin' : 'Agent Hub'; }
       else {
         const r2 = await api('/rest/v1/rpc/jag_is_team', { method: 'POST', body: '{}' });
         if ((await r2.json()) !== true) {

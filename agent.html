@@ -57,6 +57,7 @@ a{color:inherit}
 .hd img,.hd .ph{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#2c2b33;flex:0 0 48px}
 .hd b{display:block;font-size:17px;font-weight:800;letter-spacing:-.01em}
 .hd small{font-size:12.5px;opacity:.75}
+.hd .out.scr{text-decoration:none;white-space:nowrap}
 .hd .out{margin-left:auto;border:1px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:99px;padding:8px 13px;font-size:13px;font-weight:700}
 .tabs{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
 .tabs .wrap{display:flex;gap:4px}
@@ -127,6 +128,8 @@ body{background:var(--paper)}
 .hd img,.hd .ph{background:#efedea}
 .hd small{opacity:1;color:var(--muted)}
 .hd .out{border:2px solid var(--red);color:var(--red);min-height:40px}
+.hd .out.scr{background:var(--ink);border-color:var(--ink);color:#fff;display:inline-flex;align-items:center;gap:6px}
+@media (max-width:420px){.hd .wrap{flex-wrap:wrap}.hd .out.scr{margin-left:0;order:3;flex:1 1 auto;justify-content:center}}
 .tabs button{font-size:14px}
 .tabs .tc{display:inline-block;min-width:20px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;padding:1px 6px;margin-left:4px}
 .tabs .tc:empty{display:none}
@@ -194,7 +197,8 @@ body{background:var(--paper)}
   <header class="hd"><div class="wrap">
     <span id="hd-ph"></span>
     <div><b id="hd-name"></b><small id="hd-sub"></small></div>
-    <button class="out" type="button" id="out">Sign out</button>
+    <a class="out scr" href="screener.html" title="Call screener with Lola">&#128222; Call screener</a>
+    <button class="out" type="button" id="out" style="margin-left:0">Sign out</button>
   </div></header>
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
     <button type="button" data-tab="clients" class="on">Clients</button>
