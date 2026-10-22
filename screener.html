@@ -45,6 +45,29 @@ header.site{display:flex;align-items:center;justify-content:space-between;gap:12
 .hbadge[data-lane="prep"]{background:var(--prep-bg);color:var(--prep)} .hbadge[data-lane="prep"] .d{background:var(--prep)}
 .navbtn{border:1.5px solid #d6d5dd;background:#fff;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
 .navbtn:hover{border-color:var(--ink)}
+/* Leads to call: side panel */
+.lq-ov{position:fixed;inset:0;z-index:900;background:rgba(23,22,28,.35);opacity:0;pointer-events:none;transition:opacity .18s}
+.lq-ov.on{opacity:1;pointer-events:auto}
+.lq{position:absolute;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;box-shadow:-12px 0 40px rgba(0,0,0,.14);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s ease}
+.lq-ov.on .lq{transform:none}
+.lq-top{display:flex;align-items:flex-start;gap:10px;padding:18px 18px 8px}.lq-top>div{flex:1}
+.lq-top h2{margin:0;font-size:20px;font-weight:800}.lq-top p{margin:3px 0 0;font-size:12.5px;color:var(--mut)}
+.lq-x{border:0;background:var(--card);width:36px;height:36px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer}
+.lq-f{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:4px 18px 10px;border-bottom:1px solid var(--line)}
+.lq-ref{margin-left:auto;border:1.5px solid var(--line);background:#fff;border-radius:99px;width:34px;height:34px;font-size:16px;cursor:pointer}
+#lq-list{overflow:auto;padding:6px 18px 24px;flex:1}
+.lq-empty{color:var(--mut);font-size:14px;padding:18px 0}
+.lq-row{padding:14px 0;border-bottom:1px solid var(--line)}
+.lq-h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.lq-h b{font-size:15.5px}.lq-h span{font-size:12px;color:var(--mut);white-space:nowrap}
+.lq-meta{font-size:12.5px;color:var(--mut);margin-top:2px}
+.lq-st{font-size:13.5px;font-weight:600;margin-top:7px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lq-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 9px}.lq-dot.no{background:var(--accent)}.lq-dot.warn{background:#d8a21c}.lq-dot.ok{background:var(--ok)}
+.lq-calls{margin:4px 0 0 15px;padding:0;font-size:12px;color:var(--mut)}
+.lq-scr{font-size:12.5px;margin-top:5px;font-weight:600}
+.lq-btns{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.lq-b{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit}
+.lq-b.call{background:var(--ink);border-color:var(--ink);color:#fff}.lq-b.go{margin-left:auto;border-color:var(--accent);color:var(--accent)}.lq-b.off{color:var(--mut);cursor:default}
+.lq-row.s-answered{opacity:.75}
 .navbtn .n{display:inline-block;min-width:20px;margin-left:6px;padding:1px 7px;border-radius:99px;background:var(--accent);color:#fff;font-size:12px}
 
 /* Progress */
@@ -286,6 +309,7 @@ body.fab #stage{margin-bottom:110px}
     <div class="hright">
       <span class="hbadge" id="badge" data-lane="" hidden><span class="d"></span><span id="badge-t"></span></span>
       <div class="langsw" role="group" aria-label="Idioma / Language"><button type="button" data-lang="es" aria-pressed="true">ES</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
+      <button class="navbtn" id="go-leads" type="button" hidden>📞 <span id="leads-label">Por llamar</span><span class="n" id="leads-n" hidden></span></button>
       <button class="navbtn" id="go-sent" type="button"><span id="sent-label">Enviadas</span><span class="n" id="sent-n" hidden></span></button>
       <a class="navbtn" id="toadmin" href="admin.html" style="text-decoration:none">Admin</a>
       <button class="navbtn" id="signout" type="button" hidden>Salir</button>
@@ -940,6 +964,7 @@ body.fab #stage{margin-bottom:110px}
     $('#home').setAttribute('aria-label', t('Inicio del screener', 'Screener home'));
     $('#back').setAttribute('aria-label', t('Pregunta anterior', 'Previous question'));
     $('#sent-label').textContent = t('Enviadas', 'Submitted'); $('#signout').textContent = t('Salir', 'Sign out');
+    $('#leads-label').textContent = t('Por llamar', 'To call'); if (leadsOpen) paintLeads();
     $('#foot').textContent = t('Uso interno del Jason Aguirre Group · eXp Realty. La ruta es una guía para el equipo, no una aprobación de préstamo. Nunca escribas números de seguro social, ITIN ni cuentas de banco aquí.', 'Internal use, Jason Aguirre Group · eXp Realty. The route is a guide for the team, not a loan approval. Never enter Social Security, ITIN or bank account numbers here.');
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
   }
@@ -1658,6 +1683,101 @@ body.fab #stage{margin-bottom:110px}
     try { history.replaceState(null, '', '#s=' + id); } catch (e) {}
     renderResult();
   }
+  // ===== Leads to call: newest FUB leads with today's calls (edge function jag-call-queue), in a side panel =====
+  let leadsOpen = false, leadsData = null, leadsAt = 0, leadsFilter = 'todo', leadsErr = '', leadsBusy = false;
+  async function loadLeads() {
+    if (leadsBusy) return; leadsBusy = true;
+    try {
+      const r = await api('/functions/v1/jag-call-queue', { method: 'POST', body: JSON.stringify({ days: 7 }) });
+      const j = await r.json().catch(() => null);
+      if (!j || !j.ok) { leadsErr = (j && j.error) || ('HTTP ' + r.status); leadsData = null; } else { leadsErr = ''; leadsData = j; leadsAt = Date.now(); }
+    } catch (e) { leadsErr = 'network'; }
+    leadsBusy = false;
+    const n = leadsData ? leadsData.leads.filter(l => l.status === 'not_called' && !l.screened).length : 0;
+    $('#leads-n').hidden = !n; $('#leads-n').textContent = n;
+    if (leadsOpen) paintLeads();
+  }
+  const tel10 = p => { const d = String(p || '').replace(/\D/g, '').slice(-10); return d.length === 10 ? d : ''; };
+  const fmtTel = p => { const d = tel10(p); return d ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : (p || ''); };
+  const hm = ts => new Date(ts).toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
+  function ageTxt(ts) {
+    const m = Math.max(1, Math.round((Date.now() - new Date(ts)) / 60000));
+    if (m < 60) return t(`hace ${m} min`, `${m} min ago`);
+    const h = Math.round(m / 60); if (h < 24) return t(`hace ${h} h`, `${h} h ago`);
+    const d = Math.round(h / 24); return t(`hace ${d} d`, `${d} d ago`);
+  }
+  function leadStatus(l) {
+    const c = l.calls_today || [], last = c[0];
+    const lastTxt = last ? `${last.by ? esc(last.by) + ' · ' : ''}${hm(last.at)}${last.outgoing ? '' : ' ' + t('(entrante)', '(incoming)')}` : '';
+    if (l.status === 'answered') {
+      const a = c.find(x => x.answered) || last;
+      return `<span class="lq-dot ok"></span>${t('Contestó hoy', 'Answered today')} · ${a.by ? esc(a.by) + ' · ' : ''}${hm(a.at)}${a.duration ? ' (' + Math.max(1, Math.round(a.duration / 60)) + ' min)' : ''}`;
+    }
+    if (l.status === 'no_answer') return `<span class="lq-dot warn"></span>${t('No contestó', 'No answer')} · ${c.length} ${c.length === 1 ? t('llamada hoy', 'call today') : t('llamadas hoy', 'calls today')} · ${t('última', 'last')}: ${lastTxt}`;
+    return `<span class="lq-dot no"></span>${t('Nadie lo ha llamado hoy', 'Nobody has called today')}`;
+  }
+  function paintLeads() {
+    const box = $('#lq-list'); if (!box) return;
+    $('#lq-title').textContent = t('Leads por llamar', 'Leads to call');
+    $('#lq-sub').textContent = leadsData ? t(`Nuevos de los últimos 7 días · actualizado ${hm(leadsData.as_of)}`, `New in the last 7 days · updated ${hm(leadsData.as_of)}`) : '';
+    const F = [['todo', t('Por llamar', 'To call')], ['not_called', t('Sin llamar hoy', 'Not called today')], ['all', t('Todos', 'All')]];
+    $('#lq-f').innerHTML = F.map(([k, l]) => `<button type="button" class="chip${leadsFilter === k ? ' on' : ''}" data-lqf="${k}">${l}</button>`).join('') +
+      `<button type="button" class="lq-ref" id="lq-ref" aria-label="${t('Actualizar', 'Refresh')}">${leadsBusy ? '…' : '↻'}</button>`;
+    $('#lq-f').querySelectorAll('[data-lqf]').forEach(b => b.onclick = () => { leadsFilter = b.dataset.lqf; paintLeads(); });
+    $('#lq-ref').onclick = () => { leadsBusy || (box.style.opacity = .5); loadLeads().then(() => { box.style.opacity = ''; }); };
+    if (leadsErr) {
+      box.innerHTML = `<p class="lq-empty">${/401|fub_key/.test(leadsErr) ? t('La clave de Follow Up Boss guardada en el sistema ya no sirve, así que no se pueden cargar los leads. Avísale a Jason.', "The Follow Up Boss key saved in the system isn't valid anymore, so leads can't load. Let Jason know.")
+        : leadsErr === 'not_team' ? t('Tu cuenta no tiene acceso.', "Your account doesn't have access.") : t('No se pudieron cargar los leads. Toca ↻ para intentar otra vez.', "Couldn't load the leads. Tap ↻ to try again.")}</p>`;
+      return;
+    }
+    if (!leadsData) { box.innerHTML = `<p class="lq-empty">${t('Cargando…', 'Loading…')}</p>`; return; }
+    const rows = leadsData.leads.filter(l => leadsFilter === 'all' || (leadsFilter === 'todo' ? l.status !== 'answered' && !l.screened : l.status === leadsFilter));
+    if (!rows.length) { box.innerHTML = `<p class="lq-empty">${leadsFilter === 'todo' ? t('¡Todo al día! Nadie pendiente por llamar.', 'All caught up! Nobody waiting for a call.') : t('Nada aquí.', 'Nothing here.')}</p>`; return; }
+    box.innerHTML = rows.map(l => {
+      const i = leadsData.leads.indexOf(l), d = tel10(l.phone);
+      const calls = (l.calls_today || []).slice(0, 3).map(c => `<li>${hm(c.at)} · ${c.by ? esc(c.by) : '—'} · ${c.outgoing ? t('saliente', 'outgoing') : t('entrante', 'incoming')}${c.outcome ? ' · ' + esc(c.outcome) : c.duration ? ' · ' + Math.round(c.duration) + 's' : ''}</li>`).join('');
+      return `<div class="lq-row s-${l.status}">
+        <div class="lq-h"><b>${esc(l.name)}</b><span>${ageTxt(l.created)}</span></div>
+        <div class="lq-meta">${esc([l.stage, l.source, l.assigned || t('Sin asignar', 'Unassigned')].filter(Boolean).join(' · '))}</div>
+        <div class="lq-st">${leadStatus(l)}</div>
+        ${calls ? `<ul class="lq-calls">${calls}</ul>` : ''}
+        ${l.screened ? `<div class="lq-scr">✅ ${t('Ya tiene screening', 'Already screened')}${l.screened.hot ? ' 🔥' : ''} · ${esc(l.screened.by || '')} · ${new Date(l.screened.at).toLocaleDateString(locale(), { month: 'short', day: 'numeric' })}</div>` : ''}
+        <div class="lq-btns">
+          ${d ? `<a class="lq-b call" href="tel:+1${d}">📞 ${fmtTel(d)}</a>` : `<span class="lq-b off">${t('Sin teléfono', 'No phone')}</span>`}
+          <a class="lq-b" href="${esc(l.fub_url)}" target="_blank" rel="noopener">FUB ↗</a>
+          <button class="lq-b go" type="button" data-lq="${i}">${t('Hacer screening', 'Screen')} →</button>
+        </div></div>`;
+    }).join('');
+    box.querySelectorAll('[data-lq]').forEach(b => b.onclick = () => screenLead(leadsData.leads[+b.dataset.lq]));
+  }
+  function screenLead(l) {
+    if (!l) return;
+    if (isUnsent()) {
+      if (!confirm(t(`La llamada con ${s.c_name} todavía no se envía. ¿Empezar con ${l.name}? La otra queda en "Llamadas sin enviar".`, `The call with ${s.c_name} hasn't been sent. Start with ${l.name}? The other one stays under "Unsent calls".`))) return;
+      stashUnsent(s);
+    }
+    const who = s.screener;
+    s = { screener: who || defaultCaller() || '', c_name: l.name === '—' ? '' : l.name, c_phone: fmtTel(l.phone), c_email: l.email || '' };
+    mode = 'live'; current = null; clearDraft(); closeLeads(); renderStart();
+    const go = $('#begin'); if (go) go.focus();
+  }
+  function openLeads() {
+    let ov = $('#lq');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'lq'; ov.className = 'lq-ov';
+      ov.innerHTML = `<aside class="lq" role="dialog" aria-modal="true" aria-labelledby="lq-title"><div class="lq-top"><div><h2 id="lq-title"></h2><p id="lq-sub"></p></div><button type="button" class="lq-x" id="lq-x" aria-label="Close">×</button></div><div class="lq-f" id="lq-f"></div><div id="lq-list"></div></aside>`;
+      document.body.appendChild(ov);
+      ov.addEventListener('click', e => { if (e.target === ov) closeLeads(); });
+      $('#lq-x').onclick = closeLeads;
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && leadsOpen) closeLeads(); });
+    }
+    leadsOpen = true; ov.classList.add('on'); document.body.style.overflow = 'hidden';
+    paintLeads();
+    if (!leadsData || Date.now() - leadsAt > 60000) loadLeads();
+  }
+  function closeLeads() { leadsOpen = false; const ov = $('#lq'); if (ov) ov.classList.remove('on'); document.body.style.overflow = ''; }
+  $('#go-leads').onclick = openLeads;
+  setInterval(() => { if (!document.hidden && $('#go-leads') && !$('#go-leads').hidden) loadLeads(); }, 5 * 60000);   // keep the count fresh
   $('#go-sent').onclick = renderSent;
 
   // ===== Draft (this browser only) =====
@@ -1707,6 +1827,7 @@ body.fab #stage{margin-bottom:110px}
     } catch (e) { stage.innerHTML = `<p class="lead">${t('No hay conexión. Recarga la página.', 'No connection. Reload the page.')}</p>`; return; }
     if (me && me.name && !defaultCaller()) s.screener = me.name;
     $('#signout').hidden = false;
+    $('#go-leads').hidden = false; loadLeads(true).catch(() => {});
     loadSent().catch(() => {});
     const m = (location.hash || '').match(/^#s=([0-9a-f-]{36})$/i);
     if (m) { openRow(m[1]); return; }
