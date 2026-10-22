@@ -239,7 +239,19 @@ body.fab #stage{margin-bottom:110px}
 .meter .mk{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
 .meter .mv{font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .meter .mest{color:var(--ink);font-weight:600}.meter .mest small{color:var(--mut);font-weight:500}.meter .mest.muted{color:var(--mut);font-weight:500}
+.nextsteps .ns-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.nextsteps h3+.ns-row{border-top:0;padding-top:4px}
+.nextsteps .ns-row>div{flex:1;min-width:0}.nextsteps .ns-row p{margin:4px 0 0;font-size:13.5px;color:var(--mut);line-height:1.45}
+.nextsteps .ns-row .next{flex:0 0 auto;margin:0}
+@media (max-width:560px){.nextsteps .ns-row{flex-direction:column;align-items:stretch}}
+.ns-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ns-pills span{background:var(--card);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600}
+.ns-consent{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13.5px;font-weight:600;cursor:pointer}.ns-consent input{margin-top:2px;width:16px;height:16px;accent-color:var(--accent)}
+.ns-lang{margin-top:8px;font-size:13px;color:var(--mut)}.ns-lang label{margin-left:8px;cursor:pointer;color:var(--ink)}
+.ns-act h4{margin:12px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.ns-homes{list-style:none;margin:0;padding:0}.ns-homes li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ns-homes li:last-child{border-bottom:0}.ns-homes a{color:var(--ink);font-weight:600;text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ns-homes span{color:var(--mut);white-space:nowrap}
 .meter .mhot{margin-left:auto;background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:800}
+.meter .mwarn{flex-basis:100%;margin:2px 0 0;color:#8a5a00;background:#fff6e5;border:1px solid #f0d49a;border-radius:8px;padding:6px 9px;font-size:12px;font-weight:600;line-height:1.35}
 .meter .mtrack{position:relative;height:8px;border-radius:99px;background:#e2e2e8;margin-top:8px;overflow:visible}
 .meter .mfill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.3,.7,.3,1),background .3s}
 .meter .mtrack i{position:absolute;top:-3px;width:2px;height:14px;background:var(--ink);opacity:.35;border-radius:1px}
@@ -254,6 +266,7 @@ body.fab #stage{margin-bottom:110px}
 </style>
 
 <script src="jag-capture.js?v=3"></script>
+<script src="jag-share.js?v=2"></script>
 </head>
 <body>
 <style>
@@ -359,6 +372,7 @@ body.fab #stage{margin-bottom:110px}
     { id: 'intent', sect: ['Qué busca', 'Goals'], kind: 'one', q: ['¿Qué busca?', 'What are they looking for?'], say: ['¿Está buscando comprar casa, o quería información sobre lo que piden los bancos?', 'Are you looking to buy a home, or did you want information on what banks require?'], opts: ['Comprar casa', 'Solo información'] },
     { id: 'first', sect: ['Qué busca', 'Goals'], kind: 'one', q: ['¿Es su primera casa?', 'Is this their first home?'], say: ['¿Es la primera vez que compra casa?', 'Is this your first time buying a home?'], opts: ['Sí, primera casa', 'No, ya tuvo casa'] },
     { id: 'when', sect: ['Qué busca', 'Goals'], kind: 'one', q: ['¿Cuándo le gustaría comprar?', 'When would they like to buy?'], say: ['¿En cuánto tiempo le gustaría comprar? ¿Y en qué área?', 'How soon would you like to buy? And in what area?'], opts: ['0 a 3 meses', '3 a 6 meses', '6 a 12 meses', 'Más de un año'], two: true, area: true },
+    { id: 'beds', sect: ['Qué busca', 'Goals'], kind: 'one', when: st => st.intent !== 'Solo información', q: ['¿Cuántas recámaras necesita?', 'How many bedrooms do they need?'], say: ['¿Cuántas recámaras necesita la casa?', 'How many bedrooms does the home need?'], opts: ['1+', '2+', '3+', '4+', '5+'], two: true },
     { id: 'reqs', sect: ['Requisitos', 'Requirements'], kind: 'info', q: ['Explica los 5 requisitos', 'Explain the 5 requirements'], say: ['Con gusto le explico lo que pide un banco. Son cinco cosas básicas… De esos requisitos, ¿cómo se encuentra usted?', "Happy to explain what a bank asks for. There are five basic things… How are you doing on those?"],
       list: [['2 años de declaración de impuestos', '2 years of tax returns'], ['2 años de trabajo (si cambió de compañía pero hace lo mismo, no hay problema)', '2 years of work history (changing companies is fine if the work is the same)'], ['Crédito: hay programas desde 580, sin problemas recientes', 'Credit: programs start at 580, with nothing recent'], ['Identificación vigente', 'A valid ID'], ['Una cuenta de banco con algo ahorrado para el enganche', 'A bank account with some savings for the down payment']] },
     { id: 'who', sect: ['Quién aplica', 'Applicants'], kind: 'one', q: ['¿Quién va a aplicar?', 'Who will apply?'], say: ['¿Va a aplicar usted solo/sola o con alguien más?', 'Will you apply on your own or with someone else?'], opts: ['Solo', 'Con pareja', 'Con otro familiar'], rel: true },
@@ -724,10 +738,22 @@ body.fab #stage{margin-bottom:110px}
   // 100 points: ID 20 · reported income 20 · work history 10 · credit 20 · nothing recent on credit 10 · debts vs income 10 · savings 10.
   // Unanswered parts count 0, so the bar fills up during the call. It is a team guide, not a loan decision.
   const HOT = { score: 70, when: ['0 a 3 meses', '3 a 6 meses'] };
+  // Income vs. the income NEEDED TO QUALIFY for the price they want (max-DTI basis; same payment model as the estimate).
+  // fit = their monthly income / qualifying income for the target. 1.0 = they meet the qualifying minimum.
+  // Below AFF.hotMin they can't auto-read Hot. The income slice is scaled by the matching factor but floored at 0.30,
+  // so documentable income is never zeroed just for aiming above budget (still helpable with a co-borrower / lower price).
+  const AFF = { hotMin: 0.95, band: [[1.00, 1], [0.90, 0.90], [0.75, 0.72], [0.60, 0.55], [0.45, 0.42], [0, 0.30]] };
   function readiness(st) {
     const r = evaluate(st), ppl = r.people, parts = [];
     const best = f => Math.max(0, ...ppl.map(f));
     const add = (k, label, pts, max, known) => parts.push({ k, label, pts: known ? pts : 0, max, known });
+    // --- Income vs. the income NEEDED to qualify for the price they want (same payment model as the estimate) ---
+    const cd = calcDefaults(st, r);
+    const est = r.monthly > 0 ? round5k(maxPrice(cd, CALC.dti.comfy)) : 0;   // unchanged "up to ~$X" (comfortable range)
+    const target = r.price || 0;                                             // the price they said they want
+    const incNeed = target > 0 ? Math.round((payFor(target, cd).total + (+cd.debts || 0)) / CALC.dti.max) : 0; // $/mo to qualify (max DTI) for target
+    const fit = (r.monthly > 0 && incNeed > 0) ? r.monthly / incNeed : null; // 1.0 = income meets the qualifying minimum
+    const affFactor = fit == null ? 1 : (AFF.band.find(b => fit >= b[0]) || [0, 0.30])[1];
     const ids = ppl.map(n => st[`p${n}_id`]).filter(Boolean);
     add('id', [t('Seguro social o ITIN', 'SSN or ITIN')], best(n => ({ 'Seguro social': 20, 'ITIN': 12 })[st[`p${n}_id`]] || 0), 20, ids.length > 0);
     const incPts = n => {
@@ -737,7 +763,7 @@ body.fab #stage{margin-bottom:110px}
       if (/1099/.test(inc)) { const g = st[`p${n}_gross`]; return Math.round((g === 'Después de gastos' || num(st[`p${n}_net`]) ? 16 : 11) * yrs); }
       return Math.round(20 * yrs);
     };
-    add('inc', [t('Ingreso declarado', 'Reported income')], best(incPts), 20, ppl.some(n => st[`p${n}_inc`]));
+    add('inc', [t('Ingreso para el precio', 'Income for the price')], Math.round(best(incPts) * affFactor), 20, ppl.some(n => st[`p${n}_inc`]));
     const workPts = n => {
       const te = st[`p${n}_tenure`], same = st[`p${n}_same`];
       if (te === '2 años o más') return 10;
@@ -759,22 +785,24 @@ body.fab #stage{margin-bottom:110px}
     const dtiKnown = r.monthly > 0 && (st.__debtsSeen || ['d_car', 'd_cards', 'd_loans', 'd_other', 'savings'].some(k => st[k] !== undefined && st[k] !== ''));
     const dti = r.monthly > 0 ? r.debts / r.monthly : 1;
     add('dti', [t('Deudas vs. ingreso', 'Debts vs. income')], dti <= 0.10 ? 10 : dti <= 0.20 ? 8 : dti <= 0.35 ? 5 : 2, 10, dtiKnown);
-    const cd = calcDefaults(st, r), est = r.monthly > 0 ? round5k(maxPrice(cd, CALC.dti.comfy)) : 0;
-    const price = r.price || est || 250000, need = price * (CALC.prog[cd.prog].down + CALC.closePct) / 100, sav = r.savings || 0;
+    const price = target || est || 250000, need = price * (CALC.prog[cd.prog].down + CALC.closePct) / 100, sav = r.savings || 0;
     add('save', [t('Ahorro para enganche', 'Savings for down payment')], sav >= need ? 10 : sav >= need * 0.5 ? 6 : sav > 0 ? 3 : 0, 10, st.savings != null && st.savings !== '');
     const score = Math.min(100, parts.reduce((a, p) => a + p.pts, 0));
     const buying = st.intent !== 'Solo información' && HOT.when.includes(st.when);
     const issuesKnown = parts.find(p => p.k === 'issues').known;   // never call it hot before we know about repos, evictions or bankruptcies
-    const hot = score >= HOT.score && buying && issuesKnown && r.lane !== 'prep';
-    return { score, parts, est, hot, buying, lane: r.lane, known: parts.filter(p => p.known).length };
+    const affShort = fit != null && fit < AFF.hotMin;             // income falls short of qualifying for the price they want
+    const hot = score >= HOT.score && buying && issuesKnown && r.lane !== 'prep' && !affShort;
+    return { score, parts, est, target, fit, incNeed, affShort, hot, buying, lane: r.lane, known: parts.filter(p => p.known).length };
   }
   const k$ = v => v >= 1000 ? '$' + Math.round(v / 1000) + 'K' : money(v);
   function meterHtml() {
     const R = readiness(s), cls = R.score >= 70 ? 'hi' : R.score >= 40 ? 'mid' : 'lo';
+    const affMsg = R.affShort ? t(`Ingreso corto para ${money(R.target)}: ~${money(R.incNeed)}/mes para calificar. ¿Co-firmante o un precio más cómodo?`, `Income short for ${money(R.target)}: about ${money(R.incNeed)}/mo needed to qualify. Co-borrower or a lower price?`) : '';
     return `<div class="meter ${cls}" title="${t('Guía del equipo con lo que sabemos hasta ahora. No es una aprobación.', 'Team guide based on what we know so far. Not an approval.')}">
       <div class="mrow"><span class="mk">${t('Qué tan listo', 'Readiness')}</span><b class="mv">${R.score}%</b>
         ${R.est ? `<span class="mest">${t('hasta ~', 'up to ~')}${k$(R.est)} <small>${t('(ejemplo)', '(example)')}</small></span>` : `<span class="mest muted">${t('falta el ingreso', 'needs income')}</span>`}
         ${R.hot ? `<span class="mhot">🔥 ${t('Cliente caliente', 'Hot lead')}</span>` : ''}</div>
+      ${affMsg ? `<div class="mwarn">⚠️ ${affMsg}</div>` : ''}
       <div class="mtrack"><div class="mfill" style="width:${Math.max(2, R.score)}%"></div><i style="left:${HOT.score}%"></i></div></div>`;
   }
   function paintMeter() {
@@ -1124,11 +1152,189 @@ body.fab #stage{margin-bottom:110px}
     out += `${t('Deudas', 'Debts')} ${money(r.debts)}${t('/mes', '/mo')}//${t('Ahorro', 'Savings')} ${money(r.savings)}` + (r.price ? `//${t('Precio en mente', 'Price in mind')} ${money(r.price)}` : '') + (st.area ? `//${t('Área', 'Area')}: ${st.area}` : '') + (st.when ? `//${t('Compra', 'Buying')}: ${o(st.when)}` : '') + '\n';
     const flags = r.sig.filter(x => x.lvl === 'prep' || x.lvl === 'rev').map(x => x.t);
     if (flags.length) out += t('Revisar: ', 'Review: ') + flags.join(' | ') + '\n';
-    { const R = readiness(st); out += t('Qué tan listo: ', 'Readiness: ') + R.score + '%' + (R.est ? t(' · podría comprar hasta ~', ' · could buy up to ~') + money(R.est) + t(' (ejemplo, 43% DTI)', ' (example, 43% DTI)') : '') + (R.hot ? t(' · 🔥 CLIENTE CALIENTE', ' · 🔥 HOT LEAD') : '') + '\n'; }
+    { const R = readiness(st); out += t('Qué tan listo: ', 'Readiness: ') + R.score + '%' + (R.est ? t(' · podría comprar hasta ~', ' · could buy up to ~') + money(R.est) + t(' (ejemplo, 43% DTI)', ' (example, 43% DTI)') : '') + (R.hot ? t(' · 🔥 CLIENTE CALIENTE', ' · 🔥 HOT LEAD') : '') + (R.affShort ? t(` · ⚠️ Ingreso corto para ${money(R.target)} (~${money(R.incNeed)}/mes) — ¿co-firmante o menos precio?`, ` · ⚠️ Income short for ${money(R.target)} (~${money(R.incNeed)}/mo) — co-borrower or lower price?`) : '') + '\n'; }
     out += t('Enlace: ', 'Link: ') + (o(st.link) || t('sin dato', 'unknown')) + (st.follow ? ` · ${t('Seguimiento', 'Follow-up')}: ${fmtDT(st.follow)}` : '') + '\n@Katherine Fernandez';
     return out;
   }
   function fmtDT(v) { if (!v) return ''; const d = new Date(v); return isNaN(d) ? v : d.toLocaleString(locale(), { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+
+  // ===== Next steps: finish the JAG Home Loans app with the answers from this call =====
+  // The answers go to apply.html through this device's storage (never in a link), expire in 30 minutes,
+  // and are deleted as soon as the app reads them. The app links back to this screening by phone (DB trigger).
+  const HANDOFF_KEY = 'jag_app_handoff';
+  let ME = null;   // the signed-in agent (jag_agent_me): code, name, first_name, phone; null if not set up as an agent
+  function appStatus(n) {
+    const id = s[`p${n}_id`], st = s[`p${n}_status`];
+    if (st === 'Permiso de trabajo') return 'Work Permit (EAD)';
+    if (id === 'ITIN') return 'ITIN (Tax ID number)';
+    if (st === 'Residente') return 'Permanent Resident / Green Card';
+    if (st === 'Ciudadano') return 'Social Security Number (SSN)';
+    return '';
+  }
+  function appAnswers() {
+    const A = {}, set = (k, v) => { if (v != null && v !== '' && !(typeof v === 'number' && !isFinite(v))) A[k] = String(v); };
+    const parts = (s.c_name || '').trim().split(/\s+/).filter(Boolean);
+    set('language', LANG === 'en' ? 'English' : 'Español');
+    if (s.intent === 'Comprar casa') set('goal', 'Buy a home');
+    if (parts.length) set('first', parts[0]);
+    if (parts.length > 1) set('last', parts.slice(1).join(' '));
+    set('phone', (s.c_phone || '').replace(/\D/g, '').slice(-10));
+    set('email', (s.c_email || '').trim());
+    // pre '' = the client, 'co' = the co-borrower (the Home App's key names)
+    const person = (n, pre) => {
+      const K = k => pre ? pre + k.charAt(0).toUpperCase() + k.slice(1) : k;
+      set(K('status'), appStatus(n));
+      const inc = s[`p${n}_inc`], pay = s[`p${n}_pay`], m = income(s, n).monthly;
+      if (inc === 'W-2' || inc === 'W-2 y 1099' || inc === 'Efectivo sin declarar') {
+        set(K('work'), 'Employed');
+        if (inc === 'Efectivo sin declarar') set(K('payType'), 'Cash');
+        else if (pay === 'Por hora') { set(K('payType'), 'By the hour'); set(K('payRate'), num(s[`p${n}_rate`])); set(K('hoursWeek'), num(s[`p${n}_hours`])); }
+        else if (pay === 'Al año' || pay === 'Al mes') { set(K('payType'), 'Salary'); set(K('salaryAmt'), num(s[`p${n}_amount`])); set(K('salaryPer'), pay === 'Al año' ? 'Per year' : 'Per month'); }
+        if (m) { set(K('income'), Math.round(m)); if (!pre) A.incomeComputed = true; }
+      } else if (inc === '1099 / negocio propio') {
+        set(K('work'), 'Self-employed');
+        if (m) set(K('income'), Math.round(m));
+        if (!pre && s[`p${n}_tenure`] === 'Menos de 6 meses') set('tenure', 'Less than 1 year');
+      } else if (inc === 'No trabaja') set(K('work'), 'Not employed');
+    };
+    person(1, '');
+    if (s.who === 'Solo') set('hasCoBorrower', 'No');
+    else if (s.who === 'Con pareja' || s.who === 'Con otro familiar') {
+      set('hasCoBorrower', 'Yes'); A.coFromNudge = false;
+      if (s.who === 'Con pareja') set('coRelation', 'Spouse/Partner');
+      person(2, 'co');
+    }
+    const debtsAsked = s.__debtsSeen || ['d_car', 'd_cards', 'd_loans', 'd_other'].some(k => s[k] !== undefined && s[k] !== '');
+    if (debtsAsked) set('debts', Math.round(evaluate(s).debts || 0));
+    return A;
+  }
+  function startApp() {
+    const h = { v: 1, at: Date.now(), from: s.screener || '', sid: (current && current.id) || null, client: s.c_name || '', A: appAnswers() };
+    try { localStorage.setItem(HANDOFF_KEY, JSON.stringify(h)); }
+    catch (e) { $('#msg').textContent = t('No se pudo pasar las respuestas. Abre la aplicación y llénala desde el inicio.', "Couldn't pass the answers over. Open the app and fill it in from the start."); return; }
+    window.open('apply.html?from=screener', '_blank');
+  }
+  // What the client wants, for the home-search link and the home emails: area, bedrooms, budget.
+  // Budget = the lower of the price they want and the comfortable estimate, so we never show homes they can't afford.
+  function wants() {
+    const R = readiness(s), beds = parseInt(s.beds, 10) || null;
+    const cap = R.est && R.target ? Math.min(R.est, R.target) : (R.est || R.target || 0);
+    return { area: (s.area || '').trim(), beds, maxp: cap ? Math.round(cap / 5000) * 5000 : null };
+  }
+  function wantsText(w, L) {
+    const es = (L || LANG) === 'es';
+    return [w.area, w.beds ? w.beds + (es ? '+ rec' : '+ bd') : '', w.maxp ? (es ? 'hasta ' : 'up to ') + money(w.maxp) : ''].filter(Boolean).join(' · ');
+  }
+  function sendHomes() {
+    if (!window.JagShare || !ME) return;
+    const w = wants();
+    JagShare.open({ kind: 'search', as: ME, token: sess.token, lang: LANG, to: { phone: s.c_phone, email: s.c_email },
+      title: t('Mandar casas al cliente', 'Send homes to the client'), label: (s.c_name ? s.c_name + ' · ' : '') + (wantsText(w, 'en') || 'Home search'),
+      summary: wantsText(w, 'es'), query: { q: w.area || null, maxp: w.maxp || null, beds: w.beds || null } });
+  }
+  function homesRow() {
+    const w = wants(), sum = wantsText(w);
+    const p = ME ? t(`Le llega un texto o correo con casas ${sum ? '(' + sum + ')' : ''}. En tu Agent Hub ves cuándo lo abre, y si crea su cuenta queda contigo como su agente.`, `They get a text or email with homes ${sum ? '(' + sum + ')' : ''}. Your Agent Hub shows when they open it, and if they create an account you become their agent.`)
+                 : t('Tu cuenta no está configurada como agente. Pídele a Jason que te agregue para poder mandar casas.', "Your sign-in isn't set up as an agent yet. Ask Jason to add you so you can send homes.");
+    return `<div class="ns-row"><div><b>${t('Mandar casas para que vea', 'Send homes to look at')}</b><p>${esc(p)}</p></div><button class="next" type="button" id="ns-send"${ME ? '' : ' disabled'}>${t('Mandar casas', 'Send homes')}</button></div>`;
+  }
+  function nextHtml(R) {
+    if (mode === 'practice' || mode === 'example') return '';
+    return `<div class="box nextsteps"><h3>${t('Siguientes pasos', 'Next steps')}</h3>
+      <div class="ns-row"><div><b>${R.hot ? '🔥 ' : ''}${t('Llenar la aplicación JAG Home Loans', 'Complete the JAG Home Loans app')}</b><p>${t('Se abre con las respuestas de esta llamada. Solo pregunta lo que falta (fecha de nacimiento, dirección, empleo) mientras sigue en la línea.', 'Opens with the answers from this call. Only ask what is missing (birthday, address, employer) while they are still on the line.')}</p></div><button class="next${R.hot ? ' red' : ''}" type="button" id="ns-app">${t('Abrir la aplicación', 'Open the app')}</button></div>
+      ${homesRow()}<div id="ns-activity"></div><div id="ns-mail"></div>
+    </div>`;
+  }
+  // ----- the client's activity on jasonaguirregroup.company (homes viewed and saved) -----
+  function agoTxt(ts) {
+    if (!ts) return '—';
+    const m = Math.round((Date.now() - new Date(ts)) / 60000);
+    if (m < 60) return t(`hace ${Math.max(1, m)} min`, `${Math.max(1, m)} min ago`);
+    const h = Math.round(m / 60); if (h < 24) return t(`hace ${h} h`, `${h} h ago`);
+    const d = Math.round(h / 24); return t(`hace ${d} día${d === 1 ? '' : 's'}`, `${d} day${d === 1 ? '' : 's'} ago`);
+  }
+  async function loadActivity() {
+    const box = $('#ns-activity'); if (!box) return;
+    const phone = (s.c_phone || '').replace(/\D/g, ''), email = (s.c_email || '').trim();
+    if (phone.length < 10 && !email.includes('@')) return;
+    box.innerHTML = `<div class="ns-row"><div><b>${t('Actividad en el sitio', 'Website activity')}</b><p>${t('Buscando…', 'Looking…')}</p></div></div>`;
+    let j = null;
+    try { const r = await api('/rest/v1/rpc/jag_screening_client', { method: 'POST', body: JSON.stringify({ p_phone: phone || null, p_email: email || null }) }); j = r.ok ? await r.json() : null; } catch (e) {}
+    if (!j || !j.ok) { box.innerHTML = ''; return; }
+    if (!j.found) {
+      box.innerHTML = `<div class="ns-row"><div><b>${t('Actividad en el sitio', 'Website activity')}</b><p>${t('Todavía no tiene cuenta en el sitio. Cuando la cree con el enlace que le mandes, aquí vas a ver las casas que ve y guarda.', "No website account yet. Once they create one from the link you send, you'll see the homes they view and save here.")}</p></div></div>`;
+      return;
+    }
+    const c = j.client || {}, sc = j.score || {};
+    const pills = [t(`Última visita ${agoTxt(c.last_seen_at)}`, `Last visit ${agoTxt(c.last_seen_at)}`),
+      t(`${j.days_7 || 0} días esta semana`, `${j.days_7 || 0} days this week`),
+      t(`${j.views_30 || 0} casas vistas (30 días)`, `${j.views_30 || 0} homes viewed (30 days)`),
+      (n => t(`${n} guardada${n === 1 ? '' : 's'}`, `${n} saved`))((j.saved || []).length)];
+    if (sc.score != null) pills.unshift(t(`Puntaje ${sc.score}`, `Score ${sc.score}`));
+    const home = (h, extra) => `<li><a href="homes#${encodeURIComponent(h.mls)}" target="_blank" rel="noopener">${esc([h.addr, h.city].filter(Boolean).join(', ') || 'MLS ' + h.mls)}</a><span>${esc([h.beds ? h.beds + t(' rec', ' bd') : '', (h.last_price || h.price) ? money(h.last_price || h.price) : '', extra || ''].filter(Boolean).join(' · '))}</span></li>`;
+    const saved = (j.saved || []).map(h => home(h, h.last_status && h.last_status !== 'Active' ? h.last_status : '')).join('');
+    const viewed = (j.viewed || []).map(h => home(h, h.times > 1 ? t(`vista ${h.times} veces`, `viewed ${h.times}×`) : '')).join('');
+    box.innerHTML = `<div class="ns-row ns-act"><div><b>${t('Actividad en el sitio', 'Website activity')}${c.agent_name ? ' · ' + t('su agente: ', 'their agent: ') + esc(c.agent_name) : ''}</b>
+      <div class="ns-pills">${pills.map(p => `<span>${esc(p)}</span>`).join('')}</div>
+      ${saved ? `<h4>${t('Casas guardadas', 'Saved homes')}</h4><ul class="ns-homes">${saved}</ul>` : ''}
+      ${viewed ? `<h4>${t('Vistas recientes', 'Recently viewed')}</h4><ul class="ns-homes">${viewed}</ul>` : ''}
+      ${!saved && !viewed ? `<p>${t('Tiene cuenta pero todavía no ha visto casas.', "They have an account but haven't viewed homes yet.")}</p>` : ''}</div></div>`;
+  }
+  // ----- home emails (jag_lead_drips → lead-emails function): standard pace, stops on unsubscribe / account / agent -----
+  function fmtDay(ts) { return ts ? new Date(ts).toLocaleString(locale(), { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''; }
+  async function loadMail() {
+    const box = $('#ns-mail'); if (!box) return;
+    const email = (s.c_email || '').trim(), title = t('Correos con casas', 'Home emails');
+    const row = (p, btn) => `<div class="ns-row"><div><b>${title}</b>${p}</div>${btn || ''}</div>`;
+    if (!email.includes('@')) { box.innerHTML = row(`<p>${t('Agrega su correo arriba para mandarle casas por correo automáticamente.', 'Add their email above to send them homes by email automatically.')}</p>`); return; }
+    let j = null;
+    try { const r = await api('/rest/v1/rpc/jag_drip_status', { method: 'POST', body: JSON.stringify({ p_email: email }) }); j = r.ok ? await r.json() : null; } catch (e) {}
+    if (!j || !j.ok) { box.innerHTML = ''; return; }
+    const w = wants(), sum = wantsText(w);
+    if (!j.found && j.has_account) { box.innerHTML = row(`<p>${t('Ya tiene cuenta en el sitio: sus avisos de la cuenta le mandan las casas nuevas.', 'They already have a website account: their account alerts send them new homes.')}</p>`); return; }
+    if (j.found && j.status === 'active') {
+      const p = `<p>${t('Activos', 'On')}${j.agent_name ? ' · ' + esc(j.agent_name) : ''} · ${t('enviados: ', 'sent: ')}${j.sent_count}${j.last_sent_at ? ' (' + t('último ', 'last ') + esc(fmtDay(j.last_sent_at)) + ')' : ''} · ${t('siguiente: ', 'next: ')}${esc(fmtDay(j.next_at))}${j.last_error ? '<br>⚠️ ' + esc(j.last_error) : ''}</p>`;
+      box.innerHTML = row(p, `<button class="ghost" type="button" id="ns-mstop">${t('Parar correos', 'Stop emails')}</button>`);
+      $('#ns-mstop').onclick = async () => {
+        $('#ns-mstop').disabled = true;
+        try { await api('/rest/v1/rpc/jag_drip_stop', { method: 'POST', body: JSON.stringify({ p_id: j.id }) }); } catch (e) {}
+        loadMail();
+      };
+      return;
+    }
+    const prior = !j.found ? '' : ({
+      stopped: t('Se pararon antes. Puedes volver a empezarlos.', 'They were stopped earlier. You can start them again.'),
+      done: t('Ya terminó la campaña de 90 días. Puedes empezar otra.', 'The 90-day campaign finished. You can start another.'),
+      account: t('Creó su cuenta: sus avisos de la cuenta siguen con la misma búsqueda.', 'They created an account: their account alerts continue with the same search.'),
+      no_homes: t('No hubo casas en HAR para esa área y presupuesto (fuera de Houston no hay casas). Cambia el área o el precio y vuelve a empezar.', 'No HAR homes matched that area and budget (areas outside Houston have none). Change the area or price and start again.'),
+      unsubscribed: t('El cliente se dio de baja. No se le pueden mandar más correos.', 'The client unsubscribed. No more emails can be sent.'),
+    })[j.status] || '';
+    if (j.found && (j.status === 'unsubscribed' || j.status === 'account')) { box.innerHTML = row(`<p>${esc(prior)}</p>`); return; }
+    box.innerHTML = row(`<p>${prior ? esc(prior) + '<br>' : ''}${t('Le llegan casas que le quedan', 'They get homes that fit')} ${sum ? '(' + esc(sum) + ')' : ''}: ${t('una bienvenida hoy, hasta 2 por semana el primer mes y luego 1 por semana hasta 90 días. Se paran solas si se da de baja o crea su cuenta.', 'a welcome today, up to 2 a week the first month, then weekly through 90 days. They stop on their own if they unsubscribe or create an account.')}${w.area ? '' : '<br>⚠️ ' + t('Falta el área: le llegarían casas de todo Houston.', "No area yet: they'd get homes from all of Houston.")}</p>
+      <label class="ns-consent"><input type="checkbox" id="ns-mok"> ${t('El cliente aceptó recibir casas por correo', 'The client agreed to receive homes by email')}</label>
+      <div class="ns-lang">${t('Idioma de los correos:', 'Email language:')} <label><input type="radio" name="ns-ml" value="es"${LANG === 'en' ? '' : ' checked'}> Español</label> <label><input type="radio" name="ns-ml" value="en"${LANG === 'en' ? ' checked' : ''}> English</label></div>`,
+      `<button class="next" type="button" id="ns-mgo" disabled>${t('Empezar correos', 'Start emails')}</button>`);
+    $('#ns-mok').onchange = e => { $('#ns-mgo').disabled = !e.target.checked; };
+    $('#ns-mgo').onclick = async () => {
+      const btn = $('#ns-mgo'); btn.disabled = true;
+      const lang = (stage.querySelector('input[name=ns-ml]:checked') || {}).value || 'es';
+      let res = null;
+      try {
+        const r = await api('/rest/v1/rpc/jag_drip_start', { method: 'POST', body: JSON.stringify({ p_email: email, p_name: s.c_name || null, p_phone: (s.c_phone || '').replace(/\D/g, '') || null,
+          p_lang: lang, p_area: w.area || null, p_beds: w.beds, p_maxp: w.maxp, p_screening: (current && current.id) || null, p_consent: true }) });
+        res = r.ok ? await r.json() : null;
+      } catch (e) {}
+      if (res && res.ok) { loadMail(); return; }
+      btn.disabled = false;
+      $('#msg').textContent = res && res.reason === 'has_account' ? t('Ya tiene cuenta: sus avisos de la cuenta le mandan casas.', 'They already have an account: their account alerts send homes.')
+        : t('No se pudieron empezar los correos. Revisa el correo del cliente e intenta otra vez.', "Couldn't start the emails. Check the client's email and try again.");
+    };
+  }
+  function bindNext() {
+    const b = $('#ns-app'); if (b) b.onclick = startApp;
+    const h = $('#ns-send'); if (h) h.onclick = sendHomes;
+    loadActivity(); loadMail();
+  }
 
   // ----- Result -----
   function renderResult() {
@@ -1150,13 +1356,14 @@ body.fab #stage{margin-bottom:110px}
       <div class="box"><h3>${t('Por qué', 'Why')}</h3><ul class="reasons">${(r.sig.length ? r.sig : [{ lvl: 'info', t: t('Sin datos todavía.', 'No answers yet.') }]).map(x => `<li><span class="dot ${x.lvl}"></span><span>${esc(x.t)}</span></li>`).join('')}</ul></div>
       <div class="box recap"><h3>${t('Números aproximados', 'Approximate numbers')}</h3>${nums.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>
       ${calcHtml()}
+      ${nextHtml(readiness(s))}
       <div class="box"><h3>${t('Nota para Follow Up Boss', 'Follow Up Boss note')}</h3><p class="note" id="fub">${esc(fubNote(s, r))}</p><button class="chip" type="button" id="copy">${t('Copiar nota', 'Copy note')}</button></div>
       <div id="fubbox"></div>
       <div class="btnrow"><button class="next" type="button" id="pdf">${t('Guardar PDF', 'Save PDF')}</button>${current || mode === 'example' || mode === 'practice' ? '' : `<button class="next red" type="button" id="submit">${t('Enviar a revisión y a Follow Up Boss', 'Send for review and to Follow Up Boss')}</button>`}</div>
       <p class="msg" id="msg"></p>
       <div class="box" style="margin-top:22px"><h3>${t('Corregir una respuesta', 'Fix an answer')}</h3><div class="edits">${sections.map(([label], i) => `<button class="chip" type="button" data-si="${i}">${esc(label)}</button>`).join('')}</div></div>
       <div class="btnrow"><button class="ghost" type="button" id="newcall">${t('Nueva llamada', 'New call')}</button></div></div>`;
-    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; placeAside(); checkHot(); paintFub(); bindCalc(); bindLola();
+    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; placeAside(); checkHot(); paintFub(); bindCalc(); bindLola(); bindNext();
     stage.querySelectorAll('[data-si]').forEach(b => b.onclick = () => { if (mode === 'example') mode = 'live'; if (mode === 'view') { mode = 'live'; current = null; } const lab = sections[+b.dataset.si][0]; idx = active().findIndex(x => tx(x.sect) === lab); renderStep(); });
     saveDraft();
   }
@@ -1449,6 +1656,7 @@ body.fab #stage{margin-bottom:110px}
       if (r.status === 401) { signOut(t('Tu sesión venció. Entra otra vez.', 'Your sign-in expired. Sign in again.')); return; }
       const j = await r.json();
       if (j && j.ok) me = j.agent;
+      ME = me;
       const isStaff = !!(j && j.staff);
       const ta = $('#toadmin');
       if (ta) { ta.href = isStaff || sess.store !== 'agent' ? 'admin.html' : 'agent.html'; ta.textContent = isStaff || sess.store !== 'agent' ? 'Admin' : 'Agent Hub'; }

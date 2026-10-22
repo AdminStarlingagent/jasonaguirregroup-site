@@ -111,11 +111,14 @@
     '.js-gr{display:grid;grid-template-columns:1fr 1fr;gap:8px}.js-gr button,.js-gr a{display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:14px;padding:13px 10px;font:700 14.5px "Plus Jakarta Sans",sans-serif;text-decoration:none;cursor:pointer}' +
     '.js-sms{background:#c8102e;color:#fff}.js-wa{background:#1f9d55;color:#fff}.js-em{background:#2653d9;color:#fff}.js-cp{background:#f5f5f7;color:#17161c}' +
     '.js-note{font-size:12px;color:#6a6972;margin:0}';
+  // o.as: agent object from jag_agent_me (screener / admin sign-in), o.token: that session's token,
+  // o.to: { phone, email } to address the text/email to the client, o.lang: 'es' | 'en' for the message.
   function open(o){
-    var a = me();
+    var a = (o.as && o.as.code) ? o.as : me();
     if(!a){ location.href = SITE + '/agent'; return; }
     if(!document.getElementById('js-css')){ var st = document.createElement('style'); st.id = 'js-css'; st.textContent = css; document.head.appendChild(st); }
-    var L = lang(), sid = null, kind = o.kind || 'listing';
+    var L = (o.lang === 'en' || o.lang === 'es') ? o.lang : lang(), sid = null, kind = o.kind || 'listing';
+    var to = o.to || {}, toTel = tel(to.phone), toMail = String(to.email || '').trim();
     var ov = document.createElement('div'); ov.className = 'js-ov';
     ov.innerHTML = '<div class="js-sh" role="dialog" aria-modal="true" aria-label="Compartir"><div class="js-top"><h3>' + (o.title || 'Compartir') + '</h3>' +
       '<span class="js-lg" style="margin-left:10px"><button type="button" data-l="es">ES</button><button type="button" data-l="en">EN</button></span><button type="button" class="js-x" aria-label="Cerrar">×</button></div>' +
@@ -130,9 +133,9 @@
     function paint(){ if(!edited) ta.value = text(); ov.querySelectorAll('.js-lg button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-l') === L); }); links(); }
     function links(){
       var body = ta.value, subj = MSG[L].subj[kind];
-      ov.querySelector('[data-c=sms]').href = 'sms:?&body=' + encodeURIComponent(body);
-      ov.querySelector('[data-c=whatsapp]').href = 'https://wa.me/?text=' + encodeURIComponent(body);
-      ov.querySelector('[data-c=email]').href = 'mailto:?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body);
+      ov.querySelector('[data-c=sms]').href = 'sms:' + toTel + '?&body=' + encodeURIComponent(body);
+      ov.querySelector('[data-c=whatsapp]').href = 'https://wa.me/' + toTel.replace(/\D/g, '') + '?text=' + encodeURIComponent(body);
+      ov.querySelector('[data-c=email]').href = 'mailto:' + encodeURIComponent(toMail).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body);
     }
     ta.addEventListener('input', function(){ edited = true; links(); });
     ov.addEventListener('click', function(e){
@@ -145,7 +148,7 @@
     });
     paint();
     // get a share id first so opens are counted; the message updates when it arrives
-    agentToken().then(function(t){
+    (o.token ? Promise.resolve(o.token) : agentToken()).then(function(t){
       if(!t) return;
       return rpc('jag_agent_share', { p_kind: kind, p_mls: o.mls || null, p_label: o.label || o.summary || null, p_channel: 'link' }, t).then(function(j){ if(j && j.id){ sid = j.id; paint(); } });
     }).catch(function(){});

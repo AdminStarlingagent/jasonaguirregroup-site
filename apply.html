@@ -87,6 +87,8 @@ header.site{
 
 /* ---------- Progress ---------- */
 .progress-wrap{max-width:780px;margin:30px auto 0;padding:0 24px}
+.agentbar{max-width:732px;margin:14px auto 0;padding:11px 14px;background:#fff6e5;border:1px solid #f0d49a;border-radius:12px;font-size:13.5px;line-height:1.45;color:#5a4300}
+@media (max-width:780px){.agentbar{margin:12px 16px 0}}
 .track{height:4px;background:#e9e9ee;border-radius:99px;overflow:hidden}
 .fill{height:100%;width:3%;background:var(--accent);border-radius:99px;transition:width .5s cubic-bezier(.3,.7,.3,1)}
 .prog-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;min-height:38px}
@@ -1738,6 +1740,10 @@ function buildPayload(){
     var jh = JSON.parse(sessionStorage.getItem('jag_home')||'null');
     if(jh && jh.home){ p['Interested Property'] = jh.home; if(jh.mls) p['Interested MLS #'] = jh.mls; if(jh.price) p['Interested List Price'] = jh.price; }
   }catch(e){}
+  if(typeof HANDOFF!=='undefined' && HANDOFF){
+    p['Completed By'] = 'Agent on a screening call' + (HANDOFF.from ? ' — ' + HANDOFF.from : '');
+    if(HANDOFF.sid) p['Screening ID'] = HANDOFF.sid;
+  }
   return p;
 }
 
@@ -2018,6 +2024,35 @@ try{ // ?home=&mls=&price= from a listing on /homes
   var hq=new URLSearchParams(location.search), hh=(hq.get('home')||'').slice(0,160);
   if(hh) sessionStorage.setItem('jag_home', JSON.stringify({home:hh, mls:(hq.get('mls')||'').replace(/[^A-Za-z0-9-]/g,'').slice(0,24), price:(hq.get('price')||'').replace(/[^0-9]/g,'').slice(0,10)}));
 }catch(e){}
+/* Agent mode: the call screener (screener.html) hands over the answers from the call through this device's
+   storage. Read once, delete right away, and only if fresh (30 min). Nothing about the client is in the URL. */
+var HANDOFF = null;
+try{
+  if(new URLSearchParams(location.search).get('from')==='screener'){
+    var hraw = localStorage.getItem('jag_app_handoff');
+    localStorage.removeItem('jag_app_handoff');
+    var hj = hraw ? JSON.parse(hraw) : null;
+    if(hj && hj.v===1 && hj.A && Date.now()-(+hj.at||0) < 30*60*1000){
+      HANDOFF = hj;
+      Object.keys(hj.A).forEach(function(k){ var v=hj.A[k]; if(v!=null && v!=='') A[k]=v; });
+    }
+  }
+}catch(e){ HANDOFF = null; }
+function stepDone(s){
+  var has = function(k){ var v=A[k]; return v!=null && String(v).trim()!=='' && !(Array.isArray(v)&&!v.length); };
+  if(s.type==='group') return (s.fields||[]).every(function(f){ return f.optional || has(f.key); });
+  return s.key ? has(s.key) : false;     // address and other multi-field screens always get asked
+}
+if(HANDOFF){
+  var vs = visibleSteps(), first = vs.findIndex(function(s){ return !stepDone(s); });
+  idx = first < 0 ? vs.length-1 : first;
+  var bn = document.createElement('div');
+  bn.className = 'agentbar';
+  bn.innerHTML = '<b>'+esc((HANDOFF.from||'Agent'))+'</b> · '+(LANG()==='es'
+    ? 'Llenando con '+esc(HANDOFF.client||'el cliente')+'. Las respuestas de la llamada ya están puestas: confirma con el cliente y pregunta lo que falta. Usa “Atrás” para revisarlas.'
+    : 'Filling in with '+esc(HANDOFF.client||'the client')+'. Answers from the call are already in: confirm them with the client and ask what is missing. Use Back to review them.');
+  document.body.insertBefore(bn, document.body.firstChild);
+}
 applyChrome();
 renderStep();
 </script>

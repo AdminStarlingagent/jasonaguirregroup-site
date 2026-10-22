@@ -36,12 +36,15 @@ a{color:#2653d9;font-weight:600}
 </div>
 <script>
 (function(){
-  var q=location.search, ok=/[?&]u=[0-9a-f-]{36}/.test(q)&&/[?&]s=[0-9a-f]{32}/.test(q);
+  // ?u=&s= → account alerts (listing-alerts); ?d=&s= → home emails after a call with the team (lead-emails)
+  var q=location.search, sig=/[?&]s=[0-9a-f]{32}/.test(q);
+  var drip=/[?&]d=[0-9a-f-]{36}/.test(q)&&sig, ok=(/[?&]u=[0-9a-f-]{36}/.test(q)&&sig)||drip;
   var go=document.getElementById('go');
   if(!ok){ go.disabled=true; document.getElementById('err').hidden=false; return; }
+  if(drip){ var acct=document.querySelector('a[href="account#settings"]'); if(acct) acct.parentNode.hidden=true; }
   go.onclick=function(){
     go.disabled=true;
-    fetch('https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/listing-alerts'+q,{method:'POST'})
+    fetch('https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/'+(drip?'lead-emails':'listing-alerts')+q,{method:'POST'})
       .then(function(r){ return r.json(); })
       .then(function(j){ if(j&&j.ok){ document.getElementById('ask').hidden=true; document.getElementById('done').hidden=false; } else { document.getElementById('err').hidden=false; go.disabled=false; } })
       .catch(function(){ document.getElementById('err').hidden=false; go.disabled=false; });
