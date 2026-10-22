@@ -239,6 +239,11 @@ body.fab #stage{margin-bottom:110px}
 .meter .mk{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
 .meter .mv{font-size:20px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .meter .mest{color:var(--ink);font-weight:600}.meter .mest small{color:var(--mut);font-weight:500}.meter .mest.muted{color:var(--mut);font-weight:500}
+.unsent{display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px 16px;border-radius:16px;background:#fdecef;border:1px solid #f3b9c3}
+.unsent>div{flex:1;min-width:0}.unsent b{color:var(--accent)}.unsent p{margin:3px 0 0;font-size:13.5px;line-height:1.4}.unsent .next{margin:0;flex:0 0 auto}
+@media (max-width:560px){.unsent{flex-direction:column;align-items:stretch}}
+.unsentlist{margin:6px 0 18px;border-color:#f3b9c3}.unsentlist h3{color:var(--accent)}.unsentlist .ns-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.unsentlist .ns-row>div{flex:1;min-width:0}.unsentlist .ns-row p{margin:2px 0 0;font-size:13px;color:var(--mut)}.unsentlist .next,.unsentlist .ghost{margin:0}
 .nextsteps .ns-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
 .nextsteps h3+.ns-row{border-top:0;padding-top:4px}
 .nextsteps .ns-row>div{flex:1;min-width:0}.nextsteps .ns-row p{margin:4px 0 0;font-size:13.5px;color:var(--mut);line-height:1.45}
@@ -837,7 +842,7 @@ body.fab #stage{margin-bottom:110px}
       if (!j || !j.ok) throw new Error((j && j.error) || 'error');
       s.__hot = 'done'; s.__hotPid = j.person_id || null; saveDraft();
       const link = j.person_id ? ` <a href="https://jasonhoustonrealty.followupboss.com/2/people/view/${encodeURIComponent(j.person_id)}" target="_blank" rel="noopener">${t('Ver en FUB', 'Open in FUB')}</a>` : '';
-      const msg = !j.found ? t('Todavía no está en Follow Up Boss: al enviar el screening se crea como Hot Prospect.', "Not in Follow Up Boss yet: sending the screening creates them as Hot Prospect.")
+      const msg = !j.found ? t('Todavía no está en Follow Up Boss. No se ha guardado nada: al final de la llamada toca "Enviar a revisión y a Follow Up Boss" y se crea como Hot Prospect.', 'Not in Follow Up Boss yet. Nothing is saved yet: at the end of the call tap "Send for review and to Follow Up Boss" and they\'re created as Hot Prospect.')
         : j.changed ? t(`Listo: pasó de ${j.stage_before} a Hot Prospect en Follow Up Boss.`, `Done: moved from ${j.stage_before} to Hot Prospect in Follow Up Boss.`)
         : t(`Ya está en la etapa ${j.stage_before}, así que no la cambié. Le agregué la etiqueta Hot lead.`, `Already at stage ${j.stage_before}, so I left it. I added the Hot lead tag.`);
       const texted = j.texted ? ' ' + t('Lola ya les mandó texto a Jason, Katherine y Verónica.', 'Lola texted Jason, Katherine and Veronica.') : '';
@@ -964,10 +969,13 @@ body.fab #stage{margin-bottom:110px}
     show('start');
     const draft = loadDraft();
     const first = (s.screener || 'Adriana').split(' ')[0];
+    const unsent = loadUnsent().filter(x => !(draft && draft.c_name && ukey(x.s) === ukey(draft)));
+    const unsentHtml = unsent.length ? `<div class="box unsentlist"><h3>⚠️ ${t('Llamadas sin enviar', 'Unsent calls')}</h3><p class="lead" style="margin:0 0 6px;font-size:14px">${t('No están en Follow Up Boss ni en el admin. Ábrelas y envíalas.', "They're not in Follow Up Boss or the admin page. Open them and send them.")}</p>${unsent.map((x, i) => `<div class="ns-row"><div><b>${esc(x.s.c_name)}</b><p>${esc([x.s.c_phone, new Date(x.at).toLocaleString(locale(), { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })].filter(Boolean).join(' · '))}</p></div><button class="next red" type="button" data-uopen="${i}">${t('Abrir y enviar', 'Open and send')}</button><button class="ghost" type="button" data-udrop="${i}">${t('Quitar', 'Remove')}</button></div>`).join('')}</div>` : '';
     stage.innerHTML = `<div class="step">
       <h1 class="title">${t('Nueva llamada', 'New call')}</h1>
       <p class="lead">${t('Te va guiando pregunta por pregunta, con lo que puedes decir. Al final te da la ruta del cliente, la nota para Follow Up Boss y el PDF para su perfil.', "It walks you through the call one question at a time, with what to say. At the end you get the client's route, the Follow Up Boss note and a PDF for their profile.")}</p>
       ${draft && draft.c_name ? `<div class="notecard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg><div>${t('Tienes una llamada sin terminar con', 'You have an unfinished call with')} <b>${esc(draft.c_name)}</b>. <button type="button" class="ghost" id="resume" style="padding:0">${t('Continuarla', 'Continue it')}</button> · <button type="button" class="ghost" id="discard" style="padding:0">${t('Borrarla', 'Discard it')}</button></div></div>` : ''}
+      ${unsentHtml}
       ${sayHtml([`Hola, buenas tardes. ¿Hablo con [nombre]? Mi nombre es ${first} y le llamo del equipo de Jason Aguirre. ¿Tiene unos minutos para platicar?`, `Hi, good afternoon. Am I speaking with [name]? My name is ${first} and I'm calling from Jason Aguirre's team. Do you have a few minutes to talk?`])}
       ${field('c_name', ['Nombre del cliente', 'Client name'], 'txt')}
       ${field('c_phone', ['Teléfono', 'Phone'], 'tel')}
@@ -986,6 +994,15 @@ body.fab #stage{margin-bottom:110px}
     $('#example').onclick = () => { lolaAI = []; lolaOpen = false; current = null; mode = 'example'; s = JSON.parse(JSON.stringify(EXAMPLE)); renderResult(); };
     const rb = $('#resume'); if (rb) rb.onclick = () => { current = null; s = draft; mode = 'live'; idx = Math.min(draft.__idx || 0, active().length - 1); renderStep(); };
     const db_ = $('#discard'); if (db_) db_.onclick = () => { clearDraft(); renderStart(); };
+    stage.querySelectorAll('[data-uopen]').forEach(b => b.onclick = () => {
+      const x = unsent[+b.dataset.uopen]; if (!x) return;
+      current = null; s = x.s; mode = 'live'; lolaAI = []; saveDraft(); renderResult();
+    });
+    stage.querySelectorAll('[data-udrop]').forEach(b => b.onclick = () => {
+      const x = unsent[+b.dataset.udrop]; if (!x) return;
+      if (!confirm(t(`¿Quitar la llamada con ${x.s.c_name}? No se va a poder enviar.`, `Remove the call with ${x.s.c_name}? It can't be sent after this.`))) return;
+      dropUnsent(x.s); renderStart();
+    });
   }
 
   // ----- Steps -----
@@ -1352,6 +1369,7 @@ body.fab #stage{margin-bottom:110px}
       <h1 class="title">${esc(s.c_name || t('Cliente', 'Client'))}</h1>
       <p class="lead" style="margin-bottom:14px">${[s.c_phone, o(s.source), s.screener ? t('Llamó ', 'Called by ') + s.screener : ''].filter(Boolean).map(esc).join(' · ')}</p>
       <div class="route" data-lane="${r.lane}"><div class="k">${t('Ruta sugerida · interna', 'Suggested route · internal')}</div><div class="n">${L.name}</div><p class="p"><b>${t('Dile al cliente:', 'Tell the client:')}</b> "${esc(L.say)}"</p><p class="fine">${r.missing.length ? t('Preliminar. Falta: ', 'Preliminary. Missing: ') + esc(r.missing.join(', ')) + '.' : esc(L.next)}</p></div>
+      ${mode === 'live' && !current ? `<div class="unsent" id="unsentbar"><div><b>⚠️ ${t('Todavía no se envía', 'Not sent yet')}</b><p>${t('Esta llamada no está guardada ni en Follow Up Boss hasta que la envíes.', "This call isn't saved or in Follow Up Boss until you send it.")}</p></div><button class="next red" type="button" id="submit-top">${t('Enviar a revisión y a Follow Up Boss', 'Send for review and to Follow Up Boss')}</button></div>` : ''}
       ${lolaHtml()}
       <div class="box"><h3>${t('Por qué', 'Why')}</h3><ul class="reasons">${(r.sig.length ? r.sig : [{ lvl: 'info', t: t('Sin datos todavía.', 'No answers yet.') }]).map(x => `<li><span class="dot ${x.lvl}"></span><span>${esc(x.t)}</span></li>`).join('')}</ul></div>
       <div class="box recap"><h3>${t('Números aproximados', 'Approximate numbers')}</h3>${nums.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('')}</div>
@@ -1363,11 +1381,16 @@ body.fab #stage{margin-bottom:110px}
       <p class="msg" id="msg"></p>
       <div class="box" style="margin-top:22px"><h3>${t('Corregir una respuesta', 'Fix an answer')}</h3><div class="edits">${sections.map(([label], i) => `<button class="chip" type="button" data-si="${i}">${esc(label)}</button>`).join('')}</div></div>
       <div class="btnrow"><button class="ghost" type="button" id="newcall">${t('Nueva llamada', 'New call')}</button></div></div>`;
-    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; $('#newcall').onclick = newCall; placeAside(); checkHot(); paintFub(); bindCalc(); bindLola(); bindNext();
+    $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; if ($('#submit-top')) $('#submit-top').onclick = submit; $('#newcall').onclick = newCall; placeAside(); checkHot(); paintFub(); bindCalc(); bindLola(); bindNext();
     stage.querySelectorAll('[data-si]').forEach(b => b.onclick = () => { if (mode === 'example') mode = 'live'; if (mode === 'view') { mode = 'live'; current = null; } const lab = sections[+b.dataset.si][0]; idx = active().findIndex(x => tx(x.sect) === lab); renderStep(); });
     saveDraft();
   }
-  function newCall() { lolaAI = []; lolaOpen = false; const who = s.screener; s = { screener: who || defaultCaller() || 'Adriana Pereyra' }; mode = 'live'; current = null; clearDraft(); try { history.replaceState(null, '', location.pathname); } catch (e) {} renderStart(); }
+  function newCall() {
+    if (isUnsent()) {
+      if (!confirm(t(`La llamada con ${s.c_name} todavía no se envía. ¿Empezar una nueva? La vas a encontrar en "Llamadas sin enviar" para enviarla después.`, `The call with ${s.c_name} hasn't been sent. Start a new one? You'll find it under "Unsent calls" to send later.`))) return;
+      stashUnsent(s);
+    }
+    lolaAI = []; lolaOpen = false; const who = s.screener; s = { screener: who || defaultCaller() || 'Adriana Pereyra' }; mode = 'live'; current = null; clearDraft(); try { history.replaceState(null, '', location.pathname); } catch (e) {} renderStart(); }
   async function copyNote() {
     const v = $('#fub').textContent;
     try { await navigator.clipboard.writeText(v); $('#msg').textContent = t('Nota copiada. Pégala en el perfil del cliente en Follow Up Boss.', "Note copied. Paste it into the client's Follow Up Boss profile."); }
@@ -1561,7 +1584,8 @@ body.fab #stage{margin-bottom:110px}
   async function submit() {
     if (mode === 'example' || mode === 'practice') { $('#msg').textContent = t('Este es el ejemplo. Toca "Nueva llamada" para empezar uno real.', 'This is the example. Tap "New call" to start a real one.'); return; }
     if (!(s.c_phone || '').replace(/\D/g, '') && !(s.c_email || '').includes('@')) { $('#msg').textContent = t('Agrega el teléfono o el correo del cliente para encontrarlo en Follow Up Boss.', "Add the client's phone or email so we can find them in Follow Up Boss."); return; }
-    const r = evaluate(s), btn = $('#submit'); btn.disabled = true;
+    const r = evaluate(s), btns = [...stage.querySelectorAll('#submit, #submit-top')];
+    btns.forEach(b => { b.disabled = true; });
     const answers = Object.fromEntries(Object.entries(s).filter(([k]) => !k.startsWith('__')));
     answers.calc_monthly = Math.round(r.monthly || 0); answers.calc_debts = Math.round(r.debts || 0);
     let follow = null; if (s.follow) { const d = new Date(s.follow); if (!isNaN(d)) follow = d.toISOString(); }
@@ -1572,13 +1596,14 @@ body.fab #stage{margin-bottom:110px}
       if (!res.ok) throw new Error(res.status === 401 || res.status === 403 ? 'auth' : 'save');
       current = (await res.json())[0];
       try { localStorage.setItem('jag-screener-caller', s.screener || ''); } catch (e) {}
-      clearDraft(); mode = 'view';
-      btn.textContent = t('Enviado', 'Sent');
+      dropUnsent(s); clearDraft(); mode = 'view';
+      btns.forEach(b => { b.textContent = t('Enviado', 'Sent'); });
+      const ub = $('#unsentbar'); if (ub) ub.remove();
       $('#msg').textContent = t('Guardado. El especialista lo ve en Enviadas.', 'Saved. The specialist sees it under Submitted.');
       paintFub(); sendToFub(current.id);
       try { history.replaceState(null, '', '#s=' + current.id); } catch (e) {}
     } catch (e) {
-      btn.disabled = false;
+      btns.forEach(b => { b.disabled = false; });
       $('#msg').textContent = e.message === 'auth' ? t('Tu cuenta no tiene permiso. Pídele acceso a Jason.', "Your account doesn't have access. Ask Jason.") : t('No se pudo guardar. Revisa tu conexión e inténtalo otra vez.', "Couldn't save. Check your connection and try again.");
     }
   }
@@ -1640,6 +1665,17 @@ body.fab #stage{margin-bottom:110px}
   function saveDraft() { if (mode !== 'live' || !s.c_name) return; try { localStorage.setItem(DKEY, JSON.stringify(s)); } catch (e) {} }
   function loadDraft() { try { const v = localStorage.getItem(DKEY); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
   function clearDraft() { try { localStorage.removeItem(DKEY); } catch (e) {} }
+  // Calls that were never sent stay on this device (last 5) so they can be opened and sent later.
+  const UKEY = 'jag-screener-unsent-v1';
+  const ukey = st => ((st.c_name || '').trim().toLowerCase() + '|' + (st.c_phone || '').replace(/\D/g, '').slice(-10));
+  function loadUnsent() { try { const v = JSON.parse(localStorage.getItem(UKEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function stashUnsent(st) {
+    if (!st || !(st.c_name || '').trim()) return;
+    try { const k = ukey(st); localStorage.setItem(UKEY, JSON.stringify([{ at: Date.now(), s: st }, ...loadUnsent().filter(x => ukey(x.s) !== k)].slice(0, 5))); } catch (e) {}
+  }
+  function dropUnsent(st) { try { const k = ukey(st); localStorage.setItem(UKEY, JSON.stringify(loadUnsent().filter(x => ukey(x.s) !== k))); } catch (e) {} }
+  const isUnsent = () => mode === 'live' && !current && !!(s && (s.c_name || '').trim()) && (view === 'steps' || view === 'result');
+  window.addEventListener('beforeunload', e => { if (isUnsent()) { stashUnsent(s); e.preventDefault(); e.returnValue = ''; } });
 
   const EXAMPLE = { c_name: 'Cliente de ejemplo', c_phone: '(281) 555-0142', screener: 'Adriana Pereyra', source: 'TikTok', intent: 'Comprar casa', first: 'Sí, primera casa', when: '3 a 6 meses', area: 'Humble / Atascocita', who: 'Con pareja', p2_rel: 'Esposa',
     p1_id: 'Seguro social', p1_status: 'Residente', p1_inc: 'W-2', p1_tax: '2 años o más', p1_tenure: '2 años o más', p1_pay: 'Por hora', p1_rate: '22', p1_hours: '40', p1_credit: '580 a 599', p1_issues: ['Colecciones'],
