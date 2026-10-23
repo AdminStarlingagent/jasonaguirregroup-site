@@ -49,9 +49,12 @@ Deno.serve(async (req) => {
   const days = Math.max(1, Math.min(30, Number(b.days) || 7));
   const max = Math.max(5, Math.min(60, Number(b.limit) || 40));
 
-  let key = Deno.env.get("FUB_API_KEY") || "";
-  if (!key) { const { data } = await db.rpc("jag_fub_key"); key = (data as string) || ""; }
+  // Clean up common copy-paste problems (spaces, line breaks, a pasted "Basic " prefix or trailing ":").
+  const clean = (k: string) => String(k || "").trim().replace(/^basic\s+/i, "").replace(/:$/, "").trim();
+  let key = clean(Deno.env.get("FUB_API_KEY") || ""), keySource = "edge secret FUB_API_KEY";
+  if (!key) { const { data } = await db.rpc("jag_fub_key"); key = clean((data as string) || ""); keySource = "vault jag_fub_api_key"; }
   if (!key) return json(req, { ok: false, error: "fub_key" }, 500);
+  const keyInfo = { key_source: keySource, key_length: key.length };   // never the key itself
   const H = { Authorization: "Basic " + btoa(key + ":"), "X-System": "JAG-Screener" };
   const fub = async (path: string) => {
     const r = await fetch(FUB + path, { headers: H });
@@ -108,6 +111,6 @@ Deno.serve(async (req) => {
     });
     return json(req, { ok: true, days, as_of: new Date().toISOString(), calls_today_total: calls.length, leads: out });
   } catch (e) {
-    return json(req, { ok: false, error: String((e as Error).message || e) }, 502);
+    return json(req, { ok: false, error: String((e as Error).message || e), ...keyInfo }, 502);
   }
 });
