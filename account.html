@@ -51,6 +51,8 @@ header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0
 .hello{padding:30px 0 6px}
 .hello h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px;line-height:1.15}
 .hello p{margin:0;color:var(--muted)}
+.prem{max-width:620px;margin-top:16px}
+.prem:empty{display:none}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 22px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tabs a{text-decoration:none;font-weight:700;padding:12px 14px;border-bottom:3px solid transparent;white-space:nowrap;color:var(--muted)}
@@ -220,6 +222,7 @@ footer b{color:var(--ink)}
 
   <div id="app" hidden>
     <div class="hello"><h1 id="hi"></h1><p data-t="hi_p"></p></div>
+    <div id="prem" class="prem"></div>
     <nav class="tabs" id="tabs">
       <a href="#saved" data-tab="saved"><span data-t="tab_saved"></span><span class="ct" id="ct_saved"></span></a>
       <a href="#offers" data-tab="offers"><span data-t="tab_offers"></span><span class="ct" id="ct_offers"></span></a>
@@ -272,6 +275,7 @@ footer b{color:var(--ink)}
 </div></footer>
 
 <script src="jag-account.js"></script>
+<script src="jag-premium.js?v=1"></script>
 <script src="jag-install.js" defer></script>
 <script>
 var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
@@ -500,7 +504,19 @@ function setTab(k){
 }
 window.addEventListener('hashchange',function(){ setTab(location.hash.slice(1)); });
 
-function paintAll(){ paintSaved(); paintOffers(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); }
+function paintAll(){ paintSaved(); paintOffers(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); paintPrem(); }
+
+/* ---------- premium: dedicated agent + showing requests ---------- */
+function paintPrem(){
+  var el=$('prem'); if(!el||!window.JagPremium) return;
+  if(!D.agent){ el.innerHTML=''; return; }
+  el.innerHTML=JagPremium.card({agent:D.agent,showings:D.showings||[]});
+  JagPremium.bind(el,{homes:D.favs||[],onDone:loadPrem});
+}
+function loadPrem(){
+  if(!window.JagPremium) return;
+  Promise.all([JagPremium.agent(), JagPremium.showings()]).then(function(r){ D.agent=r[0]; D.showings=r[1]; paintPrem(); });
+}
 
 /* ---------- offers + proof (pre-approval / proof of funds) ---------- */
 function money(n){ return '$'+Math.round(Number(n)||0).toLocaleString('en-US'); }
@@ -571,7 +587,7 @@ function start(){
     A.alerts().then(function(r){ D.alerts=r||[]; }).catch(function(){ D.alerts=[]; }),
     A.activity(300).then(function(r){ D.activity=r||[]; }).catch(function(){ D.activity=[]; })
   ]).then(function(){ paintAll(); setTab(tab); loadPicks(); });
-  loadOffers();
+  loadOffers(); loadPrem();
 }
 $('gatebtn').onclick=function(){ A.requireSignIn().catch(function(){}); };
 if(A){ A.mountButton($('acct')); A.onChange(start); }

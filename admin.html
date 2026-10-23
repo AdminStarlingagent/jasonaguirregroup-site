@@ -296,6 +296,8 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 .pq{border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 16px;background:#fff}
 .pq-r{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f1f1f4;font-size:13.5px}
 .pq-r span{flex:1 1 260px}.pq-r b{display:block}
+.tabcount.hotc{background:var(--buy);color:#fff}.tabcount.hotc:empty{display:none}
+.sq-t{font-size:12.5px;color:var(--muted)}.sq-t em{font-style:normal;font-weight:800;color:var(--ink)}.sq-ok{color:#1a5c31;font-weight:800}.sq-bad{color:var(--buy);font-weight:800}
 .t-scr{background:#fdecef;color:#c8102e}
 .muted{color:var(--muted)}
 .leadscr{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-top:4px}
@@ -364,7 +366,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <button type="button" class="tab on" id="tab-leads" data-tab="leads" role="tab" aria-selected="true">Leads</button>
     <button type="button" class="tab" id="tab-nurture" data-tab="nurture" role="tab" aria-selected="false" title="Applications under $3,000 a month household income">Nurture <span class="tabcount" id="nurturecount"></span></button>
     <button type="button" class="tab" id="tab-deals" data-tab="deals" role="tab" aria-selected="false">Deals <span class="tabcount" id="dealcount"></span></button>
-    <button type="button" class="tab" id="tab-clients" data-tab="clients" role="tab" aria-selected="false">Client accounts <span class="tabcount" id="clientcount"></span></button>
+    <button type="button" class="tab" id="tab-clients" data-tab="clients" role="tab" aria-selected="false">Client accounts <span class="tabcount" id="clientcount"></span><span class="tabcount hotc" id="showcount" title="Showing requests not handled yet"></span></button>
     <button type="button" class="tab" id="tab-screens" data-tab="screens" role="tab" aria-selected="false" title="Call screenings by the team and the agent report">Screenings <span class="tabcount" id="screencount" title="Hot leads that have not sent the loan app yet"></span></button>
     <button type="button" class="tab" id="tab-team" data-tab="team" role="tab" aria-selected="false">Team access</button>
   </nav>
@@ -462,6 +464,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 
   <section id="clientsview" hidden>
     <div class="stats" id="clientstats"></div>
+    <div id="showq"></div>
     <div id="proofq"></div>
     <div class="toolbar">
       <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>
@@ -755,6 +758,7 @@ function show(view){
   $('who').textContent = on ? (state.email||'') : '';
   if(on && !state.agentName) loadAgentName();
   if(on) setTab(state.tab||'leads');
+  if(on) loadShowings();
 }
 
 /* ---------------- auth ---------------- */
@@ -1043,11 +1047,49 @@ function renderProofQueue(d){
   };
 }
 
+/* ---------------- showing requests (premium accounts) ----------------
+   Clients ask for a showing from their account or a home page. Lola texts their agent and Follow Up Boss gets a task;
+   here the team sees every request and marks it handled once the showing is set. */
+var showings={rows:null};
+function loadShowings(){
+  return api('/rest/v1/rpc/jag_showing_list',{method:'POST',body:JSON.stringify({p_days:30})})
+    .then(function(r){ return r.ok?r.json():[]; }).then(function(j){ showings.rows=Array.isArray(j)?j:[]; renderShowings(); })
+    .catch(function(){ showings.rows=showings.rows||[]; renderShowings(); });
+}
+function renderShowings(){
+  var box=$('showq'), rows=showings.rows||[], open=rows.filter(function(r){ return !r.handled_at; });
+  $('showcount').textContent=open.length?String(open.length):'';
+  if(!box) return;
+  if(!rows.length){ box.innerHTML=''; return; }
+  var recent=rows.filter(function(r){ return r.handled_at; }).slice(0,5);
+  function row(r){
+    var h=r.home||{}, ph=String(r.phone||'').replace(/[^0-9+]/g,''), times=(r.times||[]).join(' · ');
+    var sent=r.sent_at?'<span class="sq-ok">'+esc(r.agent_first||'Agent')+' texted · FUB task</span>':r.error?'<span class="sq-bad">Not sent yet: '+esc(r.error)+'</span>':'<span class="sq-t">Waiting to text '+esc(r.agent_first||'agent')+' (8 AM–8 PM)</span>';
+    return '<div class="pq-r" data-sid="'+esc(r.id)+'"><span><b>'+esc(r.name||r.email||'Client')+' · '+esc(h.addr||('MLS '+(r.mls||'')))+(h.price?' · '+cmoney(h.price):'')+'</b>'+
+      '<span class="sq-t">'+esc(times)+(r.note?' · “'+esc(r.note)+'”':'')+'</span><br><span class="sq-t">Agent <em>'+esc(r.agent_first||'—')+'</em> · asked '+crel(r.created_at)+' · </span>'+sent+
+      (r.handled_at?'<br><span class="sq-t">Handled by '+esc(r.handled_by||'team')+' '+crel(r.handled_at)+'</span>':'')+'</span>'+
+      (ph?'<a class="linkbtn" href="tel:'+esc(ph)+'">Call</a><a class="linkbtn" href="sms:'+esc(ph)+'">Text</a>':'')+
+      (r.fub_person_id?'<a class="linkbtn" href="https://jasonhoustonrealty.followupboss.com/2/people/view/'+encodeURIComponent(r.fub_person_id)+'" target="_blank" rel="noopener">FUB</a>':'')+
+      (r.mls?'<a class="linkbtn" href="homes#'+encodeURIComponent(r.mls)+'" target="_blank" rel="noopener">Home</a>':'')+
+      (r.handled_at?'<button type="button" class="linkbtn" data-sdone="0">Reopen</button>':'<button type="button" class="savebtn" data-sdone="1">Mark handled</button>')+'</div>';
+  }
+  box.innerHTML='<div class="pq"><div class="sect" style="margin-top:0">Showing requests ('+open.length+' open) · from premium accounts, sent to their dedicated agent</div>'+
+    (open.length?open.map(row).join(''):'<p class="dt" style="margin:6px 0">All handled.</p>')+
+    (recent.length?'<details style="margin-top:6px"><summary class="sq-t" style="cursor:pointer">Recently handled ('+recent.length+')</summary>'+recent.map(row).join('')+'</details>':'')+'</div>';
+  box.onclick=function(e){
+    var b=e.target.closest('[data-sdone]'); if(!b) return; var id=+b.closest('[data-sid]').dataset.sid;
+    b.disabled=true;
+    api('/rest/v1/rpc/jag_showing_handle',{method:'POST',body:JSON.stringify({p_id:id,p_done:b.dataset.sdone==='1'})})
+      .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok){ toast(b.dataset.sdone==='1'?'Marked handled':'Reopened',true); loadShowings(); } else { b.disabled=false; toast('Could not save.'); } })
+      .catch(function(){ b.disabled=false; toast('Could not save.'); });
+  };
+}
+
 var CDN_='https://cdn.repliers.io/';
 function cmoney(n){ return n==null?'':'$'+Math.round(n).toLocaleString('en-US'); }
 function crel(iso){ if(!iso) return '—'; var d=(Date.now()-new Date(iso).getTime())/864e5; if(d<1) return 'today'; if(d<2) return 'yesterday'; if(d<30) return Math.floor(d)+' days ago'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 function loadClients(){
-  if(clients.loading) return; clients.loading=true; loadTeamOffers(true).then(renderProofQueue);
+  if(clients.loading) return; clients.loading=true; loadTeamOffers(true).then(renderProofQueue); loadShowings();
   api('/rest/v1/rpc/jag_staff_clients',{method:'POST',body:'{}'})
   .then(function(r){ if(r.status===401){ signOut(); throw 0; } return r.json(); })
   .then(function(j){ clients.rows=(j&&j.ok&&Array.isArray(j.clients))?j.clients:[];
