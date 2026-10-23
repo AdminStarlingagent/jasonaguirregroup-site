@@ -410,11 +410,7 @@ body.fab #stage{margin-bottom:110px}
     ];
   }
   const STEPS = [
-    { id: 'source', sect: ['Inicio', 'Start'], kind: 'one', q: ['¿De dónde llegó el cliente?', 'Where did the client come from?'], say: ['Usted nos dejó su número después de ver nuestros videos sobre casas y programas para compradores, ¿correcto?', 'You left us your number after watching our videos about homes and buyer programs, right?'], opts: ['TikTok', 'Facebook', 'Sitio web', 'Referido', 'Otro'], two: true },
-    { id: 'intent', sect: ['Qué busca', 'Goals'], kind: 'one', q: ['¿Qué busca?', 'What are they looking for?'], say: ['¿Está buscando comprar casa, o quería información sobre lo que piden los bancos?', 'Are you looking to buy a home, or did you want information on what banks require?'], opts: ['Comprar casa', 'Solo información'] },
     { id: 'first', sect: ['Qué busca', 'Goals'], kind: 'one', q: ['¿Es su primera casa?', 'Is this their first home?'], say: ['¿Es la primera vez que compra casa?', 'Is this your first time buying a home?'], opts: ['Sí, primera casa', 'No, ya tuvo casa'] },
-    { id: 'when', sect: ['Qué busca', 'Goals'], kind: 'one', q: ['¿Cuándo le gustaría comprar?', 'When would they like to buy?'], say: ['¿En cuánto tiempo le gustaría comprar? ¿Y en qué área?', 'How soon would you like to buy? And in what area?'], opts: ['0 a 3 meses', '3 a 6 meses', '6 a 12 meses', 'Más de un año'], two: true, area: true },
-    { id: 'beds', sect: ['Qué busca', 'Goals'], kind: 'one', when: st => st.intent !== 'Solo información', q: ['¿Cuántas recámaras necesita?', 'How many bedrooms do they need?'], say: ['¿Cuántas recámaras necesita la casa?', 'How many bedrooms does the home need?'], opts: ['1+', '2+', '3+', '4+', '5+'], two: true },
     { id: 'reqs', sect: ['Requisitos', 'Requirements'], kind: 'info', q: ['Explica los 5 requisitos', 'Explain the 5 requirements'], say: ['Con gusto le explico lo que pide un banco. Son cinco cosas básicas… De esos requisitos, ¿cómo se encuentra usted?', "Happy to explain what a bank asks for. There are five basic things… How are you doing on those?"],
       list: [['2 años de declaración de impuestos', '2 years of tax returns'], ['2 años de trabajo (si cambió de compañía pero hace lo mismo, no hay problema)', '2 years of work history (changing companies is fine if the work is the same)'], ['Crédito: hay programas desde 580, sin problemas recientes', 'Credit: programs start at 580, with nothing recent'], ['Identificación vigente', 'A valid ID'], ['Una cuenta de banco con algo ahorrado para el enganche', 'A bank account with some savings for the down payment']] },
     { id: 'who', sect: ['Quién aplica', 'Applicants'], kind: 'one', q: ['¿Quién va a aplicar?', 'Who will apply?'], say: ['¿Va a aplicar usted solo/sola o con alguien más?', 'Will you apply on your own or with someone else?'], opts: ['Solo', 'Con pareja', 'Con otro familiar'], rel: true },
@@ -830,7 +826,7 @@ body.fab #stage{margin-bottom:110px}
     const price = target || est || 250000, need = price * (CALC.prog[cd.prog].down + CALC.closePct) / 100, sav = r.savings || 0;
     add('save', [t('Ahorro para enganche', 'Savings for down payment')], sav >= need ? 10 : sav >= need * 0.5 ? 6 : sav > 0 ? 3 : 0, 10, st.savings != null && st.savings !== '');
     const score = Math.min(100, parts.reduce((a, p) => a + p.pts, 0));
-    const buying = st.intent !== 'Solo información' && HOT.when.includes(st.when);
+    const buying = st.intent !== 'Solo información' && (!st.when || HOT.when.includes(st.when));   // timing/intent are no longer asked (Oct 2026); older screenings keep their answers
     const issuesKnown = parts.find(p => p.k === 'issues').known;   // never call it hot before we know about repos, evictions or bankruptcies
     const affShort = fit != null && fit < AFF.hotMin;             // income falls short of qualifying for the price they want
     const hot = score >= HOT.score && buying && issuesKnown && r.lane !== 'prep' && !affShort;
