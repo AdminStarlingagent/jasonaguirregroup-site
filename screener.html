@@ -69,6 +69,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;gap:12
 .lq-b.call{background:var(--ink);border-color:var(--ink);color:#fff}.lq-b.go{margin-left:auto;border-color:var(--accent);color:var(--accent)}.lq-b.off{color:var(--mut);cursor:default}
 .lq-row.s-answered{opacity:.75}
 .navbtn .n{display:inline-block;min-width:20px;margin-left:6px;padding:1px 7px;border-radius:99px;background:var(--accent);color:#fff;font-size:12px}
+.navbtn .n[hidden],.cstrip[hidden]{display:none}
 
 /* Progress */
 .progress-wrap{max-width:610px;margin:8px auto 0}
@@ -257,6 +258,12 @@ body.fab #lolaFab{display:inline-flex}
 @media (min-width:1280px){body.rails #lolaFab{display:none}}
 body.fab #stage{margin-bottom:110px}
 /* readiness meter + hot lead toast */
+.cstrip{margin:0 0 10px;padding:10px 14px;border-radius:14px;background:#fff;border:1.5px solid var(--line)}
+.cs-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:14px}.cs-top>b{font-size:16px}
+.cs-top a{color:var(--mut);text-decoration:none;font-weight:600}.cs-top a:hover{color:var(--ink)}
+.cs-co{margin-left:auto;font-size:13px;color:var(--mut)}.cs-co b{color:var(--ink)}
+.cs-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.cs-chips span{background:var(--card);border-radius:99px;padding:3px 9px;font-size:12px;font-weight:600}
+@media (max-width:560px){.cs-co{margin-left:0;width:100%}}
 .meter{margin:12px 0 0;padding:10px 14px 12px;border-radius:14px;background:var(--card)}
 .meter .mrow{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13.5px}
 .meter .mk{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
@@ -317,6 +324,7 @@ body.fab #stage{margin-bottom:110px}
   </header>
 
   <div class="progress-wrap" id="prog" hidden>
+    <div class="cstrip" id="cstrip" hidden></div>
     <div class="track"><div class="fill" id="fill"></div></div>
     <div class="prog-row">
       <button class="backbtn" id="back" type="button" aria-label="Atrás"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg></button>
@@ -834,7 +842,29 @@ body.fab #stage{margin-bottom:110px}
       ${affMsg ? `<div class="mwarn">⚠️ ${affMsg}</div>` : ''}
       <div class="mtrack"><div class="mfill" style="width:${Math.max(2, R.score)}%"></div><i style="left:${HOT.score}%"></i></div></div>`;
   }
+  // Who we're talking to, always at the top of the questions: client, phone, co-borrower, and key answers so far.
+  function paintStrip() {
+    const el = $('#cstrip'); if (!el) return;
+    el.hidden = !(view === 'steps' && (s.c_name || '').trim());
+    if (el.hidden) return;
+    const r = evaluate(s), d = String(s.c_phone || '').replace(/\D/g, '').slice(-10);
+    const phone = d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : (s.c_phone || '');
+    const two = s.who && s.who !== 'Solo';
+    const coName = (s.p2_rel || '').trim() || (s.who === 'Con pareja' ? t('su pareja', 'their partner') : two ? t('un familiar', 'a relative') : '');
+    const chips = [
+      s.area ? '📍 ' + s.area : '',
+      s.beds ? s.beds + t(' rec', ' bd') : '',
+      r.price ? t('Busca ', 'Wants ') + money(r.price) : '',
+      r.monthly ? money(r.monthly) + t('/mes', '/mo') + (two && r.people.length > 1 ? t(' (juntos)', ' (combined)') : '') : '',
+      s.p1_credit ? t('Crédito ', 'Credit ') + o(s.p1_credit) : '',
+      s.p1_id ? o(s.p1_id) : '',
+      s.when ? '⏱ ' + o(s.when) : '',
+    ].filter(Boolean);
+    el.innerHTML = `<div class="cs-top"><b>${esc(s.c_name)}</b>${phone ? `<a href="tel:+1${d}">${esc(phone)}</a>` : ''}${two ? `<span class="cs-co">${t('Co-aplicante', 'Co-borrower')}: <b>${esc(coName)}</b></span>` : ''}</div>` +
+      (chips.length ? `<div class="cs-chips">${chips.map(c => `<span>${esc(c)}</span>`).join('')}</div>` : '');
+  }
   function paintMeter() {
+    paintStrip();
     const m = $('#meter'); if (!m) return;
     m.hidden = !(view === 'steps');
     if (!m.hidden) m.innerHTML = meterHtml();
