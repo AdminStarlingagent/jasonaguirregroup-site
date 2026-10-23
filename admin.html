@@ -12,6 +12,7 @@
 <script src="jag-capture.js?v=3"></script>
 <script src="jag-file-format.js?v=5"></script>
 <script src="jag-offer.js?v=1"></script>
+<script src="jag-handoff.js?v=1"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
    forward to reset-password.html with the token hash intact so users can set a new password. */
@@ -162,6 +163,8 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 .qbtn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:13px;font-weight:800;padding:10px 16px;border-radius:99px;color:#fff}
 .q-call{background:var(--sell)} .q-text{background:var(--loan)} .q-mail{background:var(--ink)}
 .q-pdf{background:#fff;color:var(--ink);border:1.5px solid var(--ink);cursor:pointer;padding:8.5px 15px}
+.q-app{background:#c8102e;border:0;cursor:pointer;font-family:inherit}
+.ghostbtn.primebtn{background:#c8102e;border-color:#c8102e;color:#fff}.ghostbtn.primebtn:hover{background:#a30d26}
 .q-lender{background:var(--buy);border:0;cursor:pointer;margin-left:auto}
 .q-lender[aria-expanded="true"]{background:#9d0c24}
 
@@ -319,7 +322,8 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
   <div class="hin">
     <a class="lock" href="index.html"><small>Est. 2018</small><b>JAG</b><i>Admin</i></a>
     <span class="who" id="who"></span>
-    <button class="ghostbtn" id="copyapply" style="display:none" title="Copy the application link to send to a client">&#128279; Copy application link</button>
+    <button class="ghostbtn primebtn" id="startapp" style="display:none" title="Open the JAG Home Loans app to fill it in with a client on the phone">&#128221; Start home app</button>
+    <button class="ghostbtn" id="copyapply" style="display:none" title="Copy the application link to send to a client">&#128279; Copy link</button>
     <a class="ghostbtn" id="toscreener" href="screener.html" style="display:none;text-decoration:none" title="Live call screener: script, route, PDF and Follow Up Boss">&#128222; Screener</a>
     <button class="ghostbtn" id="refresh" style="display:none">Refresh</button>
     <button class="ghostbtn" id="exportcsv" style="display:none">Export CSV</button>
@@ -747,8 +751,9 @@ function show(view){
   $('loginview').style.display = view==='login'?'grid':'none';
   $('app').style.display       = view==='app'?'block':'none';
   var on = view==='app';
-  ['copyapply','toscreener','refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
+  ['startapp','copyapply','toscreener','refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
   $('who').textContent = on ? (state.email||'') : '';
+  if(on && !state.agentName) loadAgentName();
   if(on) setTab(state.tab||'leads');
 }
 
@@ -1350,12 +1355,14 @@ function openDrawer(id){
   if(r.email){ var ml = mailLink(r.email);
                q.push('<a class="qbtn q-mail" href="'+esc(ml.href)+'" target="'+ml.target+'" rel="noopener">Email</a>'); }
   if((r.payload||{})['Screening']) q.push('<a class="qbtn q-lender" href="'+esc(r.payload['Screening'])+'" target="_blank" rel="noopener">Open screening</a>');
+  if(r.type!=='Mortgage Application') q.push('<button type="button" class="qbtn q-app" id="d-app-btn" title="Opens the JAG Home Loans app with what we already know about this client">Start home app</button>');
   q.push('<button type="button" class="qbtn q-pdf" id="d-pdf-btn">Save PDF</button>');
   if(r.type==='Mortgage Application'){
     q.push('<button type="button" class="qbtn q-lender" id="d-lender-btn" aria-expanded="false" aria-controls="d-lender">Send to lender</button>');
   }
   $('d-quick').innerHTML = q.join('');
   $('d-pdf-btn').addEventListener('click', savePdf);
+  if($('d-app-btn')){ preloadScreening(r); $('d-app-btn').addEventListener('click', function(){ startAppFor(r); }); }
   lenderReset(); $('d-shares').innerHTML=''; $('d-offer').innerHTML='';
   if(r.type==='Buyer Offer') loadOfferPanel(r);
   if(r.type==='Mortgage Application'){
@@ -1881,12 +1888,39 @@ function exportCSV(){
 $('li-btn').addEventListener('click', signIn);
 $('li-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') signIn(); });
 $('signout').addEventListener('click', signOut);
+/* ---------------- Start home app: open apply.html with what we already know (jag-handoff.js) ---------------- */
+// Fetched ahead of time so the click opens the app right away (browsers block tabs opened after a wait).
+function loadAgentName(){
+  api('/rest/v1/rpc/jag_agent_me', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){ if(j && j.ok && j.agent) state.agentName = j.agent.name; }).catch(function(){});
+}
+function myName(){ return state.agentName || String(state.email||'').split('@')[0]; }
+function preloadScreening(r){
+  var sid = (r.payload||{})['Screening ID'];
+  if(!sid || r._scr) return;
+  api('/rest/v1/jag_screenings?select=id,answers,client_name,phone,email,lang&id=eq.'+encodeURIComponent(sid))
+    .then(function(x){ return x.ok ? x.json() : []; })
+    .then(function(rows){ if(rows && rows[0]) r._scr = rows[0]; }).catch(function(){});
+}
+function startAppFor(r){
+  if(!window.JagHandoff){ toast('Could not open the app. Reload the page and try again.'); return; }
+  var A, sid = null;
+  if(r && r._scr){
+    var sc = r._scr, st = Object.assign({}, sc.answers||{}, { c_name: sc.client_name||r.name, c_phone: sc.phone||r.phone, c_email: sc.email||r.email });
+    A = JagHandoff.fromScreening(st, sc.lang==='en' ? 'en' : 'es'); sid = sc.id;
+  } else if(r){
+    A = JagHandoff.basic({ name:r.name, phone:r.phone, email:r.email, lang:r.lang });
+  } else A = {};
+  if(!JagHandoff.start({ from: myName(), client: (r && r.name) || '', sid: sid, A: A })) toast('Could not open the app on this device.');
+}
+$('startapp').addEventListener('click', function(){ startAppFor(null); });
 var APPLY_LINK = 'https://jasonaguirregroup.company/apply.html';
 $('copyapply').addEventListener('click', function(){
   var btn = document.getElementById('copyapply');
   function done(ok){
     btn.textContent = ok ? '\u2713 Link copied \u2014 paste it to your client' : 'Copy failed \u2014 link: '+APPLY_LINK;
-    setTimeout(function(){ btn.innerHTML = '&#128279; Copy application link'; }, 2200);
+    setTimeout(function(){ btn.innerHTML = '&#128279; Copy link'; }, 2200);
   }
   function fallback(){
     try{

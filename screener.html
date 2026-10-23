@@ -262,6 +262,9 @@ body.fab #stage{margin-bottom:110px}
 .cs-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:14px}.cs-top>b{font-size:16px}
 .cs-top a{color:var(--mut);text-decoration:none;font-weight:600}.cs-top a:hover{color:var(--ink)}
 .cs-co{margin-left:auto;font-size:13px;color:var(--mut)}.cs-co b{color:var(--ink)}
+.cs-app{border:1.5px solid var(--accent);background:#fff;color:var(--accent);border-radius:99px;padding:4px 11px;font:700 12.5px inherit;font-family:inherit;cursor:pointer;white-space:nowrap}
+.cs-co+.cs-app{margin-left:0}.cs-top>a+.cs-app,.cs-top>b+.cs-app{margin-left:auto}
+.cs-app:hover{background:var(--accent);color:#fff}
 .cs-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.cs-chips span{background:var(--card);border-radius:99px;padding:3px 9px;font-size:12px;font-weight:600}
 @media (max-width:560px){.cs-co{margin-left:0;width:100%}}
 .meter{margin:12px 0 0;padding:10px 14px 12px;border-radius:14px;background:var(--card)}
@@ -302,6 +305,7 @@ body.fab #stage{margin-bottom:110px}
 
 <script src="jag-capture.js?v=3"></script>
 <script src="jag-share.js?v=2"></script>
+<script src="jag-handoff.js?v=1"></script>
 </head>
 <body>
 <style>
@@ -860,8 +864,10 @@ body.fab #stage{margin-bottom:110px}
       s.p1_id ? o(s.p1_id) : '',
       s.when ? '⏱ ' + o(s.when) : '',
     ].filter(Boolean);
-    el.innerHTML = `<div class="cs-top"><b>${esc(s.c_name)}</b>${phone ? `<a href="tel:+1${d}">${esc(phone)}</a>` : ''}${two ? `<span class="cs-co">${t('Co-aplicante', 'Co-borrower')}: <b>${esc(coName)}</b></span>` : ''}</div>` +
+    el.innerHTML = `<div class="cs-top"><b>${esc(s.c_name)}</b>${phone ? `<a href="tel:+1${d}">${esc(phone)}</a>` : ''}${two ? `<span class="cs-co">${t('Co-aplicante', 'Co-borrower')}: <b>${esc(coName)}</b></span>` : ''}` +
+      (mode === 'practice' ? '' : `<button type="button" class="cs-app" id="cs-app" title="${t('Abre la aplicación JAG Home Loans con lo que ya contestó', 'Opens the JAG Home Loans app with what they already answered')}">${t('Empezar app', 'Start home app')} →</button>`) + `</div>` +
       (chips.length ? `<div class="cs-chips">${chips.map(c => `<span>${esc(c)}</span>`).join('')}</div>` : '');
+    const ab = $('#cs-app'); if (ab) ab.onclick = startApp;
   }
   function paintMeter() {
     paintStrip();
@@ -1233,58 +1239,12 @@ body.fab #stage{margin-bottom:110px}
   // ===== Next steps: finish the JAG Home Loans app with the answers from this call =====
   // The answers go to apply.html through this device's storage (never in a link), expire in 30 minutes,
   // and are deleted as soon as the app reads them. The app links back to this screening by phone (DB trigger).
-  const HANDOFF_KEY = 'jag_app_handoff';
   let ME = null;   // the signed-in agent (jag_agent_me): code, name, first_name, phone; null if not set up as an agent
-  function appStatus(n) {
-    const id = s[`p${n}_id`], st = s[`p${n}_status`];
-    if (st === 'Permiso de trabajo') return 'Work Permit (EAD)';
-    if (id === 'ITIN') return 'ITIN (Tax ID number)';
-    if (st === 'Residente') return 'Permanent Resident / Green Card';
-    if (st === 'Ciudadano') return 'Social Security Number (SSN)';
-    return '';
-  }
-  function appAnswers() {
-    const A = {}, set = (k, v) => { if (v != null && v !== '' && !(typeof v === 'number' && !isFinite(v))) A[k] = String(v); };
-    const parts = (s.c_name || '').trim().split(/\s+/).filter(Boolean);
-    set('language', LANG === 'en' ? 'English' : 'Español');
-    if (s.intent === 'Comprar casa') set('goal', 'Buy a home');
-    if (parts.length) set('first', parts[0]);
-    if (parts.length > 1) set('last', parts.slice(1).join(' '));
-    set('phone', (s.c_phone || '').replace(/\D/g, '').slice(-10));
-    set('email', (s.c_email || '').trim());
-    // pre '' = the client, 'co' = the co-borrower (the Home App's key names)
-    const person = (n, pre) => {
-      const K = k => pre ? pre + k.charAt(0).toUpperCase() + k.slice(1) : k;
-      set(K('status'), appStatus(n));
-      const inc = s[`p${n}_inc`], pay = s[`p${n}_pay`], m = income(s, n).monthly;
-      if (inc === 'W-2' || inc === 'W-2 y 1099' || inc === 'Efectivo sin declarar') {
-        set(K('work'), 'Employed');
-        if (inc === 'Efectivo sin declarar') set(K('payType'), 'Cash');
-        else if (pay === 'Por hora') { set(K('payType'), 'By the hour'); set(K('payRate'), num(s[`p${n}_rate`])); set(K('hoursWeek'), num(s[`p${n}_hours`])); }
-        else if (pay === 'Al año' || pay === 'Al mes') { set(K('payType'), 'Salary'); set(K('salaryAmt'), num(s[`p${n}_amount`])); set(K('salaryPer'), pay === 'Al año' ? 'Per year' : 'Per month'); }
-        if (m) { set(K('income'), Math.round(m)); if (!pre) A.incomeComputed = true; }
-      } else if (inc === '1099 / negocio propio') {
-        set(K('work'), 'Self-employed');
-        if (m) set(K('income'), Math.round(m));
-        if (!pre && s[`p${n}_tenure`] === 'Menos de 6 meses') set('tenure', 'Less than 1 year');
-      } else if (inc === 'No trabaja') set(K('work'), 'Not employed');
-    };
-    person(1, '');
-    if (s.who === 'Solo') set('hasCoBorrower', 'No');
-    else if (s.who === 'Con pareja' || s.who === 'Con otro familiar') {
-      set('hasCoBorrower', 'Yes'); A.coFromNudge = false;
-      if (s.who === 'Con pareja') set('coRelation', 'Spouse/Partner');
-      person(2, 'co');
-    }
-    const debtsAsked = s.__debtsSeen || ['d_car', 'd_cards', 'd_loans', 'd_other'].some(k => s[k] !== undefined && s[k] !== '');
-    if (debtsAsked) set('debts', Math.round(evaluate(s).debts || 0));
-    return A;
-  }
+  // Answers → Home App format lives in jag-handoff.js (shared with the admin).
+  const appAnswers = () => window.JagHandoff ? JagHandoff.fromScreening(s, LANG) : {};
   function startApp() {
-    const h = { v: 1, at: Date.now(), from: s.screener || '', sid: (current && current.id) || null, client: s.c_name || '', A: appAnswers() };
-    try { localStorage.setItem(HANDOFF_KEY, JSON.stringify(h)); }
-    catch (e) { $('#msg').textContent = t('No se pudo pasar las respuestas. Abre la aplicación y llénala desde el inicio.', "Couldn't pass the answers over. Open the app and fill it in from the start."); return; }
-    window.open('apply.html?from=screener', '_blank');
+    const ok = window.JagHandoff && JagHandoff.start({ from: s.screener || '', sid: (current && current.id) || null, client: s.c_name || '', A: appAnswers() });
+    if (!ok) { const m = $('#msg'); if (m) m.textContent = t('No se pudo pasar las respuestas. Abre la aplicación y llénala desde el inicio.', "Couldn't pass the answers over. Open the app and fill it in from the start."); }
   }
   // What the client wants, for the home-search link and the home emails: area, bedrooms, budget.
   // Budget = the lower of the price they want and the comfortable estimate, so we never show homes they can't afford.
@@ -1313,7 +1273,7 @@ body.fab #stage{margin-bottom:110px}
   function nextHtml(R) {
     if (mode === 'practice' || mode === 'example') return '';
     return `<div class="box nextsteps"><h3>${t('Siguientes pasos', 'Next steps')}</h3>
-      <div class="ns-row"><div><b>${R.hot ? '🔥 ' : ''}${t('Llenar la aplicación JAG Home Loans', 'Complete the JAG Home Loans app')}</b><p>${t('Se abre con las respuestas de esta llamada. Solo pregunta lo que falta (fecha de nacimiento, dirección, empleo) mientras sigue en la línea.', 'Opens with the answers from this call. Only ask what is missing (birthday, address, employer) while they are still on the line.')}</p></div><button class="next${R.hot ? ' red' : ''}" type="button" id="ns-app">${t('Abrir la aplicación', 'Open the app')}</button></div>
+      <div class="ns-row"><div><b>${R.hot ? '🔥 ' : ''}${t('Llenar la aplicación JAG Home Loans', 'Complete the JAG Home Loans app')}</b><p>${t('Se abre con las respuestas de esta llamada. Solo pregunta lo que falta (fecha de nacimiento, dirección, empleo) mientras sigue en la línea.', 'Opens with the answers from this call. Only ask what is missing (birthday, address, employer) while they are still on the line.')}</p></div><button class="next${R.hot ? ' red' : ''}" type="button" id="ns-app">${t('Empezar la aplicación', 'Start home app')}</button></div>
       ${homesRow()}<div id="ns-activity"></div><div id="ns-mail"></div>
     </div>`;
   }

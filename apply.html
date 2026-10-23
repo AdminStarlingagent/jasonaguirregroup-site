@@ -487,13 +487,6 @@ const STEPS = [
                  es:'No hay problema \u2014 podemos planear juntos mientras lo renueva.'}
     }},
 
-  { id:'taxId', type:'taxid', key:'taxId', which:'borrower',
-    titleFn:function(a){ return a.status==='ITIN (Tax ID number)'
-      ? {en:'What is your ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
-      : {en:'What is your Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
-    hint:{en:'Stored encrypted \u2014 only your loan team can see it. If you\u2019d rather say it by phone, that\u2019s okay too.',
-          es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Si prefiere darlo por tel\u00e9fono, tambi\u00e9n est\u00e1 bien.'}},
-
   /* -------- 5) applying together? (Kat asks before going deeper) -------- */
   { id:'hasCoB', type:'single', key:'hasCoBorrower',
     title:{en:'Will anyone in your family apply with you?', es:'\u00bfAlguien de su familia va a aplicar con usted?'},
@@ -762,13 +755,6 @@ const STEPS = [
         es:'No hay problema \u2014 trabajamos con co-prestatarios con ITIN todos los d\u00edas.'}
     }},
 
-  { id:'coTaxId', type:'taxid', key:'coTaxId', which:'coborrower', when:a=>a.hasCoBorrower==='Yes',
-    titleFn:function(a){ var r=coRef(a); return a.coStatus==='ITIN (Tax ID number)'
-      ? {en:'What is '+r.en+'\u2019s ITIN number?', es:'\u00bfCu\u00e1l es el n\u00famero de ITIN de '+r.es+'?'}
-      : {en:'What is '+r.en+'\u2019s Social Security number?', es:'\u00bfCu\u00e1l es el n\u00famero de Seguro Social de '+r.es+'?'}; },
-    hint:{en:'Stored encrypted \u2014 only your loan team can see it. Sharing by phone later is okay too.',
-          es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Tambi\u00e9n puede darlo por tel\u00e9fono despu\u00e9s.'}},
-
   { id:'coWork', type:'single', key:'coWork', when:a=>a.hasCoBorrower==='Yes',
     titleFn:function(a){ var r=coRef(a); return {en:'Does '+r.en+' work?', es:'\u00bf'+cap(r.es)+' trabaja?'}; },
     options:[
@@ -849,7 +835,22 @@ const STEPS = [
     label:{en:'Their monthly debt payments', es:'Sus pagos de deudas al mes'}, ph:'e.g. 300',
     err:{en:'Please enter their monthly debt payments \u2014 or 0.',
          es:'Por favor escriba lo que paga al mes en deudas \u2014 o 0.'},
-    button:'confirm'}
+    button:'confirm'},
+
+  /* -------- 8) last: SSN / ITIN, once they're invested (Jason, Oct 2026) -------- */
+  { id:'taxId', type:'taxid', key:'taxId', which:'borrower',
+    titleFn:function(a){ return a.status==='ITIN (Tax ID number)'
+      ? {en:'What is your ITIN number?', es:'\u00bfCu\u00e1l es su n\u00famero de ITIN?'}
+      : {en:'What is your Social Security number?', es:'\u00bfCu\u00e1l es su n\u00famero de Seguro Social?'}; },
+    hint:{en:'Last step! The lender uses it to check your credit when you\u2019re ready \u2014 not today. Stored encrypted; only your loan team can see it. If you\u2019d rather say it by phone, that\u2019s okay too.',
+          es:'\u00a1\u00daltimo paso! El prestamista lo usa para revisar su cr\u00e9dito cuando usted est\u00e9 listo \u2014 no hoy. Se guarda cifrado; solo su equipo de pr\u00e9stamo puede verlo. Si prefiere darlo por tel\u00e9fono, tambi\u00e9n est\u00e1 bien.'}},
+
+  { id:'coTaxId', type:'taxid', key:'coTaxId', which:'coborrower', when:a=>a.hasCoBorrower==='Yes',
+    titleFn:function(a){ var r=coRef(a); return a.coStatus==='ITIN (Tax ID number)'
+      ? {en:'What is '+r.en+'\u2019s ITIN number?', es:'\u00bfCu\u00e1l es el n\u00famero de ITIN de '+r.es+'?'}
+      : {en:'What is '+r.en+'\u2019s Social Security number?', es:'\u00bfCu\u00e1l es el n\u00famero de Seguro Social de '+r.es+'?'}; },
+    hint:{en:'Stored encrypted \u2014 only your loan team can see it. Sharing by phone later is okay too.',
+          es:'Se guarda cifrado \u2014 solo su equipo de pr\u00e9stamo puede verlo. Tambi\u00e9n puede darlo por tel\u00e9fono despu\u00e9s.'}}
 ];
 
 /* ================================================================
