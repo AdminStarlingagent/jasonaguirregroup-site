@@ -185,6 +185,101 @@ footer b{color:var(--ink)}
 .pf-list em{font-style:normal;font-weight:800}
 .pf-list em.pf-verified{color:#17161c}.pf-list em.pf-pending{color:#6a6972}.pf-list em.pf-rejected{color:var(--buy)}
 .pf-list small{flex-basis:100%;color:#5b5a62}
+
+/* ---------- client app shell (side rail on computer, bottom tabs on phone) ---------- */
+body.has-rail main.wrap{max-width:1180px;padding-left:108px}
+.rail{position:fixed;left:0;top:60px;bottom:0;width:84px;border-right:1px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0;z-index:15}
+.rail a{width:72px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border-radius:12px;text-decoration:none;font-size:11.5px;font-weight:600;color:var(--muted);position:relative}
+.rail a svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;padding:5px;box-sizing:content-box;border-radius:10px}
+.rail a:hover{color:var(--ink)}
+.rail a.on{color:var(--buy);font-weight:800}
+.rail a.on svg{background:var(--buy-t)}
+.rail a.on[data-tab="saved"] svg{fill:var(--buy)}
+.rail .bdg{position:absolute;top:2px;right:12px;min-width:19px;height:19px;border-radius:10px;background:var(--buy);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;padding:0 5px;border:2px solid #fff}
+.rail .bdg:empty{display:none}
+.pt{font-size:clamp(30px,4vw,40px);font-weight:800;letter-spacing:-.03em;margin:26px 0 4px;line-height:1.1}
+.ps{color:var(--muted);margin:0 0 20px}
+.h2{font-size:21px;font-weight:800;letter-spacing:-.02em;margin:34px 0 12px}
+.h2 .ct{font-size:13px;background:var(--card);border-radius:10px;padding:1px 8px;margin-left:6px;vertical-align:middle}.h2 .ct:empty{display:none}
+section[data-pane]{padding-bottom:50px}
+/* plan */
+.prog{display:flex;align-items:center;gap:10px;margin:-6px 0 20px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.prog .bar{flex:0 1 220px;height:8px;border-radius:9px;background:#eee;overflow:hidden}.prog .bar i{display:block;height:100%;background:var(--buy);border-radius:9px}
+.plan{display:grid;grid-template-columns:340px minmax(0,1fr);gap:22px;align-items:start}
+.steps{display:flex;flex-direction:column;gap:12px}
+.st{display:grid;grid-template-columns:44px 1fr;gap:4px 14px;align-items:start;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);font:inherit;width:100%}
+.st:hover{border-color:#c9c8d0}
+.st.on{border-color:var(--ink);box-shadow:0 0 0 1.5px var(--ink) inset;background:#fbfbfc}
+.st .ic{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:var(--ink);color:#fff;grid-row:span 2;font-size:20px}
+.st.done .ic{background:#1a5c31}
+.st b{font-size:18px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.st span{color:var(--muted);font-size:14px}
+.st em{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:3px 8px;background:var(--card);color:var(--muted)}
+.st.done em{background:#e9f5ec;color:#1a5c31}.st.now em{background:var(--buy-t);color:var(--buy-d)}
+.sb > div[data-step]{display:none}.sb > div[data-step].on{display:block}
+.hero{background:var(--ink);color:#fff;border-radius:18px;padding:24px;margin-bottom:14px}
+.hero h3{color:#ff8a9b;font-size:24px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+.hero > p{margin:0 0 16px;color:#e6e5ea;font-size:15px}
+.hero .inner{background:#fff;color:var(--ink);border-radius:14px;padding:16px}
+.hero .go2{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border-radius:12px;background:var(--buy);color:#fff;font-weight:800;text-decoration:none;margin-top:14px;border:0;font-size:16px}
+.hero .go2:hover{background:var(--buy-d)}
+.hero .go2.ghost{background:#fff;color:var(--ink)}
+.track{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative}
+.track div{text-align:center;font-size:12.5px;font-weight:700;color:var(--muted);position:relative;padding-top:30px}
+.track div::before{content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;border:2.5px solid #d6d5dc;background:#fff;z-index:1}
+.track div::after{content:'';position:absolute;top:13px;left:calc(50% + 12px);right:calc(-50% + 12px);height:2.5px;background:#d6d5dc}
+.track div:last-child::after{display:none}
+.track div.ok{color:var(--ink)}.track div.ok::before{background:#1a5c31;border-color:#1a5c31}.track div.ok::after{background:#1a5c31}
+.track div.cur{color:var(--buy-d)}.track div.cur::before{border-color:var(--buy);box-shadow:0 0 0 4px var(--buy-t)}
+.trnote{margin:14px 0 0;font-size:14px;color:#3d3c44;text-align:center}
+.tiles{display:grid;gap:12px}
+.tile{display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;text-decoration:none;color:inherit;font:inherit;text-align:left;width:100%}
+.tile:hover{border-color:#c9c8d0}
+.tile .ti{font-size:22px;grid-column:1;grid-row:1/span 2}
+.tile b{font-size:16.5px;font-weight:800;grid-column:2;grid-row:1}
+.tile span{color:var(--muted);font-size:14px;grid-column:2;grid-row:2}
+.tile i{font-style:normal;color:var(--buy);font-weight:800;font-size:22px;grid-row:1/span 2;grid-column:3}
+.chk2{list-style:none;margin:0;padding:0}
+.chk2 li{display:grid;grid-template-columns:28px 1fr;gap:2px 10px;padding:12px 0;border-bottom:1px solid #eee}
+.chk2 li::before{content:'';width:20px;height:20px;border-radius:6px;border:2px solid #c9c8d0;grid-row:span 2;margin-top:2px}
+.chk2 li b{font-weight:800}.chk2 li span{color:var(--muted);font-size:14px}
+.learn{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.lc{border:1px solid var(--line);border-radius:14px;padding:18px;background:#fff;text-align:left;font:inherit;cursor:pointer}
+.lc:hover{border-color:#c9c8d0}
+.lc .li{font-size:26px}
+.lc b{display:block;font-size:17px;font-weight:800;margin:8px 0 4px;letter-spacing:-.01em}
+.lc span{color:var(--muted);font-size:14px;display:block}
+.lc u{color:var(--loan);font-weight:800;text-decoration:none;display:block;margin-top:10px}
+.mdl{position:fixed;inset:0;background:rgba(15,14,20,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:9550}
+.mdl.on{display:flex}
+.mdl .bx2{background:#fff;border-radius:18px;max-width:760px;width:100%;max-height:calc(100vh - 28px);overflow:auto}
+.mdl .mh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+.mdl .mh b{font-size:19px;font-weight:800}
+.mdl .mh button{border:0;background:var(--card);width:38px;height:38px;border-radius:50%;font-size:20px}
+.mdl .mb{padding:18px 24px 26px}
+.mdl .mb h4{font-size:18px;font-weight:800;margin:18px 0 6px}
+.mdl .mb ul{margin:0;padding-left:20px}.mdl .mb li{margin:5px 0}
+.mdl .mb p{margin:0 0 8px;color:#3d3c44}
+.pcard{border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;max-width:720px}
+.pcard h3{margin:0 0 14px;font-size:19px;font-weight:800}
+.msgph{max-width:720px}
+.hero .inner.prem-slot{padding:0;background:transparent}.hero .inner.prem-slot .jp-card{margin:0}
+#ct_saved{display:none}
+@media(max-width:980px){ .plan{grid-template-columns:1fr} .steps{flex-direction:row;overflow-x:auto;scrollbar-width:none;padding-bottom:4px} .steps::-webkit-scrollbar{display:none}
+  .st{min-width:230px} .learn{grid-template-columns:1fr 1fr} }
+@media(max-width:760px){
+  body.has-rail main.wrap{padding-left:16px;padding-bottom:84px}
+  body.has-rail .jc-b{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  body.has-rail .jc{bottom:calc(78px + env(safe-area-inset-bottom,0px));height:min(560px,calc(100vh - 100px))}
+  .rail{top:auto;bottom:0;left:0;right:0;width:auto;height:66px;flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid var(--line);padding:4px 2px calc(4px + env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(0,0,0,.05)}
+  .rail a{width:auto;flex:1;font-size:10.5px;padding:4px 0;gap:1px}
+  .rail a svg{width:22px;height:22px;padding:3px}
+  .rail .bdg{right:calc(50% - 22px)}
+  .pt{margin-top:18px}
+  .st{min-width:210px;padding:12px;grid-template-columns:36px 1fr}.st .ic{width:36px;height:36px;font-size:17px}.st b{font-size:16px}
+  .learn{grid-template-columns:1fr}
+  .track div{font-size:11.5px}
+}
 </style>
 </head>
 <body>
@@ -222,23 +317,47 @@ footer b{color:var(--ink)}
   </div>
 
   <div id="app" hidden>
-    <div class="hello"><h1 id="hi"></h1><p data-t="hi_p"></p></div>
-    <div id="prem" class="prem"></div>
-    <nav class="tabs" id="tabs">
-      <a href="#saved" data-tab="saved"><span data-t="tab_saved"></span><span class="ct" id="ct_saved"></span></a>
-      <a href="#offers" data-tab="offers"><span data-t="tab_offers"></span><span class="ct" id="ct_offers"></span></a>
-      <a href="#searches" data-tab="searches"><span data-t="tab_searches"></span><span class="ct" id="ct_searches"></span></a>
-      <a href="#picks" data-tab="picks"><span data-t="tab_picks"></span></a>
-      <a href="#alerts" data-tab="alerts"><span data-t="tab_alerts"></span><span class="ct" id="ct_alerts"></span></a>
-      <a href="#settings" data-tab="settings"><span data-t="tab_settings"></span></a>
-    </nav>
+    <nav class="rail" id="rail" aria-label="Mi cuenta"><a href="homes" data-tab="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><span data-t="r_search"></span></a><a href="#novedades" data-tab="updates"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span data-t="r_updates"></span><i class="bdg" id="ct_alerts"></i></a><a href="#saved" data-tab="saved"><svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg><span data-t="r_saved"></span><i class="bdg" id="ct_saved"></i></a><a href="#plan" data-tab="plan"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="m9 14 2 2 4-4"/></svg><span data-t="r_plan"></span></a><a href="#mensajes" data-tab="messages"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span data-t="r_messages"></span><i class="bdg" id="ct_msgs"></i></a><a href="#perfil" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.3 7.5-5.3s6.3 1.7 7.5 5.3"/></svg><span data-t="r_profile"></span></a></nav>
 
-    <section data-pane="saved"><p class="sub" data-t="saved_sub"></p><div id="saved" class="grid"></div></section>
-    <section data-pane="offers"><div id="offers"></div><div id="proof"></div></section>
-    <section data-pane="searches"><p class="sub" data-t="ss_sub"></p><div id="searches"></div></section>
-    <section data-pane="picks"><p class="sub" id="picks_sub"></p><div id="picks" class="grid"></div></section>
-    <section data-pane="alerts"><p class="sub" data-t="al_sub"></p><div id="alerts"></div></section>
-    <section data-pane="settings">
+    <section data-pane="plan">
+      <h1 class="pt" id="hi"></h1>
+      <div class="prog"><span id="prog_t"></span><span class="bar"><i id="prog_b" style="width:0"></i></span></div>
+      <div class="plan">
+        <div class="steps" id="steps" role="tablist"></div>
+        <div class="sb" id="sb">
+          <div data-step="budget"></div>
+          <div data-step="home"></div>
+          <div data-step="offer"><div class="hero"><h3 data-t="s3_h"></h3><p data-t="s3_p"></p></div><div id="offers"></div><div id="proof"></div></div>
+          <div data-step="close"></div>
+        </div>
+      </div>
+      <h2 class="h2" data-t="learn_h"></h2>
+      <div class="learn" id="learn"></div>
+    </section>
+
+    <section data-pane="updates">
+      <h1 class="pt" data-t="r_updates"></h1>
+      <p class="ps" data-t="al_sub"></p>
+      <div id="alerts"></div>
+      <h2 class="h2" id="ss_h"><span data-t="tab_searches"></span><span class="ct" id="ct_searches"></span></h2>
+      <p class="sub" data-t="ss_sub"></p><div id="searches"></div>
+      <h2 class="h2" data-t="tab_picks"></h2>
+      <p class="sub" id="picks_sub"></p><div id="picks" class="grid"></div>
+    </section>
+
+    <section data-pane="saved">
+      <h1 class="pt" data-t="r_saved"></h1>
+      <p class="ps" data-t="saved_sub"></p><div id="saved" class="grid"></div>
+    </section>
+
+    <section data-pane="messages">
+      <h1 class="pt" data-t="r_messages"></h1>
+      <div class="msgph" id="msgs"><div class="prem-slot"></div></div>
+    </section>
+
+    <section data-pane="profile">
+      <h1 class="pt" data-t="r_profile"></h1>
+      <div class="pcard"><h3 data-t="pi_h"></h3>
       <form class="form" id="pf" novalidate>
         <label for="p_email" data-t="p_email"></label><input id="p_email" type="email" readonly>
         <label for="p_name" data-t="p_name"></label><input id="p_name" type="text" autocomplete="name" maxlength="120">
@@ -250,15 +369,18 @@ footer b{color:var(--ink)}
         <label class="radio"><input type="radio" name="freq" value="daily"><span><b data-t="f_daily"></b><span data-t="f_daily_d"></span></span></label>
         <label class="radio"><input type="radio" name="freq" value="off"><span><b data-t="f_off"></b><span data-t="f_off_d"></span></span></label>
         <p style="margin:16px 0 0"><button class="btn" type="submit" data-t="p_save"></button><span class="saved" id="p_ok" data-t="p_saved"></span></p>
-      </form>
-      <p style="margin:26px 0 0"><button class="btn alt" type="button" id="signout" data-t="p_out"></button></p>
-      <div class="danger form">
+      </form></div>
+      <div class="pcard"><h3 data-t="ag_h"></h3><div class="prem-slot"></div></div>
+      <div class="pcard"><h3 data-t="ses_h"></h3><button class="btn alt" type="button" id="signout" data-t="p_out"></button></div>
+      <div class="danger form" style="max-width:720px">
         <h3 data-t="d_h"></h3><p data-t="d_p"></p>
         <button class="btn" type="button" id="delbtn" data-t="d_btn"></button>
       </div>
     </section>
   </div>
 </main>
+
+<div class="mdl" id="mdl" role="dialog" aria-modal="true" aria-labelledby="mdl_h"><div class="bx2"><div class="mh"><b id="mdl_h"></b><button type="button" id="mdl_x" aria-label="Cerrar">×</button></div><div class="mb" id="mdl_b"></div></div></div>
 
 <div class="dlg" id="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg_h">
   <div class="bx">
@@ -285,6 +407,24 @@ try{ var sv=localStorage.getItem('jag_lang'); if(sv==='en'||sv==='es') lang=sv; 
 var T={
  es:{nav_buy:'Comprar',nav_rent:'Rentar',nav_sell:'Vender',nav_loan:'Préstamo',nav_calc:'Calculadora',nav_team:'Conoce al equipo',
   g_h:'Su cuenta de JAG',g_p:'Inicie sesión con su correo. Sin contraseña: le enviamos un código.',g_1:'Guarde casas y vea si cambian de precio',g_2:'Reciba avisos de casas nuevas en las zonas que le interesan',g_3:'Vea casas recomendadas según lo que le gusta',g_btn:'Iniciar sesión o crear cuenta',g_browse:'Seguir buscando casas ›',
+  r_search:'Buscar',r_updates:'Novedades',r_saved:'Favoritas',r_plan:'Mi plan',r_messages:'Mensajes',r_profile:'Perfil',
+  plan_t:'Hola{n} — este es su plan',plan_t0:'Mi plan',prog:'{n} de 4 pasos listos',learn_h:'Aprenda el proceso',
+  s3_h:'Decida su estrategia con su agente',s3_p:'Una buena oferta es competitiva sin pasarse de su presupuesto. Revise el precio, los términos y las contingencias con su agente antes de enviarla.',
+  pi_h:'Información personal',ag_h:'Su agente',ses_h:'Sesión',
+  stp:{budget:['Conozca su presupuesto','Sepa cuánto puede comprar con números reales.'],home:['Encuentre la casa','Busque, compare y pida visitas con su agente.'],offer:['Haga una oferta','Prepare su oferta y negocie con confianza.'],close:['Cierre su compra','Inspección, avalúo, préstamo final y llaves.']},
+  pill:{done:'Listo',now:'Ahora',next:'Después'},
+  b_h:'Conozca su presupuesto',b_p:'Su ingreso, sus deudas, su ahorro y las tasas de hoy deciden cuánto puede comprar. Con la aplicación JAG Home Loans le damos números reales.',
+  tr:['Aplicación enviada','En revisión','Pre-aprobado'],
+  b_n0:'Todavía no ha enviado su aplicación. Toma unos 5 minutos y no afecta su crédito para empezar.',b_n1:'Recibimos su aplicación el {d}. Su especialista la revisa y le llama pronto.',
+  b_n2:'Su especialista está revisando su aplicación.',b_nc:'Estamos trabajando con usted para preparar su crédito.',b_n3:'¡Está pre-aprobado! Ya puede buscar casas en su presupuesto.',b_np:'Su aplicación está en pausa. Escríbale a su agente cuando quiera retomarla.',
+  b_go0:'Empezar mi aplicación',b_go1:'Escribirle a mi agente',b_go3:'Buscar casas',
+  t_calc:['Calcule su pago','Pago mensual con impuestos, seguro y PMI'],t_dpa:['Ayuda para el enganche','Programas en Texas que pueden ayudarle'],t_credit:['¿Su crédito necesita ayuda?','Pregúntele a su agente cómo prepararse'],
+  h_h:'Su agente le acompaña',h_p:'Su agente le ayuda a encontrar casas, pedir visitas y comparar opciones. Llámele o escríbale cuando quiera.',
+  t_saved:['Casas favoritas','{n} guardadas'],t_ss:['Búsquedas guardadas','{n} con avisos'],t_search:['Buscar casas','Casas en venta en Houston y alrededores'],
+  c_h:'Cierre su compra',c_p0:'Cuando acepten su oferta, aquí verá los pasos hasta recibir las llaves.',c_p1:'¡Su oferta en {a} fue aceptada! Estos son los pasos hasta recibir las llaves.',
+  c_list:[['Dinero de garantía','Se deposita con la compañía de título en los primeros días después de firmar el contrato.'],['Inspección y periodo de opción','Un inspector revisa la casa. Durante el periodo de opción puede negociar reparaciones o cancelar.'],['Avalúo','El banco confirma que la casa vale lo que va a pagar.'],['Préstamo final y seguro de casa','Su prestamista termina la aprobación y usted contrata el seguro de casa.'],['Firma y llaves','Firma en la compañía de título, paga los gastos de cierre y recibe sus llaves.']],
+  lrn:{how:['💡','Cómo comprar una casa','Un resumen sencillo, de revisar sus finanzas hasta el cierre.'],expect:['🗓️','Qué esperar al comprar','Los pasos clave desde la búsqueda hasta el día del cierre.'],itin:['🪪','Comprar casa con ITIN','Sí se puede. Esto es lo que normalmente se necesita.'],dpa:['🤝','Ayuda para el enganche','Programas y opciones que pueden bajar lo que necesita para cerrar.']},
+  more:'Leer más',close_x:'Cerrar',
   hi:'Hola',hi_p:'Sus casas, búsquedas y avisos en un solo lugar.',
   tab_offers:'Mis ofertas',of_none:'Todavía no ha hecho ofertas. Cuando encuentre una casa que le guste, toque «Hacer una oferta».',of_find:'Buscar casas',
   of_sent:'Enviada el ',of_list:'Precio de lista ',of_note:'Nota del equipo',of_pre:'Obtener mi pre-aprobación gratis',
@@ -311,6 +451,24 @@ var T={
   foot:'Información de listados proporcionada por HAR a través de Repliers; se considera confiable pero no garantizada.'},
  en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_calc:'Calculator',nav_team:'Meet the team',
   g_h:'Your JAG account',g_p:'Sign in with your email. No password: we send you a code.',g_1:'Save homes and see price changes',g_2:'Get alerts on new homes in the areas you like',g_3:'See homes picked for you based on what you like',g_btn:'Sign in or create account',g_browse:'Keep browsing homes ›',
+  r_search:'Search',r_updates:'Updates',r_saved:'Saved',r_plan:'My plan',r_messages:'Messages',r_profile:'Profile',
+  plan_t:'Hi{n} — here is your plan',plan_t0:'My plan',prog:'{n} of 4 steps done',learn_h:'Understand the process',
+  s3_h:'Decide your offer strategy with your agent',s3_p:'A good offer is competitive without going over your budget. Go over price, terms and contingencies with your agent before you send it.',
+  pi_h:'Personal info',ag_h:'Your agent',ses_h:'Session',
+  stp:{budget:['Know your budget','See what you can buy with real numbers.'],home:['Find the home','Search, compare and request showings with your agent.'],offer:['Make an offer','Plan your offer and negotiate with confidence.'],close:['Close your purchase','Inspection, appraisal, final loan and keys.']},
+  pill:{done:'Done',now:'Now',next:'Next'},
+  b_h:'Know your budget',b_p:'Your income, debts, savings and today’s rates decide what you can buy. With the JAG Home Loans application we give you real numbers.',
+  tr:['Application sent','In review','Pre-approved'],
+  b_n0:'You haven’t sent your application yet. It takes about 5 minutes and starting won’t affect your credit.',b_n1:'We received your application on {d}. Your loan specialist is reviewing it and will call you soon.',
+  b_n2:'Your loan specialist is reviewing your application.',b_nc:'We’re working with you to get your credit ready.',b_n3:'You’re pre-approved! You can shop for homes in your budget.',b_np:'Your application is on hold. Message your agent when you want to pick it back up.',
+  b_go0:'Start my application',b_go1:'Message my agent',b_go3:'Search homes',
+  t_calc:['Estimate your payment','Monthly payment with taxes, insurance and PMI'],t_dpa:['Down payment help','Texas programs that may help you'],t_credit:['Does your credit need help?','Ask your agent how to get ready'],
+  h_h:'Your agent is with you',h_p:'Your agent helps you find homes, request showings and compare options. Call or message them any time.',
+  t_saved:['Saved homes','{n} saved'],t_ss:['Saved searches','{n} with alerts'],t_search:['Search homes','Homes for sale in and around Houston'],
+  c_h:'Close your purchase',c_p0:'Once your offer is accepted, you’ll see the steps to your keys here.',c_p1:'Your offer on {a} was accepted! Here are the steps to your keys.',
+  c_list:[['Earnest money','Deposited with the title company in the first few days after the contract is signed.'],['Inspection and option period','An inspector checks the home. During the option period you can negotiate repairs or cancel.'],['Appraisal','The lender confirms the home is worth what you’re paying.'],['Final loan and homeowners insurance','Your lender finishes the approval and you set up homeowners insurance.'],['Signing and keys','Sign at the title company, pay closing costs and get your keys.']],
+  lrn:{how:['💡','How to buy a home','A simple overview, from checking your finances to closing.'],expect:['🗓️','What to expect when buying','The key milestones from search to closing day.'],itin:['🪪','Buying a home with an ITIN','Yes, you can. Here is what’s usually needed.'],dpa:['🤝','Down payment help','Programs and options that can lower what you need to close.']},
+  more:'Learn more',close_x:'Close',
   hi:'Hi',hi_p:'Your homes, searches and alerts in one place.',
   tab_offers:'My offers',of_none:'You have not made any offers yet. When you find a home you like, tap “Make an offer”.',of_find:'Search homes',
   of_sent:'Sent ',of_list:'List price ',of_note:'Note from the team',of_pre:'Get my free pre-approval',
@@ -344,7 +502,7 @@ function img(p,c){ return p?CDN+p+'?class='+(c||'small'):''; }
 function num(n){ return Number(n).toLocaleString('en-US'); }
 var HEART='<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg>';
 
-var D={favs:null,searches:null,alerts:null,activity:null,picks:null,profile:null}, tab='saved';
+var D={favs:null,searches:null,alerts:null,activity:null,picks:null,profile:null}, tab='plan';
 
 function applyLang(){
   document.documentElement.lang=lang;
@@ -472,7 +630,7 @@ function paintProfile(){
   var p=D.profile; if(!p) return;
   $('p_email').value=p.email||''; $('p_name').value=p.name||''; $('p_phone').value=p.phone||''; $('p_lang').value=p.lang||'es';
   var r=document.querySelector('input[name=freq][value="'+(p.alert_freq||'instant')+'"]'); if(r) r.checked=true;
-  $('hi').textContent=t('hi')+(p.name?', '+p.name.split(' ')[0]:'')+'!';
+  paintPlan();
 }
 $('pf').addEventListener('submit',function(e){
   e.preventDefault();
@@ -493,26 +651,132 @@ $('dlg_yes').onclick=function(){
    .catch(function(){ $('dlg_yes').disabled=false; alert(t('err')); });
 };
 
+
+/* ---------- "Aprenda el proceso" guides (our own words, Spanish first) ---------- */
+var GUIDE={
+ es:{
+  how:[['Antes de buscar',[['Revise sus finanzas.','Mire su crédito, sus ahorros y sus deudas para saber qué es realista.'],['Defina su rango de precio.','Cuente el enganche, los gastos de cierre y un pago mensual con el que esté cómodo, no solo el precio.'],['Precalifíquese.','La aplicación JAG Home Loans le dice cuánto puede comprar y qué programas le aplican.']]],
+       ['Arme su equipo y busque',[['Trabaje con su agente.','Su agente le explica el mercado, le ayuda a comparar casas y le acompaña a verlas.'],['Busque y visite.','Guarde sus favoritas y pida visitas desde su cuenta. Sus prioridades pueden cambiar en el camino, y está bien.']]],
+       ['Haga su oferta',[['Prepare la oferta.','Su agente le ayuda a decidir el precio y los términos según la casa y el mercado.'],['Bajo contrato.','Si la aceptan, firma el contrato y deposita el dinero de garantía con la compañía de título.']]],
+       ['Cierre',[['Inspección y avalúo.','La inspección revisa el estado de la casa; el avalúo confirma su valor para el banco.'],['Préstamo final.','Su prestamista termina la aprobación. Contrate su seguro de casa antes del cierre.'],['Firma y llaves.','Firma los documentos, paga los gastos de cierre y la casa es suya.']]]],
+  expect:[['',[['','Comprar casa pasa por etapas que se repiten casi siempre. Saber qué sigue le ayuda a estar tranquilo y preparado.']]],
+       ['Preparación',[['Precalificación.','Un prestamista estima cuánto le puede prestar para que busque con un presupuesto real.'],['Su agente.','Le ayuda a encontrar casas, agendar visitas y manejar ofertas y papeles.']]],
+       ['La oferta',[['Envíe su oferta.','Su agente le ayuda con el precio y los términos.'],['Negociación.','El vendedor puede contraofertar. Es normal ir y venir antes de llegar a un acuerdo.']]],
+       ['Bajo contrato (por lo general de 30 a 45 días)',[['Periodo de opción e inspección.','En Texas normalmente tiene unos días para inspeccionar y decidir si sigue adelante.'],['Avalúo y préstamo.','El banco valúa la casa y termina su préstamo.'],['Cierre.','Firma, paga los gastos de cierre y recibe las llaves.']]]],
+  itin:[['',[['','Sí se puede comprar casa con ITIN. Ayudamos a muchas familias en Houston a hacerlo. Cada prestamista tiene sus reglas; esto es lo más común:']]],
+       ['Lo que normalmente se pide',[['Historial de impuestos.','Por lo general, declaraciones de impuestos de los últimos 2 años con su ITIN.'],['Comprobantes de ingreso.','Talones de pago, cartas de empleo o estados de cuenta si trabaja por su cuenta.'],['Identificación.','Su carta de ITIN y una identificación con foto (por ejemplo, pasaporte).'],['Enganche.','Suele ser mayor que en un préstamo FHA; depende del programa.']]],
+       ['Bueno saber',[['Tasas.','Las tasas de préstamos ITIN suelen ser más altas que las convencionales.'],['Otras opciones.','Para algunos compradores también tenemos opciones como renta con opción a compra. Pregúntele a su agente.']]]],
+  dpa:[['',[['','Hay programas en Texas y en el área de Houston que pueden ayudar con el enganche y los gastos de cierre: estatales, del condado y de algunas ciudades.']]],
+       ['Cómo funcionan',[['Requisitos.','Cada programa tiene sus reglas: ingreso, si es su primera casa, la zona y el precio de la casa.'],['Su especialista los revisa.','Con su aplicación JAG le decimos cuáles le aplican.']]],
+       ['Otras formas de bajar lo que necesita',[['Gastos de cierre pagados por el vendedor.','Se puede negociar en la oferta.'],['Regalos de familia.','Muchos préstamos permiten usar dinero regalado por un familiar, con una carta de regalo.']]]]},
+ en:{
+  how:[['Before you shop',[['Check your finances.','Look at your credit, savings and debts to see what’s realistic.'],['Set a price range.','Count the down payment, closing costs and a monthly payment you’re comfortable with, not just the price.'],['Pre-qualify.','The JAG Home Loans application tells you how much you can buy and which programs fit you.']]],
+       ['Build your team and search',[['Work with your agent.','Your agent explains the market, helps you compare homes and takes you to see them.'],['Search and tour.','Save favorites and request showings from your account. Your priorities may change along the way, and that’s fine.']]],
+       ['Make your offer',[['Prepare the offer.','Your agent helps you decide price and terms based on the home and the market.'],['Under contract.','If it’s accepted, you sign the contract and deposit earnest money with the title company.']]],
+       ['Close',[['Inspection and appraisal.','The inspection checks the home’s condition; the appraisal confirms its value for the lender.'],['Final loan.','Your lender finishes the approval. Set up homeowners insurance before closing.'],['Signing and keys.','Sign the documents, pay closing costs and the home is yours.']]]],
+  expect:[['',[['','Buying a home moves through a few predictable stages. Knowing what’s next helps you stay calm and prepared.']]],
+       ['Getting ready',[['Pre-qualification.','A lender estimates how much you may borrow so you shop with a real budget.'],['Your agent.','Helps you find homes, schedule tours and handle offers and paperwork.']]],
+       ['The offer',[['Submit your offer.','Your agent helps with price and terms.'],['Negotiation.','The seller may counter. Some back-and-forth before an agreement is normal.']]],
+       ['Under contract (usually 30 to 45 days)',[['Option period and inspection.','In Texas you usually have a few days to inspect and decide whether to move forward.'],['Appraisal and loan.','The lender appraises the home and finishes your loan.'],['Closing.','Sign, pay closing costs and get your keys.']]]],
+  itin:[['',[['','Yes, you can buy a home with an ITIN. We help many Houston families do it. Every lender has its own rules; this is what’s most common:']]],
+       ['What’s usually needed',[['Tax history.','Usually tax returns for the last 2 years filed with your ITIN.'],['Proof of income.','Pay stubs, an employment letter, or bank statements if you’re self-employed.'],['ID.','Your ITIN letter and a photo ID (for example, a passport).'],['Down payment.','Usually higher than an FHA loan; it depends on the program.']]],
+       ['Good to know',[['Rates.','ITIN loan rates are usually higher than conventional ones.'],['Other options.','For some buyers we also have options like rent-to-own. Ask your agent.']]]],
+  dpa:[['',[['','There are programs in Texas and the Houston area that can help with the down payment and closing costs: state, county and some city programs.']]],
+       ['How they work',[['Requirements.','Each program has its own rules: income, whether it’s your first home, the area and the home price.'],['Your loan specialist checks them.','With your JAG application we tell you which ones fit you.']]],
+       ['Other ways to need less cash',[['Seller-paid closing costs.','This can be negotiated in the offer.'],['Gifts from family.','Many loans allow money gifted by a relative, with a gift letter.']]]]}
+};
+function openGuide(k){
+  var L=t('lrn')[k], G=(GUIDE[lang]||GUIDE.es)[k]; if(!L||!G) return;
+  $('mdl_h').textContent=L[1];
+  $('mdl_b').innerHTML='<div style="font-size:54px;line-height:1">'+L[0]+'</div>'+G.map(function(sec){
+    return (sec[0]?'<h4>'+esc(sec[0])+'</h4>':'')+(sec[1].length===1&&!sec[1][0][0]?'<p>'+esc(sec[1][0][1])+'</p>':'<ul>'+sec[1].map(function(it){ return '<li><b>'+esc(it[0])+'</b> '+esc(it[1])+'</li>'; }).join('')+'</ul>');
+  }).join('');
+  $('mdl_x').setAttribute('aria-label',t('close_x'));
+  $('mdl').classList.add('on');
+}
+$('mdl_x').onclick=function(){ $('mdl').classList.remove('on'); };
+$('mdl').addEventListener('click',function(e){ if(e.target===this) this.classList.remove('on'); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') $('mdl').classList.remove('on'); });
+
+/* ---------- Mi plan ---------- */
+var STEPS=['budget','home','offer','close'], STEPI={budget:'💲',home:'🏠',offer:'📝',close:'🔑'}, planStep=null;
+function fill(s,o){ return String(s).replace(/\{(\w)\}/g,function(_,k){ return o[k]==null?'':o[k]; }); }
+function verifiedPre(){ return (D.proof||[]).some(function(p){ return p.status==='verified'; }); }
+function acceptedOffer(){ return (D.offers||[]).filter(function(o){ return o.status==='accepted'; })[0]||null; }
+function appLevel(){ var a=D.plan&&D.plan.app; if(verifiedPre()||(a&&a.stage==='done')) return 3; if(!a) return 0; return a.stage==='received'?1:2; }
+function stepState(){
+  var lv=appLevel(), off=(D.offers||[]).length>0, acc=!!acceptedOffer();
+  var done={budget:lv===3,home:off,offer:acc,close:false};
+  var now=STEPS.filter(function(k){ return !done[k]; })[0]||'close';
+  return {done:done,now:now};
+}
+function tile(icon,txt,href,attr){ return '<'+(href?'a href="'+href+'"':'button type="button"')+' class="tile" '+(attr||'')+'><span class="ti">'+icon+'</span><b>'+esc(txt[0])+'</b><span>'+esc(txt[1])+'</span><i>›</i></'+(href?'a':'button')+'>'; }
+function paintPlan(){
+  if(!$('steps')) return;
+  var st=stepState(), nDone=STEPS.filter(function(k){ return st.done[k]; }).length;
+  if(!planStep) planStep=st.now;
+  var nm=(D.profile&&D.profile.name)?', '+String(D.profile.name).split(' ')[0]:'';
+  $('hi').textContent=fill(t('plan_t'),{n:nm});
+  $('prog_t').textContent=fill(t('prog'),{n:nDone}); $('prog_b').style.width=(nDone/4*100)+'%';
+  $('steps').innerHTML=STEPS.map(function(k){ var x=t('stp')[k], cls=st.done[k]?'done':k===st.now?'now':'';
+    return '<button type="button" role="tab" class="st '+cls+(k===planStep?' on':'')+'" data-step="'+k+'" aria-selected="'+(k===planStep)+'"><span class="ic">'+(st.done[k]?'✓':STEPI[k])+'</span><b>'+esc(x[0])+' <em>'+t('pill')[st.done[k]?'done':k===st.now?'now':'next']+'</em></b><span>'+esc(x[1])+'</span></button>'; }).join('');
+  document.querySelectorAll('#sb > div[data-step]').forEach(function(d){ d.classList.toggle('on',d.getAttribute('data-step')===planStep); });
+  // 1) budget
+  var lv=appLevel(), a=D.plan&&D.plan.app, note, go;
+  if(lv===0){ note=t('b_n0'); go='<a class="go2" href="apply.html?lang='+lang+'">'+t('b_go0')+' →</a>'; }
+  else if(lv===3){ note=t('b_n3'); go='<a class="go2" href="homes">'+t('b_go3')+' →</a>'; }
+  else { note=a.stage==='received'?fill(t('b_n1'),{d:new Date(a.at).toLocaleDateString(lang==='es'?'es-MX':'en-US',{month:'long',day:'numeric'})}):a.stage==='credit'?t('b_nc'):a.stage==='paused'?t('b_np'):t('b_n2'); go='<a class="go2 ghost" href="#mensajes">'+t('b_go1')+'</a>'; }
+  var tr=t('tr');
+  $('sb').querySelector('[data-step="budget"]').innerHTML='<div class="hero"><h3>'+t('b_h')+'</h3><p>'+t('b_p')+'</p><div class="inner"><div class="track">'+
+    tr.map(function(x,i){ var c=lv>i?'ok':(lv===i&&lv>0)?'cur':''; if(lv===0&&i===0) c='cur'; return '<div class="'+c+'">'+esc(x)+'</div>'; }).join('')+'</div><p class="trnote">'+esc(note)+'</p></div>'+go+'</div>'+
+    '<div class="tiles">'+tile('🧮',t('t_calc'),'calculadora')+tile('🤝',t('t_dpa'),null,'data-guide="dpa"')+tile('📈',t('t_credit'),'#mensajes')+'</div>';
+  // 2) home
+  var ssOn=(D.searches||[]).filter(function(x){ return x.alerts; }).length;
+  $('sb').querySelector('[data-step="home"]').innerHTML='<div class="hero"><h3>'+t('h_h')+'</h3><p>'+t('h_p')+'</p><div class="inner prem-slot"></div></div>'+
+    '<div class="tiles">'+tile('❤️',[t('t_saved')[0],fill(t('t_saved')[1],{n:(D.favs||[]).length})],'#saved')+tile('🔔',[t('t_ss')[0],fill(t('t_ss')[1],{n:ssOn})],'#novedades')+tile('🔎',t('t_search'),'homes')+'</div>';
+  // 4) close
+  var acc=acceptedOffer();
+  $('sb').querySelector('[data-step="close"]').innerHTML='<div class="hero"><h3>'+t('c_h')+'</h3><p>'+esc(acc?fill(t('c_p1'),{a:acc.address||''}):t('c_p0'))+'</p><div class="inner"><ul class="chk2">'+
+    t('c_list').map(function(x){ return '<li><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></li>'; }).join('')+'</ul></div></div>';
+  // learn
+  $('learn').innerHTML=['how','expect','itin','dpa'].map(function(k){ var L=t('lrn')[k]; return '<button type="button" class="lc" data-guide="'+k+'"><span class="li">'+L[0]+'</span><b>'+esc(L[1])+'</b><span>'+esc(L[2])+'</span><u>'+t('more')+'</u></button>'; }).join('');
+  paintPrem();
+}
+document.addEventListener('click',function(e){
+  var g=e.target.closest('[data-guide]'); if(g){ openGuide(g.getAttribute('data-guide')); return; }
+  var sp=e.target.closest('#steps [data-step]'); if(sp){ planStep=sp.getAttribute('data-step'); paintPlan(); }
+});
+function loadPlan(){ return A.rpc('jag_my_plan').then(function(j){ D.plan=(j&&j.ok)?j:{app:null}; }).catch(function(){ D.plan={app:null}; }).then(paintPlan); }
+
 /* ---------- tabs ---------- */
-function setTab(k){
-  if(!/^(saved|offers|searches|picks|alerts|settings)$/.test(k)) k='saved';
+/* hashes from before the redesign (#searches, #alerts, #settings, #offers…) still land in the right place */
+var HASH={plan:'plan',mi_plan:'plan',novedades:'updates',updates:'updates',alerts:'updates',searches:'updates',picks:'updates',
+  saved:'saved',favoritas:'saved',mensajes:'messages',messages:'messages',perfil:'profile',profile:'profile',settings:'profile',offers:'plan'};
+function setTab(h){
+  h=String(h||'').toLowerCase(); var k=HASH[h]||'plan';
+  if(h==='offers') planStep='offer';
   tab=k;
-  document.querySelectorAll('#tabs a').forEach(function(a){ a.classList.toggle('on',a.getAttribute('data-tab')===k); });
+  document.querySelectorAll('#rail a[data-tab]').forEach(function(a){ var on=a.getAttribute('data-tab')===k; a.classList.toggle('on',on); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
   document.querySelectorAll('section[data-pane]').forEach(function(s){ s.classList.toggle('on',s.getAttribute('data-pane')===k); });
-  if(k==='alerts'&&D.alerts&&D.alerts.some(function(a){ return !a.seen_at; })){
+  if(k==='plan') paintPlan();
+  if(h==='searches'||h==='picks'){ var tg=$(h==='searches'?'ss_h':'picks_sub'); if(tg) setTimeout(function(){ tg.scrollIntoView({behavior:'smooth',block:'start'}); },50); }
+  else window.scrollTo(0,0);
+  if(k==='updates'&&D.alerts&&D.alerts.some(function(a){ return !a.seen_at; })){
     A.markAlertsSeen().then(function(){ A.setUnseen(0); setTimeout(function(){ D.alerts.forEach(function(a){ a.seen_at=a.seen_at||new Date().toISOString(); }); paintAlerts(); },4000); }).catch(function(){});
   }
 }
 window.addEventListener('hashchange',function(){ setTab(location.hash.slice(1)); });
 
-function paintAll(){ paintSaved(); paintOffers(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); paintPrem(); }
+function paintAll(){ paintSaved(); paintOffers(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); paintPlan(); paintPrem(); }
 
 /* ---------- premium: dedicated agent + showing requests ---------- */
 function paintPrem(){
-  var el=$('prem'); if(!el||!window.JagPremium) return;
-  if(!D.agent){ el.innerHTML=''; return; }
-  el.innerHTML=JagPremium.card({agent:D.agent,showings:D.showings||[]});
-  JagPremium.bind(el,{homes:D.favs||[],onDone:loadPrem});
+  if(!window.JagPremium) return;
+  document.querySelectorAll('.prem-slot').forEach(function(el){
+    if(!D.agent){ el.innerHTML=''; return; }
+    el.innerHTML=JagPremium.card({agent:D.agent,showings:D.showings||[]});
+    JagPremium.bind(el,{homes:D.favs||[],onDone:loadPrem});
+  });
 }
 function loadPrem(){
   if(!window.JagPremium) return;
@@ -577,9 +841,9 @@ function uploadProof(kind, file){
 
 function start(){
   var u=A&&A.user();
-  $('gate').hidden=!!u; $('app').hidden=!u;
+  $('gate').hidden=!!u; $('app').hidden=!u; document.body.classList.toggle('has-rail',!!u);
   if(!u) return;
-  D={favs:null,searches:null,alerts:null,activity:null,picks:null,offers:null,proof:null,profile:A.profile()};
+  D={favs:null,searches:null,alerts:null,activity:null,picks:null,offers:null,proof:null,plan:null,profile:A.profile()}; planStep=null;
   paintAll(); setTab(location.hash.slice(1));
   A.getProfile().then(function(p){ D.profile=p; paintProfile(); }).catch(function(){});
   Promise.all([
@@ -587,8 +851,8 @@ function start(){
     A.searches().then(function(r){ D.searches=r||[]; }).catch(function(){ D.searches=[]; }),
     A.alerts().then(function(r){ D.alerts=r||[]; }).catch(function(){ D.alerts=[]; }),
     A.activity(300).then(function(r){ D.activity=r||[]; }).catch(function(){ D.activity=[]; })
-  ]).then(function(){ paintAll(); setTab(tab); loadPicks(); });
-  loadOffers(); loadPrem();
+  ]).then(function(){ paintAll(); setTab(location.hash.slice(1)||tab); loadPicks(); });
+  loadOffers().then(paintPlan); loadPrem(); loadPlan();
 }
 $('gatebtn').onclick=function(){ A.requireSignIn().catch(function(){}); };
 if(A){ A.mountButton($('acct')); A.onChange(start); }
