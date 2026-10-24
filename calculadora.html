@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora de hipoteca — JAG Real Estate</title>
+<meta name="description" content="Calcule su pago mensual de casa: capital e interés, impuestos, seguro, PMI/MIP y HOA. Convencional, FHA y VA. Luego precalifíquese con JAG Home Loans.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:title" content="Calculadora de hipoteca — JAG Real Estate">
+<meta property="og:description" content="¿Cuánto pagaría al mes? Calcule su pago y precalifíquese con JAG Home Loans.">
+<meta property="og:image" content="https://jasonaguirregroup.company/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17161c; --paper:#fff; --card:#f5f5f7; --line:#dddde3;
+  --buy:#c8102e; --buy-d:#a30d26; --buy-t:#fdecef;
+  --loan:#2653d9; --loan-t:#eaf0ff;
+  --muted:#5f5e68; --soft:#85848d;
+  /* donut slices */
+  --c-pi:#c8102e; --c-tax:#17161c; --c-ins:#2653d9; --c-mi:#e7a93b; --c-hoa:#1a8a5a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--loan);outline-offset:2px}
+
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.hin{height:60px;padding:0 20px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.hl,.hr{display:flex;align-items:center;gap:4px}
+.hr{justify-content:flex-end}
+.hin a.n{font-size:14px;font-weight:600;text-decoration:none;padding:8px 10px;border-radius:6px}
+.hin a.n:hover,.hin a.n.on{color:var(--buy)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;justify-self:center}
+.lock{display:flex;flex-direction:column;line-height:1;align-items:center}
+.lock small{font-size:7px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:25px;font-weight:800;letter-spacing:-.02em;color:var(--buy)}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.3em;font-weight:700;text-transform:uppercase}
+.brok{font-size:10.5px;font-weight:700;color:var(--muted);border-left:1px solid var(--line);padding-left:10px}
+.langs{display:flex;border:1px solid var(--ink);border-radius:6px;overflow:hidden;margin-left:10px}
+.langs button{border:0;background:transparent;font-size:12px;font-weight:800;padding:6px 10px}
+.langs button.on{background:var(--ink);color:#fff}
+#acct{margin-left:10px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.crumb{font-size:13.5px;color:var(--muted);margin:22px 0 6px}
+.crumb a{color:var(--muted)}
+h1{font-size:clamp(30px,4.4vw,44px);font-weight:800;letter-spacing:-.03em;line-height:1.08;margin:0 0 10px}
+.intro{max-width:760px;color:#3d3c44;margin:0 0 26px;font-size:16px}
+
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:30px;align-items:start;padding-bottom:40px}
+/* inputs */
+.f{margin-bottom:16px}
+.f > label,.f .lb{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;margin:0 0 6px}
+.f .lb a,.f .lb button.lk{margin-left:auto;font-weight:700;color:var(--loan);text-decoration:none;border:0;background:none;padding:0;font-size:13.5px}
+.box{display:flex;align-items:center;border:1.5px solid #c9c8d0;border-radius:10px;background:#fff;min-height:50px;overflow:hidden}
+.box:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(23,22,28,.08)}
+.box span{color:var(--muted);padding:0 0 0 14px;font-weight:600}
+.box span.suf{padding:0 14px 0 0}
+.box input,.box select{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:12px 12px;font-size:16px}
+.box select{appearance:none;-webkit-appearance:none;padding-right:36px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2317161c' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center}
+.pair{display:grid;grid-template-columns:1.5fr 1fr}
+.pair .box:first-child{border-radius:10px 0 0 10px;border-right-width:.75px}
+.pair .box:last-child{border-radius:0 10px 10px 0;border-left-width:.75px}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.hint.warn{color:#9a5b00}
+.adv{border:0;background:none;color:var(--loan);font-weight:800;padding:4px 0;display:inline-flex;align-items:center;gap:6px;margin:2px 0 14px}
+.adv svg{transition:transform .15s}.adv[aria-expanded="true"] svg{transform:rotate(180deg)}
+.chk{display:flex;align-items:center;gap:10px;font-weight:600;margin:0 0 14px;cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--buy);margin:0}
+.tip{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--soft);color:var(--soft);font-size:11px;font-weight:800;cursor:help;position:relative}
+.tip:hover::after,.tip:focus::after{content:attr(data-tip);position:absolute;left:50%;bottom:130%;transform:translateX(-50%);width:240px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:500;line-height:1.4;padding:9px 11px;border-radius:9px;z-index:5;text-align:left}
+
+/* results */
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.tabs button{border:0;background:none;padding:12px 16px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--ink);border-color:var(--buy)}
+.donutwrap{display:grid;grid-template-columns:minmax(190px,235px) 1fr;gap:24px;align-items:center}
+.donut{position:relative;width:100%;max-width:235px;aspect-ratio:1;margin:0 auto}
+.donut svg{width:100%;height:100%;transform:rotate(-90deg)}
+.donut .ctr{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.donut .ctr small{font-size:13.5px;font-weight:700}
+.donut .ctr b{font-size:clamp(30px,4vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.donut .ctr em{font-style:normal;font-size:12px;color:var(--muted)}
+.legend{list-style:none;margin:0;padding:0}
+.legend li{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #eee;font-size:15px}
+.legend li i{width:12px;height:12px;border-radius:3px;flex:none}
+.legend li span{flex:1;white-space:nowrap}
+.legend li b{font-weight:800}
+.legend li.total{border-bottom:0;font-size:16px}
+.legend li.off{color:var(--soft)}.legend li.off b{font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+.facts div{background:var(--card);border-radius:12px;padding:12px 14px}
+.facts small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.facts b{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.fine{font-size:12px;color:var(--muted);margin:18px 0 0}
+.sched{width:100%;border-collapse:collapse;font-size:14px}
+.sched th,.sched td{text-align:right;padding:9px 8px;border-bottom:1px solid #eee;white-space:nowrap}
+.sched th:first-child,.sched td:first-child{text-align:left}
+.sched th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;position:sticky;top:60px;background:#fff}
+.sched-wrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.bars{display:flex;height:10px;border-radius:99px;overflow:hidden;background:#eee;min-width:80px}
+.bars i{display:block;height:100%}
+
+/* JAG Home Loans card */
+.hl-card{background:linear-gradient(180deg,#fff5f6 0%,#fff 100%);border:1.5px solid #f3c9d0;border-radius:18px;padding:24px 22px;position:sticky;top:84px}
+.hl-card h2{font-size:26px;line-height:1.12;font-weight:800;letter-spacing:-.03em;margin:0 0 12px}
+.hl-card p{color:#3d3c44;margin:0 0 16px;font-size:14.5px}
+.hl-card ul{margin:0 0 18px;padding:0;list-style:none;font-size:14px}
+.hl-card li{display:flex;gap:8px;padding:4px 0}
+.hl-card li::before{content:'✓';color:var(--buy);font-weight:800}
+.go{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border-radius:12px;background:var(--buy);color:#fff;font-weight:800;font-size:16px;text-decoration:none;border:0}
+.go:hover{background:var(--buy-d)}
+.hl-brand{display:flex;align-items:center;gap:10px;margin-top:16px;justify-content:center}
+.hl-brand .lock b{font-size:22px}
+.hl-brand span.t{font-weight:800;font-size:17px;letter-spacing:-.01em}
+.hl-brand span.t em{font-style:normal;color:var(--buy)}
+.hl-card .sm{font-size:11.5px;color:var(--muted);margin:12px 0 0;text-align:center}
+
+.more{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:6px 0 40px}
+.more a{display:block;border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;font-weight:800;color:var(--buy-d)}
+.more a span{display:block;color:var(--muted);font-weight:500;font-size:13.5px;margin-top:4px}
+
+footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);font-size:12.5px}
+footer nav{display:flex;flex-wrap:wrap;gap:14px;margin:6px 0}
+footer b{color:var(--ink)}
+
+@media(max-width:1080px){
+  .grid{grid-template-columns:300px minmax(0,1fr)}
+  .hl-card{position:static;grid-column:1/-1}
+}
+@media(max-width:760px){
+  .hin{grid-template-columns:auto 1fr;padding:0 14px}
+  .hl{display:none}
+  .logo{justify-self:start}
+  .brok{display:none}
+  .wrap{padding:0 16px}
+  .grid{grid-template-columns:1fr;gap:18px}
+  .donutwrap{grid-template-columns:1fr;gap:14px}
+  .donut{max-width:230px}
+  .facts{grid-template-columns:1fr 1fr}
+  .more{grid-template-columns:1fr}
+  .tip:hover::after,.tip:focus::after{left:auto;right:-10px;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hin">
+    <nav class="hl">
+      <a class="n" href="homes" data-t="nav_buy"></a>
+      <a class="n" href="homes?type=lease" data-t="nav_rent"></a>
+      <a class="n" href="value.html" data-t="nav_sell"></a>
+      <a class="n" href="apply.html" data-t="nav_loan"></a>
+      <a class="n on" href="calculadora" data-t="nav_calc" aria-current="page"></a>
+    </nav>
+    <a class="logo" href="index.html" aria-label="JAG Real Estate">
+      <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span>
+      <span class="brok">eXp Realty</span>
+    </a>
+    <div class="hr">
+      <span id="acct"></span>
+      <span class="langs" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button>
+      </span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="crumb"><a href="apply.html" data-t="crumb_loans"></a> / <span data-t="crumb_calc"></span></p>
+  <h1 data-t="h1"></h1>
+  <p class="intro" data-t="intro"></p>
+
+  <div class="grid">
+    <!-- inputs -->
+    <form class="inputs" id="f" novalidate onsubmit="return false">
+      <div class="f">
+        <label for="price"><span data-t="price"></span></label>
+        <div class="box"><span>$</span><input id="price" inputmode="numeric" autocomplete="off"></div>
+      </div>
+      <div class="f">
+        <div class="lb"><span data-t="down"></span></div>
+        <div class="pair">
+          <div class="box"><span>$</span><input id="downAmt" inputmode="numeric" autocomplete="off" aria-label="Down payment ($)"></div>
+          <div class="box"><input id="downPct" inputmode="decimal" autocomplete="off" aria-label="Down payment (%)"><span class="suf">%</span></div>
+        </div>
+        <p class="hint" id="downHint"></p>
+      </div>
+      <div class="f">
+        <label for="zip"><span data-t="zip"></span> <i class="tip" tabindex="0" data-t-tip="zip_tip">?</i></label>
+        <div class="box"><input id="zip" inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder="77083"></div>
+      </div>
+      <div class="f">
+        <label for="prog"><span data-t="prog"></span> <i class="tip" tabindex="0" data-t-tip="prog_tip">?</i></label>
+        <div class="box"><select id="prog"></select></div>
+      </div>
+      <div class="f">
+        <div class="lb"><label for="rate" style="margin:0;font-weight:700"><span data-t="rate"></span></label> <i class="tip" tabindex="0" data-t-tip="rate_tip">?</i><a href="apply.html" id="rateLink" data-t="rate_real"></a></div>
+        <div class="box"><input id="rate" inputmode="decimal" autocomplete="off"><span class="suf">%</span></div>
+      </div>
+
+      <button type="button" class="adv" id="advBtn" aria-expanded="false" aria-controls="adv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg><span data-t="advanced"></span></button>
+      <div id="adv" hidden>
+        <label class="chk"><input type="checkbox" id="incMi" checked><span id="incMiLbl"></span> <i class="tip" tabindex="0" data-t-tip="mi_tip">?</i></label>
+        <label class="chk"><input type="checkbox" id="incTI" checked><span data-t="inc_ti"></span></label>
+        <div class="f" id="taxF">
+          <div class="lb"><span data-t="tax"></span> <i class="tip" tabindex="0" data-t-tip="tax_tip">?</i></div>
+          <div class="pair">
+            <div class="box"><span>$</span><input id="taxAmt" inputmode="numeric" aria-label="Property tax per year ($)"></div>
+            <div class="box"><input id="taxPct" inputmode="decimal" aria-label="Property tax (%)"><span class="suf">%</span></div>
+          </div>
+        </div>
+        <div class="f" id="insF">
+          <label for="ins"><span data-t="ins"></span></label>
+          <div class="box"><span>$</span><input id="ins" inputmode="numeric"><span class="suf" data-t="per_yr"></span></div>
+        </div>
+        <div class="f">
+          <label for="hoa"><span data-t="hoa"></span> <i class="tip" tabindex="0" data-t-tip="hoa_tip">?</i></label>
+          <div class="box"><span>$</span><input id="hoa" inputmode="numeric"><span class="suf" data-t="per_mo"></span></div>
+        </div>
+      </div>
+    </form>
+
+    <!-- results -->
+    <section class="results" aria-live="polite">
+      <div class="tabs" role="tablist">
+        <button type="button" class="on" role="tab" aria-selected="true" data-tab="b" data-t="tab_b"></button>
+        <button type="button" role="tab" aria-selected="false" data-tab="s" data-t="tab_s"></button>
+      </div>
+      <div id="paneB">
+        <div class="donutwrap">
+          <div class="donut"><svg viewBox="0 0 120 120" id="ring" aria-hidden="true"></svg>
+            <div class="ctr"><small data-t="your_pay"></small><b id="total">—</b><em data-t="per_month"></em></div></div>
+          <ul class="legend" id="legend"></ul>
+        </div>
+        <div class="facts" id="facts"></div>
+        <p class="fine" data-t="fine"></p>
+      </div>
+      <div id="paneS" hidden>
+        <p class="hint" style="margin:-8px 0 12px" id="schedNote"></p>
+        <div class="sched-wrap"><table class="sched"><thead><tr><th data-t="s_year"></th><th data-t="s_prin"></th><th data-t="s_int"></th><th data-t="s_bal"></th><th aria-hidden="true"></th></tr></thead><tbody id="sched"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- JAG Home Loans -->
+    <aside class="hl-card">
+      <h2 data-t="hl_h"></h2>
+      <p data-t="hl_p"></p>
+      <ul><li data-t="hl_1"></li><li data-t="hl_2"></li><li data-t="hl_3"></li></ul>
+      <a class="go" id="goApp" href="apply.html"><span data-t="hl_btn"></span> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+      <div class="hl-brand"><span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span><span class="t">Home <em>Loans</em></span></div>
+      <p class="sm" data-t="hl_sm"></p>
+    </aside>
+  </div>
+
+  <div class="more">
+    <a href="homes" data-t="more_homes"></a>
+    <a href="value.html" data-t="more_value"></a>
+    <a href="team" data-t="more_team"></a>
+  </div>
+</main>
+
+<footer><div class="wrap">
+  <b>Jason Aguirre Group · eXp Realty</b> · 5373 W Alabama St, Suite 448, Houston, TX
+  <nav><a href="iabs.html">TREC Information About Brokerage Services</a><a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a><a href="privacy-terms.html">Privacy &amp; Terms</a></nav>
+  <span data-t="foot"></span>
+</div></footer>
+
+<script src="jag-account.js"></script>
+<script src="jag-install.js" defer></script>
+<script>
+(function(){
+/* Same starting assumptions the rest of the site uses for payment estimates (homes.html): all editable here. */
+var RATE=6.75, TAXRATE=2.1, INSRATE=1.0, MIRATE=0.55;
+var PROGS={
+  conv30:{years:30,kind:'conv',min:3},
+  conv20:{years:20,kind:'conv',min:3},
+  conv15:{years:15,kind:'conv',min:3},
+  fha30: {years:30,kind:'fha', min:3.5},
+  va30:  {years:30,kind:'va',  min:0}
+};
+var lang='es';
+try{ var sv=localStorage.getItem('jag_lang'); if(sv==='en'||sv==='es') lang=sv; }catch(e){}
+var T={
+ es:{nav_buy:'Comprar',nav_rent:'Rentar',nav_sell:'Vender',nav_loan:'Préstamo',nav_calc:'Calculadora',
+  crumb_loans:'Préstamos',crumb_calc:'Calculadora de hipoteca',h1:'Calculadora de hipoteca',
+  intro:'Calcule su pago mensual completo: capital e interés, impuestos, seguro de casa, seguro hipotecario (PMI o MIP) y HOA. Ponga el precio de la casa y su enganche, y ajuste los detalles para que se parezca a su caso.',
+  price:'Precio de la casa',down:'Enganche',zip:'Código postal',prog:'Tipo de préstamo',rate:'Tasa de interés',rate_real:'Ver mi tasa real',
+  zip_tip:'Opcional. Se lo pasamos a su especialista para estimar los impuestos de esa zona (en Houston cambian mucho por distrito escolar y MUD).',
+  prog_tip:'Convencional: desde 3% de enganche, PMI si pone menos de 20%. FHA: desde 3.5%, con MIP. VA: para veteranos, 0% de enganche y sin PMI.',
+  rate_tip:'Es una tasa de ejemplo. La suya depende de su crédito, enganche y tipo de préstamo; su especialista se la da al precalificar.',
+  mi_tip:'Convencional: PMI cuando pone menos de 20%. FHA: MIP mensual (y uno inicial que se suma al préstamo). VA no tiene PMI; tiene una cuota de financiamiento que se suma al préstamo.',
+  tax_tip:'En el área de Houston el impuesto suele estar entre 1.8% y 3% al año del valor, según el distrito escolar y el MUD. Usamos 2.1% de ejemplo.',
+  hoa_tip:'Cuota de la asociación de vecinos, si la casa tiene. Muchas casas nuevas en Houston tienen HOA.',
+  advanced:'Opciones avanzadas',simple:'Ocultar opciones',inc_ti:'Incluir impuestos y seguro',
+  mi_conv:'Incluir PMI',mi_fha:'Incluir MIP (FHA)',mi_va:'Sin PMI (VA)',
+  tax:'Impuesto a la propiedad (al año)',ins:'Seguro de casa',hoa:'HOA',per_yr:'/año',per_mo:'/mes',
+  tab_b:'Desglose',tab_s:'Calendario de pagos',your_pay:'Su pago',per_month:'al mes',
+  l_pi:'Capital e interés',l_tax:'Impuestos',l_ins:'Seguro de casa',l_mi_conv:'PMI',l_mi_fha:'MIP (FHA)',l_mi_va:'PMI',l_hoa:'HOA',l_total:'Total al mes',
+  f_loan:'Monto del préstamo',f_int:'Interés total',f_cash:'Efectivo para cerrar (aprox.)',
+  f_cash_tip:'Enganche + gastos de cierre de ~3%. Muchos compradores reciben ayuda para el enganche o que el vendedor pague parte del cierre.',
+  fine:'Todos los montos son estimados para fines informativos y pueden cambiar. No es una oferta ni una aprobación de préstamo. Los impuestos, el seguro y el seguro hipotecario son aproximados.',
+  s_year:'Año',s_prin:'Capital',s_int:'Interés',s_bal:'Saldo',
+  sched_note:'Lo que paga de capital e interés cada año. Al principio casi todo es interés; con los años va pagando más capital.',
+  down_min:'El mínimo para este préstamo es {p}%.',down_va:'VA permite 0% de enganche.',down_fha:'FHA: desde 3.5% de enganche.',down_conv:'Con menos de 20% se paga PMI hasta llegar a 20% de su casa.',down_20:'Con 20% o más no paga PMI.',
+  va_fee:'Incluye la cuota de financiamiento VA de {p}% sumada al préstamo.',fha_fee:'Incluye el MIP inicial de 1.75% sumado al préstamo.',
+  hl_h:'Obtenga un pago más exacto',hl_p:'Precalifíquese con JAG Home Loans y le decimos su tasa real, cuánto puede comprar y qué programas de enganche le aplican.',
+  hl_1:'Toma unos 5 minutos',hl_2:'No afecta su crédito para empezar',hl_3:'Atención en español y con ITIN',hl_btn:'Empezar mi aplicación',
+  hl_sm:'JAG Home Loans · Jason Aguirre Group · eXp Realty',
+  more_homes:'Buscar casas<span>Vea el pago estimado de cada casa en Houston</span>',more_value:'¿Cuánto vale mi casa?<span>Estimado al instante para vendedores</span>',more_team:'Conozca al equipo<span>Agentes que hablan su idioma</span>',
+  foot:'Las tasas y los costos reales dependen de su perfil y del prestamista.',
+  progs:{conv30:'Convencional 30 años fijo',conv20:'Convencional 20 años fijo',conv15:'Convencional 15 años fijo',fha30:'FHA 30 años fijo',va30:'VA 30 años fijo'}},
+ en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_calc:'Calculator',
+  crumb_loans:'Mortgages',crumb_calc:'Mortgage calculator',h1:'Mortgage calculator',
+  intro:'Estimate your full monthly payment: principal and interest, property taxes, homeowners insurance, mortgage insurance (PMI or MIP) and HOA. Enter the home price and your down payment, then adjust the details to fit your situation.',
+  price:'Home price',down:'Down payment',zip:'ZIP code',prog:'Loan program',rate:'Interest rate',rate_real:'Get my real rate',
+  zip_tip:'Optional. We pass it to your loan specialist to estimate that area’s taxes (in Houston they vary a lot by school district and MUD).',
+  prog_tip:'Conventional: from 3% down, PMI under 20%. FHA: from 3.5% down, with MIP. VA: for veterans, 0% down and no PMI.',
+  rate_tip:'This is a sample rate. Yours depends on your credit, down payment and loan type; your specialist gives it to you when you pre-qualify.',
+  mi_tip:'Conventional: PMI when you put less than 20% down. FHA: monthly MIP (plus an upfront one added to the loan). VA has no PMI; it has a funding fee added to the loan.',
+  tax_tip:'Around Houston, property tax is usually 1.8% to 3% of the value per year, depending on the school district and MUD. We use 2.1% as an example.',
+  hoa_tip:'Homeowners association dues, if the home has them. Many newer Houston homes do.',
+  advanced:'Advanced',simple:'Hide options',inc_ti:'Include taxes and insurance',
+  mi_conv:'Include PMI',mi_fha:'Include MIP (FHA)',mi_va:'No PMI (VA)',
+  tax:'Property tax (per year)',ins:'Homeowners insurance',hoa:'HOA dues',per_yr:'/yr',per_mo:'/mo',
+  tab_b:'Breakdown',tab_s:'Schedule',your_pay:'Your payment',per_month:'per month',
+  l_pi:'Principal & interest',l_tax:'Property taxes',l_ins:'Homeowners insurance',l_mi_conv:'PMI',l_mi_fha:'MIP (FHA)',l_mi_va:'PMI',l_hoa:'HOA dues',l_total:'Monthly total',
+  f_loan:'Loan amount',f_int:'Total interest',f_cash:'Cash to close (approx.)',
+  f_cash_tip:'Down payment + ~3% closing costs. Many buyers get down payment help or seller-paid closing costs.',
+  fine:'All amounts are estimates for information only and may change. Not a loan offer or approval. Taxes, insurance and mortgage insurance are approximate.',
+  s_year:'Year',s_prin:'Principal',s_int:'Interest',s_bal:'Balance',
+  sched_note:'What you pay in principal and interest each year. Early on it is mostly interest; over time more goes to principal.',
+  down_min:'The minimum for this loan is {p}%.',down_va:'VA allows 0% down.',down_fha:'FHA: from 3.5% down.',down_conv:'Under 20% down you pay PMI until you reach 20% equity.',down_20:'With 20% or more down, no PMI.',
+  va_fee:'Includes the {p}% VA funding fee added to the loan.',fha_fee:'Includes the 1.75% upfront MIP added to the loan.',
+  hl_h:'Get a more accurate payment',hl_p:'Pre-qualify with JAG Home Loans and we’ll tell you your real rate, how much you can buy and which down payment programs fit you.',
+  hl_1:'Takes about 5 minutes',hl_2:'Starting won’t affect your credit',hl_3:'Help in Spanish and with ITIN',hl_btn:'Start my application',
+  hl_sm:'JAG Home Loans · Jason Aguirre Group · eXp Realty',
+  more_homes:'Search homes<span>See the estimated payment on every Houston home</span>',more_value:'What’s my home worth?<span>Instant estimate for sellers</span>',more_team:'Meet the team<span>Agents who speak your language</span>',
+  foot:'Real rates and costs depend on your profile and the lender.',
+  progs:{conv30:'Conventional 30-year fixed',conv20:'Conventional 20-year fixed',conv15:'Conventional 15-year fixed',fha30:'FHA 30-year fixed',va30:'VA 30-year fixed'}}
+};
+function t(k){ return (T[lang]||T.es)[k]; }
+function $(id){ return document.getElementById(id); }
+function fill(s,o){ return String(s).replace(/\{(\w)\}/g,function(_,k){ return o[k]==null?'':o[k]; }); }
+function money(n){ return '$'+Math.round(n||0).toLocaleString('en-US'); }
+function num(v){ var n=parseFloat(String(v==null?'':v).replace(/[^0-9.]/g,'')); return isFinite(n)?n:0; }
+function fmtInt(n){ return Math.round(n||0).toLocaleString('en-US'); }
+function round2(n){ return Math.round(n*100)/100; }
+
+/* ---------- state ---------- */
+var S={price:300000,downPct:3.5,downAmt:null,prog:'fha30',rate:RATE,zip:'',incMi:true,incTI:true,taxPct:TAXRATE,taxAmt:null,ins:null,hoa:0,lockDown:'pct',lockTax:'pct',insTouched:false};
+(function readUrl(){ // shareable: ?price=&down=&prog=&rate=&zip=&hoa=
+  var q; try{ q=new URLSearchParams(location.search); }catch(e){ return; }
+  if(q.get('lang')==='en'||q.get('lang')==='es') lang=q.get('lang');
+  var p=num(q.get('price')); if(p>=10000&&p<=20000000) S.price=Math.round(p);
+  if(PROGS[q.get('prog')]) S.prog=q.get('prog');
+  var d=q.get('down'); if(d!=null&&d!==''){ var dv=num(d); if(dv>=0&&dv<=100) S.downPct=dv; } else S.downPct=PROGS[S.prog].min||3.5;
+  var r=num(q.get('rate')); if(r>0&&r<20) S.rate=r;
+  var z=String(q.get('zip')||'').replace(/\D/g,'').slice(0,5); if(z.length===5) S.zip=z;
+  var h=num(q.get('hoa')); if(h>0&&h<5000) S.hoa=Math.round(h);
+})();
+
+/* ---------- math ---------- */
+function vaFee(dp){ return dp<5?2.15:dp<10?1.5:1.25; }       // first-use VA funding fee, financed
+function calc(){
+  var P=PROGS[S.prog], price=S.price, down=price*S.downPct/100, base=Math.max(0,price-down), loan=base, fee=0;
+  if(P.kind==='fha'){ fee=1.75; loan=base*1.0175; }
+  if(P.kind==='va'){ fee=vaFee(S.downPct); loan=base*(1+fee/100); }
+  var r=S.rate/1200, n=P.years*12;
+  var pi=loan<=0?0:(r? loan*r/(1-Math.pow(1+r,-n)) : loan/n);
+  var mi=0;
+  if(S.incMi){
+    if(P.kind==='conv' && S.downPct<20) mi=base*MIRATE/100/12;
+    if(P.kind==='fha') mi=base*(S.downPct<5?0.55:0.50)/100/12;
+  }
+  var tax=S.incTI? S.taxAmt/12 : 0, ins=S.incTI? S.ins/12 : 0, hoa=S.hoa||0;
+  var totalInt=pi*n-loan;
+  return {P:P,price:price,down:down,base:base,loan:loan,fee:fee,pi:pi,mi:mi,tax:tax,ins:ins,hoa:hoa,n:n,r:r,
+    total:pi+mi+tax+ins+hoa,totalInt:Math.max(0,totalInt),cash:down+price*0.03};
+}
+function syncDerived(){
+  var min=PROGS[S.prog].min;
+  if(S.lockDown==='amt'&&S.downAmt!=null) S.downPct=S.price?Math.min(100,S.downAmt/S.price*100):0;
+  S.downAmt=Math.round(S.price*S.downPct/100);
+  if(S.lockTax==='amt'&&S.taxAmt!=null) S.taxPct=S.price?S.taxAmt/S.price*100:0;
+  S.taxAmt=Math.round(S.price*S.taxPct/100);
+  if(!S.insTouched) S.ins=Math.round(S.price*INSRATE/100/10)*10;
+  return min;
+}
+
+/* ---------- paint ---------- */
+var ORDER=[['pi','--c-pi'],['tax','--c-tax'],['ins','--c-ins'],['mi','--c-mi'],['hoa','--c-hoa']];
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function paint(){
+  var min=syncDerived(), c=calc(), P=c.P;
+  // inputs (skip the one being typed in)
+  var a=document.activeElement&&document.activeElement.id;
+  if(a!=='price') $('price').value=fmtInt(S.price);
+  if(a!=='downAmt') $('downAmt').value=fmtInt(S.downAmt);
+  if(a!=='downPct') $('downPct').value=round2(S.downPct);
+  if(a!=='rate') $('rate').value=S.rate;
+  if(a!=='zip') $('zip').value=S.zip;
+  if(a!=='taxAmt') $('taxAmt').value=fmtInt(S.taxAmt);
+  if(a!=='taxPct') $('taxPct').value=round2(S.taxPct);
+  if(a!=='ins') $('ins').value=fmtInt(S.ins);
+  if(a!=='hoa') $('hoa').value=S.hoa?fmtInt(S.hoa):'0';
+  $('prog').value=S.prog;
+  $('incMi').checked=S.incMi&&P.kind!=='va'; $('incMi').disabled=P.kind==='va';
+  $('incMiLbl').textContent=t(P.kind==='va'?'mi_va':P.kind==='fha'?'mi_fha':'mi_conv');
+  $('incTI').checked=S.incTI; $('taxF').style.opacity=$('insF').style.opacity=S.incTI?1:.45;
+  // down payment hint
+  var h=$('downHint'); h.className='hint';
+  if(S.downPct<min){ h.textContent=fill(t('down_min'),{p:min}); h.className='hint warn'; }
+  else if(P.kind==='va') h.textContent=t('down_va')+' '+fill(t('va_fee'),{p:c.fee});
+  else if(P.kind==='fha') h.textContent=t('down_fha')+' '+t('fha_fee');
+  else h.textContent=t(S.downPct<20?'down_conv':'down_20');
+  // donut
+  var parts=ORDER.map(function(o){ return {k:o[0],v:Math.max(0,c[o[0]]),col:css(o[1])}; });
+  var tot=parts.reduce(function(s,p){ return s+p.v; },0)||1, R=48, C=2*Math.PI*R, off=0, gap=parts.filter(function(p){ return p.v>0; }).length>1?1.2:0;
+  $('ring').innerHTML='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="#eee" stroke-width="13"/>'+parts.filter(function(p){ return p.v>0; }).map(function(p){
+    var len=Math.max(0,p.v/tot*C-gap), s='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+p.col+'" stroke-width="13" stroke-dasharray="'+len+' '+(C-len)+'" stroke-dashoffset="'+(-off)+'"/>';
+    off+=p.v/tot*C; return s; }).join('');
+  $('total').textContent=money(c.total);
+  var miLbl=t(P.kind==='fha'?'l_mi_fha':P.kind==='va'?'l_mi_va':'l_mi_conv');
+  var L={pi:t('l_pi'),tax:t('l_tax'),ins:t('l_ins'),mi:miLbl,hoa:t('l_hoa')};
+  $('legend').innerHTML=parts.map(function(p){
+    return '<li class="'+(p.v>0?'':'off')+'"><i style="background:'+p.col+'"></i><span>'+L[p.k]+'</span><b>'+money(p.v)+'</b></li>'; }).join('')+
+    '<li class="total"><i style="background:transparent"></i><span><b>'+t('l_total')+'</b></span><b>'+money(c.total)+'</b></li>';
+  $('facts').innerHTML='<div><small>'+t('f_loan')+'</small><b>'+money(c.loan)+'</b></div><div><small>'+t('f_int')+'</small><b>'+money(c.totalInt)+'</b></div>'+
+    '<div title="'+t('f_cash_tip').replace(/"/g,'&quot;')+'"><small>'+t('f_cash')+'</small><b>'+money(c.cash)+'</b></div>';
+  paintSchedule(c);
+  // app link carries what they're looking at
+  var desc=(lang==='es'?'Calculadora: precio ':'Calculator: price ')+money(S.price)+' · '+T[lang].progs[S.prog]+' · '+(lang==='es'?'enganche ':'down ')+round2(S.downPct)+'% · ~'+money(c.total)+(lang==='es'?'/mes':'/mo')+(S.zip?' · ZIP '+S.zip:'');
+  $('goApp').href='apply.html?'+new URLSearchParams({lang:lang,home:desc.slice(0,160),price:String(Math.round(S.price))}).toString();
+  $('rateLink').href=$('goApp').href;
+  // shareable URL without reloading
+  try{ var q=new URLSearchParams({price:Math.round(S.price),down:round2(S.downPct),prog:S.prog,rate:S.rate}); if(S.zip) q.set('zip',S.zip); if(S.hoa) q.set('hoa',S.hoa);
+    history.replaceState(null,'',location.pathname+'?'+q.toString()); }catch(e){}
+}
+function paintSchedule(c){
+  $('schedNote').textContent=t('sched_note');
+  var bal=c.loan, rows='', y=0, maxP=0, data=[];
+  for(var yr=1; yr<=c.P.years; yr++){
+    var pr=0, it=0;
+    for(var m=0;m<12;m++){ var i=bal*c.r, p=Math.min(bal, c.pi-i); it+=i; pr+=p; bal=Math.max(0,bal-p); }
+    data.push([yr,pr,it,bal]);
+  }
+  data.forEach(function(d){ var tot=d[1]+d[2]||1;
+    rows+='<tr><td>'+d[0]+'</td><td>'+money(d[1])+'</td><td>'+money(d[2])+'</td><td>'+money(d[3])+'</td><td><div class="bars"><i style="width:'+(d[1]/tot*100)+'%;background:var(--c-pi)"></i><i style="width:'+(d[2]/tot*100)+'%;background:#f1b6c0"></i></div></td></tr>'; });
+  $('sched').innerHTML=rows;
+}
+
+/* ---------- inputs ---------- */
+function bindNum(id, fn){ var el=$(id); el.addEventListener('input',function(){ fn(el.value); paint(); }); el.addEventListener('blur',paint); }
+bindNum('price',function(v){ var p=num(v); if(p>0) S.price=Math.min(p,20000000); });
+bindNum('downAmt',function(v){ S.lockDown='amt'; S.downAmt=Math.min(num(v),S.price); });
+bindNum('downPct',function(v){ S.lockDown='pct'; S.downPct=Math.min(100,num(v)); });
+bindNum('rate',function(v){ var r=num(v); if(r>=0&&r<30) S.rate=r; });
+bindNum('zip',function(v){ S.zip=String(v).replace(/\D/g,'').slice(0,5); });
+bindNum('taxAmt',function(v){ S.lockTax='amt'; S.taxAmt=num(v); });
+bindNum('taxPct',function(v){ S.lockTax='pct'; S.taxPct=Math.min(10,num(v)); });
+bindNum('ins',function(v){ S.insTouched=true; S.ins=num(v); });
+bindNum('hoa',function(v){ S.hoa=num(v); });
+$('prog').addEventListener('change',function(){
+  var old=PROGS[S.prog]; S.prog=this.value; var P=PROGS[S.prog];
+  if(S.downPct<P.min || S.downPct===old.min) { S.lockDown='pct'; S.downPct=P.min; }   // keep their own choice unless it's below the new minimum
+  paint();
+});
+$('incMi').addEventListener('change',function(){ S.incMi=this.checked; paint(); });
+$('incTI').addEventListener('change',function(){ S.incTI=this.checked; paint(); });
+$('advBtn').addEventListener('click',function(){ var open=$('adv').hidden; $('adv').hidden=!open; this.setAttribute('aria-expanded',open?'true':'false'); this.querySelector('span').textContent=t(open?'simple':'advanced'); });
+document.querySelectorAll('.tabs button').forEach(function(b){ b.addEventListener('click',function(){
+  document.querySelectorAll('.tabs button').forEach(function(x){ var on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-selected',on?'true':'false'); });
+  $('paneB').hidden=b.dataset.tab!=='b'; $('paneS').hidden=b.dataset.tab!=='s';
+}); });
+
+/* ---------- language ---------- */
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.title=t('h1')+' — JAG Real Estate';
+  document.querySelectorAll('[data-t]').forEach(function(el){ var v=t(el.getAttribute('data-t')); if(/<span>/.test(v)) el.innerHTML=v; else el.textContent=v; });
+  document.querySelectorAll('[data-t-tip]').forEach(function(el){ el.setAttribute('data-tip',t(el.getAttribute('data-t-tip'))); el.setAttribute('aria-label',t(el.getAttribute('data-t-tip'))); });
+  document.querySelectorAll('.langs button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-lang')===lang); });
+  $('prog').innerHTML=Object.keys(PROGS).map(function(k){ return '<option value="'+k+'">'+T[lang].progs[k]+'</option>'; }).join('');
+  $('advBtn').querySelector('span').textContent=t($('adv').hidden?'advanced':'simple');
+  if(window.JagAccount&&JagAccount.relabel) JagAccount.relabel();
+  paint();
+}
+document.querySelectorAll('.langs button').forEach(function(b){ b.onclick=function(){ lang=b.getAttribute('data-lang'); try{ localStorage.setItem('jag_lang',lang); }catch(e){} applyLang(); }; });
+if(window.JagAccount) JagAccount.mountButton($('acct'));
+applyLang();
+})();
+</script>
+<script src="jag-chat.js" defer></script>
+</body>
+</html>

@@ -196,6 +196,7 @@ footer b{color:var(--ink)}
       <a class="n" href="homes?type=lease" data-t="nav_rent"></a>
       <a class="n" href="value.html" data-t="nav_sell"></a>
       <a class="n" href="apply.html" data-t="nav_loan"></a>
+      <a class="n" href="calculadora" data-t="nav_calc"></a>
       <a class="n" href="team" data-t="nav_team"></a>
     </nav>
     <a class="logo" href="index.html" aria-label="JAG Real Estate">
@@ -282,7 +283,7 @@ var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN
 var A=window.JagAccount, lang='es';
 try{ var sv=localStorage.getItem('jag_lang'); if(sv==='en'||sv==='es') lang=sv; }catch(e){}
 var T={
- es:{nav_buy:'Comprar',nav_rent:'Rentar',nav_sell:'Vender',nav_loan:'Préstamo',nav_team:'Conoce al equipo',
+ es:{nav_buy:'Comprar',nav_rent:'Rentar',nav_sell:'Vender',nav_loan:'Préstamo',nav_calc:'Calculadora',nav_team:'Conoce al equipo',
   g_h:'Su cuenta de JAG',g_p:'Inicie sesión con su correo. Sin contraseña: le enviamos un código.',g_1:'Guarde casas y vea si cambian de precio',g_2:'Reciba avisos de casas nuevas en las zonas que le interesan',g_3:'Vea casas recomendadas según lo que le gusta',g_btn:'Iniciar sesión o crear cuenta',g_browse:'Seguir buscando casas ›',
   hi:'Hola',hi_p:'Sus casas, búsquedas y avisos en un solo lugar.',
   tab_offers:'Mis ofertas',of_none:'Todavía no ha hecho ofertas. Cuando encuentre una casa que le guste, toque «Hacer una oferta».',of_find:'Buscar casas',
@@ -308,7 +309,7 @@ var T={
   dd_h:'¿Borrar su cuenta?',dd_p:'Escriba BORRAR para confirmar.',dd_word:'BORRAR',dd_no:'Cancelar',dd_yes:'Borrar para siempre',dd_done:'Su cuenta fue borrada.',
   err:'Algo falló. Intente de nuevo.',loading:'Cargando…',
   foot:'Información de listados proporcionada por HAR a través de Repliers; se considera confiable pero no garantizada.'},
- en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_team:'Meet the team',
+ en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_calc:'Calculator',nav_team:'Meet the team',
   g_h:'Your JAG account',g_p:'Sign in with your email. No password: we send you a code.',g_1:'Save homes and see price changes',g_2:'Get alerts on new homes in the areas you like',g_3:'See homes picked for you based on what you like',g_btn:'Sign in or create account',g_browse:'Keep browsing homes ›',
   hi:'Hi',hi_p:'Your homes, searches and alerts in one place.',
   tab_offers:'My offers',of_none:'You have not made any offers yet. When you find a home you like, tap “Make an offer”.',of_find:'Search homes',
