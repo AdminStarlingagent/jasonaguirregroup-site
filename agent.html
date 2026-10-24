@@ -174,6 +174,39 @@ body{background:var(--paper)}
 .ost .chip{min-height:36px;padding:6px 11px;font-size:12.5px}
 .onote{width:100%;min-height:60px;border:1px solid #d9d6d1;border-radius:14px;background:#f6f5f3;padding:10px 12px;font:inherit;font-size:14px;resize:vertical;margin-bottom:8px}
 .ofm{color:var(--muted);font-size:12px}
+/* Mensajes: website clients ↔ their agent */
+.ib-row{background:var(--paper);border:2px solid #ebe9e5;border-radius:20px;padding:14px 16px;display:flex;gap:12px;align-items:center;width:100%;text-align:left;margin-bottom:8px}
+.ib-row:hover{border-color:#cfccc6}
+.ib-row.new{border-color:var(--ink)}
+.ib-av{width:44px;height:44px;border-radius:50%;background:#efedea;display:grid;place-items:center;font-weight:800;flex:0 0 44px}
+.ib-row.new .ib-av{background:var(--red);color:#fff}
+.ib-t{min-width:0;flex:1}.ib-t b{display:flex;justify-content:space-between;gap:8px;font-size:16px;font-weight:800}
+.ib-t b time{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
+.ib-t span{display:block;color:var(--muted);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib-row.new .ib-t span{color:var(--ink);font-weight:700}
+.ib-t small{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ib-n{min-width:22px;height:22px;border-radius:11px;background:var(--red);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;padding:0 6px}
+.th{border:2px solid #ebe9e5;border-radius:22px;display:flex;flex-direction:column;height:calc(100vh - 130px);height:calc(100dvh - 130px);min-height:420px;overflow:hidden;background:var(--paper)}
+.th-h{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.th-h .back{border:0;background:#f6f5f3;border-radius:50%;width:40px;height:40px;font-size:20px;flex:0 0 40px}
+.th-h .who{min-width:0;flex:1}.th-h .who b{display:block;font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.th-h .who small{color:var(--muted);font-size:12.5px}
+.th-h .acts{flex-wrap:nowrap}.th-h .acts a{flex:0 0 auto;min-height:38px;padding:7px 11px;font-size:13px}
+.th-l{flex:1;overflow-y:auto;padding:14px;background:#faf9f7;display:flex;flex-direction:column;gap:3px}
+.th-d{align-self:center;font-size:11.5px;font-weight:800;color:var(--muted);background:#efedea;border-radius:99px;padding:3px 10px;margin:10px 0 5px}
+.mr{display:flex;flex-direction:column;max-width:82%}
+.mr.out{align-self:flex-end;align-items:flex-end}.mr.in{align-self:flex-start;align-items:flex-start}
+.bb{padding:9px 13px;border-radius:18px;font-size:15.5px;line-height:1.42;white-space:pre-wrap;overflow-wrap:anywhere}
+.out .bb{background:var(--ink);color:#fff;border-bottom-right-radius:5px}.out .bb a{color:#fff}
+.in .bb{background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
+.mr .tm{font-size:11px;color:var(--muted);margin:3px 6px 6px}
+.mr.fail .tm{color:var(--red-d);font-weight:700}
+.th-c{display:flex;gap:8px;align-items:flex-end;padding:10px;border-top:1px solid var(--line)}
+.th-c textarea{flex:1;resize:none;border:1px solid #d9d6d1;background:#f6f5f3;border-radius:22px;padding:11px 15px;font:inherit;font-size:16px;line-height:1.35;min-height:46px;max-height:140px}
+.th-c textarea:focus{outline:3px solid var(--red-t);border-color:var(--red)}
+.th-c button{flex:0 0 46px;height:46px;border-radius:50%;border:0;background:var(--red);color:#fff;display:grid;place-items:center}
+.th-c button:disabled{background:#d6d5dc}
+.th-c button svg{width:20px;height:20px;fill:currentColor}
+.th-n{font-size:12.5px;color:var(--muted);margin:8px 4px 0}
 </style>
 </head>
 <body>
@@ -202,6 +235,7 @@ body{background:var(--paper)}
   </div></header>
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
     <button type="button" data-tab="clients" class="on">Clients</button>
+    <button type="button" data-tab="messages">Messages <span class="tc" id="tc-msgs"></span></button>
     <button type="button" data-tab="offers">Offers <span class="tc" id="tc-offers"></span></button>
     <button type="button" data-tab="share">Share</button>
     <button type="button" data-tab="links">My links</button>
@@ -221,6 +255,19 @@ body{background:var(--paper)}
       </div>
       <div class="list" id="list"><div class="empty">Loading clients…</div></div>
       <p class="note">Clients are sorted by priority: <b>verified</b> buyers first (pre-approval or proof of funds checked by the team), then buyers <b>in contact</b> with us, then everyone else by score. Score (0-100) = how actively a client is shopping on our website right now, updated hourly. "Mine" = clients who signed up through one of your links.</p>
+    </section>
+
+    <section id="t-messages" hidden>
+      <div id="ibox">
+        <div class="bar" id="mchips">
+          <button type="button" class="chip on" data-mf="mine">Mine</button>
+          <button type="button" class="chip" data-mf="unread">Unanswered</button>
+          <button type="button" class="chip" data-mf="all">All</button>
+        </div>
+        <div id="ilist"><div class="empty">Loading messages…</div></div>
+        <p class="note">Clients write to their agent from <b>Mensajes</b> in their account on the website. Lola texts the agent each new message (8 AM-9 PM); answer here, or reply to Lola's text with <b>R#&lt;number&gt; your answer</b>. Every message is also saved as a note in Follow Up Boss. The client gets an email when you answer.</p>
+      </div>
+      <div id="tview" hidden></div>
     </section>
 
     <section id="t-offers" hidden>
@@ -348,14 +395,14 @@ body{background:var(--paper)}
       $('hd-sub').textContent = 'Clients see: ' + (me.phone ? fmtPhone(me.phone) : 'no number in FUB yet');
       $('me-card').innerHTML = 'What clients see on homes you send: <b>' + esc(me.name) + '</b> · <b class="num">' + esc(me.phone ? fmtPhone(me.phone) : 'no number') + '</b>' + (me.photo_url ? ' and your photo' : '') +
         '. It comes from your Follow Up Boss profile (updated every morning); change it there.';
-      load();
+      load(); routeHash();
     }).catch(function(){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); });
   }
   function load(){
     rpc('jag_agent_clients').then(function(j){
       if(!j || !j.ok){ $('list').innerHTML = '<div class="empty">Could not load clients.</div>'; return; }
       rows = j.clients || []; shares = j.shares || [];
-      paint(); paintLinks(); loadOffers();
+      paint(); paintLinks(); loadOffers(); if(curTab !== 'messages') loadInbox();
     }).catch(function(e){ if(String(e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); } else $('list').innerHTML = '<div class="empty">Could not load clients. Pull down to refresh.</div>'; });
   }
 
@@ -401,6 +448,7 @@ body{background:var(--paper)}
       '<div class="acts">' + (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a><a href="sms:+1' + ph + '">Text</a>' : '') +
       (c.email ? '<a href="mailto:' + esc(c.email) + '">Email</a>' : '') +
       (c.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + c.fub_person_id + '" target="_blank" rel="noopener">FUB</a>' : '') +
+      '<button type="button" data-msg="' + esc(c.user_id) + '">Message</button>' +
       '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide details' : 'Offers & activity') + '</button></div>' +
       (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
       '</article>';
@@ -427,6 +475,7 @@ body{background:var(--paper)}
   }
   $('list').addEventListener('click', function(e){
     if(offerClick(e)) return;
+    var mg = e.target.closest('[data-msg]'); if(mg){ showTab('messages'); openThread(mg.getAttribute('data-msg')); return; }
     var pv = e.target.closest('[data-pv]');
     if(pv){ pv.disabled = true; rpc('jag_proof_review', { p_id: pv.getAttribute('data-pv'), p_status: 'verified' }).then(function(j){
       if(j && j.ok){ var u = pv.getAttribute('data-u'); open[u] = true; detail(u); load(); } else pv.disabled = false; }).catch(function(){ pv.disabled = false; }); return; }
@@ -518,14 +567,115 @@ body{background:var(--paper)}
   };
   $('sh-site-go').onclick = function(){ JagShare.open({ kind: 'site', title: 'Invite to our home search', label: 'Home search invite' }); };
 
+  var curTab = 'clients';
+  function showTab(t){
+    curTab = t;
+    document.querySelectorAll('.tabs [data-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tab') === t); });
+    ['clients', 'messages', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
+    if(t === 'messages'){ if(!thUser) loadInbox(); } else if(t !== 'share') load();
+  }
   document.querySelector('.tabs').addEventListener('click', function(e){
     var b = e.target.closest('[data-tab]'); if(!b) return;
     var t = b.getAttribute('data-tab');
-    this.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x === b); });
-    ['clients', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
-    if(t !== 'share') load();
+    if(t === 'messages' && curTab === 'messages' && thUser) closeThread();
+    showTab(t);
+    if(t === 'messages' && location.hash.indexOf('#mensajes') !== 0) history.replaceState(null, '', '#mensajes');
   });
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me) load(); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else load(); } });
+
+  /* ---------------- messages (Mensajes from website clients) ---------------- */
+  var threads = [], mfilter = 'mine', thUser = null, th = null, thPending = [], thSig = '', thBusy = false;
+  function initials(n){ return String(n || '?').trim().split(/\s+/).map(function(w){ return w.charAt(0); }).slice(0, 2).join('').toUpperCase() || '?'; }
+  function linkify(s){ return esc(s).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, function(u){ return '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>'; }); }
+  function dayLbl(d){ var n = new Date(), y = new Date(n.getFullYear(), n.getMonth(), n.getDate() - 1);
+    return d.toDateString() === n.toDateString() ? 'Today' : d.toDateString() === y.toDateString() ? 'Yesterday' : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); }
+  function loadInbox(){
+    return rpc('jag_msg_inbox').then(function(j){
+      if(!j || !j.ok){ $('ilist').innerHTML = '<div class="empty">Could not load messages.</div>'; return; }
+      threads = j.threads || []; paintInbox();
+    }).catch(function(e){ if(String(e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); } else $('ilist').innerHTML = '<div class="empty">Could not load messages.</div>'; });
+  }
+  function paintInbox(){
+    var mineUnread = threads.filter(function(x){ return x.mine && x.unread > 0; }).length, allUnread = threads.filter(function(x){ return x.unread > 0; }).length;
+    $('tc-msgs').textContent = mineUnread || allUnread || '';
+    var list = threads.filter(function(x){ return mfilter === 'all' ? true : mfilter === 'unread' ? x.last_from === 'client' : x.mine; });
+    if(!list.length){ $('ilist').innerHTML = '<div class="empty">' + (threads.length ? (mfilter === 'mine' ? 'No conversations with your clients yet. Tap All to see the whole team.' : 'Nothing waiting for an answer. 👍') : 'No messages yet. When a client writes from their account, it shows up here.') + '</div>'; return; }
+    $('ilist').innerHTML = list.map(function(x){
+      var nw = x.unread > 0;
+      return '<button type="button" class="ib-row' + (nw ? ' new' : '') + '" data-th="' + esc(x.user_id) + '"><span class="ib-av">' + esc(initials(x.name || x.email)) + '</span>' +
+        '<span class="ib-t"><b><span>' + esc(x.name || x.email || 'Client') + '</span><time>' + esc(ago(x.last_at)) + '</time></b>' +
+        '<span>' + (x.last_from === 'agent' ? 'You: ' : '') + esc(x.last_body || '') + '</span>' +
+        (!x.mine && x.agent_first ? '<small>' + esc(x.agent_first) + '\'s client</small>' : '') + '</span>' +
+        (nw ? '<span class="ib-n">' + x.unread + '</span>' : '') + '</button>';
+    }).join('');
+  }
+  $('ilist').addEventListener('click', function(e){ var b = e.target.closest('[data-th]'); if(b) openThread(b.getAttribute('data-th')); });
+  $('mchips').addEventListener('click', function(e){ var b = e.target.closest('[data-mf]'); if(!b) return; mfilter = b.getAttribute('data-mf'); this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x === b); }); paintInbox(); });
+  function openThread(uid){
+    thUser = uid; th = null; thPending = []; thSig = '';
+    $('ibox').hidden = true; $('tview').hidden = false;
+    $('tview').innerHTML = '<div class="th"><div class="th-h"><button type="button" class="back" data-back aria-label="Back to messages">‹</button><div class="who"><b id="th-name">Loading…</b><small id="th-sub"></small></div><div class="acts" id="th-acts"></div></div>' +
+      '<div class="th-l" id="th-l" role="log" aria-live="polite"></div>' +
+      '<form class="th-c" id="th-f" autocomplete="off"><textarea id="th-in" rows="1" maxlength="2000" placeholder="Write your answer…" aria-label="Your answer"></textarea>' +
+      '<button type="submit" id="th-go" disabled aria-label="Send"><svg viewBox="0 0 24 24"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg></button></form></div>' +
+      '<p class="th-n">The client sees your first name and gets an email that you answered. Saved as a note in Follow Up Boss.</p>';
+    var inp = $('th-in');
+    inp.addEventListener('input', function(){ inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight + 3, 140) + 'px'; $('th-go').disabled = !inp.value.trim(); });
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey && !e.isComposing && !matchMedia('(pointer:coarse)').matches){ e.preventDefault(); $('th-go').click(); } });
+    $('th-f').addEventListener('submit', function(e){ e.preventDefault(); var v = inp.value.trim(); if(!v) return; inp.value = ''; inp.style.height = 'auto'; $('th-go').disabled = true; sendReply(v); });
+    if(location.hash !== '#mensajes/' + uid) history.replaceState(null, '', '#mensajes/' + uid);
+    var tb = document.querySelector('.tabs'); window.scrollTo(0, Math.max(0, $('t-messages').getBoundingClientRect().top + window.scrollY - tb.offsetHeight - 10));
+    loadThread(true);
+  }
+  function closeThread(){ thUser = null; th = null; $('tview').hidden = true; $('tview').innerHTML = ''; $('ibox').hidden = false; history.replaceState(null, '', '#mensajes'); loadInbox(); }
+  $('tview').addEventListener('click', function(e){ if(e.target.closest('[data-back]')) closeThread(); });
+  function loadThread(first){
+    if(!thUser || thBusy) return; thBusy = true; var uid = thUser;
+    rpc('jag_msg_team_thread', { p_user: uid }).then(function(j){
+      thBusy = false; if(uid !== thUser) return;
+      if(!j || !j.ok){ $('th-l').innerHTML = '<div class="empty">Could not load this conversation.</div>'; return; }
+      th = j; var ids = {}; (j.messages || []).forEach(function(m){ ids[m.id] = 1; });
+      thPending = thPending.filter(function(p){ return !(p.id && ids[p.id]); });
+      paintThread(first);
+      threads.forEach(function(x){ if(x.user_id === uid) x.unread = 0; }); paintInbox();
+    }).catch(function(){ thBusy = false; });
+  }
+  function paintThread(force){
+    if(!th) return; var c = th.client || {}, ph = digits(c.phone);
+    $('th-name').textContent = c.name || c.email || 'Client';
+    $('th-sub').textContent = (c.lang === 'en' ? 'English' : 'Español') + (ph ? ' · ' + fmtPhone(ph) : '');
+    var row = rows.filter(function(x){ return x.user_id === c.user_id; })[0];
+    $('th-acts').innerHTML = (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a>' : '') + (row && row.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + row.fub_person_id + '" target="_blank" rel="noopener">FUB</a>' : '');
+    var all = (th.messages || []).concat(thPending), myName = me && (me.first_name || String(me.name || '').split(' ')[0]);
+    var sig = all.map(function(m){ return (m.id || m.tmp) + (m.fail ? 'f' : ''); }).join(',');
+    if(sig === thSig && !force) return; thSig = sig;
+    var l = $('th-l');
+    if(!all.length){ l.innerHTML = '<div class="empty" style="margin:auto">No messages yet. Write the first one: ' + esc((c.name || '').split(' ')[0] || 'the client') + ' will get an email.</div>'; return; }
+    var h = '', last = '';
+    all.forEach(function(m){
+      var d = new Date(m.at), mine = m.from === 'agent';
+      if(d.toDateString() !== last){ h += '<div class="th-d">' + esc(dayLbl(d)) + '</div>'; last = d.toDateString(); }
+      var tm = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      var lab = m.fail ? 'Not sent. Try again.' : (m.tmp && !m.id) ? 'Sending…' : ((mine && m.name && m.name !== myName ? m.name + ' · ' : '') + tm + (m.via === 'sms' ? ' · by text' : ''));
+      h += '<div class="mr ' + (mine ? 'out' : 'in') + (m.fail ? ' fail' : '') + '"><div class="bb">' + linkify(m.body) + '</div><div class="tm">' + esc(lab) + '</div></div>';
+    });
+    var stick = force || l.scrollHeight - l.scrollTop - l.clientHeight < 90;
+    l.innerHTML = h; if(stick) l.scrollTop = l.scrollHeight;
+  }
+  function sendReply(text){
+    var p = { tmp: 'p' + Date.now(), from: 'agent', body: text, at: new Date().toISOString(), name: me && me.first_name };
+    thPending.push(p); paintThread(true);
+    rpc('jag_msg_reply', { p_user: thUser, p_body: text }).then(function(j){
+      if(j && j.ok){ p.id = j.id; loadThread(); } else { p.fail = true; paintThread(true); $('th-in').value = text; }
+    }).catch(function(){ p.fail = true; paintThread(true); $('th-in').value = text; });
+  }
+  function msgTickNow(){ if(thUser) loadThread(); else loadInbox(); }
+  setInterval(function(){ if(!me || document.hidden) return; if(curTab === 'messages') msgTickNow(); else loadInbox(); }, 20000);
+  window.addEventListener('hashchange', function(){ routeHash(); });
+  function routeHash(){
+    var m = location.hash.match(/^#(?:mensajes|messages)(?:\/([0-9a-f-]{36}))?/i); if(!m || !me) return;
+    showTab('messages'); if(m[1]) openThread(m[1]);
+  }
 
   start();
 })();
