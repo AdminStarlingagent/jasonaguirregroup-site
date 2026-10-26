@@ -64,6 +64,12 @@ header{flex:none;background:#fff;border-bottom:1px solid var(--line)}
 .q button{position:absolute;right:2px;top:2px;width:38px;height:38px;border:0;background:none;border-radius:6px}
 .q svg{width:18px;height:18px;stroke:var(--buy);fill:none;stroke-width:2.4;stroke-linecap:round;vertical-align:middle}
 .pills{display:flex;gap:8px;align-items:center;min-width:0}
+.near{flex:none;height:42px;border:2px solid var(--buy);border-radius:99px;background:#fff;color:var(--buy);font-weight:800;font-size:14px;padding:0 14px 0 11px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer}
+.near svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.near.on{background:var(--buy);color:#fff}.near.busy{opacity:.6;cursor:progress}
+.near.busy svg{animation:nearspin 1s linear infinite}@keyframes nearspin{to{transform:rotate(360deg)}}
+.leaflet-control.mebtn a{display:grid;place-items:center;width:34px;height:34px;background:#fff;color:var(--buy);cursor:pointer}
+.leaflet-control.mebtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .dd{position:relative;flex:none}
 .pill{height:42px;border:1px solid #a7a6b0;border-radius:6px;background:#fff;padding:0 12px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .pill:hover{background:var(--card)}
@@ -422,6 +428,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
     <input id="q" type="search" autocomplete="off" data-ph="q_ph" aria-label="Buscar">
     <button type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
   </form>
+  <button type="button" class="near" id="nearBtn"><svg viewBox="0 0 24 24"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg><span data-t="near"></span></button>
   <div class="pills">
     <div class="dd" data-dd="type"><button type="button" class="pill" id="p_type"></button>
       <div class="pop"><label class="r"><input type="radio" name="type" value="sale" checked><span data-t="t_sale"></span></label><label class="r"><input type="radio" name="type" value="lease"><span data-t="t_lease"></span></label></div></div>
@@ -495,7 +502,7 @@ var T={
   bb:'Recámaras y baños',h_beds:'Recámaras',h_baths:'Baños',any:'Todas',bdS:' rec.',baS:' ba.',
   kind:'Tipo de casa',h_kind:'Tipo de propiedad',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
   apply:'Aplicar',save:'Guardar búsqueda',ss_saved:'Búsqueda guardada. Le avisaremos cuando salgan casas nuevas.',ss_go:'Ver mis búsquedas',ss_err:'No pudimos guardar la búsqueda. Intente de nuevo.',ss_map:'Área del mapa',ss_upto:'hasta ',ss_from:'desde ',ss_bd:'+ rec',ss_ba:'+ ba',mapnote:'Mostrando casas en esta zona del mapa',
-  ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',
+  ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',near:'Cerca de mí',near_t:'su zona',near_wide:'Pocas casas muy cerca: ampliamos la búsqueda a 10 millas.',near_denied:'Para buscar cerca de usted, permita el acceso a su ubicación en su navegador.',near_fail:'No pudimos encontrar su ubicación. Escriba su ciudad o código postal.',near_out:'Por ahora solo mostramos casas en Texas. Escriba una ciudad o código postal de Texas.',near_me:'Usted está aquí',
   res:' resultados',res1:' resultado',sortl:'Ordenar:',s_new:'Más recientes',s_low:'Precio (menor)',s_high:'Precio (mayor)',
   none:'No encontramos casas con esos filtros. Mueve el mapa o cambia los filtros.',
   fail:'No pudimos cargar las casas. Intenta de nuevo.',prev:'‹ Anterior',next:'Siguiente ›',page:'Página ',of:' de ',
@@ -539,7 +546,7 @@ var T={
   bb:'Beds & baths',h_beds:'Bedrooms',h_baths:'Bathrooms',any:'Any',bdS:' bd',baS:' ba',
   kind:'Home type',h_kind:'Home type',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
   apply:'Apply',save:'Save search',ss_saved:'Search saved. We will email you when new homes hit the market.',ss_go:'See my searches',ss_err:'We could not save the search. Please try again.',ss_map:'Map area',ss_upto:'up to ',ss_from:'from ',ss_bd:'+ bd',ss_ba:'+ ba',mapnote:'Showing homes in this map area',
-  ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',
+  ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',near:'Near me',near_t:'your area',near_wide:'Few homes right nearby, so we widened the search to 10 miles.',near_denied:'To search near you, allow location access in your browser.',near_fail:'We couldn’t find your location. Type your city or ZIP code.',near_out:'For now we only show homes in Texas. Type a Texas city or ZIP code.',near_me:'You are here',
   res:' results',res1:' result',sortl:'Sort:',s_new:'Newest',s_low:'Price (low to high)',s_high:'Price (high to low)',
   none:'No homes match those filters. Move the map or change the filters.',
   fail:'We couldn\'t load homes. Please try again.',prev:'‹ Previous',next:'Next ›',page:'Page ',of:' of ',
@@ -653,7 +660,7 @@ document.querySelectorAll('.apply').forEach(function(b){ b.addEventListener('cli
 $('qf').addEventListener('submit',function(e){ e.preventDefault();
   var qv=$('q').value.trim();
   if(qv&&window.JagAccount&&JagAccount.user()) JagAccount.logActivity(/^\d{5}$/.test(qv)?{kind:'search',zip:qv,beds:F.beds||null,baths:F.baths||null,price:F.maxp||null}:{kind:'search',city:qv.slice(0,60),beds:F.beds||null,baths:F.baths||null,price:F.maxp||null});
-  state.bounds=null; $('mapnote').classList.remove('on'); state.page=1; load(); });
+  state.bounds=null; setNear(false); $('mapnote').classList.remove('on'); state.page=1; load(); });
 $('sort').addEventListener('change',function(){ state.page=1; load(); });
 
 function applyLang(){
@@ -683,7 +690,9 @@ function load(fit){
   var mine=++state.req; $('grid').style.opacity=.45;
   fetch(API+'?'+query())
    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-   .then(function(d){ if(mine!==state.req) return; state.items=d.listings||[]; state.pages=d.numPages||1; state.count=d.count||0; render(fit!==false&&!state.bounds); })
+   .then(function(d){ if(mine!==state.req) return; state.items=d.listings||[]; state.pages=d.numPages||1; state.count=d.count||0;
+     if(state.near&&state.near.miles<10&&state.count<6){ nearSearch(state.near.lat,state.near.lng,10); ssToast(t('near_wide'),false); return; }
+     render(fit!==false&&!state.bounds); })
    .catch(function(){ if(mine!==state.req) return; state.items=[]; state.count=null; render(); });
 }
 state.req=0;
@@ -695,7 +704,7 @@ function render(fit){
   if(state.count===undefined) return;
   var g=$('grid'), lease=F.type==='lease'; g.style.opacity=1;
   var q=$('q').value.trim();
-  $('title').textContent=t(lease?'ttl_lease':'ttl_sale')+t('ttl_in')+(state.bounds?t('area'):(q||t('tx')));
+  $('title').textContent=t(lease?'ttl_lease':'ttl_sale')+t('ttl_in')+(state.near&&state.bounds?t('near_t'):state.bounds?t('area'):(q||t('tx')));
   if(state.count===null){ $('count').textContent=''; g.innerHTML='<div class="empty">'+t('fail')+'</div>'; $('pager').innerHTML=''; return; }
   $('count').textContent=num(state.count)+(state.count===1?t('res1'):t('res'));
   if(!state.items.length){ g.innerHTML='<div class="empty">'+t('none')+'</div>'; $('pager').innerHTML=''; drawPins(false); return; }
@@ -1109,7 +1118,7 @@ $('saveBtn').addEventListener('click',function(){
 
 /* ---------- map: results follow the map, like the big portals ---------- */
 function setTog(){ $('viewtog').textContent=$('main').classList.contains('mapview')?t('listv'):t('map'); }
-$('viewtog').addEventListener('click',function(){ $('main').classList.toggle('mapview'); setTog(); if(map){ quiet++; map.invalidateSize(); drawPins(!state.bounds); setTimeout(function(){ quiet--; },400); } });
+$('viewtog').addEventListener('click',function(){ $('main').classList.toggle('mapview'); setTog(); if(map){ quiet++; map.invalidateSize(); if(state.near&&state.bounds) map.fitBounds(state.bounds,{animate:false}); drawPins(!state.bounds); setTimeout(function(){ quiet--; },400); } });
 try{
   map=L.map('map',{scrollWheelZoom:true}).setView([29.76,-95.37],10);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
@@ -1117,9 +1126,50 @@ try{
   var mt;
   map.on('moveend',function(){
     if(quiet>0) return;
-    clearTimeout(mt); mt=setTimeout(function(){ state.bounds=map.getBounds(); $('mapnote').classList.add('on'); state.page=1; load(false); },350);
+    clearTimeout(mt); mt=setTimeout(function(){ state.bounds=map.getBounds(); setNear(false); $('mapnote').classList.add('on'); state.page=1; load(false); },350);
   });
 }catch(e){ map=null; }
+
+/* ---------- "Cerca de mí": search around the visitor's location (asks the browser; nothing is stored) ---------- */
+var meLayer=null;
+function setNear(on){ if(!on) state.near=null; $('nearBtn').classList.toggle('on',!!on); }
+function nearBox(lat,lng,miles){ var dLat=miles/69, dLng=miles/(69*Math.cos(lat*Math.PI/180)); return [[lat-dLat,lng-dLng],[lat+dLat,lng+dLng]]; }
+function nearSearch(lat,lng,miles){
+  state.near={lat:lat,lng:lng,miles:miles}; setNear(true);
+  var bx=nearBox(lat,lng,miles);
+  state.bounds=L.latLngBounds(bx[0],bx[1]); $('q').value=''; $('mapnote').classList.add('on'); state.page=1;
+  if(map){
+    quiet++; map.fitBounds(state.bounds,{animate:false}); setTimeout(function(){ quiet--; },500);
+    if(!meLayer) meLayer=L.layerGroup().addTo(map); meLayer.clearLayers();
+    L.circleMarker([lat,lng],{radius:8,color:'#fff',weight:3,fillColor:'#2563eb',fillOpacity:1}).bindTooltip(t('near_me')).addTo(meLayer);
+  }
+  load(false);
+}
+function findMe(){
+  var b=$('nearBtn'); closeDD();
+  if(!navigator.geolocation){ ssToast(t('near_fail'),false); return; }
+  b.classList.add('busy');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    b.classList.remove('busy');
+    var lat=pos.coords.latitude, lng=pos.coords.longitude;
+    if(!(lat>25.8&&lat<36.6&&lng>-106.7&&lng<-93.4)){ ssToast(t('near_out'),false); return; }   // Texas only for now
+    nearSearch(lat,lng,5);
+    if(window.JagAccount&&JagAccount.user()) JagAccount.logActivity({kind:'search',city:'Cerca de mí',beds:F.beds||null,baths:F.baths||null,price:F.maxp||null});
+  },function(err){
+    b.classList.remove('busy'); ssToast(t(err&&err.code===1?'near_denied':'near_fail'),false);
+  },{enableHighAccuracy:false,timeout:12000,maximumAge:300000});
+}
+$('nearBtn').addEventListener('click',function(){ if(state.near){ state.bounds=null; setNear(false); if(meLayer) meLayer.clearLayers(); $('mapnote').classList.remove('on'); state.page=1; load(); } else findMe(); });
+if(map){
+  var MeCtl=L.Control.extend({options:{position:'topleft'},onAdd:function(){
+    var d=L.DomUtil.create('div','leaflet-bar leaflet-control mebtn'), a=L.DomUtil.create('a','',d);
+    a.href='#'; a.setAttribute('role','button'); a.title=t('near'); a.setAttribute('aria-label',t('near'));
+    a.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>';
+    L.DomEvent.on(a,'click',function(e){ L.DomEvent.preventDefault(e); L.DomEvent.stopPropagation(e); findMe(); });
+    return d; }});
+  new MeCtl().addTo(map);
+}
+if(new URLSearchParams(location.search).get('near')==='1') setTimeout(findMe,300);   // homes?near=1 (e.g. from an ad or the home page)
 
 try{
   var qs=new URLSearchParams(location.search), q0=(qs.get('q')||'').trim().slice(0,80), t0=qs.get('type');
