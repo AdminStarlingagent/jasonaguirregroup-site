@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<script src="jag-theme.js?v=1"></script>
 <title>Mi cuenta — JAG Real Estate</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -262,6 +264,14 @@ section[data-pane]{padding-bottom:50px}
 .mdl .mb p{margin:0 0 8px;color:#3d3c44}
 .pcard{border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;max-width:720px}
 .pcard h3{margin:0 0 14px;font-size:19px;font-weight:800}
+.st-row{display:flex;align-items:center;justify-content:space-between;gap:12px 18px;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line)}
+.st-row:first-of-type{border-top:0;padding-top:0}
+.st-tx{display:flex;flex-direction:column;min-width:0;flex:1 1 220px}.st-tx b{font-size:15px}.st-tx span{font-size:13.5px;color:var(--muted)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:12px;padding:3px;gap:3px;background:var(--card)}
+.seg button{border:0;background:transparent;border-radius:9px;padding:8px 14px;font-weight:700;font-size:14px;color:var(--muted);min-height:38px}
+.seg button[aria-checked="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg button:focus-visible{outline:2px solid var(--buy);outline-offset:1px}
+.st-ok{margin:8px 0 0;font-size:13.5px;font-weight:700;color:var(--ok);min-height:1em}
 .msgph{max-width:720px}
 .hero .inner.prem-slot{padding:0;background:transparent}.hero .inner.prem-slot .jp-card{margin:0}
 #ct_saved{display:none}
@@ -414,13 +424,18 @@ body.on-msgs .jc-b,body.on-msgs .jc{display:none!important}
 
     <section data-pane="profile">
       <h1 class="pt" data-t="r_profile"></h1>
+      <div class="pcard" id="st_card"><h3 data-t="st_h"></h3>
+        <div class="st-row"><div class="st-tx"><b data-t="st_lang"></b><span data-t="st_lang_d"></span></div>
+          <div class="seg" role="radiogroup" id="st_lang" data-t-aria="st_lang"><button type="button" role="radio" data-v="es">Español</button><button type="button" role="radio" data-v="en">English</button></div></div>
+        <div class="st-row"><div class="st-tx"><b data-t="st_theme"></b><span data-t="st_theme_d"></span></div>
+          <div class="seg" role="radiogroup" id="st_theme"><button type="button" role="radio" data-v="system" data-t="st_sys"></button><button type="button" role="radio" data-v="light" data-t="st_light"></button><button type="button" role="radio" data-v="dark" data-t="st_dark"></button></div></div>
+        <p class="st-ok" id="st_ok" role="status"></p>
+      </div>
       <div class="pcard"><h3 data-t="pi_h"></h3>
       <form class="form" id="pf" novalidate>
         <label for="p_email" data-t="p_email"></label><input id="p_email" type="email" readonly>
         <label for="p_name" data-t="p_name"></label><input id="p_name" type="text" autocomplete="name" maxlength="120">
         <label for="p_phone" data-t="p_phone"></label><input id="p_phone" type="tel" autocomplete="tel" maxlength="40">
-        <label for="p_lang" data-t="p_lang"></label>
-        <select id="p_lang"><option value="es">Español</option><option value="en">English</option></select>
         <label data-t="p_freq"></label>
         <label class="radio"><input type="radio" name="freq" value="instant"><span><b data-t="f_instant"></b><span data-t="f_instant_d"></span></span></label>
         <label class="radio"><input type="radio" name="freq" value="daily"><span><b data-t="f_daily"></b><span data-t="f_daily_d"></span></span></label>
@@ -512,7 +527,7 @@ var T={
   bd:'rec',ba:'ba',sqft:'pies²',rm:'Quitar de guardadas',
   st_price:'Bajó de precio',st_up:'Subió de precio',st_pend:'Pendiente',st_sold:'Vendida',st_off:'Fuera del mercado',st_back:'De vuelta en venta',
   a_new:'Casa nueva para su búsqueda',a_smart:'Casa nueva parecida a lo que busca',a_price:'Cambio de precio',a_status:'Cambio de estado',
-  p_email:'Correo',p_name:'Nombre',p_phone:'Teléfono',p_lang:'Idioma de los correos',p_freq:'¿Cada cuánto quiere avisos?',
+  p_email:'Correo',p_name:'Nombre',p_phone:'Teléfono',p_lang:'Idioma de los correos',st_h:'Ajustes',st_lang:'Idioma',st_lang_d:'Para la app y los correos y textos que le mandamos.',st_theme:'Apariencia',st_theme_d:'Automático usa el modo de su teléfono o computadora.',st_sys:'Automático',st_light:'Claro',st_dark:'Oscuro',st_saved:'✓ Guardado',st_err:'No se pudo guardar. Intente de nuevo.',p_freq:'¿Cada cuánto quiere avisos?',
   f_instant:'Al momento',f_instant_d:'Le escribimos en cuanto sale una casa o cambia un precio.',f_daily:'Resumen diario',f_daily_d:'Un correo cada mañana con todo lo nuevo.',f_off:'No enviar correos',f_off_d:'Los avisos se quedan aquí en su cuenta.',
   p_save:'Guardar cambios',p_saved:'Guardado ✓',p_out:'Cerrar sesión',
   d_h:'Borrar mi cuenta',d_p:'Se borran su cuenta, casas guardadas, búsquedas y avisos. No se puede deshacer.',d_btn:'Borrar mi cuenta',
@@ -565,7 +580,7 @@ var T={
   bd:'bd',ba:'ba',sqft:'sqft',rm:'Remove from saved',
   st_price:'Price cut',st_up:'Price up',st_pend:'Pending',st_sold:'Sold',st_off:'Off market',st_back:'Back on market',
   a_new:'New home for your search',a_smart:'New home like what you are looking for',a_price:'Price change',a_status:'Status change',
-  p_email:'Email',p_name:'Name',p_phone:'Phone',p_lang:'Email language',p_freq:'How often do you want alerts?',
+  p_email:'Email',p_name:'Name',p_phone:'Phone',p_lang:'Email language',st_h:'Settings',st_lang:'Language',st_lang_d:'For the app and the emails and texts we send you.',st_theme:'Appearance',st_theme_d:'Automatic matches your phone or computer.',st_sys:'Automatic',st_light:'Light',st_dark:'Dark',st_saved:'✓ Saved',st_err:'Couldn’t save. Try again.',p_freq:'How often do you want alerts?',
   f_instant:'Right away',f_instant_d:'We email you as soon as a home hits or a price changes.',f_daily:'Daily digest',f_daily_d:'One email each morning with everything new.',f_off:'No emails',f_off_d:'Alerts stay here in your account.',
   p_save:'Save changes',p_saved:'Saved ✓',p_out:'Sign out',
   d_h:'Delete my account',d_p:'Deletes your account, saved homes, searches and alerts. This cannot be undone.',d_btn:'Delete my account',
@@ -589,7 +604,7 @@ function applyLang(){
   document.querySelectorAll('[data-tp]').forEach(function(el){ el.placeholder=t(el.getAttribute('data-tp')); });
   document.querySelectorAll('.langs button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-lang')===lang); });
   if(A) A.relabel();
-  paintAll();
+  paintAll(); paintSettings();
 }
 document.querySelectorAll('.langs button').forEach(function(b){ b.onclick=function(){ lang=b.getAttribute('data-lang'); try{ localStorage.setItem('jag_lang',lang); }catch(e){} applyLang(); }; });
 
@@ -708,18 +723,38 @@ function paintPicks(){
 /* ---------- profile ---------- */
 function paintProfile(){
   var p=D.profile; if(!p) return;
-  $('p_email').value=p.email||''; $('p_name').value=p.name||''; $('p_phone').value=p.phone||''; $('p_lang').value=p.lang||'es';
+  $('p_email').value=p.email||''; $('p_name').value=p.name||''; $('p_phone').value=p.phone||'';
+  // the language saved on the account is the client's choice: use it here too (it can be set from another phone)
+  if((p.lang==='es'||p.lang==='en') && p.lang!==lang && !langSynced){ langSynced=true; lang=p.lang; try{ localStorage.setItem('jag_lang',lang); }catch(e){} applyLang(); }
+  langSynced=true; paintSettings();
   var r=document.querySelector('input[name=freq][value="'+(p.alert_freq||'instant')+'"]'); if(r) r.checked=true;
   paintPlan(); if(window.M) paintSms();
 }
 $('pf').addEventListener('submit',function(e){
   e.preventDefault();
   var f=document.querySelector('input[name=freq]:checked');
-  A.updateProfile({name:$('p_name').value.trim()||null,phone:$('p_phone').value.trim()||null,lang:$('p_lang').value,alert_freq:f?f.value:'instant'})
+  A.updateProfile({name:$('p_name').value.trim()||null,phone:$('p_phone').value.trim()||null,lang:lang,alert_freq:f?f.value:'instant'})
    .then(function(p){ D.profile=p; paintProfile(); $('p_ok').classList.add('on'); setTimeout(function(){ $('p_ok').classList.remove('on'); },2500); })
    .catch(function(){ alert(t('err')); });
 });
 $('signout').onclick=function(){ A.signOut(); };
+
+/* ---------- settings: language + appearance (saved right away) ---------- */
+var langSynced=false, stT;
+function stSaved(ok){ var el=$('st_ok'); el.style.color=ok?'':'var(--buy)'; el.textContent=ok?t('st_saved'):t('st_err'); clearTimeout(stT); stT=setTimeout(function(){ el.textContent=''; },2500); }
+function paintSettings(){
+  document.querySelectorAll('#st_lang button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===lang)); });
+  var th=window.JagTheme?JagTheme.get():'light';
+  document.querySelectorAll('#st_theme button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===th)); });
+}
+document.querySelectorAll('#st_lang button').forEach(function(b){ b.onclick=function(){
+  var v=b.getAttribute('data-v'); if(v===lang){ return; }
+  lang=v; try{ localStorage.setItem('jag_lang',lang); }catch(e){} applyLang(); paintSettings();
+  if(A.user()) A.updateProfile({lang:lang}).then(function(p){ if(p) D.profile=p; stSaved(true); }).catch(function(){ stSaved(false); }); else stSaved(true);
+}; });
+document.querySelectorAll('#st_theme button').forEach(function(b){ b.onclick=function(){ if(window.JagTheme) JagTheme.set(b.getAttribute('data-v')); paintSettings(); stSaved(true); }; });
+window.addEventListener('jag-theme', paintSettings);
+paintSettings();
 
 /* delete account: typed confirmation */
 $('delbtn').onclick=function(){ $('dlg_p').textContent=t('dd_p'); $('dlg_in').value=''; $('dlg_yes').disabled=true; $('dlg').classList.add('on'); setTimeout(function(){ $('dlg_in').focus(); },50); };

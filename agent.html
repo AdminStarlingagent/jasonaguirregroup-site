@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<script src="jag-theme.js?v=1"></script>
 <title>Agent Hub — JAG Real Estate</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -56,6 +58,13 @@ a{color:inherit}
 .pwbar b{flex:1 1 220px}.pwbar button{border:0;border-radius:99px;padding:9px 14px;font-weight:700;background:var(--red);color:#fff}.pwbar .x{background:none;color:var(--muted)}
 .pwov{position:fixed;inset:0;background:rgba(15,14,20,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:9700}.pwov.on{display:flex}
 .pwov .si-box{max-width:400px}
+.st-row{display:flex;flex-direction:column;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.st-tx{display:flex;flex-direction:column}.st-tx b{font-size:15px}.st-tx span{font-size:13.5px;color:var(--muted)}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:12px;padding:3px;gap:3px;background:var(--card)}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 10px;font:inherit;font-weight:700;font-size:14px;color:var(--muted);min-height:40px}
+.seg button[aria-checked="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg button:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.st-ok{margin:0;font-size:13.5px;font-weight:700;color:var(--green);min-height:1em}
 .ok{color:var(--green);font-weight:700;font-size:13.5px;margin:0}
 
 /* header */
@@ -247,11 +256,21 @@ body{background:var(--paper)}
   <button class="btn" type="submit" id="pw-go">Save password</button>
   <button class="btn ghost" type="button" id="pw-x">Close</button>
 </form></div>
+<div class="pwov" id="stov" role="dialog" aria-modal="true" aria-labelledby="st-h"><div class="si-box">
+  <h1 id="st-h" style="font-size:21px">Settings</h1>
+  <div class="st-row"><div class="st-tx"><b>Appearance</b><span>Automatic matches your phone or computer.</span></div>
+    <div class="seg" role="radiogroup" aria-label="Appearance" id="st-theme"><button type="button" role="radio" data-v="system">Automatic</button><button type="button" role="radio" data-v="light">Light</button><button type="button" role="radio" data-v="dark">Dark</button></div></div>
+  <div class="st-row"><div class="st-tx"><b>Email language</b><span>For emails JAG sends you, like offers handed to the TC.</span></div>
+    <div class="seg" role="radiogroup" aria-label="Email language" id="st-lang"><button type="button" role="radio" data-v="en">English</button><button type="button" role="radio" data-v="es">Español</button></div></div>
+  <p class="st-ok" id="st-ok" role="status"></p>
+  <button class="btn ghost" type="button" id="st-x">Close</button>
+</div></div>
 <div id="app" hidden>
   <header class="hd"><div class="wrap">
     <span id="hd-ph"></span>
     <div><b id="hd-name"></b><small id="hd-sub"></small></div>
     <a class="out scr" href="screener.html" title="Call screener with Lola">&#128222; Call screener</a>
+    <button class="out" type="button" id="stbtn" style="margin-left:0">Settings</button>
     <button class="out" type="button" id="pwbtn" style="margin-left:0">Password</button>
     <button class="out" type="button" id="out" style="margin-left:0">Sign out</button>
   </div></header>
@@ -439,6 +458,26 @@ body{background:var(--paper)}
   $('out').onclick = signOutTeam;
 
   /* ---------------- set a password (after signing in) ---------------- */
+  /* ---------------- settings: appearance + email language ---------------- */
+  var stT;
+  function stMsg(ok){ var el = $('st-ok'); el.style.color = ok ? '' : 'var(--red)'; el.textContent = ok ? '✓ Saved' : 'Couldn’t save. Try again.'; clearTimeout(stT); stT = setTimeout(function(){ el.textContent = ''; }, 2500); }
+  function stPaint(lang){
+    var th = window.JagTheme ? JagTheme.get() : 'light';
+    document.querySelectorAll('#st-theme button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v') === th)); });
+    if(lang) document.querySelectorAll('#st-lang button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v') === lang)); });
+  }
+  $('stbtn').onclick = function(){
+    $('st-ok').textContent = ''; stPaint(); $('stov').classList.add('on');
+    rpc('jag_team_prefs').then(function(j){ if(j && j.ok) stPaint(j.lang); }).catch(function(){});
+  };
+  $('st-x').onclick = function(){ $('stov').classList.remove('on'); };
+  $('stov').addEventListener('click', function(e){ if(e.target === $('stov')) $('stov').classList.remove('on'); });
+  document.querySelectorAll('#st-theme button').forEach(function(b){ b.onclick = function(){ if(window.JagTheme) JagTheme.set(b.getAttribute('data-v')); stPaint(); stMsg(true); }; });
+  document.querySelectorAll('#st-lang button').forEach(function(b){ b.onclick = function(){
+    var v = b.getAttribute('data-v'); stPaint(v);
+    rpc('jag_team_prefs_set', { p_lang: v }).then(function(j){ stMsg(!!(j && j.ok)); }).catch(function(){ stMsg(false); });
+  }; });
+
   function pwOpen(){ $('pw-err').hidden = true; $('pw-ok').hidden = true; $('pw-1').value = ''; $('pw-2').value = ''; $('pwov').classList.add('on'); setTimeout(function(){ $('pw-1').focus(); }, 50); }
   function pwClose(){ $('pwov').classList.remove('on'); }
   $('pwbtn').onclick = pwOpen; $('pwbar-go').onclick = pwOpen; $('pw-x').onclick = pwClose;

@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<script src="jag-theme.js?v=1"></script>
 <meta name="robots" content="noindex, nofollow">
 <title>JAG Admin — Inquiries</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -42,6 +44,7 @@ header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.95);backdro
 .lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--buy);padding-top:3px}
 .hin .who{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600}
 .ghostbtn{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer}
+.gearbtn{padding:7px 9px;align-items:center;justify-content:center;line-height:0}
 .ghostbtn:hover{border-color:var(--ink)}
 
 /* ---- auth / setup ---- */
@@ -126,6 +129,13 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 .cbox h2{margin:0 0 2px;font-size:22px}
 .cbox .meta{color:var(--muted);font-size:13.5px;margin-bottom:14px}
 .cbox .dclose{position:absolute;top:12px;right:14px}
+.st-row{display:flex;flex-direction:column;gap:10px;padding:14px 0;border-top:1px solid var(--line)}
+.st-tx{display:flex;flex-direction:column}.st-tx b{font-size:15px}.st-tx span{font-size:13.5px;color:var(--muted)}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:12px;padding:3px;gap:3px;background:var(--card)}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 10px;font:inherit;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer}
+.seg button[aria-checked="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg button:focus-visible{outline:2px solid var(--buy);outline-offset:1px}
+.st-ok{margin:0;font-size:13.5px;font-weight:700;color:var(--sell);min-height:1em}
 .cbox h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);margin:20px 0 8px}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
 .cfav{border:1px solid var(--line);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;font-size:13px}
@@ -333,6 +343,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <a class="ghostbtn" id="toscreener" href="screener.html" style="display:none;text-decoration:none" title="Live call screener: script, route, PDF and Follow Up Boss">&#128222; Screener</a>
     <button class="ghostbtn" id="refresh" style="display:none">Refresh</button>
     <button class="ghostbtn" id="exportcsv" style="display:none">Export CSV</button>
+    <button class="ghostbtn gearbtn" id="settingsbtn" style="display:none" aria-label="Settings" title="Settings (light/dark, email language)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     <button class="ghostbtn" id="signout" style="display:none">Sign out</button>
   </div>
 </header>
@@ -492,6 +503,16 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
   </section>
 </div>
 
+<div class="cdlg" id="stdlg" role="dialog" aria-modal="true" aria-labelledby="st-h"><div class="cbox" style="max-width:460px">
+  <button class="ghostbtn dclose" type="button" id="st-x">Close</button>
+  <h2 id="st-h">Settings</h2>
+  <div class="meta">Saved for you only.</div>
+  <div class="st-row"><div class="st-tx"><b>Appearance</b><span>Automatic matches your computer or phone.</span></div>
+    <div class="seg" role="radiogroup" aria-label="Appearance" id="st-theme"><button type="button" role="radio" data-v="system">Automatic</button><button type="button" role="radio" data-v="light">Light</button><button type="button" role="radio" data-v="dark">Dark</button></div></div>
+  <div class="st-row"><div class="st-tx"><b>Email language</b><span>For emails JAG sends you, like offers handed to the TC.</span></div>
+    <div class="seg" role="radiogroup" aria-label="Email language" id="st-lang"><button type="button" role="radio" data-v="en">English</button><button type="button" role="radio" data-v="es">Español</button></div></div>
+  <p class="st-ok" id="st-ok" role="status"></p>
+</div></div>
 <div class="cdlg" id="cdlg" role="dialog" aria-modal="true" aria-labelledby="cd-name">
   <div class="cbox">
     <button class="dclose" id="cd-close" aria-label="Close">&times;</button>
@@ -760,7 +781,7 @@ function show(view){
   $('loginview').style.display = view==='login'?'grid':'none';
   $('app').style.display       = view==='app'?'block':'none';
   var on = view==='app';
-  ['startapp','copyapply','toscreener','refresh','exportcsv','signout'].forEach(function(id){ $(id).style.display = on?'inline-block':'none'; });
+  ['startapp','copyapply','toscreener','refresh','exportcsv','settingsbtn','signout'].forEach(function(id){ $(id).style.display = on?(id==='settingsbtn'?'inline-flex':'inline-block'):'none'; });
   $('who').textContent = on ? (state.email||'') : '';
   if(on && !state.agentName) loadAgentName();
   if(on) setTab(state.tab||'leads');
@@ -1976,6 +1997,27 @@ function exportCSV(){
 $('li-btn').addEventListener('click', signIn);
 $('li-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') signIn(); });
 $('signout').addEventListener('click', signOut);
+
+/* ---------- settings: appearance + email language ---------- */
+var stT;
+function stMsg(ok){ var el=$('st-ok'); el.style.color = ok ? '' : 'var(--buy)'; el.textContent = ok ? '✓ Saved' : 'Couldn’t save. Try again.'; clearTimeout(stT); stT=setTimeout(function(){ el.textContent=''; }, 2500); }
+function stPaint(lang){
+  var th = window.JagTheme ? JagTheme.get() : 'light';
+  document.querySelectorAll('#st-theme button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===th)); });
+  if(lang) document.querySelectorAll('#st-lang button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===lang)); });
+}
+function stRpc(name, args){ return api('/rest/v1/rpc/'+name, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(args||{}) }).then(function(r){ return r.json(); }); }
+$('settingsbtn').addEventListener('click', function(){
+  $('st-ok').textContent=''; stPaint(); $('stdlg').classList.add('on');
+  stRpc('jag_team_prefs').then(function(j){ if(j && j.ok) stPaint(j.lang); }).catch(function(){});
+});
+$('st-x').addEventListener('click', function(){ $('stdlg').classList.remove('on'); });
+$('stdlg').addEventListener('click', function(e){ if(e.target===$('stdlg')) $('stdlg').classList.remove('on'); });
+document.querySelectorAll('#st-theme button').forEach(function(b){ b.addEventListener('click', function(){ if(window.JagTheme) JagTheme.set(b.getAttribute('data-v')); stPaint(); stMsg(true); }); });
+document.querySelectorAll('#st-lang button').forEach(function(b){ b.addEventListener('click', function(){
+  var v=b.getAttribute('data-v'); stPaint(v);
+  stRpc('jag_team_prefs_set', { p_lang: v }).then(function(j){ stMsg(!!(j && j.ok)); }).catch(function(){ stMsg(false); });
+}); });
 /* ---------------- Start home app: open apply.html with what we already know (jag-handoff.js) ---------------- */
 // Fetched ahead of time so the click opens the app right away (browsers block tabs opened after a wait).
 function loadAgentName(){

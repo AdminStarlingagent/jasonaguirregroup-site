@@ -289,6 +289,14 @@
     getProfile:getProfile, updateProfile:updateProfile, deleteAccount:deleteAccount, snapOf:snapOf,
     setUnseen:function(n){ unseen=n||0; paintButtons(); }
   };
+  // The ES/EN switch on any page is the client's language choice: save it to their account so emails (and texts) follow it.
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest && e.target.closest('.langs [data-lang]'); if(!b || !S || !S.user) return;
+    var v = b.getAttribute('data-lang'); if(v !== 'es' && v !== 'en') return;
+    if(profile && profile.lang === v) return;
+    updateProfile({ lang: v }).catch(function(){});
+  }, true);
+
   window.JagAccount=api;
 
   /* on load: refresh profile + unseen alert count when signed in */
