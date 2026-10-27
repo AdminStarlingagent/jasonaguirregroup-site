@@ -10,20 +10,20 @@
   var STORE = 'jag_client_session';
 
   var T = {
-    es:{ team_go:'Usted es del equipo JAG. Abriendo el Agent Hub…', hub:'Agent Hub (equipo)', admin:'Admin', team:'Equipo JAG', signin:'Iniciar sesión', account:'Mi cuenta', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
+    es:{ m_cli:'Clientes', m_in:'Iniciar sesión', m_new:'Crear una cuenta', m_team:'Equipo JAG / Agentes', m_hub:'Iniciar sesión en el Agent Hub', m_adm:'Admin (CRM)', m_join:'Únase a nuestro equipo', team_go:'Usted es del equipo JAG. Abriendo el Agent Hub…', hub:'Agent Hub (equipo)', admin:'Admin', team:'Equipo JAG', signin:'Iniciar sesión', account:'Mi cuenta', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
       h1:'Inicie sesión o cree su cuenta', p1:'Guarde casas, reciba avisos de casas nuevas y vea recomendaciones para usted. Sin contraseña: le enviamos un código a su correo.',
       email:'Correo electrónico', send:'Enviarme el código', terms:'Al continuar acepta nuestros <a href="privacy-terms.html" target="_blank" rel="noopener">términos y privacidad</a>. Puede borrar su cuenta cuando quiera.',
       h2:'Revise su correo', p2:'Le enviamos un código a ', code:'Código del correo', verify:'Entrar', resend:'Reenviar código', other:'Usar otro correo',
       h3:'¡Bienvenido! ¿Cómo se llama?', p3:'Así sabemos cómo dirigirnos a usted. El teléfono es opcional.', name:'Nombre', phone:'Teléfono (opcional)', done:'Listo', skip:'Ahora no',
       bademail:'Escriba un correo válido.', badcode:'Ese código no funcionó o ya venció. Intente otra vez o pida uno nuevo.', wait:'Espere un momento antes de pedir otro código.', neterr:'No pudimos conectar. Intente de nuevo.',
-      why_offer:'Entre a su portal para ver el estado de su oferta. Le enviamos un código a su correo.', why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
-    en:{ team_go:'You\'re on the JAG team. Opening the Agent Hub…', hub:'Agent Hub (team)', admin:'Admin', team:'JAG team', signin:'Sign in', account:'My account', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
+      why_new:'Cree su cuenta gratis: guarde casas, reciba avisos de casas nuevas y escríbale a su agente.', why_offer:'Entre a su portal para ver el estado de su oferta. Le enviamos un código a su correo.', why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
+    en:{ m_cli:'Clients', m_in:'Sign in', m_new:'Create an account', m_team:'JAG team / Agents', m_hub:'Agent Hub sign in', m_adm:'Admin (CRM)', m_join:'Join our team', team_go:'You\'re on the JAG team. Opening the Agent Hub…', hub:'Agent Hub (team)', admin:'Admin', team:'JAG team', signin:'Sign in', account:'My account', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
       h1:'Sign in or create your account', p1:'Save homes, get alerts on new listings and see picks for you. No password: we email you a code.',
       email:'Email', send:'Email me a code', terms:'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. You can delete your account any time.',
       h2:'Check your email', p2:'We sent a code to ', code:'Code from the email', verify:'Sign in', resend:'Resend code', other:'Use a different email',
       h3:'Welcome! What is your name?', p3:'So we know how to address you. Phone is optional.', name:'Name', phone:'Phone (optional)', done:'Done', skip:'Not now',
       bademail:'Enter a valid email.', badcode:'That code did not work or expired. Try again or request a new one.', wait:'Please wait a moment before requesting another code.', neterr:'We could not connect. Please try again.',
-      why_offer:'Open your portal to see your offer status. We will email you a code.', why_fav:'Sign in to save this home and get alerts if the price changes.', why_search:'Sign in to save this search and get alerts on new homes.', sent_again:'Code sent again.', close:'Close' }
+      why_new:'Create your free account: save homes, get new-listing alerts and message your agent.', why_offer:'Open your portal to see your offer status. We will email you a code.', why_fav:'Sign in to save this home and get alerts if the price changes.', why_search:'Sign in to save this search and get alerts on new homes.', sent_again:'Code sent again.', close:'Close' }
   };
   function lang(){ try{ var v=localStorage.getItem('jag_lang'); if(v==='en'||v==='es') return v; }catch(e){} return 'es'; }
   function t(k){ return (T[lang()]||T.es)[k]; }
@@ -137,7 +137,10 @@
     '.ja-av i{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;border-radius:8px;background:#c8102e;color:#fff;font-size:10px;font-style:normal;line-height:16px;padding:0 4px;display:none}.ja-av i.on{display:block}'+
     '.ja-menu{position:absolute;right:0;top:42px;background:#fff;border:1px solid #dddde3;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.14);min-width:210px;padding:6px;display:none;z-index:8000}.ja-menu.on{display:block}'+
     '.ja-menu .em{font-size:12px;color:#85848d;padding:8px 10px 6px;word-break:break-all}.ja-menu a,.ja-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px;border-radius:8px;font-weight:700;font-size:14px;color:#17161c;text-decoration:none;cursor:pointer;font-family:inherit}'+
-    '.ja-menu a:hover,.ja-menu button:hover{background:#f5f5f7}.ja-av.ja-team{background:#17161c}';
+    '.ja-menu a:hover,.ja-menu button:hover{background:#f5f5f7}.ja-av.ja-team{background:#17161c}'+
+    '.ja-sbtn{display:inline-flex;align-items:center;gap:8px}.ja-car{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid currentColor}'+
+    '.ja-smenu{min-width:250px;padding:8px 10px 10px}.ja-mh{font-size:17px;font-weight:800;color:#17161c;padding:12px 10px 8px;margin-bottom:4px;border-bottom:1px solid #eee}.ja-smenu .ja-mh:not(:first-child){margin-top:10px}'+
+    '.ja-smenu a,.ja-smenu button{font-weight:500;font-size:15px;color:#3d3c44}';
   var ov=null, step='email', email='', why='', pending=null, cooldown=0;
   function ensureModal(){
     if(ov) return;
@@ -241,7 +244,19 @@
         var tmn=m.querySelector('.ja-menu'); m.querySelector('.ja-av').onclick=function(e){ e.stopPropagation(); tmn.classList.toggle('on'); };
         return;
       }
-      if(!S){ m.innerHTML='<button type="button" class="ja-sbtn">'+t('signin')+'</button>'; m.querySelector('button').onclick=function(){ requireSignIn().catch(function(){}); }; return; }
+      if(!S){
+        /* like HAR: one "Sign in" button, clients on top, the team below */
+        m.innerHTML='<button type="button" class="ja-sbtn" aria-haspopup="true" aria-expanded="false">'+t('signin')+'<span class="ja-car" aria-hidden="true"></span></button>'+
+          '<div class="ja-menu ja-smenu" role="menu"><div class="ja-mh">'+t('m_cli')+'</div>'+
+          '<button type="button" role="menuitem" data-in>'+t('m_in')+'</button><button type="button" role="menuitem" data-new>'+t('m_new')+'</button>'+
+          '<div class="ja-mh">'+t('m_team')+'</div>'+
+          '<a role="menuitem" href="agent">'+t('m_hub')+'</a><a role="menuitem" href="admin.html">'+t('m_adm')+'</a><a role="menuitem" href="team">'+t('m_join')+'</a></div>';
+        var sb=m.querySelector('.ja-sbtn'), sm=m.querySelector('.ja-smenu');
+        sb.onclick=function(e){ e.stopPropagation(); var on=!sm.classList.contains('on'); document.querySelectorAll('.ja-menu.on').forEach(function(x){ x.classList.remove('on'); }); sm.classList.toggle('on',on); sb.setAttribute('aria-expanded',String(on)); };
+        sm.querySelector('[data-in]').onclick=function(){ sm.classList.remove('on'); requireSignIn().catch(function(){}); };
+        sm.querySelector('[data-new]').onclick=function(){ sm.classList.remove('on'); requireSignIn('why_new').catch(function(){}); };
+        return;
+      }
       var nm=(profile&&profile.name)||S.user.email||'?';
       m.innerHTML='<button type="button" class="ja-av" aria-label="'+t('account')+'" aria-haspopup="true">'+esc(nm.trim().charAt(0).toUpperCase())+'<i class="'+(unseen?'on':'')+'">'+unseen+'</i></button>'+
         '<div class="ja-menu"><div class="em">'+esc(S.user.email)+'</div><a href="account">'+t('account')+'</a><a href="account#saved">'+t('saved')+'</a><a href="account#searches">'+t('searches')+'</a><button type="button" data-out>'+t('signout')+'</button></div>';
