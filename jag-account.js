@@ -10,14 +10,14 @@
   var STORE = 'jag_client_session';
 
   var T = {
-    es:{ signin:'Iniciar sesión', account:'Mi cuenta', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
+    es:{ team_go:'Usted es del equipo JAG. Abriendo el Agent Hub…', hub:'Agent Hub (equipo)', admin:'Admin', team:'Equipo JAG', signin:'Iniciar sesión', account:'Mi cuenta', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
       h1:'Inicie sesión o cree su cuenta', p1:'Guarde casas, reciba avisos de casas nuevas y vea recomendaciones para usted. Sin contraseña: le enviamos un código a su correo.',
       email:'Correo electrónico', send:'Enviarme el código', terms:'Al continuar acepta nuestros <a href="privacy-terms.html" target="_blank" rel="noopener">términos y privacidad</a>. Puede borrar su cuenta cuando quiera.',
       h2:'Revise su correo', p2:'Le enviamos un código a ', code:'Código del correo', verify:'Entrar', resend:'Reenviar código', other:'Usar otro correo',
       h3:'¡Bienvenido! ¿Cómo se llama?', p3:'Así sabemos cómo dirigirnos a usted. El teléfono es opcional.', name:'Nombre', phone:'Teléfono (opcional)', done:'Listo', skip:'Ahora no',
       bademail:'Escriba un correo válido.', badcode:'Ese código no funcionó o ya venció. Intente otra vez o pida uno nuevo.', wait:'Espere un momento antes de pedir otro código.', neterr:'No pudimos conectar. Intente de nuevo.',
       why_offer:'Entre a su portal para ver el estado de su oferta. Le enviamos un código a su correo.', why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
-    en:{ signin:'Sign in', account:'My account', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
+    en:{ team_go:'You\'re on the JAG team. Opening the Agent Hub…', hub:'Agent Hub (team)', admin:'Admin', team:'JAG team', signin:'Sign in', account:'My account', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
       h1:'Sign in or create your account', p1:'Save homes, get alerts on new listings and see picks for you. No password: we email you a code.',
       email:'Email', send:'Email me a code', terms:'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. You can delete your account any time.',
       h2:'Check your email', p2:'We sent a code to ', code:'Code from the email', verify:'Sign in', resend:'Resend code', other:'Use a different email',
@@ -137,7 +137,7 @@
     '.ja-av i{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;border-radius:8px;background:#c8102e;color:#fff;font-size:10px;font-style:normal;line-height:16px;padding:0 4px;display:none}.ja-av i.on{display:block}'+
     '.ja-menu{position:absolute;right:0;top:42px;background:#fff;border:1px solid #dddde3;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.14);min-width:210px;padding:6px;display:none;z-index:8000}.ja-menu.on{display:block}'+
     '.ja-menu .em{font-size:12px;color:#85848d;padding:8px 10px 6px;word-break:break-all}.ja-menu a,.ja-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px;border-radius:8px;font-weight:700;font-size:14px;color:#17161c;text-decoration:none;cursor:pointer;font-family:inherit}'+
-    '.ja-menu a:hover,.ja-menu button:hover{background:#f5f5f7}';
+    '.ja-menu a:hover,.ja-menu button:hover{background:#f5f5f7}.ja-av.ja-team{background:#17161c}';
   var ov=null, step='email', email='', why='', pending=null, cooldown=0;
   function ensureModal(){
     if(ov) return;
@@ -176,7 +176,13 @@
       f2.onsubmit=function(e){ e.preventDefault();
         var v=c.value.replace(/\D/g,''); if(v.length<6||v.length>8) return err(t('badcode'));
         var btn=f2.querySelector('.ja-btn'); btn.disabled=true;
-        verify(email,v).then(function(){ return init(); }).then(function(j){
+        verify(email,v).then(function(sess){
+          return rpc('jag_agent_me').catch(function(){ return null; }).then(function(a){
+            if(a&&a.ok&&a.agent){ teamHandoff(sess,a.agent,email); return 'team'; }
+            return init();
+          });
+        }).then(function(j){
+          if(j==='team') return;
           if(j&&j.new){ step='name'; render(); } else finish();
         }).catch(function(){ btn.disabled=false; c.value=''; err(t('badcode')); });
       };
@@ -199,6 +205,16 @@
       b.querySelector('#ja-sk').onclick=finish;
     }
   }
+  /* a team email (an agent card in Follow Up Boss) signing in on the public site: keep the same login as the
+     team session the Agent Hub, Admin and "Comenzar oferta" use, skip the client account, open the Agent Hub */
+  function teamHandoff(sess,a,em){
+    try{ localStorage.setItem('jag_agent',JSON.stringify({t:sess.access_token,r:sess.refresh_token,x:Date.now()+(sess.expires_in||3600)*1000,
+      code:a.code,name:a.name,first_name:a.first_name,phone:a.phone,photo_url:a.photo_url,e:em})); }catch(x){}
+    S=null; save();
+    ov.querySelector('.ja-body').innerHTML='<h3>'+t('team')+'</h3><p>'+t('team_go')+'</p>';
+    setTimeout(function(){ location.href='agent'; },900);
+  }
+  function teamSession(){ try{ var a=JSON.parse(localStorage.getItem('jag_agent')||'null'); return a&&a.r?a:null; }catch(x){ return null; } }
   function err(m){ var e=ov.querySelector('#ja-err'); if(e){ e.textContent=m; e.classList.add('on'); } }
   function finish(){
     ov.classList.remove('on');
@@ -218,6 +234,13 @@
   var mounts=[], unseen=0;
   function paintButtons(){
     mounts.forEach(function(m){
+      var tm=teamSession();
+      if(!S&&tm){
+        m.innerHTML='<button type="button" class="ja-av ja-team" aria-label="'+t('team')+'" aria-haspopup="true">'+esc(String(tm.first_name||tm.name||'J').charAt(0).toUpperCase())+'</button>'+
+          '<div class="ja-menu"><div class="em">'+esc(t('team'))+(tm.e?' · '+esc(tm.e):'')+'</div><a href="agent">'+t('hub')+'</a><a href="admin.html">'+t('admin')+'</a></div>';
+        var tmn=m.querySelector('.ja-menu'); m.querySelector('.ja-av').onclick=function(e){ e.stopPropagation(); tmn.classList.toggle('on'); };
+        return;
+      }
       if(!S){ m.innerHTML='<button type="button" class="ja-sbtn">'+t('signin')+'</button>'; m.querySelector('button').onclick=function(){ requireSignIn().catch(function(){}); }; return; }
       var nm=(profile&&profile.name)||S.user.email||'?';
       m.innerHTML='<button type="button" class="ja-av" aria-label="'+t('account')+'" aria-haspopup="true">'+esc(nm.trim().charAt(0).toUpperCase())+'<i class="'+(unseen?'on':'')+'">'+unseen+'</i></button>'+
