@@ -174,8 +174,9 @@
     note.value = (NOTE[L] || NOTE.es)[kind] || ''; note.placeholder = L === 'en' ? 'Note (optional)' : 'Nota (opcional)';
     var card = Object.assign({ kind: kind, mls: o.mls || null, title: o.label || o.summary || null }, o.card || {});
     // a home: fill photo, price and specs from the listing when the caller didn't pass them
+    var filled = Promise.resolve();
     if(kind === 'listing' && o.mls && !card.photo){
-      fetch(BASE + '/functions/v1/home-search?mlsNumber=' + encodeURIComponent(o.mls)).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      filled = fetch(BASE + '/functions/v1/home-search?mlsNumber=' + encodeURIComponent(o.mls)).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
         var l = j && j.listings && j.listings[0]; if(!l) return; var ad = l.address || {}, d = l.details || {};
         card.photo = (l.images || [])[0] || null; card.price = l.listPrice || null; card.beds = d.numBedrooms; card.baths = d.numBathrooms; card.sqft = d.sqft ? String(d.sqft).replace(/\D/g, '') : null; card.city = ad.city || null;
         if(ad.streetName) card.title = [ad.streetNumber, ad.streetDirectionPrefix, ad.streetName, ad.streetSuffix, ad.streetDirection].filter(Boolean).join(' ') + (ad.city ? ', ' + ad.city : '');
@@ -195,7 +196,8 @@
       if(!sel.value) return; go.disabled = true; st.className = ''; st.textContent = L === 'en' ? 'Sending…' : 'Enviando…';
       var name = sel.options[sel.selectedIndex].text.split(' · ')[0];
       card.url = urlOf();
-      agentToken().then(function(t){ if(!t) throw new Error('signin'); return rpc('jag_msg_share', { p_user: sel.value, p_body: note.value.trim() || null, p_card: card }, t); })
+      // wait (up to 4 s) for the listing photo/price so the card never goes out without them
+      Promise.race([filled, new Promise(function(r){ setTimeout(r, 4000); })]).then(agentToken).then(function(t){ if(!t) throw new Error('signin'); return rpc('jag_msg_share', { p_user: sel.value, p_body: note.value.trim() || null, p_card: card }, t); })
         .then(function(r){
           if(!r || !r.ok) throw new Error((r && r.reason) || 'x');
           st.className = 'js-ok'; st.textContent = (L === 'en' ? '✓ Sent to ' + name + '\'s app. They get an email now.' : '✓ Enviada a la app de ' + name + '. Le llega un correo ahora.');
