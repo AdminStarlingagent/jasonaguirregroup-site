@@ -626,7 +626,7 @@ function searchUrl(s){
   if(u.q) q.set('q',u.q); if(u.type==='lease') q.set('type','lease');
   ['minp','maxp','beds','baths'].forEach(function(k){ if(u[k]) q.set(k,u[k]); });
   if(u.kinds&&u.kinds.length&&u.kinds.join(',')!=='Residential') q.set('kinds',u.kinds.join(','));
-  if(u.b) q.set('b',u.b);
+  if(u.b) q.set('b',u.b); if(u.newc) q.set('newc','1');
   return 'homes'+(q.toString()?'?'+q.toString():'');
 }
 function paintSearches(){

@@ -333,6 +333,9 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 .c:hover,.c.hot{border-color:var(--buy);box-shadow:0 18px 40px rgba(23,22,28,.14)}
 .c .ph{border-radius:15px}
 .c .tag{background:var(--ink);border-radius:99px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:5px 9px}
+.c .tag.nc{background:var(--buy)}
+#p_new[hidden]{display:none}
+#p_new::after{display:none}
 .heart{width:40px;height:40px;right:8px;top:8px;border-radius:50%;background:#fff;box-shadow:0 4px 12px rgba(23,22,28,.2);display:grid;place-items:center}
 .heart svg{width:19px;height:19px;fill:none;stroke:var(--buy);stroke-width:2.2;filter:none}
 .heart.on svg{fill:var(--buy)}
@@ -438,6 +441,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
       <div class="pop"><h4 data-t="h_beds"></h4><div class="seg" id="s_beds"></div><h4 data-t="h_baths"></h4><div class="seg" id="s_baths"></div><button type="button" class="apply" data-t="apply"></button></div></div>
     <div class="dd" data-dd="kind"><button type="button" class="pill" id="p_kind"></button>
       <div class="pop"><h4 data-t="h_kind"></h4><div id="kinds"></div><button type="button" class="apply" data-t="apply"></button></div></div>
+    <button class="pill" type="button" id="p_new" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/><path d="M12 2v3"/></svg><span data-t="newc"></span></button>
     <button class="savebtn" type="button" id="saveBtn" data-t="save"></button>
   </div>
 </div>
@@ -500,7 +504,7 @@ var T={
   q_ph:'Ciudad, código postal o palabra',t_sale:'En venta',t_lease:'En renta',
   price:'Precio',h_price:'Rango de precio',nomin:'Sin mín.',nomax:'Sin máx.',upto:'Hasta ',
   bb:'Recámaras y baños',h_beds:'Recámaras',h_baths:'Baños',any:'Todas',bdS:' rec.',baS:' ba.',
-  kind:'Tipo de casa',h_kind:'Tipo de propiedad',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
+  kind:'Tipo de casa',h_kind:'Tipo de propiedad',newc:'Construcción nueva',nc_tag:'Construcción nueva',f_builder:'Constructora',ss_newc:'construcción nueva',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
   apply:'Aplicar',save:'Guardar búsqueda',ss_saved:'Búsqueda guardada. Le avisaremos cuando salgan casas nuevas.',ss_go:'Ver mis búsquedas',ss_err:'No pudimos guardar la búsqueda. Intente de nuevo.',ss_map:'Área del mapa',ss_upto:'hasta ',ss_from:'desde ',ss_bd:'+ rec',ss_ba:'+ ba',mapnote:'Mostrando casas en esta zona del mapa',
   ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',near:'Cerca de mí',near_t:'su zona',near_wide:'Pocas casas muy cerca: ampliamos la búsqueda a 10 millas.',near_denied:'Para buscar cerca de usted, permita el acceso a su ubicación en su navegador.',near_fail:'No pudimos encontrar su ubicación. Escriba su ciudad o código postal.',near_out:'Por ahora solo mostramos casas en Texas. Escriba una ciudad o código postal de Texas.',near_me:'Usted está aquí',
   res:' resultados',res1:' resultado',sortl:'Ordenar:',s_new:'Más recientes',s_low:'Precio (menor)',s_high:'Precio (mayor)',
@@ -544,7 +548,7 @@ var T={
   q_ph:'City, ZIP or keyword',t_sale:'For sale',t_lease:'For rent',
   price:'Price',h_price:'Price range',nomin:'No min',nomax:'No max',upto:'Up to ',
   bb:'Beds & baths',h_beds:'Bedrooms',h_baths:'Bathrooms',any:'Any',bdS:' bd',baS:' ba',
-  kind:'Home type',h_kind:'Home type',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
+  kind:'Home type',h_kind:'Home type',newc:'New construction',nc_tag:'New construction',f_builder:'Builder',ss_newc:'new construction',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
   apply:'Apply',save:'Save search',ss_saved:'Search saved. We will email you when new homes hit the market.',ss_go:'See my searches',ss_err:'We could not save the search. Please try again.',ss_map:'Map area',ss_upto:'up to ',ss_from:'from ',ss_bd:'+ bd',ss_ba:'+ ba',mapnote:'Showing homes in this map area',
   ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',near:'Near me',near_t:'your area',near_wide:'Few homes right nearby, so we widened the search to 10 miles.',near_denied:'To search near you, allow location access in your browser.',near_fail:'We couldn’t find your location. Type your city or ZIP code.',near_out:'For now we only show homes in Texas. Type a Texas city or ZIP code.',near_me:'You are here',
   res:' results',res1:' result',sortl:'Sort:',s_new:'Newest',s_low:'Price (low to high)',s_high:'Price (high to low)',
@@ -618,8 +622,8 @@ function updated(l){
 }
 function img(p,cls){ return CDN+p+'?class='+cls; }
 
-var F={type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:['Residential']};
-var state={page:1,pages:1,items:[],bounds:null,seen:{}}, map, layer, quiet=0;
+var F={type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:['Residential'],newc:false};
+var state={page:1,pages:1,items:[],bounds:null,seen:{},qkind:{}}, map, layer, quiet=0;
 
 /* ---------- filter UI ---------- */
 function priceOpts(){
@@ -641,6 +645,7 @@ function pills(){
   $('p_beds').textContent=bl||t('bb'); $('p_beds').classList.toggle('set',!!bl);
   var only=F.kinds.length===1&&F.kinds[0]==='Residential';
   $('p_kind').textContent=only?t('kind'):t('kind')+' ('+F.kinds.length+')'; $('p_kind').classList.toggle('set',!only);
+  var nb=$('p_new'); nb.hidden=F.type!=='sale'; nb.classList.toggle('set',!!F.newc&&F.type==='sale'); nb.setAttribute('aria-pressed',String(!!F.newc));
 }
 function closeDD(){ document.querySelectorAll('.dd.open').forEach(function(d){ d.classList.remove('open'); }); }
 document.querySelectorAll('.dd > .pill').forEach(function(b){
@@ -649,6 +654,7 @@ document.querySelectorAll('.dd > .pill').forEach(function(b){
 document.querySelectorAll('.pop').forEach(function(p){ p.addEventListener('click',function(e){ e.stopPropagation(); }); });
 document.addEventListener('click',closeDD);
 function commit(){ closeDD(); pills(); state.page=1; load(); }
+$('p_new').addEventListener('click',function(){ F.newc=!F.newc; commit(); });
 document.querySelectorAll('input[name=type]').forEach(function(r){ r.addEventListener('change',function(){ F.type=r.value; F.minp=F.maxp=''; priceOpts(); commit(); }); });
 ['s_beds','s_baths'].forEach(function(id){ $(id).addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; F[id==='s_beds'?'beds':'baths']=b.getAttribute('data-v'); segs(); }); });
 document.querySelectorAll('.apply').forEach(function(b){ b.addEventListener('click',function(){
@@ -680,17 +686,28 @@ function query(){
   var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:state.page,sortBy:$('sort').value});
   var q=$('q').value.trim();
   if(state.bounds){ var b=state.bounds; p.set('map',JSON.stringify([[[b.getWest(),b.getSouth()],[b.getEast(),b.getSouth()],[b.getEast(),b.getNorth()],[b.getWest(),b.getNorth()]]])); }
-  else{ p.set('state',STATE); if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q) p.set('search',q); }
+  else{ p.set('state',STATE); if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q&&!/\d/.test(q)&&state.qkind[q.toLowerCase()]!=='search') p.set('city',q); else if(q) p.set('search',q); }
+  if(F.newc&&F.type==='sale') p.set('newc','1');
   if(F.minp) p.set('minPrice',F.minp); if(F.maxp) p.set('maxPrice',F.maxp);
   if(F.beds) p.set('minBedrooms',F.beds); if(F.baths) p.set('minBaths',F.baths);
   if(F.type==='sale') F.kinds.forEach(function(k){ p.append('propertyType',k); });
   return p;
 }
 function load(fit){
+  /* a word like "Willis" is a city first; if HAR has no city by that name it's a keyword (street, subdivision…) */
+  var qq=$('q').value.trim(), qk=qq.toLowerCase();
+  if(!state.bounds&&qq&&!/\d/.test(qq)&&!state.qkind[qk]){
+    var chk=++state.req; $('grid').style.opacity=.45;
+    fetch(API+'?'+new URLSearchParams({state:STATE,city:qq,resultsPerPage:1})).then(function(r){ return r.ok?r.json():null; })
+      .then(function(d){ state.qkind[qk]=d&&d.count>0?'city':'search'; }).catch(function(){ state.qkind[qk]='search'; })
+      .then(function(){ if(chk===state.req) load(fit); });
+    return;
+  }
   var mine=++state.req; $('grid').style.opacity=.45;
   fetch(API+'?'+query())
    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-   .then(function(d){ if(mine!==state.req) return; state.items=d.listings||[]; state.pages=d.numPages||1; state.count=d.count||0;
+   .then(function(d){ if(mine!==state.req) return;
+     state.items=d.listings||[]; state.pages=d.numPages||1; state.count=d.count||0;
      if(state.near&&state.near.miles<10&&state.count<6){ nearSearch(state.near.lat,state.near.lng,10); ssToast(t('near_wide'),false); return; }
      render(fit!==false&&!state.bounds); })
    .catch(function(){ if(mine!==state.req) return; state.items=[]; state.count=null; render(); });
@@ -712,7 +729,7 @@ function render(fit){
     var a=l.address||{}, n=l.daysOnMarket;
     return '<article class="c" data-i="'+i+'" tabindex="0">'+
       '<div class="ph" style="background-image:url(\''+img(l.images[0],'small')+'\')">'+
-        (n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
+        (l.newConstruction?'<span class="tag nc">'+t('nc_tag')+'</span>':n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
         '<button type="button" class="heart'+(favs[l.mlsNumber]?' on':'')+'" aria-label="'+t('savehome')+'">'+HEART+'</button>'+
         (l.images.length>1?'<button type="button" class="nav p" aria-label="‹">‹</button><button type="button" class="nav x" aria-label="›">›</button>':'')+'</div>'+
       '<div class="bd"><div class="pr">'+money(l.listPrice)+(lease?'<span class="pm" style="color:inherit">'+t('mo')+'</span>':'<span class="pm">'+t('est')+money(estTotal(l.listPrice))+t('mo')+'</span>')+'</div>'+
@@ -879,7 +896,7 @@ function factGroups(l){
   return [
     ['fx_int',[['fx_beds',d.numBedrooms],['fx_baths',d.numBathrooms],['fx_sqft',d.sqft?num(d.sqft)+' '+t('sqft'):null],['fx_heat',fv(d.heating)],['fx_cool',fv(d.airConditioning)],['fx_floor',fv(d.flooringType)],['fx_appl',fv(d.extras)],['fx_fire',fv(d.numFireplaces)],['fx_laundry',fv(d.laundryLevel)],['fx_access',fv(d.handicappedEquipped)]]],
     ['fx_prop',[['fx_lot',lot.squareFeet?num(Math.round(lot.squareFeet))+' '+t('sqft')+(lot.acres?' ('+Number(lot.acres).toFixed(2)+t('acres')+')':''):null],['fx_lotf',fv(lot.features)],['fx_garage',fv(d.numGarageSpaces)],['fx_park',fv(d.numParkingSpaces)],['fx_pool',fv(d.swimmingPool)],['fx_patio',fv(d.patio)],['fx_view',fv(d.viewType)]]],
-    ['fx_con',[['f_type',fv(d.style)||fv(d.propertyType)],['f_year',fv(d.yearBuilt)],['fx_ext',[fv(d.exteriorConstruction1),fv(d.exteriorConstruction2)].filter(Boolean).join(', ')||null],['fx_roof',fv(d.roofMaterial)],['fx_found',fv(d.foundationType)]]],
+    ['fx_con',[['f_type',fv(d.style)||fv(d.propertyType)],['f_year',fv(d.yearBuilt)],['f_builder',l.builder||null],['fx_ext',[fv(d.exteriorConstruction1),fv(d.exteriorConstruction2)].filter(Boolean).join(', ')||null],['fx_roof',fv(d.roofMaterial)],['fx_found',fv(d.foundationType)]]],
     ['fx_util',[['fx_sewer',fv(d.sewer)],['fx_water',fv(d.waterSource)]]],
     ['fx_comm',[['fx_nbhd',fv(a.neighborhood)],['fx_county',fv(a.area)],['fx_hoa',hoa]]],
     ['fx_fin',[['f_ppsf',d.sqft&&!lease?money(l.listPrice/d.sqft)+'/'+t('sqft'):null],['fx_tax',tx.annualAmount?money(tx.annualAmount)+(tx.assessmentYear?' ('+tx.assessmentYear+')':''):null],['fx_listed',fdate(l.listDate)],['f_dom',l.daysOnMarket],['f_mls',l.mlsNumber]]]
@@ -1091,6 +1108,7 @@ function searchLabel(){
   var parts=[], q=$('q').value.trim();
   parts.push(state.bounds?t('ss_map'):(q||'Houston'));
   parts.push(t(F.type==='sale'?'t_sale':'t_lease'));
+  if(F.newc&&F.type==='sale') parts.push(t('ss_newc'));
   if(F.beds) parts.push(F.beds+t('ss_bd')); if(F.baths) parts.push(F.baths+t('ss_ba'));
   var sp=F.type==='lease'?money:short;
   if(F.minp&&F.maxp) parts.push(sp(+F.minp)+'–'+sp(+F.maxp)); else if(F.maxp) parts.push(t('ss_upto')+sp(+F.maxp)); else if(F.minp) parts.push(t('ss_from')+sp(+F.minp));
@@ -1100,7 +1118,7 @@ function currentSearch(){
   var p=query(), apiP={};
   ['pageNum','resultsPerPage','sortBy'].forEach(function(k){ p.delete(k); });
   p.forEach(function(v,k){ if(apiP[k]===undefined) apiP[k]=v; else apiP[k]=[].concat(apiP[k],v); });
-  return { api:apiP, ui:{ q:$('q').value.trim(), type:F.type, minp:F.minp, maxp:F.maxp, beds:F.beds, baths:F.baths, kinds:F.kinds.slice(),
+  return { api:apiP, ui:{ q:$('q').value.trim(), type:F.type, minp:F.minp, maxp:F.maxp, beds:F.beds, baths:F.baths, kinds:F.kinds.slice(), newc:!!F.newc,
     b:state.bounds?state.bounds.toBBoxString():null } };
 }
 function ssToast(msg,link){
@@ -1176,7 +1194,7 @@ try{
   if(q0) $('q').value=q0;
   if(t0==='lease'){ F.type='lease'; var r=document.querySelector('input[name=type][value=lease]'); if(r) r.checked=true; }
   var num_=function(k){ var v=qs.get(k); return v&&/^\d{1,9}$/.test(v)?v:''; };
-  F.minp=num_('minp'); F.maxp=num_('maxp'); F.beds=num_('beds'); F.baths=num_('baths');
+  F.minp=num_('minp'); F.maxp=num_('maxp'); F.beds=num_('beds'); F.baths=num_('baths'); F.newc=qs.get('newc')==='1';
   var k0=qs.get('kinds'); if(k0){ var ks=k0.split(',').filter(function(k){ return KINDS.some(function(x){ return x[0]===k; }); }); if(ks.length) F.kinds=ks; }
   var b0=(qs.get('b')||'').split(',').map(Number);
   if(map&&b0.length===4&&b0.every(isFinite)){ state.bounds=L.latLngBounds([b0[1],b0[0]],[b0[3],b0[2]]); quiet++; map.fitBounds(state.bounds,{animate:false}); setTimeout(function(){ quiet--; },400); $('mapnote').classList.add('on'); }
