@@ -217,6 +217,12 @@
     ov.querySelector('.ja-body').innerHTML='<h3>'+t('team')+'</h3><p>'+t('team_go')+'</p>';
     setTimeout(function(){ location.href='agent'; },900);
   }
+  /* team sign-out: ends the Agent Hub / Admin login on this browser */
+  function teamSignOut(tm){
+    if(tm&&tm.t) fetch(URL_+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tm.t}}).catch(function(){});
+    try{ localStorage.removeItem('jag_agent'); sessionStorage.removeItem('jag_admin'); }catch(x){}
+    paintButtons(); location.reload();
+  }
   function teamSession(){ try{ var a=JSON.parse(localStorage.getItem('jag_agent')||'null'); return a&&a.r?a:null; }catch(x){ return null; } }
   function err(m){ var e=ov.querySelector('#ja-err'); if(e){ e.textContent=m; e.classList.add('on'); } }
   function finish(){
@@ -240,8 +246,9 @@
       var tm=teamSession();
       if(!S&&tm){
         m.innerHTML='<button type="button" class="ja-av ja-team" aria-label="'+t('team')+'" aria-haspopup="true">'+esc(String(tm.first_name||tm.name||'J').charAt(0).toUpperCase())+'</button>'+
-          '<div class="ja-menu"><div class="em">'+esc(t('team'))+(tm.e?' · '+esc(tm.e):'')+'</div><a href="agent">'+t('hub')+'</a><a href="admin.html">'+t('admin')+'</a></div>';
+          '<div class="ja-menu"><div class="em">'+esc(t('team'))+(tm.e?' · '+esc(tm.e):'')+'</div><a href="agent">'+t('hub')+'</a><a href="admin.html">'+t('admin')+'</a><button type="button" data-tout>'+t('signout')+'</button></div>';
         var tmn=m.querySelector('.ja-menu'); m.querySelector('.ja-av').onclick=function(e){ e.stopPropagation(); tmn.classList.toggle('on'); };
+        m.querySelector('[data-tout]').onclick=function(){ teamSignOut(tm); };
         return;
       }
       if(!S){
