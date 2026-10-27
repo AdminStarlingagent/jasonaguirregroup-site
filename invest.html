@@ -174,6 +174,8 @@ table.t td.m{background:rgba(127,127,140,.08)}
 .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:5px;padding:1px 6px;margin-left:4px;vertical-align:1px}
 .tag.rem{background:var(--ok-bg);color:var(--ok)}
 .tag.fix{background:var(--warn-bg);color:var(--warn)}
+.tag.out{background:var(--buy-t);color:var(--buy-d)}
+.cp .adj{font-size:12.5px;font-weight:700;color:var(--loan)}
 .pin{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 .pin.subj{width:32px;height:32px;background:var(--buy);font-size:14px}
 
@@ -434,10 +436,10 @@ table.t td.m{background:rgba(127,127,140,.08)}
       gn_em:'Entró como {e}.', hi:'Hola{n}, analicemos un trato', hi_p:'Escriba la dirección de una casa de mayoreo o fuera del mercado. Sacamos los datos de la casa y las casas vendidas cerca en HAR.',
       ph_addr:'Dirección, p. ej. 5710 Wigton Dr, Houston, TX 77096', go:'Analizar', fix_s:'¿Los datos están mal?', fix_p:'Corrija pies², recámaras o baños antes de analizar.',
       sqft:'Pies²', beds:'Recámaras', baths:'Baños', busy:'Buscando la casa y las ventas cercanas en HAR…', left:'Le quedan {n} búsquedas hoy.',
-      h_prop:'La propiedad', h_arv:'Valor después de remodelar (ARV)', h_arv_p:'Lo que se vendería ya remodelada, según casas vendidas cerca de tamaño parecido.',
+      h_prop:'La propiedad', h_arv:'Valor después de remodelar (ARV)', h_arv_p:'Lo que se vendería ya remodelada. Usamos casas vendidas cerca del mismo tipo, época y tamaño, ajustadas al tamaño de su casa; las más cercanas y recientes pesan más.',
       worst:'Peor caso', mid:'Caso medio', best:'Mejor caso', per_sf_v:'{v}/pie²', profit:'Ganancia', margin:'margen',
       conf_high:'Confianza alta', conf_medium:'Confianza media', conf_low:'Confianza baja', basis_rem:'Medio y mejor caso con {n} ventas remodeladas', basis_all:'Pocas ventas remodeladas: usamos la parte alta de todas las ventas',
-      widened:'Ampliamos a 2 millas y 12 meses (pocas ventas cerca)', src_rc:'Sin ventas de HAR cerca: usamos comparables de RentCast', comps_n:'{n} casas vendidas', excl:'{n} quitadas por usted',
+      widened:'Ampliamos a 2 millas y 12 meses (pocas ventas cerca)', src_rc:'Sin ventas de HAR cerca: usamos comparables de RentCast', comps_n:'{n} ventas usadas', excl:'{n} quitadas por usted', outn:'{n} fuera de rango', search:'{mi} mi · {mo} meses · ±{yr} años · ±{sz}% tamaño', out:'Fuera de rango', adj:'Ajustada a su casa: {v}',
       own_arv:'Su ARV (opcional, caso medio)', ph_own:'Déjelo vacío para usar el nuestro', own_note:'Está usando su propio ARV para el caso medio; peor y mejor caso se ajustan igual.',
       arv_note:'El ARV es un estimado con casas vendidas, no es un avalúo.',
       asis:'Valor hoy (estimado RentCast)', asis_rng:'Rango {a} – {b}', fixer:'Casas vendidas “para arreglar” cerca', fixer_p:'{n} ventas · {v}/pie² · como está hoy',
@@ -455,7 +457,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
       g_A:'Buen trato', g_A_p:'Buen margen y aun el peor caso no pierde.', g_B:'Trato aceptable', g_B_p:'Margen razonable; cuide la remodelación y el tiempo.', g_C:'Margen delgado', g_C_p:'Poco espacio para errores. Negocie el precio.', g_D:'No funciona así', g_D_p:'En el caso medio no deja ganancia. Baje el precio o páselo.',
       save:'Guardar trato', saved:'Trato guardado', print:'Imprimir / PDF',
       h_lola:'La opinión de Lola', h_lola_p:'Lola revisa sus números, las ventas cercanas y los riesgos de Houston, y le da un veredicto y una oferta máxima.', ask:'Pedirle a Lola', ask_again:'Pedirle otra vez con estos números', lola_busy:'Lola está revisando el trato…', lola_at:'Revisado {d}', lola_err:'Lola no pudo contestar ahorita. Inténtelo otra vez en un minuto.', lola_limit:'Ya pidió muchas revisiones hoy. Inténtelo mañana.',
-      h_comps:'Casas vendidas cerca', comps_sub:'Quite las que no se parecen (otra calle, otro estilo): el ARV se recalcula.', rem:'Remodelada', fx:'Para arreglar', dom:'{n} días', mi:'{n} mi',
+      h_comps:'Casas vendidas cerca', comps_sub:'Quite las que no se parecen (otra calle, otro estilo) o marque las que sí: el ARV se recalcula. Las “fuera de rango” vienen desmarcadas.', rem:'Remodelada', fx:'Para arreglar', dom:'{n} días', mi:'{n} mi',
       h_hist:'Mis análisis', none:'Todavía no hay análisis.',
       e_sign:'Su sesión se cerró. Entre otra vez.', e_inv:'Su acceso no está activo. Llame a Jason.', e_limit:'Llegó al límite de búsquedas por hoy. Inténtelo mañana.', e_addr:'Escriba la dirección completa con ciudad y código postal.', e_nf:'No encontramos esa dirección. Revise que tenga ciudad y código postal.', e_gen:'Algo falló. Inténtelo otra vez.', e_nocomps:'No hay suficientes ventas cerca para calcular el ARV. Escriba su propio ARV abajo.',
       disc:'Estimados solo para uso del inversionista. El ARV y el valor de hoy salen de ventas en HAR y de RentCast y no son un avalúo. Verifique condición, permisos, zona de inundación (FEMA) y título antes de comprar. Jason Aguirre Group · eXp Realty.' },
@@ -464,10 +466,10 @@ table.t td.m{background:rgba(127,127,140,.08)}
       gn_em:'Signed in as {e}.', hi:'Hi{n}, let\'s run a deal', hi_p:'Type the address of a wholesale or off-market house. We pull the property record and nearby HAR sold homes.',
       ph_addr:'Address, e.g. 5710 Wigton Dr, Houston, TX 77096', go:'Analyze', fix_s:'Record looks wrong?', fix_p:'Correct sq ft, beds or baths before you analyze.',
       sqft:'Sq ft', beds:'Beds', baths:'Baths', busy:'Finding the house and nearby HAR sales…', left:'{n} lookups left today.',
-      h_prop:'The property', h_arv:'After-repair value (ARV)', h_arv_p:'What it would sell for once rehabbed, from nearby sold homes of similar size.',
+      h_prop:'The property', h_arv:'After-repair value (ARV)', h_arv_p:'What it would sell for once rehabbed. We use nearby sales of the same type, era and size, adjusted to your house\'s size; the closest and most recent count most.',
       worst:'Worst case', mid:'Mid case', best:'Best case', per_sf_v:'{v}/sq ft', profit:'Profit', margin:'margin',
       conf_high:'High confidence', conf_medium:'Medium confidence', conf_low:'Low confidence', basis_rem:'Mid and best case from {n} remodeled sales', basis_all:'Few remodeled sales: using the upper part of all sales',
-      widened:'Widened to 2 miles and 12 months (few sales nearby)', src_rc:'No HAR sales nearby: using RentCast comparables', comps_n:'{n} sold homes', excl:'{n} removed by you',
+      widened:'Widened to 2 miles and 12 months (few sales nearby)', src_rc:'No HAR sales nearby: using RentCast comparables', comps_n:'{n} sales used', excl:'{n} removed by you', outn:'{n} out of range', search:'{mi} mi · {mo} months · ±{yr} yrs · ±{sz}% size', out:'Out of range', adj:'Adjusted to your house: {v}',
       own_arv:'Your ARV (optional, mid case)', ph_own:'Leave empty to use ours', own_note:'Using your own ARV for the mid case; worst and best case move with it.',
       arv_note:'ARV is an estimate from sold homes, not an appraisal.',
       asis:'Value today (RentCast estimate)', asis_rng:'Range {a} – {b}', fixer:'Nearby homes that sold "needing work"', fixer_p:'{n} sales · {v}/sq ft · as-is',
@@ -485,7 +487,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
       g_A:'Good deal', g_A_p:'Solid margin and even the worst case doesn\'t lose.', g_B:'Workable deal', g_B_p:'Reasonable margin; watch the rehab and the timeline.', g_C:'Thin margin', g_C_p:'Little room for mistakes. Negotiate the price.', g_D:'Doesn\'t work as is', g_D_p:'No profit in the mid case. Lower the price or pass.',
       save:'Save deal', saved:'Deal saved', print:'Print / PDF',
       h_lola:'Lola\'s take', h_lola_p:'Lola reviews your numbers, the nearby sales and Houston risks, and gives you a verdict and a max offer.', ask:'Ask Lola', ask_again:'Ask again with these numbers', lola_busy:'Lola is reviewing the deal…', lola_at:'Reviewed {d}', lola_err:'Lola couldn\'t answer right now. Try again in a minute.', lola_limit:'You\'ve asked for a lot of reviews today. Try again tomorrow.',
-      h_comps:'Nearby sold homes', comps_sub:'Uncheck the ones that don\'t compare (other street, other style): the ARV recalculates.', rem:'Remodeled', fx:'Needs work', dom:'{n} days', mi:'{n} mi',
+      h_comps:'Nearby sold homes', comps_sub:'Uncheck the ones that don\'t compare (other street, other style) or check the ones that do: the ARV recalculates. "Out of range" sales start unchecked.', rem:'Remodeled', fx:'Needs work', dom:'{n} days', mi:'{n} mi',
       h_hist:'My analyses', none:'No analyses yet.',
       e_sign:'Your session ended. Please sign in again.', e_inv:'Your access isn\'t active. Call Jason.', e_limit:'You reached today\'s lookup limit. Try again tomorrow.', e_addr:'Type the full address with city and ZIP.', e_nf:'We couldn\'t find that address. Check it has the city and ZIP.', e_gen:'Something went wrong. Try again.', e_nocomps:'Not enough nearby sales to estimate the ARV. Type your own ARV below.',
       disc:'Estimates for the investor\'s use only. ARV and today\'s value come from HAR sales and RentCast and are not an appraisal. Verify condition, permits, flood zone (FEMA) and title before buying. Jason Aguirre Group · eXp Realty.' }
@@ -534,20 +536,30 @@ table.t td.m{background:rgba(127,127,140,.08)}
 
   /* ---------- ARV from the comps he keeps (same rules as the server) ---------- */
   function band(Aa, R){ return R.length>=3 ? { w:pct(Aa,.5), m:Math.max(pct(Aa,.5),pct(R,.5)), b:Math.max(pct(Aa,.5),pct(R,.85)), basis:'remodeled' } : { w:pct(Aa,.4), m:pct(Aa,.65), b:pct(Aa,.9), basis:'all' }; }
+  function cid(c){ return c.mls||c.address; }
+  function wpct(Lst, p){
+    var s2=Lst.slice().sort(function(x,y){ return x.adj-y.adj; }); if(!s2.length) return null;
+    var tot=s2.reduce(function(t,c){ return t+(c.w||1); },0), acc=0;
+    var at=s2.map(function(c){ var m=(acc+(c.w||1)/2)/tot; acc+=(c.w||1); return m; });
+    if(p<=at[0]) return s2[0].adj;
+    for(var i=1;i<s2.length;i++) if(p<=at[i]) return s2[i-1].adj+(s2[i].adj-s2[i-1].adj)*(p-at[i-1])/(at[i]-at[i-1]);
+    return s2[s2.length-1].adj;
+  }
+  function arvFromComps(){
+    var r=RUN.result, sz=r.subject&&r.subject.sqft, comps=r.comps||[];
+    if(!comps.length||comps[0].adj==null) return r.arv; // analyses saved before the adjusted method
+    var A1=comps.filter(function(c){ return !EXCL[cid(c)] && c.cond!=='fixer'; }); if(!A1.length) return null;
+    var R1=A1.filter(function(c){ return c.cond==='remodeled'; });
+    var w=wpct(A1,.25), m=wpct(A1,.5), b=wpct(A1,.75), top=wpct(A1,.9);
+    if(R1.length>=3){ m=Math.min(Math.max(m,wpct(R1,.5)),wpct(A1,.75)); b=Math.min(Math.max(b,wpct(R1,.75)),top); }
+    if(A1.length<3){ w=Math.min(w,m*.95); b=Math.max(b,m*1.05); }
+    w=r1k(Math.min(w,m)); m=r1k(m); b=r1k(Math.max(b,m));
+    return { worst:w, mid:m, best:b, ppsf:sz?{ worst:Math.round(w/sz), mid:Math.round(m/sz), best:Math.round(b/sz) }:null, basis:R1.length>=3?'remodeled':'all' };
+  }
   function arvNow(){
     if(!RUN||!RUN.result) return null;
     var r=RUN.result, sz=r.subject&&r.subject.sqft, own=num($('own_arv').value);
-    var base=null;
-    var kept=(r.comps||[]).filter(function(c){ return !EXCL[c.mls||c.address] && c.cond!=='fixer'; });
-    var nEx=Object.keys(EXCL).length;
-    if(!nEx) base=r.arv;
-    else if(kept.length && sz){
-      var A1=kept.map(function(c){ return c.ppsf; }).sort(function(a,b){return a-b;}), R1=kept.filter(function(c){ return c.cond==='remodeled'; }).map(function(c){ return c.ppsf; }).sort(function(a,b){return a-b;});
-      var k=band(A1,R1); base={ worst:r1k(k.w*sz), mid:r1k(k.m*sz), best:r1k(k.b*sz), ppsf:{ worst:Math.round(k.w), mid:Math.round(k.m), best:Math.round(k.b) }, basis:k.basis };
-    } else if(kept.length){
-      var P=kept.map(function(c){ return c.sold_price; }).sort(function(a,b){return a-b;}), RP=kept.filter(function(c){ return c.cond==='remodeled'; }).map(function(c){ return c.sold_price; }).sort(function(a,b){return a-b;});
-      var k2=band(P,RP); base={ worst:r1k(k2.w), mid:r1k(k2.m), best:r1k(k2.b), ppsf:null, basis:k2.basis };
-    }
+    var base=arvFromComps();
     if(own>10000){
       if(base&&base.mid){ var f=own/base.mid; return { worst:r1k(base.worst*f), mid:own, best:r1k(base.best*f), ppsf:base.ppsf&&sz?{ worst:Math.round(base.worst*f/sz), mid:Math.round(own/sz), best:Math.round(base.best*f/sz) }:null, basis:base.basis, own:true }; }
       return { worst:r1k(own*0.93), mid:own, best:r1k(own*1.07), ppsf:null, own:true };
@@ -625,12 +637,15 @@ table.t td.m{background:rgba(127,127,140,.08)}
         '<div class="ps">'+(arv.ppsf?esc(t('per_sf_v',{v:money(arv.ppsf[k])})):'&nbsp;')+'</div>'+
         (p?'<div class="pf"><span>'+esc(t('profit'))+'</span><span><b class="'+(p.profit>=0?'pos':'neg')+'">'+money(p.profit)+'</b> · '+pctf(p.margin,1)+'</span></div>':'')+'</div>';
     }).join('');
-    var nEx=Object.keys(EXCL).length, kept=(r.comps||[]).length-nEx;
+    var cs=r.comps||[], used=cs.filter(function(c){ return !EXCL[cid(c)] && c.cond!=='fixer'; }).length;
+    var nEx=cs.filter(function(c){ return EXCL[cid(c)] && !c.out; }).length, nOut=cs.filter(function(c){ return EXCL[cid(c)] && c.out; }).length;
     var chips=['<span class="chip '+(r.confidence==='high'?'hi':r.confidence==='medium'?'md':'lo')+'">'+esc(t('conf_'+(r.confidence||'low')))+'</span>',
-      '<span class="chip">'+esc(t('comps_n',{n:kept}))+'</span>'];
+      '<span class="chip">'+esc(t('comps_n',{n:used}))+'</span>'];
+    if(r.search) chips.push('<span class="chip">'+esc(t('search',{mi:r.search.miles,mo:r.search.months,yr:r.search.years,sz:r.search.size_pct}))+'</span>');
+    if(nOut) chips.push('<span class="chip">'+esc(t('outn',{n:nOut}))+'</span>');
     if(nEx) chips.push('<span class="chip">'+esc(t('excl',{n:nEx}))+'</span>');
-    chips.push('<span class="chip">'+esc(arv.basis==='remodeled'?t('basis_rem',{n:(r.comps||[]).filter(function(c){ return c.cond==='remodeled'&&!EXCL[c.mls||c.address]; }).length}):t('basis_all'))+'</span>');
-    if(r.widened) chips.push('<span class="chip md">'+esc(t('widened'))+'</span>');
+    if(arv.basis==='remodeled') chips.push('<span class="chip">'+esc(t('basis_rem',{n:cs.filter(function(c){ return c.cond==='remodeled'&&!EXCL[cid(c)]; }).length}))+'</span>');
+    if(r.widened&&!r.search) chips.push('<span class="chip md">'+esc(t('widened'))+'</span>');
     if(r.comps_source==='RentCast') chips.push('<span class="chip lo">'+esc(t('src_rc'))+'</span>');
     $('arvchips').innerHTML=chips.join('');
     $('arvnote').textContent=(arv.own?t('own_note')+' ':'')+t('arv_note');
@@ -680,7 +695,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
       worst:sc(D.worst), mid:sc(D.mid), best:sc(D.best), all_in:Math.round(D.allin), cash_needed:Math.round(D.cash), loan:Math.round(D.loan),
       rehab_with_contingency:Math.round(D.rehabT), holding_total:Math.round(D.hold), financing_cost:Math.round(D.fin),
       max_offer_70:Math.round(Math.max(0,LAST.mao)), max_offer_for_goal:LAST.M.price, goal_profit:Math.round(LAST.M.target), grade:LAST.g,
-      own_arv:LAST.arv.own?LAST.arv.mid:null, comps_removed:Object.keys(EXCL).length, excluded:Object.keys(EXCL).slice(0,10) };
+      own_arv:LAST.arv.own?LAST.arv.mid:null, comps_removed:Object.keys(EXCL).length, excluded:Object.keys(EXCL).slice(0,25), included_out:(RUN.result.comps||[]).filter(function(c){ return c.out && !EXCL[cid(c)]; }).map(cid).slice(0,10) };
   }
 
   function pinColor(c){ return c.cond==='remodeled'?'#1a5c31':c.cond==='fixer'?'#b77900':'#5f5e68'; }
@@ -693,6 +708,8 @@ table.t td.m{background:rgba(127,127,140,.08)}
         '<div class="th" style="'+(c.photo?'background-image:url(\''+CDN+esc(c.photo)+'?class=small\')':'')+'"><i>'+(i+1)+'</i></div>'+
         '<div class="tx"><b>'+money(c.sold_price)+'</b> · '+(c.ppsf?money(c.ppsf)+'/'+(lang()==='en'?'sf':'p²'):'')+
         (c.cond==='remodeled'?'<span class="tag rem">'+esc(t('rem'))+'</span>':c.cond==='fixer'?'<span class="tag fix">'+esc(t('fx'))+'</span>':'')+
+        (c.out?'<span class="tag out">'+esc(t('out'))+'</span>':'')+
+        (c.adj!=null&&c.adj!==c.sold_price?'<div class="adj">'+esc(t('adj',{v:money(c.adj)}))+'</div>':'')+
         '<div class="a">'+esc(c.address||'')+'</div>'+
         '<div>'+[c.sold_date?dfmt(c.sold_date):'', c.sqft?Number(c.sqft).toLocaleString('en-US')+' '+t('sqft').toLowerCase():'', (c.beds!=null?c.beds+'/'+(c.baths!=null?c.baths:'?'):''), c.year||'', c.miles!=null?t('mi',{n:c.miles}):'', c.dom!=null?t('dom',{n:c.dom}):''].filter(Boolean).map(esc).join(' · ')+'</div></div></label>';
     }).join('');
@@ -752,8 +769,12 @@ table.t td.m{background:rgba(127,127,140,.08)}
     RUN={ id:j.id, address:(j.subject&&j.subject.address)||j.address, result:saved?j.result:j, deal:saved?j.deal:null, lola:saved?j.lola:null, lola_at:saved?j.lola_at:null };
     EXCL={}; $('own_arv').value='';
     var dj=RUN.deal&&RUN.deal.inputs;
+    // "out of range" sales start unchecked unless he checked them back on; his own removals come back as he left them
+    var back=(RUN.deal&&RUN.deal.included_out)||[];
+    (RUN.result.comps||[]).forEach(function(c){ if(c.out && back.indexOf(cid(c))<0) EXCL[cid(c)]=1; });
     if(dj){ FIN=dj.financing==='cash'?'cash':'hm'; LEVEL=['light','medium','heavy','custom'].indexOf(dj.rehab_level)>=0?dj.rehab_level:'medium';
-      (RUN.deal.excluded||[]).forEach(function(x){ EXCL[x]=1; }); if(RUN.deal.own_arv) $('own_arv').value=Number(RUN.deal.own_arv).toLocaleString('en-US');
+      (RUN.deal.excluded||[]).forEach(function(x){ EXCL[x]=1; });
+      back.forEach(function(x){ delete EXCL[x]; }); if(RUN.deal.own_arv) $('own_arv').value=Number(RUN.deal.own_arv).toLocaleString('en-US');
       writeInputs(Object.assign(defaults(), dj));
     } else { FIN='hm'; LEVEL='medium'; writeInputs(defaults()); }
     paintAll();

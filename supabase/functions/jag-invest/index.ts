@@ -1,8 +1,9 @@
 // jag-invest — the investor portal's data engine (jasonaguirregroup.company/invest, invite only).
 // POST { action: 'analyze', address, sqft?, beds?, baths? } with the investor's sign-in token:
 //   1. RentCast: the property record (beds, baths, sqft, year, lot, taxes, last sale) and its as-is value estimate.
-//   2. HAR (Repliers): homes that SOLD nearby in the last 6-12 months, similar size → after-repair value (ARV)
-//      as worst / mid / best case from the sold price per sq ft (remodeled comps set mid/best; fixer sales are set aside).
+//   2. HAR (Repliers): homes that SOLD nearby — same type, similar era and size, close and recent — each adjusted to
+//      this house's size and weighted by how similar it is → after-repair value (ARV) as worst / mid / best case.
+//      Outliers and fixer sales are set aside (still listed).
 //   3. Saves the run (jag_investor_runs) so the investor can reopen it.
 // POST { action: 'lola', id, deal, lang }: Lola reviews the deal (n8n "JAG Investor · Lola deal review" → Claude) and the
 //   review + the calculator numbers are saved on the run. This is the only step that uses AI credits.
@@ -47,7 +48,7 @@ async function rentcast(path: string, key: string) {
 async function repliersSold(lat: number, lng: number, km: number, months: number) {
   const q = new URLSearchParams({ boardId: "147", status: "U", lastStatus: "Sld", lat: String(lat), long: String(lng), radius: String(km),
     minSoldDate: DATE(new Date(Date.now() - months * 30.5 * 864e5)), sortBy: "soldDateDesc", resultsPerPage: "80",
-    fields: "mlsNumber,soldPrice,soldDate,listPrice,address,map,details.numBedrooms,details.numBathrooms,details.sqft,details.yearBuilt,details.propertyType,details.description,images,daysOnMarket,class,type" });
+    fields: "mlsNumber,soldPrice,soldDate,listPrice,address,map,details.numBedrooms,details.numBathrooms,details.sqft,details.yearBuilt,details.propertyType,details.style,details.description,images,daysOnMarket,class,type" });
   q.append("class", "residential");
   const r = await fetch("https://api.repliers.io/listings?" + q.toString(), { headers: { "REPLIERS-API-KEY": RK, Accept: "application/json" } });
   if (!r.ok) return { error: "repliers " + r.status + " " + (await r.text()).slice(0, 200), listings: [] };
@@ -117,17 +118,19 @@ Deno.serve(async (req) => {
   if (subject.lat == null && avm && avm.latitude) { subject.lat = avm.latitude; subject.lng = avm.longitude; }
   if (subject.lat == null) return json({ ok: false, reason: "not_found", subject });
 
-  // 2. sold comps from HAR: 1 mile / 6 months, widening to 2 miles / 12 months when thin
+  // 2. sold comps from HAR, picked like an appraiser would: the same kind of home (house vs townhome), built in a
+  //    similar era, similar size, close by and recent. Start at 1 mile / 6 months and widen step by step only when thin.
   const here: [number, number] = [subject.lat, subject.lng];
-  let raw: Row[] = [], widened = false, repErr = "";
-  for (const [km, months] of [[1.6, 6], [3.2, 12]] as [number, number][]) {
-    const r: Row = await repliersSold(subject.lat, subject.lng, km, months);
-    if (r.error) repErr = r.error;
-    raw = (r.listings || []);
-    const similar = raw.filter((l) => { const s = num(l.details && l.details.sqft); return !subject.sqft || !s || Math.abs(s - subject.sqft) / subject.sqft <= 0.3; });
-    if (similar.length >= 6 || km > 2) { widened = km > 2; break; }
-  }
-  let comps = raw.map((l) => {
+  const sz = subject.sqft;
+  const isTH = (t: string) => /town|condo|hi-?rise|mid-?rise|duplex|multi|quad|triplex|mobile|manufactured/i.test(t);
+  const subjTH: boolean | null = subject.type ? isTH(String(subject.type)) : null;
+  const pools: Record<string, Row[]> = {}; let repErr = "";
+  const pool = async (km: number, months: number) => {
+    const k = km + "/" + months;
+    if (!pools[k]) { const r: Row = await repliersSold(subject.lat!, subject.lng!, km, months); if (r.error) repErr = r.error; pools[k] = r.listings || []; }
+    return pools[k];
+  };
+  const toComp = (l: Row) => {
     const a = l.address || {}, d = l.details || {}, m = l.map || {};
     const sqft = num(d.sqft), price = num(l.soldPrice);
     const lat = Number(m.latitude), lng = Number(m.longitude);
@@ -135,50 +138,85 @@ Deno.serve(async (req) => {
       sold_price: price, sold_date: l.soldDate ? String(l.soldDate).slice(0, 10) : null, list_price: num(l.listPrice), sqft, beds: d.numBedrooms ?? null, baths: d.numBathrooms ?? null,
       year: num(d.yearBuilt), dom: l.daysOnMarket ?? null, photo: (l.images || [])[0] || null, lat: isFinite(lat) ? lat : null, lng: isFinite(lng) ? lng : null,
       miles: isFinite(lat) && isFinite(lng) ? Math.round(miles(here, [lat, lng]) * 100) / 100 : null,
-      cond: condition(d.description), ppsf: price && sqft ? Math.round(price / sqft) : null };
-  }).filter((c) => c.sold_price && c.ppsf && c.ppsf > 20 && c.ppsf < 1500 && !(c.miles != null && c.miles < 0.01)); // not the house itself
-  if (subject.sqft) comps = comps.filter((c) => !c.sqft || Math.abs(c.sqft - subject.sqft!) / subject.sqft! <= 0.3);
-  if (subject.beds) comps = comps.filter((c) => c.beds == null || Math.abs(Number(c.beds) - Number(subject.beds)) <= 1);
-  comps.sort((x, y) => (x.miles ?? 9) - (y.miles ?? 9));
-  comps = comps.slice(0, 25);
+      type: [d.propertyType, d.style].filter(Boolean).join(" · ") || null,
+      cond: condition(d.description), ppsf: price && sqft ? Math.round(price / sqft) : null } as Row;
+  };
+  const TIERS = [{ km: 1.6, mo: 6, yr: 15, sz: 0.25 }, { km: 1.6, mo: 12, yr: 15, sz: 0.25 }, { km: 3.2, mo: 12, yr: 15, sz: 0.25 }, { km: 3.2, mo: 12, yr: 25, sz: 0.35 }];
+  const fits = (c: Row, T: Row) =>
+    !!c.sold_price && !!c.ppsf && c.ppsf > 20 && c.ppsf < 1500 && !(c.miles != null && c.miles < 0.01) // not the house itself
+    && (subjTH == null || !c.type || isTH(String(c.type)) === subjTH)
+    && (!subject.year || !c.year || Math.abs(c.year - Number(subject.year)) <= T.yr)
+    && (!sz || !c.sqft || Math.abs(c.sqft - sz) / sz <= T.sz)
+    && (!subject.beds || c.beds == null || Math.abs(Number(c.beds) - Number(subject.beds)) <= 1);
+  let comps: Row[] = [], tier = 0;
+  for (let i = 0; i < TIERS.length; i++) {
+    comps = (await pool(TIERS[i].km, TIERS[i].mo)).map(toComp).filter((c) => fits(c, TIERS[i]));
+    tier = i;
+    if (comps.filter((c) => c.cond !== "fixer").length >= 6) break;
+  }
+  const widened = tier > 0;
   let source = "HAR";
-  // fallback: RentCast's comparables (recent listings) when HAR has nothing nearby
+  // fallback: RentCast's comparables (recent listings) when HAR has nothing similar nearby
   if (comps.length < 3 && avm && Array.isArray(avm.comparables)) {
     source = "RentCast";
     comps = avm.comparables.map((c: Row) => ({ source: "RentCast", mls: c.mlsNumber || "", address: c.formattedAddress, sold_price: num(c.price), sold_date: c.removedDate ? String(c.removedDate).slice(0, 10) : null,
       list_price: num(c.price), sqft: num(c.squareFootage), beds: c.bedrooms ?? null, baths: c.bathrooms ?? null, year: num(c.yearBuilt), dom: c.daysOnMarket ?? null, photo: null,
-      lat: c.latitude ?? null, lng: c.longitude ?? null, miles: c.distance != null ? Math.round(c.distance * 100) / 100 : null, cond: "",
+      lat: c.latitude ?? null, lng: c.longitude ?? null, miles: c.distance != null ? Math.round(c.distance * 100) / 100 : null, cond: "", type: c.propertyType || null,
       ppsf: num(c.price) && num(c.squareFootage) ? Math.round(num(c.price)! / num(c.squareFootage)!) : null, status: c.status || null }))
       .filter((c: Row) => c.ppsf);
   }
 
-  // 3. after-repair value (what it sells for once rehabbed), from sold $/sq ft × the subject's size.
-  //    With 3+ remodeled comps: worst = a typical neighborhood sale, mid = the typical remodeled sale, best = the top remodeled sales.
-  //    Otherwise the upper part of all sales stands in for "rehabbed" (rehabbed homes sell above the neighborhood middle).
-  // Fixer sales (sold needing work) are left out of the ARV and give a separate "as-is from fixer sales" number.
-  const forArv = comps.filter((c: Row) => c.cond !== "fixer");
-  const ppsf = forArv.map((c) => c.ppsf!).sort((a, b) => a - b);
-  const remod = forArv.filter((c: Row) => c.cond === "remodeled").map((c) => c.ppsf!).sort((a, b) => a - b);
-  const fixers = comps.filter((c: Row) => c.cond === "fixer").map((c) => c.ppsf!).sort((a, b) => a - b);
-  const sz = subject.sqft;
-  let arv: Row | null = null;
-  const band = (A: number[], R: number[]) => R.length >= 3
-    ? { w: pct(A, 0.5)!, m: Math.max(pct(A, 0.5)!, pct(R, 0.5)!), b: Math.max(pct(A, 0.5)!, pct(R, 0.85)!), basis: "remodeled" }
-    : { w: pct(A, 0.4)!, m: pct(A, 0.65)!, b: pct(A, 0.9)!, basis: "all" };
-  if (ppsf.length && sz) {
-    const k = band(ppsf, remod);
-    arv = { worst: round(k.w * sz), mid: round(k.m * sz), best: round(k.b * sz), ppsf: { worst: Math.round(k.w), mid: Math.round(k.m), best: Math.round(k.b) }, basis: k.basis };
-  } else if (ppsf.length) {
-    const prices = forArv.map((c) => c.sold_price!).sort((a, b) => a - b);
-    const rp = forArv.filter((c: Row) => c.cond === "remodeled").map((c) => c.sold_price!).sort((a, b) => a - b);
-    const k = band(prices, rp);
-    arv = { worst: round(k.w), mid: round(k.m), best: round(k.b), ppsf: null, no_sqft: true, basis: k.basis };
+  // 3. each sale adjusted to THIS house: a bigger or smaller house is worth more or less, but not at full price per
+  //    sq ft (appraisers use about a third of it). Then weight: closer, more recent, same era and size count more.
+  const now = Date.now();
+  for (const c of comps) {
+    let adj = c.sold_price;
+    if (sz && c.sqft) { const d = (sz - c.sqft) * 0.35 * (c.sold_price / c.sqft); adj = c.sold_price + Math.max(-0.15 * c.sold_price, Math.min(0.15 * c.sold_price, d)); }
+    c.adj = Math.round(adj / 500) * 500;
+    const mo = c.sold_date ? (now - Date.parse(c.sold_date)) / (30.5 * 864e5) : 9;
+    const w = (1 / (0.35 + (c.miles ?? 1.5))) * Math.max(0.35, 1 - mo / 18)
+      * (subject.year && c.year ? Math.max(0.4, 1 - Math.abs(c.year - Number(subject.year)) / 40) : 0.8)
+      * (sz && c.sqft ? Math.max(0.4, 1 - Math.abs(c.sqft - sz) / sz) : 0.8);
+    c.w = Math.round(w * 1000) / 1000;
   }
-  const fixerValue = fixers.length >= 2 && sz ? { value: round(pct(fixers, 0.5)! * sz), ppsf: Math.round(pct(fixers, 0.5)!), count: fixers.length } : null;
-  const spread = ppsf.length ? (pct(ppsf, 0.8)! - pct(ppsf, 0.2)!) / pct(ppsf, 0.5)! : 1;
-  const confidence = comps.length >= 8 && spread < 0.35 ? "high" : comps.length >= 4 ? "medium" : "low";
+  // sales far from the pack (a golf-course home, a teardown) are left out but still listed so he can see them
+  const base = comps.filter((c) => c.cond !== "fixer").map((c) => c.adj).sort((x, y) => x - y);
+  const med0 = pct(base, 0.5);
+  for (const c of comps) c.out = med0 ? (c.adj < med0 * 0.75 || c.adj > med0 * 1.3) : false;
+  comps.sort((x, y) => (x.out ? 1 : 0) - (y.out ? 1 : 0) || (x.miles ?? 9) - (y.miles ?? 9));
+  comps = comps.slice(0, 25);
+
+  // 4. after-repair value. worst = the low quarter of similar sales, mid = the weighted middle, best = the high quarter.
+  //    Remodeled sales can pull mid/best up, never above the top of the neighborhood (90th percentile).
+  // weighted percentile: each sale sits at the middle of its weight; read p off that line
+  const wpct = (L: Row[], p: number) => {
+    const s = L.slice().sort((x, y) => x.adj - y.adj);
+    if (!s.length) return null;
+    const tot = s.reduce((t, c) => t + c.w, 0); let acc = 0;
+    const at = s.map((c) => { const m = (acc + c.w / 2) / tot; acc += c.w; return m; });
+    if (p <= at[0]) return s[0].adj;
+    for (let i = 1; i < s.length; i++) if (p <= at[i]) return s[i - 1].adj + (s[i].adj - s[i - 1].adj) * (p - at[i - 1]) / (at[i] - at[i - 1]);
+    return s[s.length - 1].adj;
+  };
+  const A = comps.filter((c) => !c.out && c.cond !== "fixer");
+  const R = A.filter((c) => c.cond === "remodeled");
+  let arv: Row | null = null;
+  if (A.length) {
+    let w = wpct(A, 0.25)!, m = wpct(A, 0.5)!, bst = wpct(A, 0.75)!;
+    const top = wpct(A, 0.9)!;
+    if (R.length >= 3) { m = Math.min(Math.max(m, wpct(R, 0.5)!), wpct(A, 0.75)!); bst = Math.min(Math.max(bst, wpct(R, 0.75)!), top); }
+    if (A.length < 3) { w = Math.min(w, m * 0.95); bst = Math.max(bst, m * 1.05); }
+    w = round(Math.min(w, m)); m = round(m); bst = round(Math.max(bst, m));
+    arv = { worst: w, mid: m, best: bst, ppsf: sz ? { worst: Math.round(w / sz), mid: Math.round(m / sz), best: Math.round(bst / sz) } : null, basis: R.length >= 3 ? "remodeled" : "all", method: "adjusted" };
+  }
+  const fx = comps.filter((c) => c.cond === "fixer" && !c.out);
+  const fixerValue = fx.length >= 2 ? { value: round(wpct(fx, 0.5)!), ppsf: sz ? Math.round(wpct(fx, 0.5)! / sz) : null, count: fx.length } : null;
+  const spread = arv && A.length >= 3 ? (wpct(A, 0.75)! - wpct(A, 0.25)!) / arv.mid : 1;
+  const confidence = A.length >= 6 && spread < 0.2 && tier <= 1 ? "high" : A.length >= 4 && spread < 0.35 ? "medium" : "low";
+  const T = TIERS[tier];
+  const remod = R, fixers = fx;
   const result = {
-    subject, arv, confidence, comps_source: source, widened, comps_count: comps.length, remodeled_count: remod.length, fixer_count: fixers.length, fixer_value: fixerValue,
+    subject, arv, confidence, comps_source: source, widened, search: { miles: T.km / 1.6, months: T.mo, years: T.yr, size_pct: Math.round(T.sz * 100) }, comps_count: A.length, out_count: comps.filter((c) => c.out).length, remodeled_count: remod.length, fixer_count: fixers.length, fixer_value: fixerValue,
     as_is: avm && avm.price ? { value: round(avm.price), low: avm.priceRangeLow ? round(avm.priceRangeLow) : null, high: avm.priceRangeHigh ? round(avm.priceRangeHigh) : null } : null,
     comps, notes: repErr ? [repErr] : [], cached,
   };
@@ -212,14 +250,15 @@ async function lola(db: any, uid: string | null, b: Row, json: (b: unknown, s?: 
     return null;
   };
   const calc = clean(b.deal || {}) as Row;
-  const comps = (r.comps || []) as Row[];
+  const removed = new Set(Array.isArray(calc && calc.excluded) ? (calc.excluded as string[]) : []);
+  const comps = ((r.comps || []) as Row[]).filter((c) => removed.size ? !removed.has(c.mls || c.address) : !c.out);
   const doms = comps.map((c) => c.dom).filter((x) => typeof x === "number").sort((a: number, b: number) => a - b);
   const payload = {
-    property: r.subject, as_is_estimate: r.as_is, arv: r.arv, arv_confidence: r.confidence, comps_source: r.comps_source,
+    property: r.subject, as_is_estimate: r.as_is, arv_from_server: r.arv, arv_used_by_investor: { worst: calc.worst && (calc.worst as Row).arv, mid: calc.mid && (calc.mid as Row).arv, best: calc.best && (calc.best as Row).arv }, arv_confidence: r.confidence, comps_source: r.comps_source, comp_search: r.search || null,
     as_is_from_fixer_sales: r.fixer_value || null,
     comps: { count: comps.length, remodeled: comps.filter((c) => c.cond === "remodeled").length, sold_needing_work: comps.filter((c) => c.cond === "fixer").length, widened_to_2mi_12mo: !!r.widened,
       median_days_on_market: doms.length ? doms[Math.floor(doms.length / 2)] : null,
-      closest: comps.slice(0, 8).map((c) => ({ miles: c.miles, sold: c.sold_price, date: c.sold_date, sqft: c.sqft, ppsf: c.ppsf, beds: c.beds, baths: c.baths, year: c.year, condition: c.cond || "average", dom: c.dom })) },
+      closest: comps.slice(0, 8).map((c) => ({ miles: c.miles, sold: c.sold_price, adjusted_to_subject: c.adj ?? null, date: c.sold_date, sqft: c.sqft, ppsf: c.ppsf, beds: c.beds, baths: c.baths, year: c.year, condition: c.cond || "average", dom: c.dom })) },
     calculator: calc,
   };
   const { data: secret } = await db.rpc("jag_ops_secret");
