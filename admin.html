@@ -37,12 +37,13 @@ body{margin:0;background:#fafafb;color:var(--ink);font-family:'Plus Jakarta Sans
 button,input,select,textarea{font:inherit}
 .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
 header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.hin{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+.hin{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:10px}
 .lock{display:flex;flex-direction:column;line-height:1;text-decoration:none;color:var(--ink)}
 .lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
 .lock b{font-size:23px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
 .lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--buy);padding-top:3px}
-.hin .who{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600}
+.hin .who{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600;min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hin .ghostbtn{white-space:nowrap;flex:none}
 .ghostbtn{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer}
 .gearbtn{padding:7px 9px;align-items:center;justify-content:center;line-height:0}
 .ghostbtn:hover{border-color:var(--ink)}
@@ -123,6 +124,16 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 .linkbtn{background:none;border:0;color:var(--loan);font-weight:800;cursor:pointer;font-size:14px}
 
 /* ---- client accounts ---- */
+.inv-form{display:flex;gap:8px;flex-wrap:wrap}
+.inv-form input{flex:1;min-width:170px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;background:#fff}
+.inv-row{display:flex;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:12px 0;flex-wrap:wrap}
+.inv-row .tx{flex:1;min-width:200px}
+.inv-row .tx b{display:block}
+.inv-row .tx span{font-size:12.5px;color:var(--muted)}
+.inv-row .tx .bad{color:#c8102e}
+.inv-st{font-size:11.5px;font-weight:800;border-radius:10px;padding:2px 8px;background:#f5f5f7;color:#5f5e68}
+.inv-st.ok{background:#e9f5ec;color:#1a5c31}
+.inv-st.off{background:#fdecef;color:#a30d26}
 .cdlg{position:fixed;inset:0;background:rgba(15,14,20,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:60;overflow:auto}
 .cdlg.on{display:flex}
 .cbox{background:#fff;border-radius:18px;max-width:860px;width:100%;padding:22px 24px;position:relative}
@@ -345,6 +356,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <button class="ghostbtn primebtn" id="startapp" style="display:none" title="Open the JAG Home Loans app to fill it in with a client on the phone">&#128221; Start home app</button>
     <button class="ghostbtn" id="copyapply" style="display:none" title="Copy the application link to send to a client">&#128279; Copy link</button>
     <a class="ghostbtn" id="toscreener" href="screener.html" style="display:none;text-decoration:none" title="Live call screener: script, route, PDF and Follow Up Boss">&#128222; Screener</a>
+    <button class="ghostbtn gearbtn" id="investbtn" style="display:none" aria-label="Investor portal" title="Investor portal (invite only): invite flippers, see their activity"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></button>
     <button class="ghostbtn" id="refresh" style="display:none">Refresh</button>
     <button class="ghostbtn" id="exportcsv" style="display:none">Export CSV</button>
     <button class="ghostbtn gearbtn" id="settingsbtn" style="display:none" aria-label="Settings" title="Settings (light/dark, email language)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -528,6 +540,20 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <textarea id="st-note" rows="2" maxlength="500" placeholder="¡Hola! Te comparto esta casa que creo que te va a gustar."></textarea>
     <button class="ghostbtn" type="button" id="st-note-go" style="align-self:flex-start">Save note</button></div>
   <p class="st-ok" id="st-ok" role="status"></p>
+</div></div>
+<div class="cdlg" id="invdlg" role="dialog" aria-modal="true" aria-labelledby="inv-h"><div class="cbox" style="max-width:680px">
+  <button class="ghostbtn dclose" type="button" id="inv-x">Close</button>
+  <h2 id="inv-h">Investor portal <span style="font-size:12px;background:#17161c;color:#fff;border-radius:10px;padding:2px 8px;vertical-align:4px">BETA</span></h2>
+  <div class="meta">Invite only. Investors type an address and get the property record, nearby HAR sold homes, worst / mid / best ARV, a flip calculator and Lola's take. Only people you invite here can open <a href="invest" target="_blank" rel="noopener">jasonaguirregroup.company/invest</a>.</div>
+  <form id="inv-form" class="inv-form" autocomplete="off">
+    <input id="inv-name" type="text" placeholder="Name" maxlength="80" aria-label="Investor name">
+    <input id="inv-email" type="email" placeholder="Email he'll sign in with" required aria-label="Investor email">
+    <button class="ghostbtn primebtn" type="submit" id="inv-go">Send invite</button>
+  </form>
+  <p class="st-ok" id="inv-ok" role="status"></p>
+  <h3>Investors</h3>
+  <div id="inv-list"><div class="empty">Loading…</div></div>
+  <p style="font-size:12.5px;color:var(--muted);margin:14px 0 0">The invite email comes from JAG in Spanish and English and replies go to Jason. Looking up an address and the calculator don't use AI; each "Ask Lola" review uses AI credits (limited to 25 a day per investor; 40 lookups a day).</p>
 </div></div>
 <div class="cdlg" id="cdlg" role="dialog" aria-modal="true" aria-labelledby="cd-name">
   <div class="cbox">
@@ -797,7 +823,7 @@ function show(view){
   $('loginview').style.display = view==='login'?'grid':'none';
   $('app').style.display       = view==='app'?'block':'none';
   var on = view==='app';
-  ['startapp','copyapply','toscreener','refresh','exportcsv','settingsbtn','signout'].forEach(function(id){ $(id).style.display = on?(id==='settingsbtn'?'inline-flex':'inline-block'):'none'; });
+  ['startapp','copyapply','toscreener','investbtn','refresh','exportcsv','settingsbtn','signout'].forEach(function(id){ $(id).style.display = on?((id==='settingsbtn'||id==='investbtn')?'inline-flex':'inline-block'):'none'; });
   $('who').textContent = on ? (state.email||'') : '';
   if(on && !state.agentName) loadAgentName();
   if(on) setTab(state.tab||'leads');
@@ -2052,6 +2078,41 @@ document.querySelectorAll('#st-size button').forEach(function(b){ b.addEventList
 TXT_KEYS.forEach(function(k){ $('st-'+k).addEventListener('change', function(){ var o={}; o[k]=this.checked; stSave(o); }); });
 $('st-from').onchange = $('st-to').onchange = function(){ stSave({ work_from: $('st-from').value===''?null:+$('st-from').value, work_to: $('st-to').value===''?null:+$('st-to').value }); };
 $('st-note-go').addEventListener('click', function(){ stSave({ default_note: $('st-note').value }); });
+/* ---------------- Investor portal (invite only) ---------------- */
+function invEsc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function invDate(d){ return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''; }
+function invMsg(m, ok){ $('inv-ok').textContent=m||''; $('inv-ok').style.color = ok===false ? '#c8102e' : ''; }
+function invLoad(){
+  stRpc('jag_investor_admin_list').then(function(j){
+    if(!j || !j.ok){ $('inv-list').innerHTML='<div class="empty">'+(j&&j.reason==='not_staff'?'Only JAG admins can invite investors.':'Could not load investors.')+'</div>'; $('inv-form').style.display = j&&j.reason==='not_staff' ? 'none' : ''; return; }
+    var L=j.investors||[];
+    $('inv-list').innerHTML = L.length ? L.map(function(i){
+      var st = !i.active ? '<span class="inv-st off">Off</span>' : i.accepted_at ? '<span class="inv-st ok">Joined '+invEsc(invDate(i.accepted_at))+'</span>' : '<span class="inv-st">Invited '+invEsc(invDate(i.invited_at))+'</span>';
+      return '<div class="inv-row"><div class="tx"><b>'+invEsc(i.name||i.email)+' '+st+'</b><span>'+invEsc(i.email)+' · '+(i.runs||0)+' analyses'+(i.last_run?' · last '+invEsc(invDate(i.last_run)):'')+'</span>'+
+        (i.email_error?'<span class="bad"> · Invite email failed: '+invEsc(String(i.email_error).slice(0,80))+'</span>':'')+'</div>'+
+        '<button class="ghostbtn" type="button" data-resend="'+invEsc(i.email)+'" data-name="'+invEsc(i.name||'')+'">'+(i.active?'Resend invite':'Turn on + resend')+'</button>'+
+        (i.active?'<button class="ghostbtn" type="button" data-off="'+i.id+'">Turn off</button>':'')+'</div>';
+    }).join('') : '<div class="empty">No investors yet. Invite your first beta tester above.</div>';
+    $('inv-list').querySelectorAll('[data-resend]').forEach(function(b){ b.onclick=function(){ invInvite(b.getAttribute('data-resend'), b.getAttribute('data-name')); }; });
+    $('inv-list').querySelectorAll('[data-off]').forEach(function(b){ b.onclick=function(){
+      if(!confirmOff(b)) return;
+      stRpc('jag_investor_set_active',{p_id:+b.getAttribute('data-off'), p_active:false}).then(function(){ invMsg('Turned off. They can no longer open the portal.'); invLoad(); });
+    }; });
+  }).catch(function(){ $('inv-list').innerHTML='<div class="empty">Could not load investors.</div>'; });
+}
+/* two-tap confirm (no browser dialogs) */
+function confirmOff(b){ if(b.dataset.sure){ return true; } b.dataset.sure='1'; b.textContent='Tap again to turn off'; setTimeout(function(){ delete b.dataset.sure; b.textContent='Turn off'; },4000); return false; }
+function invInvite(email, name){
+  invMsg('Sending…');
+  stRpc('jag_investor_invite',{p_email:email, p_name:name||null}).then(function(j){
+    if(j && j.ok){ invMsg('Invite sent to '+email+'. He signs in at jasonaguirregroup.company/invest with that email.'); $('inv-email').value=''; $('inv-name').value=''; setTimeout(invLoad, 2500); invLoad(); }
+    else invMsg(j&&j.reason==='email'?'That email doesn\'t look right.':j&&j.reason==='not_staff'?'Only JAG admins can invite investors.':'Could not send the invite.', false);
+  }).catch(function(){ invMsg('Could not send the invite.', false); });
+}
+$('investbtn').addEventListener('click', function(){ invMsg(''); $('invdlg').classList.add('on'); invLoad(); });
+$('inv-x').addEventListener('click', function(){ $('invdlg').classList.remove('on'); });
+$('invdlg').addEventListener('click', function(e){ if(e.target===$('invdlg')) $('invdlg').classList.remove('on'); });
+$('inv-form').addEventListener('submit', function(e){ e.preventDefault(); var em=$('inv-email').value.trim(); if(em) invInvite(em, $('inv-name').value.trim()); });
 /* ---------------- Start home app: open apply.html with what we already know (jag-handoff.js) ---------------- */
 // Fetched ahead of time so the click opens the app right away (browsers block tabs opened after a wait).
 function loadAgentName(){

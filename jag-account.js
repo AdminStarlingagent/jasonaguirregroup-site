@@ -10,14 +10,14 @@
   var STORE = 'jag_client_session';
 
   var T = {
-    es:{ m_cli:'Clientes', m_in:'Iniciar sesión', m_new:'Crear una cuenta', m_team:'Equipo JAG / Agentes', m_hub:'Iniciar sesión en el Agent Hub', m_adm:'Admin (CRM)', m_join:'Únase a nuestro equipo', team_go:'Usted es del equipo JAG. Abriendo el Agent Hub…', hub:'Agent Hub (equipo)', admin:'Admin', team:'Equipo JAG', signin:'Iniciar sesión', account:'Mi cuenta', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
+    es:{ m_cli:'Clientes', m_in:'Iniciar sesión', m_new:'Crear una cuenta', m_team:'Equipo JAG / Agentes', m_hub:'Iniciar sesión en el Agent Hub', m_adm:'Admin (CRM)', m_join:'Únase a nuestro equipo', team_go:'Usted es del equipo JAG. Abriendo el Agent Hub…', hub:'Agent Hub (equipo)', admin:'Admin', team:'Equipo JAG', signin:'Iniciar sesión', account:'Mi cuenta', invest:'Portal de inversionista', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
       h1:'Inicie sesión o cree su cuenta', p1:'Guarde casas, reciba avisos de casas nuevas y vea recomendaciones para usted. Sin contraseña: le enviamos un código a su correo.',
       email:'Correo electrónico', send:'Enviarme el código', terms:'Al continuar acepta nuestros <a href="privacy-terms.html" target="_blank" rel="noopener">términos y privacidad</a>. Puede borrar su cuenta cuando quiera.',
       h2:'Revise su correo', p2:'Le enviamos un código a ', code:'Código del correo', verify:'Entrar', resend:'Reenviar código', other:'Usar otro correo',
       h3:'¡Bienvenido! ¿Cómo se llama?', p3:'Así sabemos cómo dirigirnos a usted. El teléfono es opcional.', name:'Nombre', phone:'Teléfono (opcional)', done:'Listo', skip:'Ahora no',
       bademail:'Escriba un correo válido.', badcode:'Ese código no funcionó o ya venció. Intente otra vez o pida uno nuevo.', wait:'Espere un momento antes de pedir otro código.', neterr:'No pudimos conectar. Intente de nuevo.',
       why_new:'Cree su cuenta gratis: guarde casas, reciba avisos de casas nuevas y escríbale a su agente.', why_offer:'Entre a su portal para ver el estado de su oferta. Le enviamos un código a su correo.', why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
-    en:{ m_cli:'Clients', m_in:'Sign in', m_new:'Create an account', m_team:'JAG team / Agents', m_hub:'Agent Hub sign in', m_adm:'Admin (CRM)', m_join:'Join our team', team_go:'You\'re on the JAG team. Opening the Agent Hub…', hub:'Agent Hub (team)', admin:'Admin', team:'JAG team', signin:'Sign in', account:'My account', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
+    en:{ m_cli:'Clients', m_in:'Sign in', m_new:'Create an account', m_team:'JAG team / Agents', m_hub:'Agent Hub sign in', m_adm:'Admin (CRM)', m_join:'Join our team', team_go:'You\'re on the JAG team. Opening the Agent Hub…', hub:'Agent Hub (team)', admin:'Admin', team:'JAG team', signin:'Sign in', account:'My account', invest:'Investor portal', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
       h1:'Sign in or create your account', p1:'Save homes, get alerts on new listings and see picks for you. No password: we email you a code.',
       email:'Email', send:'Email me a code', terms:'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. You can delete your account any time.',
       h2:'Check your email', p2:'We sent a code to ', code:'Code from the email', verify:'Sign in', resend:'Resend code', other:'Use a different email',
@@ -30,7 +30,7 @@
   function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 
   /* ---------- session ---------- */
-  var S=null, listeners=[], refreshing=null, profile=null;
+  var S=null, listeners=[], refreshing=null, profile=null, isInv=false;
   try{ S=JSON.parse(localStorage.getItem(STORE)||'null'); }catch(e){ S=null; }
   function save(){ try{ if(S) localStorage.setItem(STORE, JSON.stringify(S)); else localStorage.removeItem(STORE); }catch(e){} }
   function setSession(j){
@@ -87,7 +87,7 @@
   function signOut(){
     var tk=S&&S.access_token;
     if(tk) fetch(URL_+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tk}}).catch(function(){});
-    S=null; profile=null; save(); emit();
+    S=null; profile=null; isInv=false; try{ localStorage.removeItem('jag_inv'); }catch(e){} save(); emit();
   }
 
   /* ---------- data helpers ---------- */
@@ -265,8 +265,9 @@
         return;
       }
       var nm=(profile&&profile.name)||S.user.email||'?';
+      try{ isInv=isInv||localStorage.getItem('jag_inv')===S.user.id; }catch(e){}
       m.innerHTML='<button type="button" class="ja-av" aria-label="'+t('account')+'" aria-haspopup="true">'+esc(nm.trim().charAt(0).toUpperCase())+'<i class="'+(unseen?'on':'')+'">'+unseen+'</i></button>'+
-        '<div class="ja-menu"><div class="em">'+esc(S.user.email)+'</div><a href="account">'+t('account')+'</a><a href="account#saved">'+t('saved')+'</a><a href="account#searches">'+t('searches')+'</a><button type="button" data-out>'+t('signout')+'</button></div>';
+        '<div class="ja-menu"><div class="em">'+esc(S.user.email)+'</div><a href="account">'+t('account')+'</a>'+(isInv?'<a href="invest">'+t('invest')+'</a>':'')+'<a href="account#saved">'+t('saved')+'</a><a href="account#searches">'+t('searches')+'</a><button type="button" data-out>'+t('signout')+'</button></div>';
       var menu=m.querySelector('.ja-menu');
       m.querySelector('.ja-av').onclick=function(e){ e.stopPropagation(); menu.classList.toggle('on'); };
       m.querySelector('[data-out]').onclick=function(){ signOut(); };
@@ -298,6 +299,13 @@
   }, true);
 
   window.JagAccount=api;
+  /* invite-only investor portal: the menu link shows only for invited investors */
+  function checkInv(){
+    if(!S) return;
+    rpc('jag_is_investor').then(function(v){ var u=S&&S.user&&S.user.id; isInv=v===true;
+      try{ if(isInv&&u) localStorage.setItem('jag_inv',u); else localStorage.removeItem('jag_inv'); }catch(e){} paintButtons(); }).catch(function(){});
+  }
+  api.onChange(function(u){ if(u&&!isInv) checkInv(); });
 
   /* on load: refresh profile + unseen alert count when signed in */
   if(S){
@@ -305,6 +313,7 @@
       if(!p) return init();
       rest('/rest/v1/jag_clients?user_id=eq.'+encodeURIComponent(S.user.id),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({last_seen_at:new Date().toISOString()})}).catch(function(){});
     }).then(function(){
+      checkInv();
       return json('/rest/v1/jag_client_alerts?select=id&seen_at=is.null&limit=50').then(function(r){ unseen=(r||[]).length; });
     }).catch(function(e){ if(String(e&&e.message)==='signed_out'){ S=null; save(); } })
       .then(emit);
