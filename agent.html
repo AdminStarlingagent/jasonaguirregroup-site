@@ -49,6 +49,13 @@ a{color:inherit}
 .btn:hover{background:var(--red-d)}.btn:disabled{opacity:.55}
 .btn.ghost{background:var(--card);color:var(--ink)}
 .err{color:var(--red-d);font-weight:700;font-size:13.5px;margin:0}
+.keep{display:flex;gap:10px;align-items:center;font-size:14.5px;font-weight:600;cursor:pointer}.keep input{width:20px;height:20px;accent-color:var(--red);margin:0}
+.si-note{font-size:13px!important;color:var(--muted)}
+.pwrap{position:relative}.pwrap input{padding-right:48px!important}.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;width:40px;height:40px;border-radius:10px;color:var(--muted)}.eye svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}.eye[aria-pressed=true]{color:var(--ink)}
+.pwbar{background:#fdecef;border-radius:16px;padding:12px 14px;margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
+.pwbar b{flex:1 1 220px}.pwbar button{border:0;border-radius:99px;padding:9px 14px;font-weight:700;background:var(--red);color:#fff}.pwbar .x{background:none;color:var(--muted)}
+.pwov{position:fixed;inset:0;background:rgba(15,14,20,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:9700}.pwov.on{display:flex}
+.pwov .si-box{max-width:400px}
 .ok{color:var(--green);font-weight:700;font-size:13.5px;margin:0}
 
 /* header */
@@ -216,21 +223,35 @@ body{background:var(--paper)}
   <form class="si-box" id="si-form" novalidate>
     <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span>
     <h1>Agent Hub</h1>
-    <p id="si-msg">Sign in with the email on your Follow Up Boss account. We'll email you a code, no password needed.</p>
-    <div class="fld" id="f-email"><label for="si-email">Email</label><input id="si-email" type="email" autocomplete="email" inputmode="email" placeholder="you@jasonhoustonrealty.com"></div>
+    <p id="si-msg">Sign in with the email on your Follow Up Boss account.</p>
+    <div class="fld" id="f-email"><label for="si-email">Email</label><input id="si-email" type="email" autocomplete="username" inputmode="email" placeholder="you@jasonhoustonrealty.com"></div>
+    <div class="fld" id="f-pass"><label for="si-pass">Password</label><div class="pwrap"><input id="si-pass" type="password" autocomplete="current-password"><button type="button" class="eye" id="si-eye" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
     <div class="fld" id="f-code" hidden><label for="si-code">Code from your email</label><input id="si-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" class="num"></div>
+    <label class="keep"><input type="checkbox" id="si-keep" checked><span>Keep me signed in on this device</span></label>
     <p class="err" id="si-err" hidden></p>
-    <button class="btn" type="submit" id="si-btn">Email me a code</button>
+    <button class="btn" type="submit" id="si-btn">Sign in</button>
+    <button class="btn ghost" type="button" id="si-mode">Email me a code instead</button>
     <button class="btn ghost" type="button" id="si-back" hidden>Use a different email</button>
+    <p class="si-note" id="si-note">No password yet, or forgot it? Tap <b>Email me a code</b>. Once you're in, you can set a password.</p>
   </form>
 </section>
 
 <!-- app -->
+<div class="pwov" id="pwov" role="dialog" aria-modal="true" aria-labelledby="pw-h"><form class="si-box" id="pw-form" novalidate>
+  <h1 id="pw-h" style="font-size:21px">Set your password</h1>
+  <p>Next time, sign in with your email and this password. No code needed.</p>
+  <div class="fld"><label for="pw-1">New password (8+ characters)</label><input id="pw-1" type="password" autocomplete="new-password"></div>
+  <div class="fld"><label for="pw-2">Type it again</label><input id="pw-2" type="password" autocomplete="new-password"></div>
+  <p class="err" id="pw-err" hidden></p><p class="ok" id="pw-ok" hidden>Password saved ✓</p>
+  <button class="btn" type="submit" id="pw-go">Save password</button>
+  <button class="btn ghost" type="button" id="pw-x">Close</button>
+</form></div>
 <div id="app" hidden>
   <header class="hd"><div class="wrap">
     <span id="hd-ph"></span>
     <div><b id="hd-name"></b><small id="hd-sub"></small></div>
     <a class="out scr" href="screener.html" title="Call screener with Lola">&#128222; Call screener</a>
+    <button class="out" type="button" id="pwbtn" style="margin-left:0">Password</button>
     <button class="out" type="button" id="out" style="margin-left:0">Sign out</button>
   </div></header>
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
@@ -242,6 +263,7 @@ body{background:var(--paper)}
   </div></nav>
   <main class="wrap">
     <section id="t-clients">
+      <div class="pwbar" id="pwbar" hidden><b>Tired of email codes? Set a password and sign in with it next time.</b><button type="button" id="pwbar-go">Set a password</button><button type="button" class="x" id="pwbar-x">Not now</button></div>
       <div class="stats" id="stats"></div>
       <div class="bar">
         <input id="q" type="search" placeholder="Search name, phone, ZIP…" aria-label="Search clients">
@@ -342,45 +364,110 @@ body{background:var(--paper)}
     }).then(function(r){ if(r.status === 401) throw new Error('signin'); return r.json(); });
   }
 
-  /* ---------------- sign in (emailed code) ---------------- */
-  var email = '';
+  /* ---------------- sign in: password, or an emailed code ---------------- */
+  /* One team login for the Agent Hub, Admin, the screener and the website (localStorage jag_agent).
+     "Keep me signed in": the login renews itself until you sign out. Unchecked: it ends after 12 hours. */
+  var email = '', mode = 'pw';
+  function saveLogin(j, em, how){
+    var keep = $('si-keep').checked;
+    ls('jag_agent', { t: j.access_token, r: j.refresh_token, x: Date.now() + (j.expires_in || 3600) * 1000, code: 'pending', e: em,
+      until: keep ? null : Date.now() + 12 * 3600 * 1000, how: how });
+    if(how === 'pw') try{ localStorage.setItem('jag_pw_' + em, '1'); }catch(x){}
+  }
+  function setMode(m){
+    mode = m; $('si-err').hidden = true;
+    $('f-pass').hidden = m !== 'pw'; $('f-code').hidden = true; $('f-email').hidden = false; $('si-back').hidden = true;
+    $('si-btn').textContent = m === 'pw' ? 'Sign in' : 'Email me a code';
+    $('si-mode').textContent = m === 'pw' ? 'Email me a code instead' : 'Use my password instead';
+    $('si-mode').hidden = false; $('si-note').hidden = m !== 'pw';
+    $('si-msg').textContent = m === 'pw' ? 'Sign in with the email on your Follow Up Boss account.' : 'We\'ll email you a code. No password needed.';
+  }
   function showSignIn(msg){
     $('app').hidden = true; $('signin').hidden = false;
-    $('f-code').hidden = true; $('f-email').hidden = false; $('si-back').hidden = true; $('si-btn').textContent = 'Email me a code';
+    var last = ''; try{ last = localStorage.getItem('jag_last_team_email') || ''; }catch(x){}
+    if(last && !$('si-email').value) $('si-email').value = last;
+    setMode('pw');
     if(msg){ $('si-err').textContent = msg; $('si-err').hidden = false; }
   }
-  $('si-back').onclick = function(){ showSignIn(); $('si-err').hidden = true; };
+  $('si-mode').onclick = function(){ setMode(mode === 'pw' ? 'code' : 'pw'); };
+  $('si-eye').onclick = function(){ var i = $('si-pass'), on = i.type === 'password'; i.type = on ? 'text' : 'password'; this.setAttribute('aria-pressed', String(on)); this.setAttribute('aria-label', on ? 'Hide password' : 'Show password'); };
+  $('si-back').onclick = function(){ setMode('code'); };
+  function siErr(t){ $('si-err').textContent = t; $('si-err').hidden = false; }
   $('si-form').addEventListener('submit', function(e){
     e.preventDefault(); $('si-err').hidden = true;
+    email = $('si-email').value.trim().toLowerCase();
     var codeStep = !$('f-code').hidden;
+    if(!codeStep && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ siErr('Type your email.'); return; }
+    try{ localStorage.setItem('jag_last_team_email', email); }catch(x){}
+    if(mode === 'pw'){
+      var pass = $('si-pass').value;
+      if(!pass){ siErr('Type your password, or tap "Email me a code".'); return; }
+      $('si-btn').disabled = true;
+      fetch(BASE + '/auth/v1/token?grant_type=password', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, password: pass }) })
+        .then(function(r){ return r.json(); }).then(function(j){
+          $('si-btn').disabled = false;
+          if(!j || !j.access_token){ siErr('Wrong email or password. No password yet? Tap "Email me a code".'); return; }
+          $('si-pass').value = ''; saveLogin(j, email, 'pw'); start();
+        }).catch(function(){ $('si-btn').disabled = false; siErr('Something went wrong. Try again.'); });
+      return;
+    }
     if(!codeStep){
-      email = $('si-email').value.trim().toLowerCase();
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $('si-err').textContent = 'Type your email.'; $('si-err').hidden = false; return; }
       $('si-btn').disabled = true;
       fetch(BASE + '/auth/v1/otp', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, create_user: true }) })
         .then(function(r){ $('si-btn').disabled = false; if(!r.ok) throw 0;
-          $('f-email').hidden = true; $('f-code').hidden = false; $('si-back').hidden = false; $('si-btn').textContent = 'Sign in';
+          $('f-email').hidden = true; $('f-code').hidden = false; $('si-back').hidden = false; $('si-mode').hidden = true; $('si-btn').textContent = 'Sign in';
           $('si-msg').textContent = 'We sent a code to ' + email + '. It can take a minute; check spam too.'; $('si-code').focus(); })
-        .catch(function(){ $('si-btn').disabled = false; $('si-err').textContent = 'Could not send the code. Wait a minute and try again.'; $('si-err').hidden = false; });
+        .catch(function(){ $('si-btn').disabled = false; siErr('Could not send the code. Wait a minute and try again.'); });
     } else {
       var code = $('si-code').value.replace(/\D/g, '');
-      if(code.length < 6){ $('si-err').textContent = 'Type the code from your email.'; $('si-err').hidden = false; return; }
+      if(code.length < 6){ siErr('Type the code from your email.'); return; }
       $('si-btn').disabled = true;
       fetch(BASE + '/auth/v1/verify', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'email', email: email, token: code }) })
         .then(function(r){ return r.json(); }).then(function(j){
           $('si-btn').disabled = false;
-          if(!j || !j.access_token){ $('si-err').textContent = 'That code didn\'t work. Check it or ask for a new one.'; $('si-err').hidden = false; return; }
-          ls('jag_agent', { t: j.access_token, r: j.refresh_token, x: Date.now() + (j.expires_in || 3600) * 1000, code: 'pending' });
-          start();
-        }).catch(function(){ $('si-btn').disabled = false; $('si-err').textContent = 'Something went wrong. Try again.'; $('si-err').hidden = false; });
+          if(!j || !j.access_token){ siErr('That code didn\'t work. Check it or ask for a new one.'); return; }
+          $('si-code').value = ''; saveLogin(j, email, 'code'); start();
+        }).catch(function(){ $('si-btn').disabled = false; siErr('Something went wrong. Try again.'); });
     }
   });
-  $('out').onclick = function(){ ls('jag_agent', null); location.reload(); };
+  function signOutTeam(){
+    var a = ls('jag_agent');
+    if(a && a.t) fetch(BASE + '/auth/v1/logout?scope=local', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + a.t } }).catch(function(){});
+    ls('jag_agent', null); try{ sessionStorage.removeItem('jag_admin'); }catch(x){} location.reload();
+  }
+  $('out').onclick = signOutTeam;
+
+  /* ---------------- set a password (after signing in) ---------------- */
+  function pwOpen(){ $('pw-err').hidden = true; $('pw-ok').hidden = true; $('pw-1').value = ''; $('pw-2').value = ''; $('pwov').classList.add('on'); setTimeout(function(){ $('pw-1').focus(); }, 50); }
+  function pwClose(){ $('pwov').classList.remove('on'); }
+  $('pwbtn').onclick = pwOpen; $('pwbar-go').onclick = pwOpen; $('pw-x').onclick = pwClose;
+  $('pwov').addEventListener('click', function(e){ if(e.target === $('pwov')) pwClose(); });
+  $('pwbar-x').onclick = function(){ $('pwbar').hidden = true; try{ sessionStorage.setItem('jag_pwbar_off', '1'); }catch(x){} };
+  $('pw-form').addEventListener('submit', function(e){
+    e.preventDefault(); $('pw-err').hidden = true;
+    var p1 = $('pw-1').value, p2 = $('pw-2').value;
+    if(p1.length < 8){ $('pw-err').textContent = 'Use at least 8 characters.'; $('pw-err').hidden = false; return; }
+    if(p1 !== p2){ $('pw-err').textContent = 'The two passwords don\'t match.'; $('pw-err').hidden = false; return; }
+    $('pw-go').disabled = true;
+    JagShare.token().then(function(t){
+      if(!t) throw new Error('signin');
+      return fetch(BASE + '/auth/v1/user', { method: 'PUT', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ password: p1 }) });
+    }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); }).then(function(x){
+      $('pw-go').disabled = false;
+      if(!x.ok){ var m = (x.j && (x.j.msg || x.j.message || x.j.error_description)) || 'Could not save it.';
+        $('pw-err').textContent = /same|different/i.test(m) ? 'That is already your password.' : /weak|short|least/i.test(m) ? 'Pick a longer password.' : /reauth|recent/i.test(m) ? 'For security, sign out and back in with a code, then set it.' : m;
+        $('pw-err').hidden = false; return; }
+      var a = ls('jag_agent'); if(a){ a.how = 'pw'; ls('jag_agent', a); try{ localStorage.setItem('jag_pw_' + (a.e || ''), '1'); }catch(y){} }
+      $('pw-ok').hidden = false; $('pwbar').hidden = true; setTimeout(pwClose, 1400);
+    }).catch(function(){ $('pw-go').disabled = false; $('pw-err').textContent = 'Could not save it. Check your connection.'; $('pw-err').hidden = false; });
+  });
 
   /* ---------------- app ---------------- */
   var me = null, rows = [], shares = [], filter = 'all', q = '', open = {};
   function start(){
-    if(!ls('jag_agent')){ showSignIn(); return; }
+    var cur = ls('jag_agent');
+    if(cur && cur.until && Date.now() > cur.until){ ls('jag_agent', null); cur = null; }
+    if(!cur){ showSignIn(); return; }
     rpc('jag_agent_me').then(function(j){
       if(!j || !j.ok){
         ls('jag_agent', null);
@@ -395,8 +482,13 @@ body{background:var(--paper)}
       $('hd-sub').textContent = 'Clients see: ' + (me.phone ? fmtPhone(me.phone) : 'no number in FUB yet');
       $('me-card').innerHTML = 'What clients see on homes you send: <b>' + esc(me.name) + '</b> · <b class="num">' + esc(me.phone ? fmtPhone(me.phone) : 'no number') + '</b>' + (me.photo_url ? ' and your photo' : '') +
         '. It comes from your Follow Up Boss profile (updated every morning); change it there.';
+      var off = false, hasPw = false; try{ off = !!sessionStorage.getItem('jag_pwbar_off'); hasPw = !!localStorage.getItem('jag_pw_' + (s.e || '')); }catch(x){}
+      $('pwbar').hidden = off || hasPw || s.how === 'pw';
       load(); routeHash();
-    }).catch(function(){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); });
+    }).catch(function(e){
+      if(String(e && e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); }
+      else { showSignIn('Could not reach JAG. Check your connection and try again.'); }
+    });
   }
   function load(){
     rpc('jag_agent_clients').then(function(j){

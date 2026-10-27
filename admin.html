@@ -358,6 +358,7 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
     <p class="sub">JAG inquiries dashboard — team access only.</p>
     <div class="field"><label>Email</label><input type="email" id="li-email" autocomplete="username"></div>
     <div class="field"><label>Password</label><input type="password" id="li-pass" autocomplete="current-password"></div>
+    <label style="display:flex;gap:10px;align-items:center;font-size:14px;margin:4px 0 14px;cursor:pointer"><input type="checkbox" id="li-keep" checked style="width:18px;height:18px;margin:0"> Keep me signed in on this device</label>
     <button class="solid" id="li-btn">Sign in</button>
     <p class="autherr" id="li-err">Wrong email or password — try again.</p>
     <p class="loginalt" id="li-alt">Team member without a password? <a href="signin" target="_top">Sign in with an emailed code</a></p>
@@ -777,6 +778,8 @@ function signIn(){
   }).then(function(r){return r.json();}).then(function(j){
     $('li-btn').disabled=false;
     if(j && j.access_token){
+      /* kept signed in: the shared team login (localStorage), which renews itself until you sign out */
+      if($('li-keep') && $('li-keep').checked){ state.store='agent'; try{ localStorage.setItem('jag_agent', JSON.stringify({code:'pending', e:email, how:'pw'})); }catch(x){} }
       setSession(j, email);
       show('app'); resetAndLoad();
     }else{ $('li-err').classList.add('show'); }
@@ -2248,7 +2251,7 @@ else{
   var saved=null;
   try{ saved=JSON.parse(sessionStorage.getItem('jag_admin')||'null'); }catch(e){}
   try{ var st_=sessionStorage.getItem('jag_admin_tab'); state.tab = (st_==='deals'||st_==='clients'||st_==='nurture'||st_==='screens'||st_==='team') ? st_ : 'leads'; }catch(e){}
-  var agentS=null; try{ agentS=JSON.parse(localStorage.getItem('jag_agent')||'null'); }catch(e){}
+  var agentS=null; try{ agentS=JSON.parse(localStorage.getItem('jag_agent')||'null'); if(agentS&&agentS.until&&Date.now()>agentS.until){ localStorage.removeItem('jag_agent'); agentS=null; } }catch(e){}
   if(saved && saved.t){
     state.token=saved.t; state.email=saved.e; state.refresh=saved.r||null; state.exp=saved.x||0;
     scheduleRefresh(); show('app'); resetAndLoad();

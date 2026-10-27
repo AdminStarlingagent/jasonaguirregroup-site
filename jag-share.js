@@ -74,7 +74,7 @@
   }
 
   /* ---------------- agent side: share sheet ---------------- */
-  function me(){ var a = ls('jag_agent'); return a && a.code && a.r ? a : null; }
+  function me(){ var a = ls('jag_agent'); if(a && a.until && Date.now() > a.until){ ls('jag_agent', null); return null; } return a && a.code && a.r ? a : null; }
   function agentToken(){
     var a = me(); if(!a) return Promise.resolve(null);
     if(a.t && a.x && a.x - Date.now() > 60000) return Promise.resolve(a.t);

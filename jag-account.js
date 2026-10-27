@@ -86,7 +86,7 @@
   }
   function signOut(){
     var tk=S&&S.access_token;
-    if(tk) fetch(URL_+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tk}}).catch(function(){});
+    if(tk) fetch(URL_+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tk}}).catch(function(){});
     S=null; profile=null; save(); emit();
   }
 
@@ -219,11 +219,11 @@
   }
   /* team sign-out: ends the Agent Hub / Admin login on this browser */
   function teamSignOut(tm){
-    if(tm&&tm.t) fetch(URL_+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tm.t}}).catch(function(){});
+    if(tm&&tm.t) fetch(URL_+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tm.t}}).catch(function(){});
     try{ localStorage.removeItem('jag_agent'); sessionStorage.removeItem('jag_admin'); }catch(x){}
     paintButtons(); location.reload();
   }
-  function teamSession(){ try{ var a=JSON.parse(localStorage.getItem('jag_agent')||'null'); return a&&a.r?a:null; }catch(x){ return null; } }
+  function teamSession(){ try{ var a=JSON.parse(localStorage.getItem('jag_agent')||'null'); if(a&&a.until&&Date.now()>a.until){ localStorage.removeItem('jag_agent'); return null; } return a&&a.r?a:null; }catch(x){ return null; } }
   function err(m){ var e=ov.querySelector('#ja-err'); if(e){ e.textContent=m; e.classList.add('on'); } }
   function finish(){
     ov.classList.remove('on');

@@ -1838,7 +1838,7 @@ body.fab #stage{margin-bottom:110px}
   chrome();
   if (!BASE || !CRM.anonKey) { stage.innerHTML = '<p class="lead">Supabase is not configured.</p>'; return; }
   let saved = null; try { saved = JSON.parse(sessionStorage.getItem('jag_admin') || 'null'); } catch (e) {}
-  let agentSaved = null; try { agentSaved = JSON.parse(localStorage.getItem('jag_agent') || 'null'); } catch (e) {}
+  let agentSaved = null; try { agentSaved = JSON.parse(localStorage.getItem('jag_agent') || 'null'); if (agentSaved && agentSaved.until && Date.now() > agentSaved.until) { localStorage.removeItem('jag_agent'); agentSaved = null; } } catch (e) {}
   if (!(saved && saved.t) && agentSaved && agentSaved.t && agentSaved.r) { saved = { t: agentSaved.t, e: agentSaved.e || null, r: agentSaved.r, x: agentSaved.x || 0 }; sess.store = 'agent'; }
   if (saved && saved.t) { sess.token = saved.t; sess.email = saved.e; sess.refresh = saved.r || null; sess.exp = saved.x || 0; if (sess.refresh && sess.exp) refreshTimer = setTimeout(refreshSession, Math.max(5000, sess.exp - Date.now() - 300000)); boot(); }
   else renderLogin();

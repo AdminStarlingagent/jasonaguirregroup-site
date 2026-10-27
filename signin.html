@@ -238,7 +238,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
     $('out').onclick = function(){ signOut(CLIENT, c.access_token); };
   }
   function signOut(k, tok){
-    if(tok) fetch(BASE + '/auth/v1/logout', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + tok } }).catch(function(){});
+    if(tok) fetch(BASE + '/auth/v1/logout?scope=local', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + tok } }).catch(function(){});
     ls(k, null); start();
   }
 
