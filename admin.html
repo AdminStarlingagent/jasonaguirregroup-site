@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
-<script src="jag-theme.js?v=1"></script>
+<script src="jag-theme.js?v=2"></script>
 <meta name="robots" content="noindex, nofollow">
 <title>JAG Admin — Inquiries</title>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -136,6 +136,10 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 .seg button[aria-checked="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .seg button:focus-visible{outline:2px solid var(--buy);outline-offset:1px}
 .st-ok{margin:0;font-size:13.5px;font-weight:700;color:var(--sell);min-height:1em}
+.tg{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}.tg input{width:20px;height:20px;margin-top:2px;accent-color:var(--buy);flex:none}
+.tg span{display:flex;flex-direction:column}.tg b{font-size:14.5px}.tg small{font-size:13px;color:var(--muted)}.tg input:disabled+span{opacity:.6}
+.hrs{display:flex;align-items:center;gap:8px}.hrs select,#st-note{border:1.5px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;font-size:14.5px;background:var(--paper)}
+.hrs select{flex:1;min-width:0}#st-note{width:100%;resize:vertical}
 .cbox h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);margin:20px 0 8px}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
 .cfav{border:1px solid var(--line);border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;font-size:13px}
@@ -503,14 +507,26 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
   </section>
 </div>
 
-<div class="cdlg" id="stdlg" role="dialog" aria-modal="true" aria-labelledby="st-h"><div class="cbox" style="max-width:460px">
+<div class="cdlg" id="stdlg" role="dialog" aria-modal="true" aria-labelledby="st-h"><div class="cbox" style="max-width:500px">
   <button class="ghostbtn dclose" type="button" id="st-x">Close</button>
   <h2 id="st-h">Settings</h2>
   <div class="meta">Saved for you only.</div>
   <div class="st-row"><div class="st-tx"><b>Appearance</b><span>Automatic matches your computer or phone.</span></div>
     <div class="seg" role="radiogroup" aria-label="Appearance" id="st-theme"><button type="button" role="radio" data-v="system">Automatic</button><button type="button" role="radio" data-v="light">Light</button><button type="button" role="radio" data-v="dark">Dark</button></div></div>
+  <div class="st-row"><div class="st-tx"><b>Text size</b><span>Makes everything bigger on this computer.</span></div>
+    <div class="seg" role="radiogroup" aria-label="Text size" id="st-size"><button type="button" role="radio" data-v="normal">Normal</button><button type="button" role="radio" data-v="large">Large</button><button type="button" role="radio" data-v="xl">Extra large</button></div></div>
   <div class="st-row"><div class="st-tx"><b>Email language</b><span>For emails JAG sends you, like offers handed to the TC.</span></div>
     <div class="seg" role="radiogroup" aria-label="Email language" id="st-lang"><button type="button" role="radio" data-v="en">English</button><button type="button" role="radio" data-v="es">Español</button></div></div>
+  <div class="st-row"><div class="st-tx"><b>Texts from Lola</b><span id="st-txt-note">Messages from clients in the app always come to you.</span></div>
+    <label class="tg"><input type="checkbox" id="st-lead_alerts"><span><b>New leads</b><small>Speed-to-lead alerts and call reminders</small></span></label>
+    <label class="tg"><input type="checkbox" id="st-appt_alerts"><span><b>Appointments</b><small>Reminders and call briefs before your appointments</small></span></label>
+    <label class="tg"><input type="checkbox" id="st-morning_text"><span><b>Morning board</b><small>The 8:30 AM Zoom reminder and deal board</small></span></label>
+    <label class="tg"><input type="checkbox" id="st-meeting_recap"><span><b>Meeting recap</b><small>Your line from the Breakfast Club recap</small></span></label></div>
+  <div class="st-row"><div class="st-tx"><b>Working hours</b><span>Lola holds alerts about client messages until your hours start. New-lead alerts still come right away.</span></div>
+    <div class="hrs"><select id="st-from" aria-label="Start"></select><span>to</span><select id="st-to" aria-label="End"></select></div></div>
+  <div class="st-row"><div class="st-tx"><b>Default note for homes you send</b><span>Fills in the note when you send a home to a client's app.</span></div>
+    <textarea id="st-note" rows="2" maxlength="500" placeholder="¡Hola! Te comparto esta casa que creo que te va a gustar."></textarea>
+    <button class="ghostbtn" type="button" id="st-note-go" style="align-self:flex-start">Save note</button></div>
   <p class="st-ok" id="st-ok" role="status"></p>
 </div></div>
 <div class="cdlg" id="cdlg" role="dialog" aria-modal="true" aria-labelledby="cd-name">
@@ -2001,23 +2017,41 @@ $('signout').addEventListener('click', signOut);
 /* ---------- settings: appearance + email language ---------- */
 var stT;
 function stMsg(ok){ var el=$('st-ok'); el.style.color = ok ? '' : 'var(--buy)'; el.textContent = ok ? '✓ Saved' : 'Couldn’t save. Try again.'; clearTimeout(stT); stT=setTimeout(function(){ el.textContent=''; }, 2500); }
-function stPaint(lang){
-  var th = window.JagTheme ? JagTheme.get() : 'light';
+var PREFS=null, TXT_KEYS=['lead_alerts','appt_alerts','morning_text','meeting_recap'];
+function hr12(h){ return ((h+11)%12+1)+' '+(h<12?'AM':'PM'); }
+(function(){ var f='<option value="">Usual (8 AM)</option>', t='<option value="">Usual (9 PM)</option>';
+  for(var h=5;h<=12;h++) f+='<option value="'+h+'">'+hr12(h)+'</option>';
+  for(var k=15;k<=23;k++) t+='<option value="'+k+'">'+hr12(k)+'</option>';
+  $('st-from').innerHTML=f; $('st-to').innerHTML=t; })();
+function stPaint(p){
+  if(p) PREFS=p;
+  var th = window.JagTheme ? JagTheme.get() : 'light', sz = window.JagTheme && JagTheme.size ? JagTheme.size() : 'normal';
   document.querySelectorAll('#st-theme button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===th)); });
-  if(lang) document.querySelectorAll('#st-lang button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===lang)); });
+  document.querySelectorAll('#st-size button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===sz)); });
+  if(!PREFS) return;
+  document.querySelectorAll('#st-lang button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===PREFS.lang)); });
+  TXT_KEYS.forEach(function(k){ var c=$('st-'+k); c.checked=!!PREFS[k]; c.disabled=!PREFS.has_mobile||(k==='lead_alerts'&&PREFS.first_ping); });
+  $('st-txt-note').textContent = !PREFS.has_mobile ? 'Add your mobile number in Follow Up Boss to get texts from Lola.'
+    : PREFS.first_ping ? 'You get new leads first, so new-lead texts stay on. Messages from clients in the app always come to you.' : 'Messages from clients in the app always come to you.';
+  $('st-from').value = PREFS.work_from==null?'':String(PREFS.work_from); $('st-to').value = PREFS.work_to==null?'':String(PREFS.work_to);
+  if(document.activeElement!==$('st-note')) $('st-note').value = PREFS.default_note||'';
 }
+function stSave(patch){ return stRpc('jag_team_prefs_save',{p:patch}).then(function(j){ if(j&&j.ok){ stPaint(j); stMsg(true); } else { stPaint(); stMsg(false); } }).catch(function(){ stPaint(); stMsg(false); }); }
 function stRpc(name, args){ return api('/rest/v1/rpc/'+name, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(args||{}) }).then(function(r){ return r.json(); }); }
 $('settingsbtn').addEventListener('click', function(){
   $('st-ok').textContent=''; stPaint(); $('stdlg').classList.add('on');
-  stRpc('jag_team_prefs').then(function(j){ if(j && j.ok) stPaint(j.lang); }).catch(function(){});
+  stRpc('jag_team_prefs').then(function(j){ if(j && j.ok) stPaint(j); }).catch(function(){});
 });
 $('st-x').addEventListener('click', function(){ $('stdlg').classList.remove('on'); });
 $('stdlg').addEventListener('click', function(e){ if(e.target===$('stdlg')) $('stdlg').classList.remove('on'); });
 document.querySelectorAll('#st-theme button').forEach(function(b){ b.addEventListener('click', function(){ if(window.JagTheme) JagTheme.set(b.getAttribute('data-v')); stPaint(); stMsg(true); }); });
 document.querySelectorAll('#st-lang button').forEach(function(b){ b.addEventListener('click', function(){
-  var v=b.getAttribute('data-v'); stPaint(v);
-  stRpc('jag_team_prefs_set', { p_lang: v }).then(function(j){ stMsg(!!(j && j.ok)); }).catch(function(){ stMsg(false); });
+  stSave({ lang: b.getAttribute('data-v') });
 }); });
+document.querySelectorAll('#st-size button').forEach(function(b){ b.addEventListener('click', function(){ if(window.JagTheme) JagTheme.setSize(b.getAttribute('data-v')); stPaint(); stMsg(true); }); });
+TXT_KEYS.forEach(function(k){ $('st-'+k).addEventListener('change', function(){ var o={}; o[k]=this.checked; stSave(o); }); });
+$('st-from').onchange = $('st-to').onchange = function(){ stSave({ work_from: $('st-from').value===''?null:+$('st-from').value, work_to: $('st-to').value===''?null:+$('st-to').value }); };
+$('st-note-go').addEventListener('click', function(){ stSave({ default_note: $('st-note').value }); });
 /* ---------------- Start home app: open apply.html with what we already know (jag-handoff.js) ---------------- */
 // Fetched ahead of time so the click opens the app right away (browsers block tabs opened after a wait).
 function loadAgentName(){

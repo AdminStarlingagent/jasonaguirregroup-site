@@ -169,9 +169,18 @@
   var clientsCache = null;
   var NOTE = { es: { listing: '¡Hola! Te comparto esta casa que creo que te va a gustar.', search: 'Te preparé esta búsqueda de casas.' },
                en: { listing: 'Hi! Here\'s a home I think you\'ll like.', search: 'I set up this home search for you.' } };
+  var noteCache;
+  function teamNote(){
+    if(noteCache !== undefined) return Promise.resolve(noteCache);
+    return agentToken().then(function(t){ return t ? rpc('jag_team_prefs', {}, t) : null; })
+      .then(function(j){ noteCache = (j && j.ok && j.default_note) || null; return noteCache; }).catch(function(){ return null; });
+  }
   function appSection(o, a, L, ov, urlOf){
     var kind = o.kind || 'listing', sel = ov.querySelector('#js-cl'), note = ov.querySelector('#js-note'), go = ov.querySelector('#js-app-go'), st = ov.querySelector('#js-app-st');
-    note.value = (NOTE[L] || NOTE.es)[kind] || ''; note.placeholder = L === 'en' ? 'Note (optional)' : 'Nota (opcional)';
+    var stock = (NOTE[L] || NOTE.es)[kind] || '';
+    note.value = stock; note.placeholder = L === 'en' ? 'Note (optional)' : 'Nota (opcional)';
+    // the agent's own default note (Agent Hub → Settings) replaces the stock one for homes
+    if(kind === 'listing') teamNote().then(function(n){ if(n && note.value === stock) note.value = n; });
     var card = Object.assign({ kind: kind, mls: o.mls || null, title: o.label || o.summary || null }, o.card || {});
     // a home: fill photo, price and specs from the listing when the caller didn't pass them
     var filled = Promise.resolve();
@@ -207,5 +216,5 @@
     };
   }
 
-  window.JagShare = { open: open, me: me, agent: function(){ return agent; }, agentCard: agentCard, onAgent: function(f){ listeners.push(f); if(agent) f(agent); }, token: agentToken, fmtPhone: fmtPhone };
+  window.JagShare = { resetNote: function(){ noteCache = undefined; }, open: open, me: me, agent: function(){ return agent; }, agentCard: agentCard, onAgent: function(f){ listeners.push(f); if(agent) f(agent); }, token: agentToken, fmtPhone: fmtPhone };
 })();

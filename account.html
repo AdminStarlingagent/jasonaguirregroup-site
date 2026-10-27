@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<script src="jag-theme.js?v=1"></script>
+<script src="jag-theme.js?v=2"></script>
 <title>Mi cuenta — JAG Real Estate</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -272,6 +272,18 @@ section[data-pane]{padding-bottom:50px}
 .seg button[aria-checked="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .seg button:focus-visible{outline:2px solid var(--buy);outline-offset:1px}
 .st-ok{margin:8px 0 0;font-size:13.5px;font-weight:700;color:var(--ok);min-height:1em}
+.st-sub{margin:-6px 0 6px;font-size:14px;color:var(--muted)}
+.seg.wrap{flex-wrap:wrap}
+.st-sel{border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-weight:700;font-size:14px;background:var(--card);min-height:42px;max-width:100%}
+.co-list{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}.co-list:empty{display:none}
+.co-p{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.co-p .tx{flex:1 1 180px;min-width:0;display:flex;flex-direction:column}.co-p .tx b{font-size:15px;overflow-wrap:anywhere}.co-p .tx span{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.co-p .chip{font-size:12px;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--ok-bg);color:var(--ok)}.co-p .chip.pend{background:var(--card);color:var(--muted)}
+.co-p button{border:0;background:transparent;color:var(--buy);font-weight:700;font-size:13.5px;padding:6px}
+.co-f{display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px}.co-f input{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;font-size:15px}
+@media(max-width:560px){.co-f{grid-template-columns:1fr}}
+.co-inv{border-color:var(--buy);background:var(--buy-t)}.co-inv p{margin:0 0 12px}.co-inv .row{display:flex;gap:8px;flex-wrap:wrap}
+.ses-row{display:flex;gap:8px;flex-wrap:wrap}
 .msgph{max-width:720px}
 .hero .inner.prem-slot{padding:0;background:transparent}.hero .inner.prem-slot .jp-card{margin:0}
 #ct_saved{display:none}
@@ -424,22 +436,50 @@ body.on-msgs .jc-b,body.on-msgs .jc{display:none!important}
 
     <section data-pane="profile">
       <h1 class="pt" data-t="r_profile"></h1>
+      <div class="pcard co-inv" id="co_inv" hidden></div>
       <div class="pcard" id="st_card"><h3 data-t="st_h"></h3>
         <div class="st-row"><div class="st-tx"><b data-t="st_lang"></b><span data-t="st_lang_d"></span></div>
-          <div class="seg" role="radiogroup" id="st_lang" data-t-aria="st_lang"><button type="button" role="radio" data-v="es">Español</button><button type="button" role="radio" data-v="en">English</button></div></div>
+          <div class="seg" role="radiogroup" id="st_lang"><button type="button" role="radio" data-v="es">Español</button><button type="button" role="radio" data-v="en">English</button></div></div>
         <div class="st-row"><div class="st-tx"><b data-t="st_theme"></b><span data-t="st_theme_d"></span></div>
           <div class="seg" role="radiogroup" id="st_theme"><button type="button" role="radio" data-v="system" data-t="st_sys"></button><button type="button" role="radio" data-v="light" data-t="st_light"></button><button type="button" role="radio" data-v="dark" data-t="st_dark"></button></div></div>
+        <div class="st-row"><div class="st-tx"><b data-t="st_size"></b><span data-t="st_size_d"></span></div>
+          <div class="seg" role="radiogroup" id="st_size"><button type="button" role="radio" data-v="normal" data-t="sz_n"></button><button type="button" role="radio" data-v="large" data-t="sz_l"></button><button type="button" role="radio" data-v="xl" data-t="sz_x"></button></div></div>
         <p class="st-ok" id="st_ok" role="status"></p>
+      </div>
+      <div class="pcard" id="nt_card"><h3 data-t="nt_h"></h3><p class="st-sub" data-t="nt_p"></p>
+        <div class="st-row"><div class="st-tx"><b data-t="nt_new"></b></div>
+          <div class="seg" role="radiogroup" id="nt_new" data-k="new"><button type="button" role="radio" data-v="instant" data-t="nt_i"></button><button type="button" role="radio" data-v="daily" data-t="nt_d"></button><button type="button" role="radio" data-v="off" data-t="nt_o"></button></div></div>
+        <div class="st-row"><div class="st-tx"><b data-t="nt_price"></b></div>
+          <div class="seg" role="radiogroup" id="nt_price" data-k="price"><button type="button" role="radio" data-v="instant" data-t="nt_i"></button><button type="button" role="radio" data-v="daily" data-t="nt_d"></button><button type="button" role="radio" data-v="off" data-t="nt_o"></button></div></div>
+        <div class="st-row"><div class="st-tx"><b data-t="nt_status"></b></div>
+          <div class="seg" role="radiogroup" id="nt_status" data-k="status"><button type="button" role="radio" data-v="instant" data-t="nt_i"></button><button type="button" role="radio" data-v="daily" data-t="nt_d"></button><button type="button" role="radio" data-v="off" data-t="nt_o"></button></div></div>
+        <div class="st-row"><div class="st-tx"><b data-t="nt_msgs"></b><span data-t="nt_msgs_d"></span></div>
+          <div class="seg" role="radiogroup" id="nt_msgs" data-k="msgs"><button type="button" role="radio" data-v="on" data-t="nt_on"></button><button type="button" role="radio" data-v="off" data-t="nt_off"></button></div></div>
+        <div class="st-row"><div class="st-tx"><b data-t="nt_q"></b><span data-t="nt_q_d"></span></div>
+          <select id="nt_quiet" class="st-sel"><option value="" data-t="nt_q0"></option><option value="20-8">8 PM – 8 AM</option><option value="21-8">9 PM – 8 AM</option><option value="22-7">10 PM – 7 AM</option><option value="22-8">10 PM – 8 AM</option><option value="23-7">11 PM – 7 AM</option></select></div>
+        <p class="st-ok" id="nt_ok" role="status"></p>
+      </div>
+      <div class="pcard" id="ct_card"><h3 data-t="ct_h"></h3><p class="st-sub" data-t="ct_p"></p>
+        <div class="st-row"><div class="st-tx"><b data-t="ct_how"></b></div>
+          <div class="seg wrap" role="radiogroup" id="ct_pref"><button type="button" role="radio" data-v="call" data-t="ct_call"></button><button type="button" role="radio" data-v="text" data-t="ct_text"></button><button type="button" role="radio" data-v="whatsapp">WhatsApp</button><button type="button" role="radio" data-v="email" data-t="ct_email"></button></div></div>
+        <div class="st-row"><div class="st-tx"><b data-t="ct_when"></b></div>
+          <div class="seg wrap" role="radiogroup" id="ct_time"><button type="button" role="radio" data-v="morning" data-t="ct_m"></button><button type="button" role="radio" data-v="afternoon" data-t="ct_a"></button><button type="button" role="radio" data-v="evening" data-t="ct_e"></button><button type="button" role="radio" data-v="any" data-t="ct_any"></button></div></div>
+        <p class="st-ok" id="ct_ok" role="status"></p>
+      </div>
+      <div class="pcard" id="co_card"><h3 data-t="co_h"></h3><p class="st-sub" data-t="co_p"></p>
+        <div id="co_list" class="co-list"></div>
+        <form id="co_form" class="co-f" novalidate>
+          <input id="co_name" type="text" maxlength="80" autocomplete="off" data-tp="co_nph" aria-label="Nombre">
+          <input id="co_email" type="email" maxlength="120" autocomplete="off" data-tp="co_eph" aria-label="Correo">
+          <button class="btn" type="submit" id="co_go" data-t="co_send"></button>
+        </form>
+        <p class="st-ok" id="co_ok" role="status"></p>
       </div>
       <div class="pcard"><h3 data-t="pi_h"></h3>
       <form class="form" id="pf" novalidate>
         <label for="p_email" data-t="p_email"></label><input id="p_email" type="email" readonly>
         <label for="p_name" data-t="p_name"></label><input id="p_name" type="text" autocomplete="name" maxlength="120">
         <label for="p_phone" data-t="p_phone"></label><input id="p_phone" type="tel" autocomplete="tel" maxlength="40">
-        <label data-t="p_freq"></label>
-        <label class="radio"><input type="radio" name="freq" value="instant"><span><b data-t="f_instant"></b><span data-t="f_instant_d"></span></span></label>
-        <label class="radio"><input type="radio" name="freq" value="daily"><span><b data-t="f_daily"></b><span data-t="f_daily_d"></span></span></label>
-        <label class="radio"><input type="radio" name="freq" value="off"><span><b data-t="f_off"></b><span data-t="f_off_d"></span></span></label>
         <p style="margin:16px 0 0"><button class="btn" type="submit" data-t="p_save"></button><span class="saved" id="p_ok" data-t="p_saved"></span></p>
       </form></div>
       <div class="pcard" id="sm_card" hidden><h3 data-t="sm_h"></h3>
@@ -447,7 +487,7 @@ body.on-msgs .jc-b,body.on-msgs .jc{display:none!important}
         <p class="hint" id="sm_hint" role="status"></p>
       </div>
       <div class="pcard"><h3 data-t="ag_h"></h3><div class="prem-slot"></div></div>
-      <div class="pcard"><h3 data-t="ses_h"></h3><button class="btn alt" type="button" id="signout" data-t="p_out"></button></div>
+      <div class="pcard"><h3 data-t="ses_h"></h3><div class="ses-row"><button class="btn alt" type="button" id="signout" data-t="p_out"></button><button class="btn alt" type="button" id="dl_data" data-t="dl_btn"></button></div><p class="st-sub" style="margin:10px 0 0" data-t="dl_p"></p></div>
       <div class="danger form" style="max-width:720px">
         <h3 data-t="d_h"></h3><p data-t="d_p"></p>
         <button class="btn" type="button" id="delbtn" data-t="d_btn"></button>
@@ -527,7 +567,7 @@ var T={
   bd:'rec',ba:'ba',sqft:'pies²',rm:'Quitar de guardadas',
   st_price:'Bajó de precio',st_up:'Subió de precio',st_pend:'Pendiente',st_sold:'Vendida',st_off:'Fuera del mercado',st_back:'De vuelta en venta',
   a_new:'Casa nueva para su búsqueda',a_smart:'Casa nueva parecida a lo que busca',a_price:'Cambio de precio',a_status:'Cambio de estado',
-  p_email:'Correo',p_name:'Nombre',p_phone:'Teléfono',p_lang:'Idioma de los correos',st_h:'Ajustes',st_lang:'Idioma',st_lang_d:'Para la app y los correos y textos que le mandamos.',st_theme:'Apariencia',st_theme_d:'Automático usa el modo de su teléfono o computadora.',st_sys:'Automático',st_light:'Claro',st_dark:'Oscuro',st_saved:'✓ Guardado',st_err:'No se pudo guardar. Intente de nuevo.',p_freq:'¿Cada cuánto quiere avisos?',
+  p_email:'Correo',p_name:'Nombre',p_phone:'Teléfono',p_lang:'Idioma de los correos',st_h:'Ajustes',st_lang:'Idioma',st_lang_d:'Para la app y los correos y textos que le mandamos.',st_theme:'Apariencia',st_theme_d:'Automático usa el modo de su teléfono o computadora.',st_sys:'Automático',st_light:'Claro',st_dark:'Oscuro',st_saved:'✓ Guardado',st_err:'No se pudo guardar. Intente de nuevo.',st_size:'Tamaño de letra',st_size_d:'Agranda todo el texto de la app.',sz_n:'Normal',sz_l:'Grande',sz_x:'Muy grande',nt_h:'Avisos por correo',nt_p:'Elija qué le avisamos y cuándo. Todo sigue apareciendo en Novedades.',nt_new:'Casas nuevas',nt_price:'Bajas de precio',nt_status:'Cambios de estado',nt_i:'Al momento',nt_d:'Diario',nt_o:'No',nt_msgs:'Mensajes de su agente',nt_msgs_d:'Le avisamos cuando su agente le escribe.',nt_on:'Sí',nt_off:'No',nt_q:'Horas de silencio',nt_q_d:'No le mandamos avisos en este horario; le llegan en la mañana.',nt_q0:'Ninguna',ct_h:'Cómo prefiere que lo contactemos',ct_p:'Su agente lo ve antes de llamarle o escribirle.',ct_how:'Por',ct_call:'Llamada',ct_text:'Texto',ct_email:'Correo',ct_when:'Mejor horario',ct_m:'Mañana',ct_a:'Tarde',ct_e:'Noche',ct_any:'Cualquiera',co_h:'Compran juntos',co_p:'Invite a su pareja o familiar. Verán las mismas casas guardadas y los mismos mensajes con su agente.',co_nph:'Nombre',co_eph:'Correo de esa persona',co_send:'Invitar',co_sent:'✓ Invitación enviada',co_pend:'Invitación enviada',co_acc:'Comparte su cuenta',co_rm:'Quitar',co_with:'Comparte la búsqueda de {n}',co_member_p:'Ven las mismas casas guardadas y mensajes.',co_leave:'Salir',co_max:'Ya tiene 3 personas en su cuenta.',co_e_email:'Revise el correo.',co_e_self:'Ese es su propio correo.',co_e_limit:'Máximo 3 personas.',co_e_member:'Solo la cuenta principal puede invitar.',co_e_has_household:'Primero quite a las personas de su cuenta para unirse a otra.',co_e_already_member:'Ya comparte otra cuenta. Salga de esa primero.',ci_h:'{n} lo invitó a buscar casa juntos',ci_p:'Si acepta, verán las mismas casas guardadas y los mismos mensajes con su agente.',ci_yes:'Aceptar',ci_no:'No, gracias',by:'Guardada por {n}',dl_btn:'Descargar mis datos',dl_p:'Un archivo con su perfil, casas guardadas, búsquedas, avisos y mensajes.',dl_wait:'Preparando…',p_freq:'¿Cada cuánto quiere avisos?',
   f_instant:'Al momento',f_instant_d:'Le escribimos en cuanto sale una casa o cambia un precio.',f_daily:'Resumen diario',f_daily_d:'Un correo cada mañana con todo lo nuevo.',f_off:'No enviar correos',f_off_d:'Los avisos se quedan aquí en su cuenta.',
   p_save:'Guardar cambios',p_saved:'Guardado ✓',p_out:'Cerrar sesión',
   d_h:'Borrar mi cuenta',d_p:'Se borran su cuenta, casas guardadas, búsquedas y avisos. No se puede deshacer.',d_btn:'Borrar mi cuenta',
@@ -580,7 +620,7 @@ var T={
   bd:'bd',ba:'ba',sqft:'sqft',rm:'Remove from saved',
   st_price:'Price cut',st_up:'Price up',st_pend:'Pending',st_sold:'Sold',st_off:'Off market',st_back:'Back on market',
   a_new:'New home for your search',a_smart:'New home like what you are looking for',a_price:'Price change',a_status:'Status change',
-  p_email:'Email',p_name:'Name',p_phone:'Phone',p_lang:'Email language',st_h:'Settings',st_lang:'Language',st_lang_d:'For the app and the emails and texts we send you.',st_theme:'Appearance',st_theme_d:'Automatic matches your phone or computer.',st_sys:'Automatic',st_light:'Light',st_dark:'Dark',st_saved:'✓ Saved',st_err:'Couldn’t save. Try again.',p_freq:'How often do you want alerts?',
+  p_email:'Email',p_name:'Name',p_phone:'Phone',p_lang:'Email language',st_h:'Settings',st_lang:'Language',st_lang_d:'For the app and the emails and texts we send you.',st_theme:'Appearance',st_theme_d:'Automatic matches your phone or computer.',st_sys:'Automatic',st_light:'Light',st_dark:'Dark',st_saved:'✓ Saved',st_err:'Couldn’t save. Try again.',st_size:'Text size',st_size_d:'Makes all the text in the app bigger.',sz_n:'Normal',sz_l:'Large',sz_x:'Extra large',nt_h:'Email alerts',nt_p:'Choose what we tell you about and when. Everything still shows in Updates.',nt_new:'New homes',nt_price:'Price drops',nt_status:'Status changes',nt_i:'Right away',nt_d:'Daily',nt_o:'Off',nt_msgs:'Messages from your agent',nt_msgs_d:'We let you know when your agent writes.',nt_on:'On',nt_off:'Off',nt_q:'Quiet hours',nt_q_d:'No alerts during these hours; they arrive in the morning.',nt_q0:'None',ct_h:'How should we reach you?',ct_p:'Your agent sees this before calling or writing.',ct_how:'By',ct_call:'Call',ct_text:'Text',ct_email:'Email',ct_when:'Best time',ct_m:'Morning',ct_a:'Afternoon',ct_e:'Evening',ct_any:'Anytime',co_h:'Buying together',co_p:'Invite your partner or a family member. You’ll both see the same saved homes and messages with your agent.',co_nph:'Name',co_eph:'Their email',co_send:'Invite',co_sent:'✓ Invitation sent',co_pend:'Invitation sent',co_acc:'Shares your account',co_rm:'Remove',co_with:'You share {n}’s home search',co_member_p:'You both see the same saved homes and messages.',co_leave:'Leave',co_max:'You already have 3 people on your account.',co_e_email:'Check the email.',co_e_self:'That’s your own email.',co_e_limit:'3 people max.',co_e_member:'Only the main account can invite.',co_e_has_household:'Remove the people on your account before joining another.',co_e_already_member:'You already share another account. Leave it first.',ci_h:'{n} invited you to house-hunt together',ci_p:'If you accept, you’ll both see the same saved homes and messages with your agent.',ci_yes:'Accept',ci_no:'No thanks',by:'Saved by {n}',dl_btn:'Download my data',dl_p:'A file with your profile, saved homes, searches, alerts and messages.',dl_wait:'Preparing…',p_freq:'How often do you want alerts?',
   f_instant:'Right away',f_instant_d:'We email you as soon as a home hits or a price changes.',f_daily:'Daily digest',f_daily_d:'One email each morning with everything new.',f_off:'No emails',f_off_d:'Alerts stay here in your account.',
   p_save:'Save changes',p_saved:'Saved ✓',p_out:'Sign out',
   d_h:'Delete my account',d_p:'Deletes your account, saved homes, searches and alerts. This cannot be undone.',d_btn:'Delete my account',
@@ -632,7 +672,7 @@ function emptyBox(h,p,go){ return '<div class="empty" style="grid-column:1/-1"><
 function paintSaved(){
   var el=$('saved'); if(!D.favs){ el.innerHTML='<p class="loading">'+t('loading')+'</p>'; return; }
   $('ct_saved').textContent=D.favs.length||'';
-  el.innerHTML=D.favs.length?D.favs.map(function(f){ var s=Object.assign({},f.snap||{}); if(f.last_price) s.price=f.last_price; return card(f.mls,s,{rm:true,tag:statusTag(f.mls)}); }).join(''):emptyBox('e_saved','e_saved_p',true);
+  el.innerHTML=D.favs.length?D.favs.map(function(f){ var s=Object.assign({},f.snap||{}); if(f.last_price) s.price=f.last_price; var by=savedBy(f); return card(f.mls,s,{rm:true,tag:statusTag(f.mls),why:by?fill(t('by'),{n:by}):''}); }).join(''):emptyBox('e_saved','e_saved_p',true);
 }
 $('saved').addEventListener('click',function(e){
   var b=e.target.closest('.rm'); if(!b) return; e.preventDefault();
@@ -727,13 +767,11 @@ function paintProfile(){
   // the language saved on the account is the client's choice: use it here too (it can be set from another phone)
   if((p.lang==='es'||p.lang==='en') && p.lang!==lang && !langSynced){ langSynced=true; lang=p.lang; try{ localStorage.setItem('jag_lang',lang); }catch(e){} applyLang(); }
   langSynced=true; paintSettings();
-  var r=document.querySelector('input[name=freq][value="'+(p.alert_freq||'instant')+'"]'); if(r) r.checked=true;
   paintPlan(); if(window.M) paintSms();
 }
 $('pf').addEventListener('submit',function(e){
   e.preventDefault();
-  var f=document.querySelector('input[name=freq]:checked');
-  A.updateProfile({name:$('p_name').value.trim()||null,phone:$('p_phone').value.trim()||null,lang:lang,alert_freq:f?f.value:'instant'})
+  A.updateProfile({name:$('p_name').value.trim()||null,phone:$('p_phone').value.trim()||null,lang:lang})
    .then(function(p){ D.profile=p; paintProfile(); $('p_ok').classList.add('on'); setTimeout(function(){ $('p_ok').classList.remove('on'); },2500); })
    .catch(function(){ alert(t('err')); });
 });
@@ -746,6 +784,10 @@ function paintSettings(){
   document.querySelectorAll('#st_lang button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===lang)); });
   var th=window.JagTheme?JagTheme.get():'light';
   document.querySelectorAll('#st_theme button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===th)); });
+  var sz=window.JagTheme&&JagTheme.size?JagTheme.size():'normal';
+  document.querySelectorAll('#st_size button').forEach(function(b){ b.setAttribute('aria-checked', String(b.getAttribute('data-v')===sz)); });
+  if(typeof paintPrefs==='function'&&D&&D.profile) paintPrefs();
+  if(typeof paintCo==='function'&&typeof CB!=='undefined') paintCo();
 }
 document.querySelectorAll('#st_lang button').forEach(function(b){ b.onclick=function(){
   var v=b.getAttribute('data-v'); if(v===lang){ return; }
@@ -753,6 +795,86 @@ document.querySelectorAll('#st_lang button').forEach(function(b){ b.onclick=func
   if(A.user()) A.updateProfile({lang:lang}).then(function(p){ if(p) D.profile=p; stSaved(true); }).catch(function(){ stSaved(false); }); else stSaved(true);
 }; });
 document.querySelectorAll('#st_theme button').forEach(function(b){ b.onclick=function(){ if(window.JagTheme) JagTheme.set(b.getAttribute('data-v')); paintSettings(); stSaved(true); }; });
+document.querySelectorAll('#st_size button').forEach(function(b){ b.onclick=function(){ if(window.JagTheme) JagTheme.setSize(b.getAttribute('data-v')); paintSettings(); stSaved(true); }; });
+
+/* alerts, quiet hours, contact preference: saved to the account right away */
+var flashT={};
+function flash(id,ok){ var el=$(id); if(!el) return; el.style.color=ok?'':'var(--buy)'; el.textContent=ok?t('st_saved'):t('st_err'); clearTimeout(flashT[id]); flashT[id]=setTimeout(function(){ el.textContent=''; },2500); }
+function segSet(id,v){ document.querySelectorAll('#'+id+' button').forEach(function(b){ b.setAttribute('aria-checked',String(b.getAttribute('data-v')===v)); }); }
+function notifyNow(){ var p=D.profile||{}, n=p.notify||{}, old=p.alert_freq||'instant'; return {new:n.new||old,price:n.price||old,status:n.status||old,msgs:n.msgs||'on'}; }
+function paintPrefs(){
+  var p=D.profile||{}, n=notifyNow();
+  ['new','price','status','msgs'].forEach(function(k){ segSet('nt_'+k,n[k]); });
+  $('nt_quiet').value=(p.quiet_from!=null&&p.quiet_to!=null)?(p.quiet_from+'-'+p.quiet_to):'';
+  segSet('ct_pref',p.contact_pref||''); segSet('ct_time',p.contact_time||'');
+}
+function saveP(patch,okId){ return A.updateProfile(patch).then(function(p){ if(p) D.profile=p; paintPrefs(); flash(okId,true); }).catch(function(){ paintPrefs(); flash(okId,false); }); }
+['nt_new','nt_price','nt_status','nt_msgs'].forEach(function(id){ document.querySelectorAll('#'+id+' button').forEach(function(b){ b.onclick=function(){
+  var n=notifyNow(); n[$(id).getAttribute('data-k')]=b.getAttribute('data-v'); segSet(id,b.getAttribute('data-v'));
+  var k3=[n.new,n.price,n.status], freq=k3.every(function(x){ return x==='off'; })?'off':(k3.indexOf('instant')>=0?'instant':'daily');
+  saveP({notify:n,alert_freq:freq},'nt_ok');
+}; }); });
+$('nt_quiet').onchange=function(){ var v=this.value.split('-'); saveP(this.value?{quiet_from:+v[0],quiet_to:+v[1]}:{quiet_from:null,quiet_to:null},'nt_ok'); };
+['ct_pref','ct_time'].forEach(function(id){ document.querySelectorAll('#'+id+' button').forEach(function(b){ b.onclick=function(){
+  var v=b.getAttribute('data-v'), patch={}; segSet(id,v); patch[id==='ct_pref'?'contact_pref':'contact_time']=v; saveP(patch,'ct_ok');
+}; }); });
+
+/* buying together (co-buyers) */
+var CB=null;
+function loadCo(){ return A.rpc('jag_cobuyer_list').then(function(j){ CB=(j&&j.ok)?j:null; paintCo(); paintSaved(); }).catch(function(){}); }
+function savedBy(f){
+  if(!CB||!f.user_id||f.user_id===CB.me) return '';
+  if(CB.owner&&CB.owner.user_id===f.user_id) return String(CB.owner.name||CB.owner.email||'').split(' ')[0];
+  var p=(CB.people||[]).filter(function(x){ return x.user_id===f.user_id; })[0];
+  return p?String(p.name||p.email||'').split(' ')[0]:'';
+}
+function paintCo(){
+  var inv=$('co_inv'), ins=(CB&&CB.invites)||[];
+  inv.hidden=!ins.length;
+  inv.innerHTML=ins.map(function(i){ return '<h3>'+esc(fill(t('ci_h'),{n:i.from_name||i.from_email}))+'</h3><p>'+esc(t('ci_p'))+'</p><div class="row"><button class="btn" type="button" data-co-acc="'+i.id+'">'+esc(t('ci_yes'))+'</button><button class="btn alt" type="button" data-co-dec="'+i.id+'">'+esc(t('ci_no'))+'</button></div>'; }).join('');
+  var el=$('co_list'), form=$('co_form');
+  if(!CB){ el.innerHTML=''; return; }
+  if(CB.role==='member'){
+    var mine=(CB.people||[]).filter(function(x){ return x.me; })[0];
+    el.innerHTML='<div class="co-p"><div class="tx"><b>'+esc(fill(t('co_with'),{n:CB.owner.name||CB.owner.email}))+'</b><span>'+esc(t('co_member_p'))+'</span></div>'+(mine?'<button type="button" data-co-rm="'+mine.id+'">'+esc(t('co_leave'))+'</button>':'')+'</div>';
+    form.hidden=true; return;
+  }
+  el.innerHTML=(CB.people||[]).map(function(x){ return '<div class="co-p"><div class="tx"><b>'+esc(x.name||x.email)+'</b><span>'+esc(x.email)+'</span></div><span class="chip'+(x.status==='accepted'?'':' pend')+'">'+esc(t(x.status==='accepted'?'co_acc':'co_pend'))+'</span><button type="button" data-co-rm="'+x.id+'">'+esc(t('co_rm'))+'</button></div>'; }).join('');
+  form.hidden=(CB.people||[]).length>=3;
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-co-acc],[data-co-dec],[data-co-rm]'); if(!b) return;
+  var id=+(b.getAttribute('data-co-acc')||b.getAttribute('data-co-dec')||b.getAttribute('data-co-rm'));
+  var fn=b.hasAttribute('data-co-acc')?'jag_cobuyer_accept':b.hasAttribute('data-co-dec')?'jag_cobuyer_decline':'jag_cobuyer_remove';
+  b.disabled=true;
+  A.rpc(fn,{p_id:id}).then(function(j){
+    if(j&&j.ok){ if(fn==='jag_cobuyer_decline') loadCo(); else start(); }
+    else { b.disabled=false; var m=$('co_ok'); m.style.color='var(--buy)'; m.textContent=t('co_e_'+(j&&j.reason))!=='co_e_'+(j&&j.reason)?t('co_e_'+j.reason):t('st_err'); }
+  }).catch(function(){ b.disabled=false; flash('co_ok',false); });
+});
+$('co_form').addEventListener('submit',function(e){
+  e.preventDefault(); var em=$('co_email').value.trim(), m=$('co_ok');
+  if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)){ m.style.color='var(--buy)'; m.textContent=t('co_e_email'); $('co_email').focus(); return; }
+  $('co_go').disabled=true;
+  A.rpc('jag_cobuyer_invite',{p_email:em,p_name:$('co_name').value.trim()||null}).then(function(j){
+    $('co_go').disabled=false;
+    if(j&&j.ok){ m.style.color=''; m.textContent=t('co_sent'); $('co_email').value=''; $('co_name').value=''; loadCo(); }
+    else { m.style.color='var(--buy)'; var k='co_e_'+(j&&j.reason); m.textContent=t(k)!==k?t(k):t('st_err'); }
+  }).catch(function(){ $('co_go').disabled=false; flash('co_ok',false); });
+});
+
+/* download my data (a .json file the client keeps) */
+$('dl_data').onclick=function(){
+  var b=this, label=b.textContent; b.disabled=true; b.textContent=t('dl_wait');
+  var safe=function(p){ return p.then(function(x){ return x; },function(){ return null; }); };
+  Promise.all([safe(A.getProfile()),safe(A.favorites()),safe(A.searches()),safe(A.alerts()),safe(A.activity(1000)),safe(A.rpc('jag_msg_thread')),safe(A.rpc('jag_my_offers')),safe(A.rpc('jag_cobuyer_list'))]).then(function(r){
+    var data={exported_at:new Date().toISOString(),from:'jasonaguirregroup.company (Jason Aguirre Group · eXp Realty)',profile:r[0],saved_homes:r[1],saved_searches:r[2],alerts:r[3],activity:r[4],
+      messages:(r[5]&&r[5].messages)||[],offers:r[6],shared_account:r[7]};
+    var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='mis-datos-jag-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  }).then(function(){ b.disabled=false; b.textContent=label; },function(){ b.disabled=false; b.textContent=label; flash('st_ok',false); });
+};
 window.addEventListener('jag-theme', paintSettings);
 paintSettings();
 
@@ -936,9 +1058,9 @@ function paintMsgs(){
     return;
   }
   var html='', last='', lastMine=-1;
-  all.forEach(function(m,i){ if(m.from==='client'&&!m.fail) lastMine=i; });
+  all.forEach(function(m,i){ if(m.from==='client'&&m.mine!==false&&!m.fail) lastMine=i; });
   all.forEach(function(m,i){
-    var d=new Date(m.at), dk=d.toDateString(), me=m.from==='client';
+    var d=new Date(m.at), dk=d.toDateString(), me=m.from==='client'&&m.mine!==false;
     if(dk!==last){ html+='<div class="mx-day">'+esc(dayLabel(d))+'</div>'; last=dk; }
     var tm=d.toLocaleTimeString(loc(),{hour:'numeric',minute:'2-digit'});
     var st=m.fail?t('m_fail'):(m.tmp&&!m.id)?t('m_sending'):((!me&&m.name&&m.name!==nm?m.name+' · ':'')+tm+(me&&i===lastMine&&m.read?' · '+t('m_seen'):''));
@@ -1082,12 +1204,12 @@ function start(){
   paintAll(); setTab(location.hash.slice(1));
   A.getProfile().then(function(p){ D.profile=p; paintProfile(); }).catch(function(){});
   Promise.all([
-    A.favorites().then(function(r){ D.favs=r||[]; }).catch(function(){ D.favs=[]; }),
+    A.favorites().then(function(r){ var seen={}; D.favs=(r||[]).filter(function(f){ if(seen[f.mls]) return false; seen[f.mls]=1; return true; }); }).catch(function(){ D.favs=[]; }),
     A.searches().then(function(r){ D.searches=r||[]; }).catch(function(){ D.searches=[]; }),
     A.alerts().then(function(r){ D.alerts=r||[]; }).catch(function(){ D.alerts=[]; }),
     A.activity(300).then(function(r){ D.activity=r||[]; }).catch(function(){ D.activity=[]; })
   ]).then(function(){ paintAll(); setTab(location.hash.slice(1)||tab); loadPicks(); });
-  loadOffers().then(paintPlan); loadPrem(); loadPlan(); loadMsgStatus();
+  loadOffers().then(paintPlan); loadPrem(); loadPlan(); loadMsgStatus(); loadCo();
 }
 $('gatebtn').onclick=function(){ A.requireSignIn().catch(function(){}); };
 if(A){ A.mountButton($('acct')); A.onChange(start); }

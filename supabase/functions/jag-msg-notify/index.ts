@@ -28,20 +28,27 @@ Deno.serve(async (req) => {
   const id = Number(b.id); if (!id) return json({ ok: false, error: "id required" }, 400);
   const { data: m } = await db.from("jag_messages").select("*").eq("id", id).maybeSingle();
   if (!m || m.sender !== "agent") return json({ ok: false, error: "not an agent message" }, 404);
-  const { data: c } = await db.from("jag_clients").select("name,email,lang").eq("user_id", m.user_id).maybeSingle();
-  if (!c || !/@/.test(c.email || "")) return json({ ok: false, error: "client has no email" }, 200);
+  // everyone on the account: the main client + co-buyers who accepted (each in their own language)
+  const { data: co } = await db.from("jag_client_cobuyers").select("member").eq("owner", m.user_id).not("accepted_at", "is", null).is("declined_at", null).not("member", "is", null);
+  const ids = [m.user_id, ...((co || []).map((x: any) => x.member))];
+  const { data: people } = await db.from("jag_clients").select("user_id,name,email,lang,notify").in("user_id", ids);
+  const to = (people || []).filter((c: any) => /@/.test(c.email || "") && ((c.notify || {}).msgs || "on") !== "off");
+  if (!to.length) return json({ ok: true, skipped: "no recipients (email off)" });
   const { data: a } = await db.from("jag_agents").select("name,first_name,email,phone,photo_url").eq("code", m.agent_code || "").maybeSingle();
 
-  const es = c.lang !== "en";
-  const { subject, html, text } = render({ es, client: c, agent: a, msg: m });
-
-  const r = await fetch("https://api.resend.com/emails", {
-    method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to: [c.email], reply_to: a?.email || undefined, subject, html, text }),
-  });
-  const t = await r.text();
-  if (!r.ok) return json({ ok: false, error: "resend " + r.status + " " + t.slice(0, 200) }, 200);
-  return json({ ok: true });
+  const errors: string[] = [];
+  for (const c of to) {
+    const es = c.lang !== "en";
+    const { subject, html, text } = render({ es, client: c, agent: a, msg: m });
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM, to: [c.email], reply_to: a?.email || undefined, subject, html, text }),
+    });
+    const t = await r.text();
+    if (!r.ok) errors.push("resend " + r.status + " " + t.slice(0, 160));
+  }
+  if (errors.length === to.length) return json({ ok: false, error: errors[0] }, 200);
+  return json({ ok: true, sent: to.length - errors.length });
 });
 
 // ---------- the email (JAG design from jag-email.ts) ----------

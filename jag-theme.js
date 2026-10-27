@@ -178,5 +178,14 @@
   if(mq){ var on = function(){ if(get() === 'system') apply(); }; if(mq.addEventListener) mq.addEventListener('change', on); else if(mq.addListener) mq.addListener(on); }
   window.addEventListener('storage', function(e){ if(e.key === KEY) apply(); });   // changed in another tab
 
-  window.JagTheme = { get: get, set: set, isDark: isDark };
+  /* ---------- text size: localStorage 'jag_text' = normal | large | xl (for older clients, or anyone who wants bigger text) ---------- */
+  var SIZES = { normal: 1, large: 1.12, xl: 1.25 };
+  function size(){ try{ var v = localStorage.getItem('jag_text'); if(SIZES[v]) return v; }catch(e){} return 'normal'; }
+  function applySize(){ var z = SIZES[size()]; root.style.zoom = z === 1 ? '' : String(z); root.setAttribute('data-text', size()); }
+  function setSize(v){ try{ if(v && v !== 'normal' && SIZES[v]) localStorage.setItem('jag_text', v); else localStorage.removeItem('jag_text'); }catch(e){} applySize();
+    try{ window.dispatchEvent(new CustomEvent('jag-theme', { detail: { pref: get(), dark: isDark(), size: size() } })); }catch(e){} }
+  applySize();
+  window.addEventListener('storage', function(e){ if(e.key === 'jag_text') applySize(); });
+
+  window.JagTheme = { get: get, set: set, isDark: isDark, size: size, setSize: setSize };
 })();

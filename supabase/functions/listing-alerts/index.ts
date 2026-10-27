@@ -224,40 +224,63 @@ async function bestHours(): Promise<Map<string, number>> {
   }
 }
 
+// Each kind of alert follows the client's own switch (Ajustes): new homes, price changes, status changes → instant | daily | off.
+// Clients from before the switches existed use their single alert_freq for all three.
+function freqOf(c: Row, kind: string): string {
+  const n = c.notify || {}, key = kind === "price" ? "price" : kind === "status" ? "status" : "new";
+  return n[key] || c.alert_freq || "instant";
+}
+function quietNow(f: any, t: any, h: number) {
+  if (f == null || t == null || f === t) return false;
+  return f < t ? (h >= f && h < t) : (h >= f || h < t);
+}
+async function markEmailed(ids: any[]) {
+  if (!ids.length) return;
+  await db(`jag_client_alerts?id=in.(${ids.join(",")})`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ emailed_at: new Date().toISOString() }) });
+}
+
 async function sendEmails(clients: Map<string, Row>) {
-  const hourCT = Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", hour: "numeric", hour12: false }).format(new Date()));
+  const hourCT = Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", hour: "numeric", hour12: false }).format(new Date())) % 24;
+  const todayCT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date());
   const since = new Date(Date.now() - 7 * 864e5).toISOString();
   const pending: Row[] = await db(`jag_client_alerts?select=*&emailed_at=is.null&created_at=gte.${since}&order=created_at.desc&limit=2000`);
   const byUser = new Map<string, Row[]>();
   for (const a of pending) (byUser.get(a.user_id) || byUser.set(a.user_id, []).get(a.user_id)!).push(a);
   const hours = byUser.size ? await bestHours() : new Map<string, number>();
-  let sent = 0, skipped = 0;
+  let sent = 0, skipped = 0, held = 0;
   for (const [uid, list] of byUser) {
     const c = clients.get(uid);
-    if (!c || c.paused_by_staff || c.alert_freq === "off") { skipped++; continue; }
-    if (c.alert_freq === "daily") {
-      const bh = hours.get(uid);
-      const sendHour = bh != null && bh >= 7 && bh <= 20 ? bh : 8;
-      if (hourCT !== sendHour) continue;
-    }
+    if (!c || c.paused_by_staff) { skipped++; continue; }
+    // switched off: those stay in the app (Novedades) but never go out by email
+    const off = list.filter((a) => freqOf(c, a.kind) === "off");
+    if (off.length) await markEmailed(off.map((a) => a.id));
+    const instant = list.filter((a) => freqOf(c, a.kind) === "instant");
+    const daily = list.filter((a) => freqOf(c, a.kind) === "daily");
+    if (!instant.length && !daily.length) continue;
+    if (quietNow(c.quiet_from, c.quiet_to, hourCT)) { held++; continue; }            // quiet hours: wait
+    const bh = hours.get(uid);
+    const sendHour = bh != null && bh >= 7 && bh <= 20 ? bh : 8;
+    const dailyDue = daily.length > 0 && hourCT >= sendHour && hourCT <= 20 && String(c.alerts_daily_on || "") !== todayCT;
+    const out = instant.concat(dailyDue ? daily : []).sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)));
+    if (!out.length) continue;
     if (!RESEND) { skipped++; continue; }
     const L = TXT[c.lang === "en" ? "en" : "es"];
-    const nNew = list.filter((a) => a.kind === "new").length;
+    const nNew = out.filter((a) => a.kind === "new").length;
     const subject = nNew ? L.s_new(nNew) : L.s_change;
     const tok = await sig(uid);
     const fnUnsub = `${SB}/functions/v1/listing-alerts?u=${uid}&s=${tok}`;
     const pageUnsub = `${SITE}/unsubscribe?u=${uid}&s=${tok}`;
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [c.email], reply_to: REPLY_TO, subject, html: emailHtml(c, list, pageUnsub, subject),
+      body: JSON.stringify({ from: FROM, to: [c.email], reply_to: REPLY_TO, subject, html: emailHtml(c, out, pageUnsub, subject),
         headers: { "List-Unsubscribe": `<${fnUnsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }),
     });
     if (!r.ok) { console.error("resend", r.status, (await r.text()).slice(0, 300)); continue; }
-    const ids = list.map((a) => a.id).join(",");
-    await db(`jag_client_alerts?id=in.(${ids})`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ emailed_at: new Date().toISOString() }) });
+    await markEmailed(out.map((a) => a.id));
+    if (dailyDue) await db(`jag_clients?user_id=eq.${uid}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ alerts_daily_on: todayCT }) });
     sent++;
   }
-  return { sent, skipped, email_configured: !!RESEND, hourCT };
+  return { sent, skipped, held_quiet: held, email_configured: !!RESEND, hourCT };
 }
 
 /* ---------------- unsubscribe ---------------- */
@@ -271,7 +294,9 @@ function cors(req: Request): Record<string, string> {
 async function unsubscribe(req: Request, u: string, s: string) {
   const h = { "Content-Type": "application/json", ...cors(req) };
   if (!/^[0-9a-f-]{36}$/.test(u) || !s || s !== await sig(u)) return new Response(JSON.stringify({ ok: false }), { status: 400, headers: h });
-  await db(`jag_clients?user_id=eq.${u}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ alert_freq: "off" }) });
+  const cur: Row[] = await db(`jag_clients?select=notify&user_id=eq.${u}`);
+  const notify = { ...((cur && cur[0] && cur[0].notify) || {}), new: "off", price: "off", status: "off" };   // message emails keep their own switch
+  await db(`jag_clients?user_id=eq.${u}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ alert_freq: "off", notify }) });
   return new Response(JSON.stringify({ ok: true }), { headers: h });
 }
 
