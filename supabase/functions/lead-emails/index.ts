@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { SITE, esc, money, phoneFmt, tel, row, button, agentStrip, homeCard, h1, lead, callout, shell, C } from "./jag-email.ts";
 
 // JAG home emails for screened leads (table jag_lead_drips). Runs hourly (pg_cron → this function with the vault token).
 // Pace (standard): a welcome right away, then up to 2 a week for the first 30 days, then weekly through day 90.
@@ -16,8 +17,6 @@ const RESEND = Deno.env.get("RESEND_API_KEY") || "";
 const FROM = Deno.env.get("ALERTS_FROM") || "Jason Aguirre Group <alerts@updates.jasonhoustonrealty.com>";
 const DEF_REPLY = Deno.env.get("ALERTS_REPLY_TO") || "jason.aguirre@jasonhoustonrealty.com";
 const TEAM_PHONE = "(832) 702-3574";
-const SITE = "https://jasonaguirregroup.company";
-const CDN = "https://cdn.repliers.io/";
 const BOARD = "147";
 const FIELDS = "mlsNumber,listPrice,type,address,images,details.numBedrooms,details.numBathrooms,details.sqft,details.propertyType,permissions,standardStatus,listDate";
 const DAY = 864e5;
@@ -92,9 +91,7 @@ function nextAt(created: Date, sentCount: number): Date | null {
 }
 
 /* ---------------- email ---------------- */
-const esc = (v: any) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-const money = (n: any) => n == null ? "" : "$" + Math.round(Number(n)).toLocaleString("en-US");
-function fmtPhone(p: any) { const d = String(p || "").replace(/\D/g, "").replace(/^1(?=\d{10}$)/, ""); return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : String(p || ""); }
+const fmtPhone = phoneFmt;
 
 const TXT: Record<string, any> = {
   es: {
@@ -106,7 +103,7 @@ const TXT: Record<string, any> = {
     s_more: (n: number, d: Row) => (n === 1 ? "1 casa nueva" : `${n} casas nuevas`) + (d.area ? " en " + d.area : " para usted"),
     acct_h: "Guarde sus favoritas", acct_p: "Cree su cuenta gratis para guardar casas, ver cuando bajan de precio y recibir avisos en cuanto salgan.",
     acct_btn: "Crear mi cuenta gratis",
-    help: (first: string, phone: string) => `¿Quiere ver alguna? Responda a este correo o llame a ${first} al ${phone}.`,
+    help: (first: string) => `¿Quiere ver alguna? Responda a este correo o llame a ${first} al `,
     why: (dt: string) => `Recibe este correo porque habló con nuestro equipo el ${dt} y aceptó recibir casas por correo.`,
     unsub: "Dejar de recibir estos correos",
     disc: "Información de listados de HAR a través de Repliers; se considera confiable pero no garantizada.",
@@ -120,7 +117,7 @@ const TXT: Record<string, any> = {
     s_more: (n: number, d: Row) => (n === 1 ? "1 new home" : `${n} new homes`) + (d.area ? " in " + d.area : " for you"),
     acct_h: "Save your favorites", acct_p: "Create your free account to save homes, see price drops, and get alerts the moment new homes hit the market.",
     acct_btn: "Create my free account",
-    help: (first: string, phone: string) => `Want to see one? Reply to this email or call ${first} at ${phone}.`,
+    help: (first: string) => `Want to see one? Reply to this email or call ${first} at `,
     why: (dt: string) => `You're getting this email because you spoke with our team on ${dt} and agreed to receive homes by email.`,
     unsub: "Unsubscribe from these emails",
     disc: "Listing information from HAR through Repliers; deemed reliable but not guaranteed.",
@@ -145,32 +142,18 @@ function buildEmail(d: Row, agent: Row | null, homes: Row[], unsubUrl: string) {
   const subject = welcome ? L.s_welcome(d) : L.s_more(homes.length, d);
   const dt = new Date(d.created_at).toLocaleDateString(d.lang === "en" ? "en-US" : "es-MX", { timeZone: "America/Chicago", month: "long", day: "numeric", year: "numeric" });
   const cards = homes.map((s) => {
-    const specs = [s.beds != null ? `${s.beds} ${L.bd}` : "", s.baths != null ? `${s.baths} ${L.ba}` : "", s.sqft ? `${Number(s.sqft).toLocaleString("en-US")} sqft` : ""].filter(Boolean).join(" · ");
-    const url = lk.home(s.mls);
-    return `<tr><td style="padding:0 0 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #dddde3;border-radius:12px;overflow:hidden">
-      ${s.photo ? `<tr><td><a href="${url}"><img src="${CDN}${esc(s.photo)}?class=medium" width="560" alt="" style="display:block;width:100%;max-width:560px;height:auto;border:0"></a></td></tr>` : ""}
-      <tr><td style="padding:14px 16px;font-family:Arial,Helvetica,sans-serif;color:#17161c">
-        <div style="font-size:22px;font-weight:bold">${money(s.price)}</div>
-        <div style="font-size:14px;margin:2px 0">${esc(specs)}</div>
-        <div style="font-size:14px;color:#5f5e68">${esc([s.addr, s.city].filter(Boolean).join(", "))} ${esc(s.zip || "")}</div>
-        <a href="${url}" style="display:inline-block;margin-top:12px;background:#c8102e;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:8px;font-size:14px">${L.view}</a>
-      </td></tr></table></td></tr>`;
+    const specs = [s.beds != null ? `${s.beds} ${L.bd}` : "", s.baths != null ? `${s.baths} ${L.ba}` : "", s.sqft ? `${Number(s.sqft).toLocaleString("en-US")} ${d.lang === "en" ? "sqft" : "pies²"}` : ""].filter(Boolean).join("  ·  ");
+    return homeCard({ url: lk.home(s.mls), photo: s.photo, price: s.price, specs, addr: [[s.addr, s.city].filter(Boolean).join(", "), s.zip].filter(Boolean).join(" "), btn: L.view });
   }).join("");
-  const html = `<!doctype html><html><body style="margin:0;background:#f5f5f7"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7"><tr><td align="center" style="padding:24px 12px">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border-radius:14px"><tr><td style="padding:22px 20px 6px;font-family:Arial,Helvetica,sans-serif;color:#17161c">
-    <div style="font-size:26px;font-weight:bold;color:#c8102e;letter-spacing:-.5px">JAG <span style="font-size:11px;color:#5f5e68;letter-spacing:2px">REAL ESTATE · eXp Realty</span></div>
-    <p style="font-size:16px;margin:16px 0 4px">${L.hi}${first ? " " + esc(first) : ""},</p>
-    <p style="font-size:15px;color:#5f5e68;margin:0 0 18px">${esc(welcome ? L.welcome(aName, crit) : L.more(crit))}</p>
-  </td></tr><tr><td style="padding:0 20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${cards}</table></td></tr>
-  <tr><td style="padding:0 20px 18px;text-align:center"><a href="${lk.all}" style="display:inline-block;border:2px solid #17161c;color:#17161c;text-decoration:none;font-weight:bold;padding:10px 18px;border-radius:8px;font-size:14px;font-family:Arial,Helvetica,sans-serif">${L.all}</a></td></tr>
-  <tr><td style="padding:0 20px 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;border-radius:12px"><tr><td style="padding:16px;font-family:Arial,Helvetica,sans-serif;color:#17161c">
-    <div style="font-size:16px;font-weight:bold">${L.acct_h}</div><div style="font-size:14px;color:#5f5e68;margin:4px 0 12px">${L.acct_p}</div>
-    <a href="${lk.account}" style="display:inline-block;background:#17161c;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:8px;font-size:14px">${L.acct_btn}</a>
-  </td></tr></table></td></tr>
-  <tr><td style="padding:0 20px 18px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#17161c">${esc(L.help(aFirst, aPhone))}<br><br>${esc(aName)}<br>Jason Aguirre Group · eXp Realty · ${esc(aPhone)}</td></tr>
-  <tr><td style="padding:16px 20px 22px;border-top:1px solid #dddde3;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#85848d">
-    <a href="${unsubUrl}" style="color:#2653d9">${L.unsub}</a><br><br>${esc(L.why(dt))}<br>${L.disc}<br>Jason Aguirre Group · eXp Realty · 5373 W Alabama St, Suite 448, Houston, TX 77056
-  </td></tr></table></td></tr></table></body></html>`;
+  const es = d.lang !== "en";
+  const html = shell({ es, title: subject, preheader: welcome ? L.welcome(aName, crit) : L.more(crit),
+    body: row(agentStrip(aName, (es ? "Su agente" : "Your agent") + " · JAG Real Estate", agent?.photo_url)
+        + h1(`${L.hi}${first ? " " + first : ""},`) + lead(welcome ? L.welcome(aName, crit) : L.more(crit)) + cards
+        + `<div style="text-align:center;margin:4px 0 22px">${button(lk.all, L.all, { kind: "outline" })}</div>`
+        + callout(`<div style="font-size:17px;font-weight:800">${esc(L.acct_h)}</div><div style="font-size:14px;color:${C.muted};margin:4px 0 14px">${esc(L.acct_p)}</div>${button(lk.account, L.acct_btn, { kind: "dark" })}`)
+        + `<div style="border-top:1px solid ${C.line};padding-top:16px;text-align:center;font-size:14px;color:${C.muted}">${esc(L.help(aFirst))}<a href="tel:${tel(aPhone)}" style="color:${C.ink};font-weight:700;text-decoration:none">${esc(aPhone)}</a>.</div>`, "0 32px"),
+    links: [[L.unsub, unsubUrl]],
+    footerNote: L.why(dt) + " " + L.disc });
   return { subject, html, replyTo: agent?.email || DEF_REPLY };
 }
 
@@ -197,7 +180,7 @@ async function handover(d: Row, c: Row) {
 
 /* ---------------- run ---------------- */
 async function agentsMap() {
-  const rows: Row[] = await db("jag_agents?select=code,name,first_name,phone,email&active=eq.true");
+  const rows: Row[] = await db("jag_agents?select=code,name,first_name,phone,email,photo_url&active=eq.true");
   return new Map((rows || []).map((a) => [a.code, a]));
 }
 async function pick(d: Row) {

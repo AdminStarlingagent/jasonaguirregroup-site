@@ -1,0 +1,6 @@
+magic-link: {{ .Token }} es su código de JAG · your JAG code
+confirm-signup: {{ .Token }} es su código de JAG · your JAG code
+reauthentication: {{ .Token }} es su código de JAG · your JAG code
+reset-password: Cambie su contraseña de JAG · Reset your JAG password
+invite: Lo invitaron a JAG · You're invited to JAG
+change-email: Confirme su correo nuevo · Confirm your new email

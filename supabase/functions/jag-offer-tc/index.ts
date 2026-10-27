@@ -5,18 +5,16 @@
 //      what is still missing, and step-by-step prep instructions (+ the agent's own notes / Lola's steps).
 //   2. A Follow Up Boss task assigned to the TC on the client's profile, and a note there.
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { SITE, esc, money, row, button, eyebrow, h1, h2, facts, steps, callout, agentStrip, shell, C } from "./jag-email.ts";
 
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SRK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND = Deno.env.get("RESEND_API_KEY") || "";
 const FROM = Deno.env.get("ALERTS_FROM") || "Jason Aguirre Group <alerts@updates.jasonhoustonrealty.com>";
-const SITE = "https://jasonaguirregroup.company";
 const FUB = "https://api.followupboss.com/v1";
 const FUB_PERSON = "https://jasonhoustonrealty.followupboss.com/2/people/view/";
 const CLOSINGS = "closings@jasonhoustonrealty.com";
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json" } });
-const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-const money = (v: unknown) => { const n = Number(String(v ?? "").replace(/[^0-9.]/g, "")); return v == null || v === "" || !isFinite(n) ? "" : "$" + Math.round(n).toLocaleString("en-US"); };
 const digits = (p: unknown) => String(p || "").replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
 
 // county appraisal districts (seller names come from the tax record)
@@ -111,27 +109,20 @@ Deno.serve(async (req) => {
   const custom = String(P.steps || "").split(/\n+/).map((s) => s.replace(/^\s*(\d+[.)]|[-•*])\s*/, "").trim()).filter(Boolean);
   const heading = o ? `${L.newOffer}: ${o.property}` : (P.title || L.task);
   const subject = o ? `${es ? "Preparar oferta" : "Prepare offer"}: ${o.property}${client ? " · " + client : ""} (${by.first || "JAG"})` : `${P.title || L.task}${client ? " · " + client : ""} (${by.first || "JAG"})`;
-  const ol = (items: string[]) => `<ol style="margin:0;padding-left:20px">${items.map((s) => `<li style="margin:0 0 10px">${s}</li>`).join("")}</ol>`;
-  const btn = (href: string, label: string, primary = true) => `<a href="${href}" style="display:inline-block;margin:0 8px 8px 0;background:${primary ? "#c8102e" : "#ffffff"};color:${primary ? "#ffffff" : "#c8102e"};border:2px solid #c8102e;text-decoration:none;font-weight:bold;padding:11px 18px;border-radius:10px;font-size:15px">${esc(label)}</a>`;
-  const html = `<!doctype html><html><body style="margin:0;background:#f5f5f7"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7"><tr><td align="center" style="padding:24px 12px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#fff;border-radius:14px"><tr><td style="padding:24px 24px 8px;font-family:Arial,Helvetica,sans-serif;color:#17161c">
-<div style="font-size:26px;font-weight:bold;color:#c8102e;letter-spacing:-.5px">JAG <span style="font-size:11px;color:#5f5e68;letter-spacing:2px">REAL ESTATE · eXp Realty</span></div>
-<p style="font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#5f5e68;margin:18px 0 4px;font-weight:bold">${esc(L.from)} ${esc(by.name || "JAG")}</p>
-<h1 style="font-size:22px;margin:0 0 8px;line-height:1.25">${esc(heading)}</h1>
-${client ? `<p style="margin:0 0 4px;font-size:15px"><b>${L.client}:</b> ${esc(client)}</p>` : ""}${fullAddr ? `<p style="margin:0 0 12px;font-size:15px"><b>${L.prop}:</b> ${esc(fullAddr)}${o.mls ? ` · MLS ${esc(o.mls)}` : ""}</p>` : ""}
-<p style="margin:14px 0 6px">${o ? btn(o.link, L.open) : ""}${fubUrl ? btn(fubUrl, L.fub, !o) : ""}${homeUrl ? btn(homeUrl, L.listing, false) : ""}</p>
-</td></tr>
-${custom.length ? `<tr><td style="padding:8px 24px;font-family:Arial,Helvetica,sans-serif;color:#17161c"><div style="background:#fdecef;border-radius:12px;padding:16px 18px"><div style="font-weight:bold;margin-bottom:8px">${esc(L.notes)} ${esc(by.first || "")}</div>${custom.length > 1 ? ol(custom.map(esc)) : `<div style="white-space:pre-wrap">${esc(custom[0])}</div>`}</div></td></tr>` : ""}
-${o ? `<tr><td style="padding:12px 24px;font-family:Arial,Helvetica,sans-serif;color:#17161c">
-<h2 style="font-size:16px;margin:8px 0">${L.glance}</h2>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;border-collapse:collapse">${rows.map((r) => `<tr><td style="padding:7px 10px 7px 0;color:#5f5e68;border-bottom:1px solid #eee;width:38%;vertical-align:top">${esc(r[0])}</td><td style="padding:7px 0;border-bottom:1px solid #eee;vertical-align:top">${esc(r[1])}</td></tr>`).join("")}</table>
-<h2 style="font-size:16px;margin:20px 0 8px">${L.left}</h2>
-${missing.length ? `<ul style="margin:0;padding-left:20px;color:#a30d26;font-weight:bold">${missing.map((m) => `<li style="margin:0 0 4px">${esc(m)}</li>`).join("")}</ul>` : `<p style="margin:0;color:#1a5c31;font-weight:bold">${L.none}</p>`}
-<h2 style="font-size:16px;margin:20px 0 8px">${L.steps}</h2>${ol(stepsOffer)}
-</td></tr>` : ""}
-<tr><td style="padding:14px 24px 22px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#85848d;border-top:1px solid #eee">
-${es ? "Enviado desde JAG (sitio o Lola). Conteste este correo para hablar con" : "Sent from JAG (website or Lola). Reply to this email to reach"} ${esc(by.name || "the agent")}.<br>Jason Aguirre Group · eXp Realty · 5373 W Alabama St, Suite 448, Houston, TX
-</td></tr></table></td></tr></table></body></html>`;
+  const stepsHtml = stepsOffer.map((x) => x.replace(/<a href="([^"]+)">/g, `<a href="$1" style="color:${C.red};font-weight:700">`));
+  const html = shell({ es, team: true, width: 640, title: subject,
+    preheader: [client, fullAddr, missing.length ? (es ? "Falta: " : "Needs: ") + missing.join(", ") : ""].filter(Boolean).join(" · "),
+    body: row(agentStrip(by.name || "JAG", es ? `Le manda esto a ${tc.first || "TC"} · JAG Real Estate` : `Sending this to ${tc.first || "the TC"} · JAG Real Estate`)
+        + eyebrow(o ? (es ? "Oferta para preparar" : "Offer to prepare") : (es ? "Tarea para el TC" : "Task for the TC"))
+        + `<div style="height:6px;line-height:6px;font-size:0">&nbsp;</div>` + h1(o ? o.property : (P.title || L.task))
+        + (client ? `<div style="font-size:15px;margin:0 0 2px"><span style="color:${C.muted}">${L.client}:</span> <b>${esc(client)}</b></div>` : "")
+        + (fullAddr ? `<div style="font-size:15px;margin:0 0 14px"><span style="color:${C.muted}">${L.prop}:</span> ${esc(fullAddr)}${o.mls ? ` · MLS ${esc(o.mls)}` : ""}</div>` : `<div style="height:8px"></div>`)
+        + (o ? button(o.link, L.open) : "") + (fubUrl ? button(fubUrl, L.fub, { kind: o ? "outline" : "primary" }) : "") + (homeUrl ? button(homeUrl, L.listing, { kind: "outline" }) : ""), "0 32px")
+      + (custom.length ? row(callout(`<div style="font-weight:800;margin-bottom:10px">${esc(L.notes)} ${esc(by.first || "")}</div>` + (custom.length > 1 ? steps(custom.map(esc)) : `<div style="white-space:pre-wrap">${esc(custom[0])}</div>`), "red"), "14px 32px 0") : "")
+      + (o ? row(h2(L.glance) + facts(rows)
+        + h2(L.left) + (missing.length ? callout(`<ul style="margin:0;padding-left:20px;color:${C.redDark};font-weight:700">${missing.map((m) => `<li style="margin:0 0 4px">${esc(m)}</li>`).join("")}</ul>`, "red") : callout(`<b style="color:${C.ok}">${L.none}</b>`, "green"))
+        + h2(L.steps) + steps(stepsHtml), "4px 32px 0") : ""),
+    footerNote: `${es ? "Enviado desde JAG (sitio o Lola). Conteste este correo para hablar con" : "Sent from JAG (website or Lola). Reply to this email to reach"} ${by.name || (es ? "el agente" : "the agent")}.` });
 
   if (!RESEND) { await mark(false, { p_error: "RESEND_API_KEY missing" }); return json({ ok: false, error: "resend" }); }
   const cc = by.email && by.email.toLowerCase() !== String(tc.email).toLowerCase() ? [by.email] : [];
