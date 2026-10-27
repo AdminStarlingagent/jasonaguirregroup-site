@@ -2,8 +2,9 @@
 // Called by the database (ops.kick_client_email → x-jag-token). Body: { kind, id }.
 //   kind 'cobuyer_invite': id = jag_client_cobuyers row. "Ana lo invitó a buscar casa juntos en JAG" with an accept button.
 //   kind 'investor_invite': id = jag_investors row. Private invite to the investor portal (jasonaguirregroup.company/invest), Spanish + English.
+//   kind 'investor_request': id = jag_investor_requests row. To Jason: an investor tapped "List it with JAG" or "Hard-money lender intro".
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { SITE, esc, row, button, agentStrip, h1, h2, lead, callout, shell, steps, eyebrow, C } from "./jag-email.ts";
+import { SITE, esc, row, button, agentStrip, h1, h2, lead, callout, shell, steps, eyebrow, facts, money, phoneFmt, tel, C } from "./jag-email.ts";
 
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SRK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -87,6 +88,43 @@ Deno.serve(async (req) => {
     });
     const t = await r.text();
     await db.from("jag_investors").update(r.ok ? { email_error: null, email_sent_at: new Date().toISOString() } : { email_error: ("resend " + r.status + " " + t).slice(0, 300) }).eq("id", i.id);
+    return json({ ok: r.ok });
+  }
+  if (b.kind === "investor_request") {
+    const { data: q } = await db.from("jag_investor_requests").select("*").eq("id", Number(b.id)).maybeSingle();
+    if (!q || q.emailed_at) return json({ ok: false, error: "not pending" });
+    const { data: i } = await db.from("jag_investors").select("email,name").eq("user_id", q.user_id).maybeSingle();
+    const { data: cl } = await db.from("jag_clients").select("name,phone").eq("user_id", q.user_id).maybeSingle();
+    const { data: run } = q.run_id ? await db.from("jag_investor_runs").select("address,result,deal,status").eq("id", q.run_id).maybeSingle() : { data: null };
+    const { data: jason } = await db.from("jag_agents").select("email").eq("code", "jason").maybeSingle();
+    const to = (jason && jason.email) || "jason.aguirre@jasonhoustonrealty.com";
+    const who = (i && i.name) || (cl && cl.name) || (i && i.email) || "An investor";
+    const isList = q.kind === "list";
+    const r0 = (run && run.result) || {}, d = (run && run.deal) || {}, inp = d.inputs || {};
+    const subject = isList ? `Listing request: ${who} wants JAG to sell ${run ? run.address : "a flip"}` : `Lender intro: ${who} wants hard-money financing${run ? " for " + run.address : ""}`;
+    const rows: [string, string][] = [["Investor", who], ["Email", (i && i.email) || ""], ["Phone", phoneFmt(cl && cl.phone) || "—"]];
+    if (run) {
+      rows.push(["Property", run.address]);
+      if (r0.subject) rows.push(["Home", [r0.subject.beds != null ? r0.subject.beds + " bd" : "", r0.subject.baths != null ? r0.subject.baths + " ba" : "", r0.subject.sqft ? Number(r0.subject.sqft).toLocaleString("en-US") + " sqft" : "", r0.subject.year || ""].filter(Boolean).join(" · ")]);
+      if (r0.arv) rows.push(["After-repair value", `${money(r0.arv.worst)} / ${money(r0.arv.mid)} / ${money(r0.arv.best)} (worst / mid / best)`]);
+      if (inp.price) rows.push(["His purchase price", money(inp.price)]);
+      if (inp.rehab) rows.push(["His rehab budget", money(inp.rehab)]);
+      if (d.mid && d.mid.profit != null) rows.push(["Mid-case profit", (d.mid.profit < 0 ? "−" : "") + (money(Math.abs(d.mid.profit)) || "$0")]);
+      if (!isList && d.loan) rows.push(["Loan he's modeling", money(d.loan) + (inp.ltv ? ` (${inp.ltv}% of price + ${inp.rfin ?? 100}% of rehab)` : "")]);
+      rows.push(["Deal status", String(run.status || "analyzing")]);
+    }
+    if (q.target_date) rows.push([isList ? "Wants to list by" : "Needs funds by", new Date(q.target_date + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })]);
+    const html = shell({ es: false, team: true, title: subject, preheader: isList ? "An investor wants JAG to list his flip." : "An investor wants a hard-money lender intro.",
+      body: row(eyebrow(isList ? "Investor portal · List it with JAG" : "Investor portal · Lender intro") + h1(subject)
+          + lead(isList ? "He tapped “List it with JAG” on this deal. Call him to set the listing date and plan the photos." : "He tapped “Hard-money lender intro”. Connect him with a lender you trust for this deal.")
+          + facts(rows)
+          + (q.note ? `<div style="margin-top:14px">${callout("<b>His note</b><br>" + esc(q.note))}</div>` : "")
+          + (cl && cl.phone ? `<div style="margin-top:14px">${button("tel:" + tel(cl.phone), "Call " + who.split(/\s+/)[0], { full: true })}</div>` : ""), "0 32px"),
+      footerNote: "Sent by the JAG Investor Portal." });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM, to: [to], reply_to: (i && i.email) || undefined, subject, html }) });
+    const t = await r.text();
+    await db.from("jag_investor_requests").update(r.ok ? { emailed_at: new Date().toISOString(), email_error: null } : { email_error: ("resend " + r.status + " " + t).slice(0, 300) }).eq("id", q.id);
     return json({ ok: r.ok });
   }
   return json({ ok: false, error: "unknown kind" }, 400);

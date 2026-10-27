@@ -197,8 +197,85 @@ table.t td.m{background:rgba(127,127,140,.08)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;border-radius:10px;padding:11px 16px;font-weight:700;opacity:0;transition:.2s;z-index:3000;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%)}
 
+/* round 2: flood, stress, rental, next steps, pipeline, finder, sheet */
+.flood{margin-top:10px;border-radius:12px;padding:12px 14px;font-size:13.5px;background:var(--card)}
+.flood b{display:block;font-size:15px;margin-bottom:2px}
+.flood.high{background:var(--buy-t)} .flood.high b{color:var(--buy-d)}
+.flood.moderate{background:var(--warn-bg)} .flood.moderate b{color:var(--warn)}
+.flood.minimal{background:var(--ok-bg)} .flood.minimal b{color:var(--ok)}
+.flood a{color:var(--loan);font-weight:700}
+.items{margin-top:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.it{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:13.5px}
+.it:last-child{border-bottom:0}
+.it input[type=checkbox]{width:17px;height:17px;accent-color:var(--buy);flex:none}
+.it .nm{flex:1;min-width:0}
+.it .nm small{display:block;color:var(--soft);font-size:11.5px}
+.it .inp{width:118px;flex:none}
+.it.off .nm{color:var(--soft)}
+.itt{display:flex;justify-content:space-between;padding:10px;background:var(--card);font-weight:800}
+.tabs2{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap;align-items:center}
+.tabs2 button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font-weight:700;font-size:13.5px;color:var(--muted)}
+.tabs2 button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs2 .sw2{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer}
+.tabs2 .sw2 input{width:17px;height:17px;accent-color:var(--loan)}
+.femanote{font-size:12px;color:var(--soft);margin-top:8px}
+.femanote a{color:var(--loan);font-weight:700}
+.rgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.ok3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.st{width:100%;border-collapse:collapse;font-size:14px}
+.st th{text-align:right;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:6px 0 6px 8px}
+.st th:first-child{text-align:left;padding-left:0}
+.st td{padding:9px 0 9px 8px;border-top:1px solid var(--line);text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.st td:first-child{text-align:left;padding-left:0;font-weight:600;color:var(--muted)}
+.st tr.base td{background:rgba(127,127,140,.07)}
+.pst{display:flex;flex-wrap:wrap;gap:6px}
+.pst button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;font-weight:700;font-size:13px;color:var(--muted)}
+.pst button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.req{margin-top:12px;background:var(--card);border-radius:12px;padding:14px}
+.req textarea,.wf input,.wf select{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:#fff;font:inherit;resize:vertical}
+.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:10px;padding:2px 8px;background:var(--card);color:var(--muted);white-space:nowrap}
+.badge.offer,.badge.contract{background:var(--loan-t);color:var(--loan)}
+.badge.rehab,.badge.listed{background:var(--warn-bg);color:var(--warn)}
+.badge.sold{background:var(--ok-bg);color:var(--ok)}
+.badge.passed{background:var(--buy-t);color:var(--buy-d)}
+.hf{display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 8px}
+.hf button{border:0;background:var(--card);border-radius:16px;padding:5px 11px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.hf button.on{background:var(--ink);color:#fff}
+.wl{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.w1{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px;flex-wrap:wrap}
+.w1 .tx{flex:1;min-width:180px}
+.w1 .tx b{display:block}
+.w1 .tx span{font-size:12.5px;color:var(--soft)}
+.wf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;background:var(--card);border-radius:12px;padding:14px}
+.wf .full{grid-column:1/-1}
+.fds{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+.fd{border-radius:12px;box-shadow:0 0 0 1px var(--line);overflow:hidden;background:#fff;display:flex;flex-direction:column}
+.fd .ph{aspect-ratio:16/10;background:#e9e9ee center/cover no-repeat}
+.fd .bd{padding:12px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.fd .why{font-size:11.5px;font-weight:800;color:var(--buy)}
+.fd .a{font-weight:700}
+.fd .n3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;color:var(--muted);margin-top:4px}
+.fd .n3 b{display:block;color:var(--ink);font-size:14.5px}
+.fd .acts{margin-top:auto;padding-top:8px}
+.fd .acts .btn{padding:9px 12px;font-size:14px}
+.sheet{display:none}
+@media print{
+  @page{margin:12mm}
+  body.printing > *:not(#sheet){display:none!important}
+  body.printing #sheet{display:block}
+}
+.sheet{font-family:'Plus Jakarta Sans',Arial,sans-serif;color:#17161c;font-size:11.5px;line-height:1.4}
+.sheet .sh{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #c8102e;padding-bottom:8px;margin-bottom:10px}
+.sheet .sh b{font-size:22px;color:#c8102e;letter-spacing:-.02em}
+.sheet h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6a6972;margin:12px 0 5px}
+.sheet .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sheet table{width:100%;border-collapse:collapse}
+.sheet td,.sheet th{padding:3px 4px;border-bottom:1px solid #e3e3e8;text-align:right}
+.sheet td:first-child,.sheet th:first-child{text-align:left}
+.sheet .big{font-size:18px;font-weight:800}
+.sheet .foot{margin-top:12px;font-size:9.5px;color:#6a6972;border-top:1px solid #e3e3e8;padding-top:6px}
 @media (max-width:900px){
-  .prop,.calc,.comps{grid-template-columns:minmax(0,1fr)}
+  .prop,.calc,.comps,.rgrid{grid-template-columns:minmax(0,1fr)}
   .res{position:static}
   #map{height:300px}
   .clist{max-height:none}
@@ -216,6 +293,8 @@ table.t td.m{background:rgba(127,127,140,.08)}
   .seg button{white-space:normal}
   .card{padding:16px}
   .search .btn{width:100%}
+  .wf,.ok3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .it .inp{width:98px}
   table.t{font-size:13px}
   table.t td:first-child{max-width:118px}
 }
@@ -298,6 +377,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
           <div>
             <div class="asis" id="p_asis"></div>
             <div class="asis" id="p_fixer" style="margin-top:10px" hidden></div>
+            <div class="flood" id="p_flood" hidden></div>
           </div>
         </div>
       </section>
@@ -329,7 +409,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
             </fieldset>
             <fieldset class="fs"><legend data-t="l_rehab"></legend>
               <div class="seg" id="rlevel">
-                <button type="button" data-v="light"></button><button type="button" data-v="medium"></button><button type="button" data-v="heavy"></button><button type="button" data-v="custom"></button>
+                <button type="button" data-v="light"></button><button type="button" data-v="medium"></button><button type="button" data-v="heavy"></button><button type="button" data-v="items"></button><button type="button" data-v="custom"></button>
               </div>
               <div class="f2" style="margin-top:10px">
                 <label class="fl"><span data-t="i_rate"></span><span class="inp"><span>$</span><input data-k="rate" type="text" inputmode="numeric"><span class="r" data-t="per_sf"></span></span></label>
@@ -337,6 +417,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
                 <label class="fl"><span data-t="i_cont"></span><span class="inp"><input data-k="cont" type="text" inputmode="decimal"><span class="r">%</span></span></label>
               </div>
               <div class="hint" id="rehabhint"></div>
+              <div class="items" id="items" hidden></div>
             </fieldset>
             <fieldset class="fs"><legend data-t="l_fin"></legend>
               <div class="seg" id="fin"><button type="button" data-v="hm"></button><button type="button" data-v="cash"></button></div>
@@ -378,9 +459,80 @@ table.t td.m{background:rgba(127,127,140,.08)}
             <div class="kpis" id="kpis"></div>
             <div class="acts">
               <button type="button" class="btn dark" id="save" data-t="save"></button>
-              <button type="button" class="btn alt" id="print" data-t="print"></button>
+              <button type="button" class="btn alt" id="print" data-t="sheet"></button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- stress test -->
+      <section class="card" id="stresscard">
+        <h2 data-t="h_stress"></h2>
+        <p class="sub" data-t="h_stress_p"></p>
+        <table class="st" id="stress"></table>
+        <div class="kpis" id="bevens"></div>
+      </section>
+
+      <!-- rental / BRRRR -->
+      <section class="card" id="rentcard">
+        <h2 data-t="h_rent"></h2>
+        <p class="sub" data-t="h_rent_p"></p>
+        <div class="rgrid">
+          <div id="rinputs">
+            <fieldset class="fs"><legend data-t="l_rentin"></legend>
+              <div class="f3">
+                <label class="fl"><span data-t="r_rent"></span><span class="inp"><span>$</span><input data-r="rent" type="text" inputmode="numeric"><span class="r" data-t="per_mo"></span></span></label>
+                <label class="fl"><span data-t="r_vac"></span><span class="inp"><input data-r="vac" type="text" inputmode="decimal"><span class="r">%</span></span></label>
+                <label class="fl"><span data-t="r_mgmt"></span><span class="inp"><input data-r="mgmt" type="text" inputmode="decimal"><span class="r">%</span></span></label>
+                <label class="fl"><span data-t="r_maint"></span><span class="inp"><input data-r="maint" type="text" inputmode="decimal"><span class="r">%</span></span></label>
+                <label class="fl"><span data-t="r_capex"></span><span class="inp"><input data-r="capex" type="text" inputmode="decimal"><span class="r">%</span></span></label>
+              </div>
+              <div class="hint" id="rentsrc"></div>
+            </fieldset>
+            <fieldset class="fs"><legend data-t="l_refi"></legend>
+              <div class="f2">
+                <label class="fl"><span data-t="r_ltv"></span><span class="inp"><input data-r="ltv" type="text" inputmode="decimal"><span class="r">%</span></span></label>
+                <label class="fl"><span data-t="r_rate"></span><span class="inp"><input data-r="rate" type="text" inputmode="decimal"><span class="r">%</span></span></label>
+                <label class="fl"><span data-t="r_years"></span><span class="inp"><input data-r="years" type="text" inputmode="numeric"></span></label>
+                <label class="fl"><span data-t="r_close"></span><span class="inp"><input data-r="close" type="text" inputmode="decimal"><span class="r">%</span></span></label>
+              </div>
+            </fieldset>
+          </div>
+          <div>
+            <div class="kpis" id="rout" style="margin-top:0"></div>
+            <div class="note" id="rnote"></div>
+            <div class="clist" id="rcomps" style="margin-top:12px;max-height:260px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- next steps: pipeline + requests -->
+      <section class="card" id="nextcard">
+        <h2 data-t="h_next"></h2>
+        <p class="sub" data-t="h_next_p"></p>
+        <div class="pst" id="pstatus"></div>
+        <div id="actual" hidden style="margin-top:14px">
+          <div class="f3">
+            <label class="fl"><span data-t="a_buy"></span><span class="inp"><span>$</span><input data-a="buy" type="text" inputmode="numeric"></span></label>
+            <label class="fl"><span data-t="a_rehab"></span><span class="inp"><span>$</span><input data-a="rehab" type="text" inputmode="numeric"></span></label>
+            <label class="fl"><span data-t="a_other"></span><span class="inp"><span>$</span><input data-a="other" type="text" inputmode="numeric"></span></label>
+            <label class="fl"><span data-t="a_sale"></span><span class="inp"><span>$</span><input data-a="sale" type="text" inputmode="numeric"></span></label>
+            <label class="fl"><span data-t="a_date"></span><span class="inp"><input data-a="date" type="date"></span></label>
+          </div>
+          <div class="kpis" id="acmp"></div>
+        </div>
+        <div class="acts">
+          <button type="button" class="btn" id="reqlist" data-t="req_list"></button>
+          <button type="button" class="btn alt" id="reqlender" data-t="req_lender"></button>
+          <button type="button" class="btn alt" id="sheetbtn" data-t="sheet"></button>
+        </div>
+        <div class="req" id="reqform" hidden>
+          <b id="reqh"></b>
+          <div class="f2" style="margin-top:8px">
+            <label class="fl"><span id="reqdl"></span><span class="inp"><input id="reqdate" type="date"></span></label>
+          </div>
+          <label class="fl" style="margin-top:8px"><span data-t="req_note"></span><textarea id="reqnote" rows="2" maxlength="1000"></textarea></label>
+          <div class="acts"><button type="button" class="btn" id="reqsend" data-t="req_send"></button><button type="button" class="lnk" id="reqcancel" data-t="cancel"></button></div>
         </div>
       </section>
 
@@ -403,22 +555,56 @@ table.t td.m{background:rgba(127,127,140,.08)}
       <section class="card">
         <h2 data-t="h_comps"></h2>
         <p class="sub" id="compsub"></p>
+        <div class="tabs2" id="ctabs">
+          <button type="button" data-v="sold" class="on"></button><button type="button" data-v="active"></button>
+          <label class="sw2"><input type="checkbox" id="femaon"><span data-t="fema_layer"></span></label>
+        </div>
         <div class="comps">
-          <div id="map"></div>
-          <div class="clist" id="clist"></div>
+          <div>
+            <div id="map"></div>
+            <div class="femanote" id="femanote"></div>
+          </div>
+          <div>
+            <div class="clist" id="clist"></div>
+            <div class="clist" id="alist" hidden></div>
+          </div>
         </div>
       </section>
     </div>
 
     <section class="card" id="histcard" hidden>
       <h2 data-t="h_hist"></h2>
+      <div class="hf" id="hfilter"></div>
       <div class="hist" id="hist"></div>
+    </section>
+
+    <section class="card" id="finder">
+      <div class="eyebrow" data-t="f_eye"></div>
+      <h2 data-t="h_finder"></h2>
+      <p class="sub" data-t="h_finder_p"></p>
+      <div class="wl" id="wlist"></div>
+      <button type="button" class="btn alt" id="wnew" data-t="w_new"></button>
+      <form class="wf" id="wform" hidden autocomplete="off">
+        <input type="hidden" id="w_id">
+        <label class="fl full"><span data-t="w_areas"></span><input id="w_areas" type="text" required data-tp="w_areas_ph"></label>
+        <label class="fl"><span data-t="w_label"></span><input id="w_label" type="text" maxlength="60" data-tp="w_label_ph"></label>
+        <label class="fl"><span data-t="w_min"></span><input id="w_min" type="text" inputmode="numeric" data-tp="any"></label>
+        <label class="fl"><span data-t="w_max"></span><input id="w_max" type="text" inputmode="numeric" data-tp="any"></label>
+        <label class="fl"><span data-t="w_beds"></span><select id="w_beds"><option value="">—</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label class="fl"><span data-t="w_profit"></span><input id="w_profit" type="text" inputmode="numeric"></label>
+        <label class="fl"><span data-t="w_sqft"></span><input id="w_sqmin" type="text" inputmode="numeric" data-tp="any"></label>
+        <div class="acts full"><button type="submit" class="btn" data-t="w_save"></button><button type="button" class="lnk" id="wcancel" data-t="cancel"></button></div>
+        <div class="err full" id="werr" hidden></div>
+      </form>
+      <h3 style="margin:22px 0 0;font-size:16px" data-t="f_found"></h3>
+      <div class="fds" id="flist"></div>
     </section>
 
     <p class="disc" data-t="disc"></p>
   </div>
 </main>
 <div class="toast" id="toast"></div>
+<div class="sheet" id="sheet" aria-hidden="true"></div>
 
 <script src="jag-account.js"></script>
 <script>
@@ -460,6 +646,32 @@ table.t td.m{background:rgba(127,127,140,.08)}
       h_comps:'Casas vendidas cerca', comps_sub:'Quite las que no se parecen (otra calle, otro estilo) o marque las que sí: el ARV se recalcula. Las “fuera de rango” vienen desmarcadas.', rem:'Remodelada', fx:'Para arreglar', dom:'{n} días', mi:'{n} mi',
       h_hist:'Mis análisis', none:'Todavía no hay análisis.',
       e_sign:'Su sesión se cerró. Entre otra vez.', e_inv:'Su acceso no está activo. Llame a Jason.', e_limit:'Llegó al límite de búsquedas por hoy. Inténtelo mañana.', e_addr:'Escriba la dirección completa con ciudad y código postal.', e_nf:'No encontramos esa dirección. Revise que tenga ciudad y código postal.', e_gen:'Algo falló. Inténtelo otra vez.', e_nocomps:'No hay suficientes ventas cerca para calcular el ARV. Escriba su propio ARV abajo.',
+      lv_items:'Por partidas', sheet:'Hoja del trato (PDF)', per_mo:'/mes', cancel:'Cancelar', any:'Cualquiera',
+      fl_h:'Zona de inundación FEMA: {z}', fl_high:'Riesgo alto: zona de inundación de 100 años. Con préstamo, el seguro de inundación es obligatorio; las casas aquí se venden más lento.', fl_moderate:'Riesgo moderado (zona de 500 años). Seguro de inundación recomendado.', fl_minimal:'Riesgo mínimo según el mapa de FEMA. Aun así, revise si se ha inundado antes.', fl_unmapped:'Sin dato de FEMA para este punto.', fl_err:'No pudimos leer el mapa de FEMA ahorita.', fl_link:'Ver el mapa oficial de FEMA', fl_bfe:'Nivel base de inundación: {v} pies.',
+      fema_layer:'Zonas de inundación FEMA', fema_note:'Las áreas sombreadas son zonas de inundación del mapa de FEMA (se ven al acercar el mapa). ', tab_sold:'Vendidas ({n})', tab_active:'En venta ahora ({n})',
+      a_sub:'Casas parecidas a la venta a menos de 1 milla: con ellas va a competir cuando venda. {n} activas · mediana {d} días en el mercado · {c} con rebaja.', a_none:'No hay casas parecidas a la venta a menos de 1 milla.', a_cut:'Rebajada {v}', a_list:'Precio',
+      it_paint:'Pintura interior', it_floor:'Pisos (vinil LVP)', it_kitchen:'Cocina (gabinetes, cubierta, aparatos)', it_bath:'Baños', it_roof:'Techo nuevo', it_hvac:'Aire acondicionado y calefacción', it_wh:'Calentador de agua', it_elec:'Eléctrico (panel, arreglos)', it_plumb:'Plomería (arreglos)', it_cast:'Cambiar drenajes de hierro fundido', it_found:'Cimientos (reparación)', it_windows:'Ventanas', it_ext:'Pintura exterior y madera', it_yard:'Jardín y cerca', it_fix:'Puertas, luces y detalles', it_clean:'Limpieza, basura y permisos', it_total:'Total por partidas',
+      it_n_sf:'{v}/pie²', it_n_each:'{v} c/u', it_n_cast:'Común en casas de antes de 1975', it_n_roof:'Área del techo ≈ 1.2 × pies²',
+      h_stress:'Prueba de estrés', h_stress_p:'Qué pasa con su ganancia (caso medio) si algo sale peor de lo planeado.',
+      s_base:'Su plan', s_rehab:'Remodelación +20%', s_months:'+3 meses', s_arv:'Venta −5%', s_all:'Las tres juntas', s_profit:'Ganancia', s_margin:'Margen', s_change:'Cambio',
+      be_price:'Precio de compra para quedar en $0', be_price_p:'caso medio, con todos sus costos', be_arv:'Venta mínima para no perder', be_arv_p:'con su precio y remodelación',
+      h_rent:'¿Y si la renta? (comprar, remodelar, rentar, refinanciar)', h_rent_p:'Si el flip queda justo, vea si funciona como renta: la renta del mercado, el flujo de cada mes y cuánto efectivo saca al refinanciar.',
+      l_rentin:'Renta y gastos', r_rent:'Renta del mercado', r_vac:'Vacancia', r_mgmt:'Administración', r_maint:'Mantenimiento', r_capex:'Reservas (techo, A/C…)', l_refi:'Refinanciamiento (préstamo DSCR)', r_ltv:'% del ARV medio', r_rate:'Interés anual', r_years:'Años', r_close:'Costos de cierre',
+      rent_src:'Estimado de RentCast: {v}/mes (rango {a} – {b}).', rent_none:'Sin estimado de renta; escriba la renta.',
+      ro_cf:'Flujo al mes', ro_cf_p:'después de todos los gastos y el pago', ro_dscr:'DSCR', ro_dscr_p:'renta ÷ pago con impuestos y seguro; los prestamistas piden 1.2+', ro_cap:'Cap rate', ro_cap_p:'ingreso neto ÷ costo total', ro_left:'Efectivo que queda en el trato', ro_left_p:'después de refinanciar', ro_out:'Saca {v} más de lo que puso', ro_coc:'Retorno sobre el efectivo', ro_coc_p:'flujo del año ÷ efectivo que queda', ro_pay:'Pago del préstamo nuevo', ro_pay_p:'capital e interés, préstamo de {v}',
+      ro_note:'Cifras estimadas. El préstamo DSCR depende del prestamista; confirme tasa, % y gastos.', rc_h:'Rentas parecidas cerca',
+      h_next:'Siguiente paso', h_next_p:'Marque en qué va el trato, apunte los números reales y pídale ayuda al equipo JAG.',
+      ps_analyzing:'Analizando', ps_offer:'Oferta hecha', ps_contract:'Bajo contrato', ps_rehab:'En remodelación', ps_listed:'En venta', ps_sold:'Vendida', ps_passed:'No se hizo',
+      a_buy:'Compra real', a_rehab:'Remodelación gastada', a_other:'Otros costos (préstamo, cierre, mensuales)', a_sale:'Precio de venta', a_date:'Fecha de venta',
+      ac_est:'Ganancia estimada (medio)', ac_real:'Ganancia real', ac_real_p:'venta − gastos de venta − compra − remodelación − otros', ac_diff:'Diferencia', st_saved:'Estado guardado',
+      req_list:'Vender con JAG', req_lender:'Prestamista (hard money)', req_note:'Nota para Jason (opcional)', req_send:'Enviar a Jason', req_h_list:'¿Cuándo quiere poner la casa en venta?', req_h_lender:'Le presentamos un prestamista para este trato', req_d_list:'Fecha para listar', req_d_lender:'Necesito el dinero para', req_ok:'Listo. Jason recibió su solicitud y lo va a contactar.',
+      h_finder:'Buscador de tratos', f_eye:'Alertas de oportunidades', h_finder_p:'Le avisamos por correo cuando salga en HAR una casa que podría ser un buen flip en sus zonas: para arreglar, con rebaja, mucho tiempo en el mercado o con precio bajo para la zona. Revisamos cada mañana con las mismas ventas y números del portal.',
+      w_new:'+ Nueva alerta', w_areas:'Zonas: códigos postales o ciudades, separadas por coma', w_areas_ph:'77373, 77090, Spring', w_label:'Nombre', w_label_ph:'Ej. Spring norte', w_min:'Precio mínimo', w_max:'Precio máximo', w_beds:'Recámaras mín.', w_profit:'Ganancia que busca', w_sqft:'Pies² mínimo', w_save:'Guardar alerta',
+      w_on:'Activa', w_off:'Pausada', w_run:'Buscar ahora', w_edit:'Editar', w_del:'Quitar', w_last:'Última revisión {d}', w_never:'Aún no se revisa', w_max5:'Puede tener hasta 5 alertas.', w_needarea:'Escriba al menos un código postal o ciudad.', w_running:'Buscando…', w_ran:'Listo: {n} nuevas.', w_recent:'Ya buscamos hace unos minutos. Inténtelo más tarde.',
+      w_desc:'{a} · hasta {p} · {b}+ rec · ganancia {g}+',
+      f_found:'Casas encontradas (últimos 30 días)', f_none:'Aún no hay casas. Cree una alerta y le avisamos por correo cada mañana.', f_list:'Lista', f_arv:'Remodelada', f_offer:'Oferta máx.', f_at_list:'Al precio de lista deja {v}', f_need:'Ofrezca {v} ({p}% abajo) para ganar {g}', f_analyze:'Analizar', f_dismiss:'Descartar',
+      why_fixer:'Para arreglar', why_low:'$/pie² bajo', why_cut:'Rebajada {v}', why_dom:'{n} días en venta',
+      hf_all:'Todos ({n})', sh_title:'Hoja del trato', sh_prep:'Preparado con el Portal de Inversionista JAG', sh_for:'Para',
       disc:'Estimados solo para uso del inversionista. El ARV y el valor de hoy salen de ventas en HAR y de RentCast y no son un avalúo. Verifique condición, permisos, zona de inundación (FEMA) y título antes de comprar. Jason Aguirre Group · eXp Realty.' },
     en:{ badge:'Investor', gi_h:'Investor Portal', gi_p:'This portal is private and by invitation only. Sign in with the email your invitation was sent to.', gi_btn:'Sign in',
       gn_h:'Invitation only', gn_p:'This portal is private for investors invited by Jason Aguirre. If you think you should have access, give us a call.',
@@ -490,6 +702,32 @@ table.t td.m{background:rgba(127,127,140,.08)}
       h_comps:'Nearby sold homes', comps_sub:'Uncheck the ones that don\'t compare (other street, other style) or check the ones that do: the ARV recalculates. "Out of range" sales start unchecked.', rem:'Remodeled', fx:'Needs work', dom:'{n} days', mi:'{n} mi',
       h_hist:'My analyses', none:'No analyses yet.',
       e_sign:'Your session ended. Please sign in again.', e_inv:'Your access isn\'t active. Call Jason.', e_limit:'You reached today\'s lookup limit. Try again tomorrow.', e_addr:'Type the full address with city and ZIP.', e_nf:'We couldn\'t find that address. Check it has the city and ZIP.', e_gen:'Something went wrong. Try again.', e_nocomps:'Not enough nearby sales to estimate the ARV. Type your own ARV below.',
+      lv_items:'Itemized', sheet:'Deal sheet (PDF)', per_mo:'/mo', cancel:'Cancel', any:'Any',
+      fl_h:'FEMA flood zone: {z}', fl_high:'High risk: 100-year floodplain. With a loan, flood insurance is required; homes here resell slower.', fl_moderate:'Moderate risk (500-year zone). Flood insurance recommended.', fl_minimal:'Minimal risk on the FEMA map. Still check whether it has flooded before.', fl_unmapped:'No FEMA data for this spot.', fl_err:'We couldn\'t read the FEMA map right now.', fl_link:'See the official FEMA map', fl_bfe:'Base flood elevation: {v} ft.',
+      fema_layer:'FEMA flood zones', fema_note:'Shaded areas are flood zones from the FEMA map (they show when you zoom in). ', tab_sold:'Sold ({n})', tab_active:'For sale now ({n})',
+      a_sub:'Similar homes for sale within 1 mile: your competition when you sell. {n} active · median {d} days on market · {c} with price cuts.', a_none:'No similar homes for sale within 1 mile.', a_cut:'Cut {v}', a_list:'List',
+      it_paint:'Interior paint', it_floor:'Flooring (LVP)', it_kitchen:'Kitchen (cabinets, counters, appliances)', it_bath:'Bathrooms', it_roof:'New roof', it_hvac:'A/C and heating', it_wh:'Water heater', it_elec:'Electrical (panel, repairs)', it_plumb:'Plumbing (repairs)', it_cast:'Replace cast-iron drains', it_found:'Foundation (repair)', it_windows:'Windows', it_ext:'Exterior paint and wood', it_yard:'Yard and fence', it_fix:'Doors, lights and details', it_clean:'Cleanup, dumpster and permits', it_total:'Itemized total',
+      it_n_sf:'{v}/sq ft', it_n_each:'{v} each', it_n_cast:'Common in homes built before 1975', it_n_roof:'Roof area ≈ 1.2 × sq ft',
+      h_stress:'Stress test', h_stress_p:'What happens to your mid-case profit if something goes worse than planned.',
+      s_base:'Your plan', s_rehab:'Rehab +20%', s_months:'+3 months', s_arv:'Sale −5%', s_all:'All three', s_profit:'Profit', s_margin:'Margin', s_change:'Change',
+      be_price:'Purchase price to break even', be_price_p:'mid case, with all your costs', be_arv:'Lowest sale to not lose', be_arv_p:'with your price and rehab',
+      h_rent:'What if you rent it? (buy, rehab, rent, refinance)', h_rent_p:'If the flip is thin, see whether it works as a rental: market rent, monthly cash flow and how much cash you pull out when you refinance.',
+      l_rentin:'Rent and expenses', r_rent:'Market rent', r_vac:'Vacancy', r_mgmt:'Management', r_maint:'Maintenance', r_capex:'Reserves (roof, A/C…)', l_refi:'Refinance (DSCR loan)', r_ltv:'% of mid ARV', r_rate:'Annual rate', r_years:'Years', r_close:'Closing costs',
+      rent_src:'RentCast estimate: {v}/mo (range {a} – {b}).', rent_none:'No rent estimate; type the rent.',
+      ro_cf:'Cash flow per month', ro_cf_p:'after all expenses and the payment', ro_dscr:'DSCR', ro_dscr_p:'rent ÷ payment with taxes and insurance; lenders want 1.2+', ro_cap:'Cap rate', ro_cap_p:'net income ÷ all-in cost', ro_left:'Cash left in the deal', ro_left_p:'after the refinance', ro_out:'You pull out {v} more than you put in', ro_coc:'Cash-on-cash return', ro_coc_p:'yearly cash flow ÷ cash left in', ro_pay:'New loan payment', ro_pay_p:'principal & interest on a {v} loan',
+      ro_note:'Estimates. DSCR loans vary by lender; confirm the rate, % and costs.', rc_h:'Similar rentals nearby',
+      h_next:'Next step', h_next_p:'Mark where the deal stands, log the real numbers and get help from the JAG team.',
+      ps_analyzing:'Analyzing', ps_offer:'Offer made', ps_contract:'Under contract', ps_rehab:'In rehab', ps_listed:'Listed', ps_sold:'Sold', ps_passed:'Passed',
+      a_buy:'Actual purchase', a_rehab:'Rehab spent', a_other:'Other costs (loan, closing, monthly)', a_sale:'Sale price', a_date:'Sale date',
+      ac_est:'Estimated profit (mid)', ac_real:'Actual profit', ac_real_p:'sale − selling costs − purchase − rehab − other', ac_diff:'Difference', st_saved:'Status saved',
+      req_list:'List it with JAG', req_lender:'Hard-money lender intro', req_note:'Note for Jason (optional)', req_send:'Send to Jason', req_h_list:'When do you want to list the house?', req_h_lender:'We\'ll introduce you to a lender for this deal', req_d_list:'Listing date', req_d_lender:'I need the funds by', req_ok:'Done. Jason got your request and will contact you.',
+      h_finder:'Deal finder', f_eye:'Opportunity alerts', h_finder_p:'We email you when a HAR listing in your areas could be a good flip: sold as-is, price cut, long on the market or priced low for the area. We check every morning with the same sales and numbers as the portal.',
+      w_new:'+ New alert', w_areas:'Areas: ZIP codes or cities, separated by commas', w_areas_ph:'77373, 77090, Spring', w_label:'Name', w_label_ph:'E.g. North Spring', w_min:'Min price', w_max:'Max price', w_beds:'Min beds', w_profit:'Profit you want', w_sqft:'Min sq ft', w_save:'Save alert',
+      w_on:'On', w_off:'Paused', w_run:'Search now', w_edit:'Edit', w_del:'Remove', w_last:'Last checked {d}', w_never:'Not checked yet', w_max5:'You can have up to 5 alerts.', w_needarea:'Type at least one ZIP code or city.', w_running:'Searching…', w_ran:'Done: {n} new.', w_recent:'We searched a few minutes ago. Try again later.',
+      w_desc:'{a} · up to {p} · {b}+ bd · profit {g}+',
+      f_found:'Homes found (last 30 days)', f_none:'No homes yet. Create an alert and we\'ll email you every morning.', f_list:'List', f_arv:'Rehabbed', f_offer:'Max offer', f_at_list:'At list price it leaves {v}', f_need:'Offer {v} ({p}% under) to make {g}', f_analyze:'Analyze', f_dismiss:'Dismiss',
+      why_fixer:'Needs work', why_low:'Low $/sq ft', why_cut:'Cut {v}', why_dom:'{n} days listed',
+      hf_all:'All ({n})', sh_title:'Deal sheet', sh_prep:'Prepared with the JAG Investor Portal', sh_for:'For',
       disc:'Estimates for the investor\'s use only. ARV and today\'s value come from HAR sales and RentCast and are not an appraisal. Verify condition, permits, flood zone (FEMA) and title before buying. Jason Aguirre Group · eXp Realty.' }
   };
   function lang(){ try{ var v=localStorage.getItem('jag_lang'); if(v==='en'||v==='es') return v; }catch(e){} return 'es'; }
@@ -499,10 +737,10 @@ table.t td.m{background:rgba(127,127,140,.08)}
     document.querySelectorAll('[data-t]').forEach(function(el){ el.textContent=t(el.getAttribute('data-t')); });
     document.querySelectorAll('[data-tp]').forEach(function(el){ el.placeholder=t(el.getAttribute('data-tp')); });
     document.querySelectorAll('.langs [data-lang]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang')===lang()); });
-    ['light','medium','heavy','custom'].forEach(function(v){ var b=document.querySelector('#rlevel [data-v="'+v+'"]'); if(b) b.textContent=t('lv_'+v); });
+    ['light','medium','heavy','items','custom'].forEach(function(v){ var b=document.querySelector('#rlevel [data-v="'+v+'"]'); if(b) b.textContent=t('lv_'+v); });
     document.querySelector('#fin [data-v="hm"]').textContent=t('fin_hm'); document.querySelector('#fin [data-v="cash"]').textContent=t('fin_cash');
     $('rehabhint').textContent=t('rehab_hint');
-    if(ME) paintHello();
+    if(ME){ paintHello(); paintFinder(); }
     if(RUN) paintAll();
   }
   document.querySelectorAll('.langs [data-lang]').forEach(function(b){ b.addEventListener('click',function(){ try{ localStorage.setItem('jag_lang', b.getAttribute('data-lang')); }catch(e){} paintWords(); if(A) A.relabel(); }); });
@@ -519,7 +757,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
   function toast(m){ var e=$('toast'); e.textContent=m; e.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(function(){ e.classList.remove('on'); },2200); }
 
   /* ---------- state ---------- */
-  var ME=null, RUN=null, EXCL={}, IN=null, FIN='hm', LEVEL='medium', map=null, layer=null;
+  var ME=null, RUN=null, EXCL={}, IN=null, FIN='hm', LEVEL='medium', map=null, layer=null, femaLayer=null, TAB='sold', ITEMS={}, RIN={}, STATUS='analyzing', ACT={}, HF='all';
   var RATES={ light:20, medium:35, heavy:55 };
   function defaults(){
     var s=RUN&&RUN.result&&RUN.result.subject||{}, sq=s.sqft||1500, arv=arvNow(), mid=arv?arv.mid:0;
@@ -600,12 +838,19 @@ table.t td.m{background:rgba(127,127,140,.08)}
     $('left').textContent=ME.runs_left!=null?t('left',{n:ME.runs_left}):'';
     paintHist();
   }
+  var PS=['analyzing','offer','contract','rehab','listed','sold','passed'];
   function paintHist(){
-    var runs=(ME&&ME.runs)||[];
-    $('histcard').hidden=!runs.length;
+    var all=(ME&&ME.runs)||[];
+    $('histcard').hidden=!all.length;
+    var cnt={}; all.forEach(function(r){ var k=r.status||'analyzing'; cnt[k]=(cnt[k]||0)+1; });
+    if(HF!=='all'&&!cnt[HF]) HF='all';
+    $('hfilter').innerHTML='<button type="button" data-f="all" class="'+(HF==='all'?'on':'')+'">'+esc(t('hf_all',{n:all.length}))+'</button>'+
+      PS.filter(function(k){ return cnt[k]; }).map(function(k){ return '<button type="button" data-f="'+k+'" class="'+(HF===k?'on':'')+'">'+esc(t('ps_'+k))+' ('+cnt[k]+')</button>'; }).join('');
+    $('hfilter').querySelectorAll('[data-f]').forEach(function(b){ b.onclick=function(){ HF=b.getAttribute('data-f'); paintHist(); }; });
+    var runs=all.filter(function(r){ return HF==='all'||(r.status||'analyzing')===HF; });
     $('hist').innerHTML=runs.map(function(r){
-      var p=r.profit!=null?Number(r.profit):null;
-      return '<button type="button" class="hi" data-id="'+r.id+'"><div class="tx"><b>'+esc(r.address)+'</b><span>'+esc(dfmt(r.at))+'</span></div>'+
+      var p=r.profit!=null?Number(r.profit):null, st=r.status||'analyzing';
+      return '<button type="button" class="hi" data-id="'+r.id+'"><div class="tx"><b>'+esc(r.address)+'</b><span>'+esc(dfmt(r.at))+(st!=='analyzing'?' · <span class="badge '+st+'">'+esc(t('ps_'+st))+'</span>':'')+'</span></div>'+
         '<div class="nm">'+(r.mid!=null?k$(Number(r.mid)):'')+'<small class="'+(p==null?'':(p>=0?'pos':'neg'))+'">'+(p!=null?t('profit')+' '+k$(p):'ARV')+'</small></div></button>';
     }).join('');
     $('hist').querySelectorAll('[data-id]').forEach(function(b){ b.onclick=function(){ openRun(Number(b.getAttribute('data-id'))); }; });
@@ -659,6 +904,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
     document.querySelectorAll('#rlevel button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===LEVEL); });
     document.querySelectorAll('#fin button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===FIN); });
     $('hmrow').hidden=FIN!=='hm';
+    $('items').hidden=LEVEL!=='items';
   }
   var LAST=null;
   function calc(){
@@ -687,6 +933,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
       '<div class="kpi"><small>'+esc(t('k_cash'))+'</small><b>'+money(D.cash)+'</b>'+(FIN==='hm'?'<em>'+esc(t('k_loan'))+' '+money(D.loan)+'</em>':'')+'</div>'+
       '<div class="kpi"><small>'+esc(t('k_mao'))+'</small><b>'+money(Math.max(0,mao))+'</b><em>'+esc(t('k_mao_p'))+'</em></div>'+
       '<div class="kpi"><small>'+esc(t('k_max'))+'</small><b>'+(M.price==null?'—':money(M.price))+'</b><em>'+esc(t('k_max_p',{v:k$(M.target)}))+'</em></div>';
+    paintStress(); paintRent(); paintActual();
   }
   function dealJson(){
     if(!LAST) return null;
@@ -695,6 +942,8 @@ table.t td.m{background:rgba(127,127,140,.08)}
       worst:sc(D.worst), mid:sc(D.mid), best:sc(D.best), all_in:Math.round(D.allin), cash_needed:Math.round(D.cash), loan:Math.round(D.loan),
       rehab_with_contingency:Math.round(D.rehabT), holding_total:Math.round(D.hold), financing_cost:Math.round(D.fin),
       max_offer_70:Math.round(Math.max(0,LAST.mao)), max_offer_for_goal:LAST.M.price, goal_profit:Math.round(LAST.M.target), grade:LAST.g,
+      items:LEVEL==='items'?ITEMS:undefined, rental:Object.assign({}, RIN, LAST.rent?{ cash_flow_mo:Math.round(LAST.rent.cf), dscr:Math.round(LAST.rent.dscr*100)/100, cap_rate:Math.round(LAST.rent.cap*10)/10, cash_left:Math.round(LAST.rent.left) }:{}),
+      stress:LAST.stress||undefined, break_even_price:LAST.bePrice, flood_zone:RUN.result.flood&&RUN.result.flood.zone||null,
       own_arv:LAST.arv.own?LAST.arv.mid:null, comps_removed:Object.keys(EXCL).length, excluded:Object.keys(EXCL).slice(0,25), included_out:(RUN.result.comps||[]).filter(function(c){ return c.out && !EXCL[cid(c)]; }).map(cid).slice(0,10) };
   }
 
@@ -714,7 +963,35 @@ table.t td.m{background:rgba(127,127,140,.08)}
         '<div>'+[c.sold_date?dfmt(c.sold_date):'', c.sqft?Number(c.sqft).toLocaleString('en-US')+' '+t('sqft').toLowerCase():'', (c.beds!=null?c.beds+'/'+(c.baths!=null?c.baths:'?'):''), c.year||'', c.miles!=null?t('mi',{n:c.miles}):'', c.dom!=null?t('dom',{n:c.dom}):''].filter(Boolean).map(esc).join(' · ')+'</div></div></label>';
     }).join('');
     $('clist').querySelectorAll('[data-c]').forEach(function(cb){ cb.onchange=function(){ var id=cb.getAttribute('data-c'); if(cb.checked) delete EXCL[id]; else EXCL[id]=1; cb.closest('.cp').classList.toggle('off',!cb.checked); drawMap(); calc(); }; });
+    paintActive();
     drawMap();
+  }
+  function paintActive(){
+    var cp=RUN.result.competition||{}, L2=cp.listings||[];
+    var tb=$('ctabs').querySelectorAll('button');
+    tb[0].textContent=t('tab_sold',{n:(RUN.result.comps||[]).length}); tb[1].textContent=t('tab_active',{n:L2.length});
+    tb.forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===TAB); });
+    $('clist').hidden=TAB!=='sold'; $('alist').hidden=TAB!=='active';
+    $('compsub').textContent=TAB==='sold'?t('comps_sub'):(L2.length?t('a_sub',{n:cp.count,d:cp.median_dom!=null?cp.median_dom:'—',c:cp.price_cuts||0}):t('a_none'));
+    $('alist').innerHTML=L2.map(function(c,i){
+      return '<div class="cp"><div class="th" style="'+(c.photo?'background-image:url(\''+CDN+esc(c.photo)+'?class=small\')':'')+'"><i>'+(i+1)+'</i></div>'+
+        '<div class="tx"><b>'+money(c.list_price)+'</b> · '+(c.ppsf?money(c.ppsf)+'/'+(lang()==='en'?'sf':'p²'):'')+
+        (c.cut>0?'<span class="tag fix">'+esc(t('a_cut',{v:k$(c.cut)}))+'</span>':'')+(c.cond==='remodeled'?'<span class="tag rem">'+esc(t('rem'))+'</span>':c.cond==='fixer'?'<span class="tag fix">'+esc(t('fx'))+'</span>':'')+
+        '<div class="a">'+esc(c.address||'')+'</div>'+
+        '<div>'+[c.sqft?Number(c.sqft).toLocaleString('en-US')+' '+t('sqft').toLowerCase():'', (c.beds!=null?c.beds+'/'+(c.baths!=null?c.baths:'?'):''), c.year||'', c.miles!=null?t('mi',{n:c.miles}):'', c.dom!=null?t('dom',{n:c.dom}):''].filter(Boolean).map(esc).join(' · ')+'</div></div></div>';
+    }).join('');
+    var s=RUN.result.subject||{};
+    $('femanote').innerHTML=esc(t('fema_note'))+'<a href="https://msc.fema.gov/portal/search?AddressQuery='+encodeURIComponent(s.address||RUN.address||'')+'" target="_blank" rel="noopener">'+esc(t('fl_link'))+' ↗</a>';
+  }
+  // FEMA National Flood Hazard Layer as map tiles (FEMA's public map service draws each 256px tile)
+  function femaTiles(){
+    var FT=L.TileLayer.extend({ getTileUrl:function(c){
+      var ts=this.getTileSize(), nw=c.scaleBy(ts), se=nw.add(ts), crs=this._map.options.crs;
+      var a=crs.project(this._map.unproject(nw,c.z)), b=crs.project(this._map.unproject(se,c.z));
+      return 'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/export?bbox='+[a.x,b.y,b.x,a.y].map(function(v){ return v.toFixed(1); }).join(',')+
+        '&bboxSR=3857&imageSR=3857&size='+ts.x+','+ts.y+'&layers=show:28&format=png32&transparent=true&f=image';
+    }});
+    return new FT('',{ opacity:.55, minZoom:11, maxZoom:19, attribution:'Flood zones: <a href="https://www.fema.gov/flood-maps/national-flood-hazard-layer" target="_blank" rel="noopener">FEMA NFHL</a>' });
   }
   function drawMap(){
     if(!window.L||!RUN) return;
@@ -729,7 +1006,14 @@ table.t td.m{background:rgba(127,127,140,.08)}
     if(layer) map.removeLayer(layer);
     layer=L.layerGroup().addTo(map);
     var pts=[];
-    (r.comps||[]).forEach(function(c,i){
+    if($('femaon').checked){ if(!femaLayer) femaLayer=femaTiles(); if(!map.hasLayer(femaLayer)) femaLayer.addTo(map); } else if(femaLayer&&map.hasLayer(femaLayer)) map.removeLayer(femaLayer);
+    if(TAB==='active') (((r.competition||{}).listings)||[]).forEach(function(c,i){
+      if(c.lat==null||c.lng==null) return;
+      L.marker([c.lat,c.lng],{ icon:L.divIcon({ className:'', html:'<div class="pin" style="background:#2653d9;border-radius:7px">'+(i+1)+'</div>', iconSize:[26,26], iconAnchor:[13,13] }),
+        title:(i+1)+'. '+(c.address||'')+' '+money(c.list_price) }).bindPopup('<b>'+money(c.list_price)+'</b><br>'+esc(c.address||'')+(c.dom!=null?'<br>'+esc(t('dom',{n:c.dom})):'')).addTo(layer);
+      pts.push([c.lat,c.lng]);
+    });
+    if(TAB==='sold') (r.comps||[]).forEach(function(c,i){
       if(c.lat==null||c.lng==null) return;
       var off=!!EXCL[c.mls||c.address];
       L.marker([c.lat,c.lng],{ icon:L.divIcon({ className:'', html:'<div class="pin" style="background:'+pinColor(c)+';opacity:'+(off?.35:1)+'">'+(i+1)+'</div>', iconSize:[26,26], iconAnchor:[13,13] }),
@@ -749,7 +1033,7 @@ table.t td.m{background:rgba(127,127,140,.08)}
   function paintAll(){
     if(!RUN) return;
     $('out').hidden=false;
-    paintProp(); segs(); calc(); paintComps(); paintLola();
+    paintProp(); paintFlood(); renderItems(); segs(); calc(); paintComps(); paintLola(); paintNext();
   }
 
   /* ---------- server calls ---------- */
@@ -772,7 +1056,9 @@ table.t td.m{background:rgba(127,127,140,.08)}
     // "out of range" sales start unchecked unless he checked them back on; his own removals come back as he left them
     var back=(RUN.deal&&RUN.deal.included_out)||[];
     (RUN.result.comps||[]).forEach(function(c){ if(c.out && back.indexOf(cid(c))<0) EXCL[cid(c)]=1; });
-    if(dj){ FIN=dj.financing==='cash'?'cash':'hm'; LEVEL=['light','medium','heavy','custom'].indexOf(dj.rehab_level)>=0?dj.rehab_level:'medium';
+    STATUS=(j.status)||'analyzing'; ACT=j.actual||{}; TAB='sold';
+    initItems(RUN.deal&&RUN.deal.items); initRent(RUN.deal&&RUN.deal.rental);
+    if(dj){ FIN=dj.financing==='cash'?'cash':'hm'; LEVEL=['light','medium','heavy','items','custom'].indexOf(dj.rehab_level)>=0?dj.rehab_level:'medium';
       (RUN.deal.excluded||[]).forEach(function(x){ EXCL[x]=1; });
       back.forEach(function(x){ delete EXCL[x]; }); if(RUN.deal.own_arv) $('own_arv').value=Number(RUN.deal.own_arv).toLocaleString('en-US');
       writeInputs(Object.assign(defaults(), dj));
@@ -809,20 +1095,22 @@ table.t td.m{background:rgba(127,127,140,.08)}
       .catch(function(e){ RUN.lola=RUN.lola||null; toast(e&&e.reason==='lola_limit'?t('lola_limit'):t('lola_err')); })
       .then(function(){ $('asklola').disabled=false; $('lolabusy').hidden=true; paintLola(); });
   }
-  function refreshMe(){ return A.rpc('jag_investor_me').then(function(j){ if(j&&j.ok){ ME=j; paintHello(); } }).catch(function(){}); }
+  function refreshMe(){ return A.rpc('jag_investor_me').then(function(j){ if(j&&j.ok){ ME=j; paintHello(); paintFinder(); } }).catch(function(){}); }
 
   /* ---------- wiring ---------- */
   $('sform').addEventListener('submit', analyze);
   $('inputs').addEventListener('input', function(e){
     var k=e.target.getAttribute('data-k');
     if(k==='rate'&&RUN){ var sq=(RUN.result.subject||{}).sqft||1500; var el=document.querySelector('[data-k="rehab"]'); el.value=Math.round(num(e.target.value)*sq).toLocaleString('en-US'); LEVEL='custom'; segs(); }
-    if(k==='rehab'){ LEVEL='custom'; segs(); }
+    if(k==='rehab'&&LEVEL!=='items'){ LEVEL='custom'; segs(); }
+    if(k==='rehab'&&LEVEL==='items'){ LEVEL='custom'; segs(); }
     calc();
   });
   $('inputs').addEventListener('change', function(e){ var k=e.target.getAttribute('data-k'); if(k) e.target.value=fmtIn(k,num(e.target.value)); });
   $('rlevel').addEventListener('click', function(e){
     var b=e.target.closest('button'); if(!b) return; LEVEL=b.getAttribute('data-v');
-    if(LEVEL!=='custom'&&RUN){ var sq=(RUN.result.subject||{}).sqft||1500; document.querySelector('[data-k="rate"]').value=RATES[LEVEL]; document.querySelector('[data-k="rehab"]').value=(Math.round(RATES[LEVEL]*sq/500)*500).toLocaleString('en-US'); }
+    if(LEVEL==='items'&&RUN){ renderItems(); applyItems(); }
+    else if(LEVEL!=='custom'&&RUN){ var sq=(RUN.result.subject||{}).sqft||1500; document.querySelector('[data-k="rate"]').value=RATES[LEVEL]; document.querySelector('[data-k="rehab"]').value=(Math.round(RATES[LEVEL]*sq/500)*500).toLocaleString('en-US'); }
     segs(); calc();
   });
   $('fin').addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; FIN=b.getAttribute('data-v'); segs(); calc(); });
@@ -831,16 +1119,273 @@ table.t td.m{background:rgba(127,127,140,.08)}
   $('own_arv').addEventListener('change', function(){ var v=num($('own_arv').value); $('own_arv').value=v?Math.round(v).toLocaleString('en-US'):''; });
   $('reset').onclick=function(){ LEVEL='medium'; FIN='hm'; writeInputs(defaults()); segs(); calc(); };
   $('save').onclick=function(){ saveDeal(false); };
-  $('print').onclick=function(){ window.print(); };
+  $('print').onclick=printSheet;
   $('asklola').onclick=askLola;
   $('g_in_btn').onclick=function(){ A.requireSignIn().catch(function(){}); };
+
+  /* ---------- flood zone (FEMA) ---------- */
+  function paintFlood(){
+    var f=RUN.result.flood, el=$('p_flood'), s=RUN.result.subject||{};
+    if(!f){ el.hidden=true; return; }
+    if(f.error&&!f._tried&&s.lat!=null){ f._tried=1; floodDirect(s.lat,s.lng).then(function(x){ if(x){ RUN.result.flood=x; paintFlood(); } }); }
+    var link='<a href="https://msc.fema.gov/portal/search?AddressQuery='+encodeURIComponent(s.address||'')+'" target="_blank" rel="noopener">'+esc(t('fl_link'))+' ↗</a>';
+    el.hidden=false;
+    if(f.error){ el.className='flood'; el.innerHTML='<b>'+esc(t('fl_h',{z:'—'}))+'</b>'+esc(t('fl_err'))+' '+link; return; }
+    var risk=f.risk||'unmapped';
+    el.className='flood '+risk;
+    el.innerHTML='<b>'+esc(t('fl_h',{z:f.zone||'—'}))+'</b>'+esc(t(risk==='high'?'fl_high':risk==='moderate'?'fl_moderate':risk==='minimal'?'fl_minimal':'fl_unmapped'))+
+      (f.bfe!=null?' '+esc(t('fl_bfe',{v:f.bfe})):'')+' '+link;
+  }
+  // when the server could not reach FEMA, the browser asks FEMA directly (FEMA allows it)
+  function floodDirect(lat,lng){
+    var u='https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?geometry='+lng+','+lat+'&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE,ZONE_SUBTY,SFHA_TF,STATIC_BFE&returnGeometry=false&f=json';
+    return fetch(u).then(function(r){ return r.json(); }).then(function(j){
+      var f=(j.features||[])[0]; if(!f) return { zone:null, risk:'unmapped' };
+      var a=f.attributes||{}, z=String(a.FLD_ZONE||'').trim(), sub=a.ZONE_SUBTY||'', hi=a.SFHA_TF==='T'||/^(A|V)/.test(z), mod=!hi&&/0\.2 PCT|500/i.test(sub);
+      return { zone:z, subtype:sub, sfha:hi, risk:hi?'high':mod?'moderate':z==='D'?'undetermined':'minimal', bfe:a.STATIC_BFE>-9000?a.STATIC_BFE:null };
+    }).catch(function(){ return null; });
+  }
+
+  /* ---------- itemized rehab (Houston ballpark costs, every amount editable) ---------- */
+  function itemDefs(){
+    var s=(RUN&&RUN.result.subject)||{}, sq=s.sqft||1500, ba=Math.max(1,Math.round(s.baths||2)), yr=s.year||1990;
+    return [
+      ['paint', Math.round(sq*2.25), t('it_n_sf',{v:'$2.25'}), 1], ['floor', Math.round(sq*.85*4.5), t('it_n_sf',{v:'$4.50'}), 1],
+      ['kitchen', 16000, '', 1], ['bath', ba*7500, t('it_n_each',{v:'$7,500'})+' × '+ba, 1], ['roof', Math.round(sq*1.2*4.5), t('it_n_roof'), 0],
+      ['hvac', 8500, '', 0], ['wh', 1800, '', 1], ['elec', 3000, '', 1], ['plumb', 3500, '', 1], ['cast', 9000, t('it_n_cast'), yr<1975?1:0],
+      ['found', 8000, '', 0], ['windows', Math.round(sq/100)*550, t('it_n_each',{v:'$550'}), 0], ['ext', 5000, '', 1], ['yard', 3000, '', 1],
+      ['fix', 2500, '', 1], ['clean', 2500, '', 1]
+    ];
+  }
+  function initItems(saved){ ITEMS={}; itemDefs().forEach(function(d){ var v=saved&&saved[d[0]]; ITEMS[d[0]]={ on:v?!!v.on:!!d[3], amt:v&&v.amt!=null?v.amt:d[1] }; }); }
+  function itemsTotal(){ var tot=0; Object.keys(ITEMS).forEach(function(k){ if(ITEMS[k].on) tot+=num(ITEMS[k].amt); }); return tot; }
+  function renderItems(){
+    if(!RUN) return;
+    var defs=itemDefs();
+    $('items').innerHTML=defs.map(function(d){ var it=ITEMS[d[0]]||{on:false,amt:d[1]};
+      return '<label class="it'+(it.on?'':' off')+'"><input type="checkbox" data-it="'+d[0]+'"'+(it.on?' checked':'')+'><span class="nm">'+esc(t('it_'+d[0]))+(d[2]?'<small>'+esc(d[2])+'</small>':'')+'</span>'+
+        '<span class="inp"><span>$</span><input type="text" inputmode="numeric" data-ia="'+d[0]+'" value="'+Math.round(num(it.amt)).toLocaleString('en-US')+'"></span></label>'; }).join('')+
+      '<div class="itt"><span>'+esc(t('it_total'))+'</span><span id="itt">'+money(itemsTotal())+'</span></div>';
+  }
+  function applyItems(){
+    var tot=itemsTotal(), sq=((RUN&&RUN.result.subject)||{}).sqft||1500;
+    document.querySelector('[data-k="rehab"]').value=Math.round(tot).toLocaleString('en-US');
+    document.querySelector('[data-k="rate"]').value=Math.round(tot/sq);
+    if($('itt')) $('itt').textContent=money(tot);
+    calc();
+  }
+  $('items').addEventListener('change', function(e){
+    var k=e.target.getAttribute('data-it'), a=e.target.getAttribute('data-ia');
+    if(k){ ITEMS[k].on=e.target.checked; e.target.closest('.it').classList.toggle('off',!e.target.checked); }
+    if(a){ ITEMS[a].amt=num(e.target.value); e.target.value=Math.round(ITEMS[a].amt).toLocaleString('en-US'); }
+    applyItems();
+  });
+  $('items').addEventListener('input', function(e){ var a=e.target.getAttribute('data-ia'); if(a){ ITEMS[a].amt=num(e.target.value); var tot=itemsTotal(); document.querySelector('[data-k="rehab"]').value=Math.round(tot).toLocaleString('en-US'); $('itt').textContent=money(tot); calc(); } e.stopPropagation(); });
+
+  /* ---------- stress test ---------- */
+  function paintStress(){
+    if(!LAST){ $('stress').innerHTML=''; $('bevens').innerHTML=''; return; }
+    var I=IN, A0=LAST.arv;
+    var mid=function(I2,arvMid){ return deal(I2,{worst:arvMid,mid:arvMid,best:arvMid}).mid; };
+    var rows=[['s_base',I,A0.mid],['s_rehab',Object.assign({},I,{rehab:I.rehab*1.2}),A0.mid],['s_months',Object.assign({},I,{months:I.months+3}),A0.mid],
+      ['s_arv',I,A0.mid*.95],['s_all',Object.assign({},I,{rehab:I.rehab*1.2,months:I.months+3}),A0.mid*.95]];
+    var base=mid(I,A0.mid).profit, out={};
+    $('stress').innerHTML='<tr><th></th><th>'+esc(t('s_profit'))+'</th><th>'+esc(t('s_margin'))+'</th><th>'+esc(t('s_change'))+'</th></tr>'+rows.map(function(r,i){
+      var m=mid(r[1],r[2]); out[r[0]]=Math.round(m.profit);
+      return '<tr class="'+(i===0?'base':'')+'"><td>'+esc(t(r[0]))+'</td><td class="'+(m.profit>=0?'pos':'neg')+'">'+money(m.profit)+'</td><td>'+pctf(m.margin,1)+'</td><td>'+(i?money(m.profit-base):'—')+'</td></tr>';
+    }).join('');
+    // break-even purchase (profit 0 in the mid case) and lowest sale that doesn't lose
+    var p0=mid(Object.assign({},I,{price:0}),A0.mid).profit, p1=mid(Object.assign({},I,{price:100000}),A0.mid).profit, sl=(p1-p0)/100000;
+    var bePrice=sl<0?Math.max(0,Math.floor(-p0/sl/1000)*1000):null;
+    var a0=mid(I,0).profit, a1=mid(I,100000).profit, sa=(a1-a0)/100000, beArv=sa>0?Math.ceil(-a0/sa/1000)*1000:null;
+    LAST.stress=out; LAST.bePrice=bePrice;
+    $('bevens').innerHTML='<div class="kpi"><small>'+esc(t('be_price'))+'</small><b>'+(bePrice==null?'—':money(bePrice))+'</b><em>'+esc(t('be_price_p'))+'</em></div>'+
+      '<div class="kpi"><small>'+esc(t('be_arv'))+'</small><b>'+(beArv==null?'—':money(beArv))+'</b><em>'+esc(t('be_arv_p'))+'</em></div>';
+  }
+
+  /* ---------- rental / BRRRR ---------- */
+  function initRent(saved){
+    var rr=RUN.result.rent||{};
+    RIN=Object.assign({ rent:rr.rent||0, vac:5, mgmt:8, maint:5, capex:5, ltv:75, rate:7.5, years:30, close:2 }, saved||{});
+    ['cash_flow_mo','dscr','cap_rate','cash_left'].forEach(function(k){ delete RIN[k]; });
+    document.querySelectorAll('#rinputs [data-r]').forEach(function(el){ var k=el.getAttribute('data-r'); el.value=k==='rent'?(RIN.rent?Math.round(RIN.rent).toLocaleString('en-US'):''):String(RIN[k]); });
+  }
+  function paintRent(){
+    if(!LAST||!RUN) return;
+    var rr=RUN.result.rent, I=IN, D=LAST.D, arvMid=LAST.arv.mid;
+    $('rentsrc').textContent=rr&&rr.rent?t('rent_src',{v:money(rr.rent),a:money(rr.low),b:money(rr.high)}):t('rent_none');
+    var R=num(RIN.rent)*12, opex=R*(num(RIN.vac)+num(RIN.mgmt)+num(RIN.maint)+num(RIN.capex))/100+I.tax+I.ins*12+I.hoa*12, noi=R-opex;
+    var loan=arvMid*num(RIN.ltv)/100, r=num(RIN.rate)/100/12, n=num(RIN.years)*12, pay=n?(r?loan*r/(1-Math.pow(1+r,-n)):loan/n):0;
+    var cf=(noi-pay*12)/12, pitia=pay+I.tax/12+I.ins+I.hoa, dscr=pitia?num(RIN.rent)/pitia:0, cap=D.allin?noi/D.allin*100:0;
+    var cashOut=loan-loan*num(RIN.close)/100-D.loan, left=D.cash-cashOut, coc=left>0?cf*12/left*100:null;
+    LAST.rent={ cf:cf, dscr:dscr, cap:cap, left:left };
+    var kp=function(lab,val,sub,cls){ return '<div class="kpi"><small>'+esc(lab)+'</small><b class="'+(cls||'')+'">'+val+'</b><em>'+esc(sub)+'</em></div>'; };
+    $('rout').innerHTML= !RIN.rent ? '' :
+      kp(t('ro_cf'), money(cf), t('ro_cf_p'), cf>=0?'pos':'neg')+
+      kp(t('ro_dscr'), dscr?dscr.toFixed(2):'—', t('ro_dscr_p'), dscr>=1.2?'pos':dscr>=1?'':'neg')+
+      kp(t('ro_cap'), pctf(cap,1), t('ro_cap_p'))+
+      kp(t('ro_left'), left>0?money(left):'$0', left>0?t('ro_left_p'):t('ro_out',{v:money(-left)}), left<=0?'pos':'')+
+      kp(t('ro_coc'), coc==null?'∞':pctf(coc,0), t('ro_coc_p'))+
+      kp(t('ro_pay'), money(pay), t('ro_pay_p',{v:k$(loan)}));
+    $('rnote').textContent=t('ro_note');
+    var rc=(rr&&rr.comps)||[];
+    $('rcomps').hidden=!rc.length;
+    $('rcomps').innerHTML=rc.length?'<div class="cp" style="font-weight:800">'+esc(t('rc_h'))+'</div>'+rc.map(function(c){
+      return '<div class="cp"><div class="tx"><b>'+money(c.rent)+esc(t('per_mo'))+'</b><div class="a">'+esc(c.address||'')+'</div><div>'+[c.beds!=null?c.beds+'/'+(c.baths!=null?c.baths:'?'):'', c.sqft?Number(c.sqft).toLocaleString('en-US')+' '+t('sqft').toLowerCase():'', c.miles!=null?t('mi',{n:c.miles}):''].filter(Boolean).map(esc).join(' · ')+'</div></div></div>'; }).join(''):'';
+  }
+  $('rinputs').addEventListener('input', function(e){ var k=e.target.getAttribute('data-r'); if(!k) return; RIN[k]=num(e.target.value); paintRent(); });
+  $('rinputs').addEventListener('change', function(e){ var k=e.target.getAttribute('data-r'); if(k==='rent') e.target.value=RIN.rent?Math.round(RIN.rent).toLocaleString('en-US'):''; });
+
+  /* ---------- next step: pipeline status, actual numbers, requests to Jason ---------- */
+  function paintNext(){
+    $('pstatus').innerHTML=PS.map(function(k){ return '<button type="button" data-s="'+k+'" class="'+(STATUS===k?'on':'')+'">'+esc(t('ps_'+k))+'</button>'; }).join('');
+    var showA=['contract','rehab','listed','sold'].indexOf(STATUS)>=0;
+    $('actual').hidden=!showA;
+    document.querySelectorAll('#actual [data-a]').forEach(function(el){ var k=el.getAttribute('data-a'), v=ACT[k]; el.value=v==null||v===''?'':(k==='date'?v:Math.round(num(v)).toLocaleString('en-US')); });
+    paintActual();
+  }
+  function paintActual(){
+    if($('actual').hidden||!LAST) { if($('acmp')) $('acmp').innerHTML=''; return; }
+    var est=LAST.D.mid.profit, sale=num(ACT.sale), I=IN;
+    var real=sale?sale-sale*(I.comm+I.sclose+I.conc)/100-num(ACT.buy)-num(ACT.rehab)-num(ACT.other):null;
+    $('acmp').innerHTML='<div class="kpi"><small>'+esc(t('ac_est'))+'</small><b>'+money(est)+'</b></div>'+
+      '<div class="kpi"><small>'+esc(t('ac_real'))+'</small><b class="'+(real==null?'':real>=0?'pos':'neg')+'">'+(real==null?'—':money(real))+'</b><em>'+esc(t('ac_real_p'))+'</em></div>'+
+      (real!=null?'<div class="kpi"><small>'+esc(t('ac_diff'))+'</small><b class="'+(real-est>=0?'pos':'neg')+'">'+money(real-est)+'</b></div>':'');
+  }
+  function saveStatus(quiet){
+    if(!RUN||!RUN.id) return;
+    A.rpc('jag_investor_set_status',{ p_id:RUN.id, p_status:STATUS, p_actual:ACT }).then(function(){ if(!quiet) toast(t('st_saved')); refreshMe(); }).catch(function(){ toast(t('e_gen')); });
+  }
+  $('pstatus').addEventListener('click', function(e){ var b=e.target.closest('[data-s]'); if(!b) return; STATUS=b.getAttribute('data-s'); paintNext(); saveStatus(false); });
+  var actT;
+  $('actual').addEventListener('input', function(e){ var k=e.target.getAttribute('data-a'); if(!k) return; ACT[k]=k==='date'?e.target.value:num(e.target.value); paintActual(); clearTimeout(actT); actT=setTimeout(function(){ saveStatus(true); },900); });
+  $('actual').addEventListener('change', function(e){ var k=e.target.getAttribute('data-a'); if(k&&k!=='date') e.target.value=ACT[k]?Math.round(ACT[k]).toLocaleString('en-US'):''; });
+  var REQ=null;
+  function openReq(kind){
+    REQ=kind; $('reqform').hidden=false; $('reqh').textContent=t(kind==='list'?'req_h_list':'req_h_lender'); $('reqdl').textContent=t(kind==='list'?'req_d_list':'req_d_lender');
+    $('reqdate').value=''; $('reqnote').value=''; $('reqform').scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+  $('reqlist').onclick=function(){ openReq('list'); };
+  $('reqlender').onclick=function(){ openReq('lender'); };
+  $('reqcancel').onclick=function(){ $('reqform').hidden=true; };
+  $('reqsend').onclick=function(){
+    if(!RUN||!RUN.id||!REQ) return; var b=$('reqsend'); b.disabled=true;
+    saveDeal(true).then(function(){ return A.rpc('jag_investor_request',{ p_run:RUN.id, p_kind:REQ, p_note:$('reqnote').value.trim()||null, p_date:$('reqdate').value||null }); })
+      .then(function(j){ if(!j||!j.ok) throw j; $('reqform').hidden=true; toast(t('req_ok')); })
+      .catch(function(){ toast(t('e_gen')); }).then(function(){ b.disabled=false; });
+  };
+  $('sheetbtn').onclick=printSheet;
+
+  /* ---------- comps tabs + FEMA layer ---------- */
+  $('ctabs').addEventListener('click', function(e){ var b=e.target.closest('button[data-v]'); if(!b||!RUN) return; TAB=b.getAttribute('data-v'); paintActive(); drawMap(); });
+  $('femaon').addEventListener('change', function(){ if(!RUN) return; drawMap(); if($('femaon').checked&&map&&map.getZoom()<12) map.setZoom(13); });
+
+  /* ---------- deal finder ---------- */
+  function paintFinder(){
+    var W2=(ME&&ME.watches)||[], F=(ME&&ME.finds)||[];
+    $('wlist').innerHTML=W2.map(function(w){
+      var desc=t('w_desc',{a:(w.areas||[]).join(', '),p:w.max_price?k$(w.max_price):t('any').toLowerCase(),b:w.min_beds||0,g:k$(w.min_profit||30000)});
+      return '<div class="w1"><div class="tx"><b>'+esc(w.label||(w.areas||[]).join(', '))+' <span class="badge '+(w.active?'sold':'')+'">'+esc(t(w.active?'w_on':'w_off'))+'</span></b><span>'+esc(desc)+' · '+esc(w.last_run_at?t('w_last',{d:dfmt(w.last_run_at)}):t('w_never'))+'</span></div>'+
+        '<button type="button" class="lnk" data-wr="'+w.id+'">'+esc(t('w_run'))+'</button><button type="button" class="lnk" data-wt="'+w.id+'">'+esc(t(w.active?'w_off':'w_on'))+'</button>'+
+        '<button type="button" class="lnk" data-we="'+w.id+'">'+esc(t('w_edit'))+'</button><button type="button" class="lnk" style="color:var(--buy)" data-wd="'+w.id+'">'+esc(t('w_del'))+'</button></div>';
+    }).join('');
+    $('wnew').hidden=W2.length>=5;
+    var whyT=function(x){ return x==='fixer'?t('why_fixer'):x==='low_ppsf'?t('why_low'):x.indexOf('price_cut:')===0?t('why_cut',{v:k$(num(x.split(':')[1]))}):x.indexOf('dom:')===0?t('why_dom',{n:x.split(':')[1]}):x; };
+    $('flist').innerHTML=F.length?F.map(function(f){
+      var e=f.est||{}, ok=(e.profit&&e.profit.mid)>=(e.target||30000);
+      return '<div class="fd"><div class="ph" style="'+(f.photo?'background-image:url(\''+CDN+esc(f.photo)+'?class=medium\')':'')+'"></div><div class="bd">'+
+        '<div class="why">'+esc((f.why||[]).map(whyT).join(' · '))+'</div><div class="a">'+esc(f.address||'')+'</div>'+
+        '<div class="n3"><span>'+esc(t('f_list'))+'<b>'+k$(f.list_price)+'</b></span><span>'+esc(t('f_arv'))+'<b>'+k$(f.arv&&f.arv.mid)+'</b></span><span>'+esc(t('f_offer'))+'<b class="pos">'+k$(e.max_offer)+'</b></span></div>'+
+        '<div class="note" style="margin-top:4px">'+esc(ok?t('f_at_list',{v:money(e.profit.mid)}):t('f_need',{v:money(e.max_offer),p:e.below_list_pct,g:k$(e.target)}))+'</div>'+
+        '<div class="acts"><button type="button" class="btn" data-fa="'+esc(f.address||'')+'">'+esc(t('f_analyze'))+'</button><button type="button" class="lnk" data-fd="'+f.id+'">'+esc(t('f_dismiss'))+'</button></div></div></div>';
+    }).join(''):'<div class="note">'+esc(t('f_none'))+'</div>';
+  }
+  function watchForm(w){
+    $('wform').hidden=false; $('werr').hidden=true;
+    $('w_id').value=w?w.id:''; $('w_areas').value=w?(w.areas||[]).join(', '):''; $('w_label').value=w&&w.label||'';
+    $('w_min').value=w&&w.min_price?Math.round(w.min_price).toLocaleString('en-US'):''; $('w_max').value=w&&w.max_price?Math.round(w.max_price).toLocaleString('en-US'):'';
+    $('w_beds').value=w&&w.min_beds?String(w.min_beds):''; $('w_profit').value=Math.round((w&&w.min_profit)||30000).toLocaleString('en-US');
+    $('w_sqmin').value=w&&w.min_sqft?Math.round(w.min_sqft).toLocaleString('en-US'):'';
+    $('w_areas').focus();
+  }
+  $('wnew').onclick=function(){ watchForm(null); };
+  $('wcancel').onclick=function(){ $('wform').hidden=true; };
+  $('wform').addEventListener('submit', function(e){
+    e.preventDefault();
+    var areas=$('w_areas').value.split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+    if(!areas.length){ $('werr').textContent=t('w_needarea'); $('werr').hidden=false; return; }
+    var cur=((ME&&ME.watches)||[]).filter(function(w){ return String(w.id)===$('w_id').value; })[0];
+    var p={ id:$('w_id').value||null, areas:areas, label:$('w_label').value.trim()||null, min_price:num($('w_min').value)||null, max_price:num($('w_max').value)||null,
+      min_beds:$('w_beds').value||null, min_profit:num($('w_profit').value)||30000, min_sqft:num($('w_sqmin').value)||null, active:cur?cur.active:true };
+    A.rpc('jag_investor_watch_save',{ p:p }).then(function(j){
+      if(!j||!j.ok){ $('werr').textContent=j&&j.reason==='max'?t('w_max5'):j&&j.reason==='areas'?t('w_needarea'):t('e_gen'); $('werr').hidden=false; return; }
+      $('wform').hidden=true; refreshMe().then(function(){ if(!$('w_id').value) runWatch(j.id); });
+    }).catch(function(){ $('werr').textContent=t('e_gen'); $('werr').hidden=false; });
+  });
+  function runWatch(id){
+    toast(t('w_running'));
+    call({ action:'scan_mine', watch_id:id }).then(function(j){
+      var w=(j.watches||[])[0]||{};
+      toast(w.skipped==='recent'?t('w_recent'):t('w_ran',{n:w.found||0})); refreshMe();
+    }).catch(function(){ toast(t('e_gen')); });
+  }
+  $('wlist').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var W2=(ME&&ME.watches)||[], get=function(attr){ var id=b.getAttribute(attr); return W2.filter(function(w){ return String(w.id)===id; })[0]; };
+    if(b.hasAttribute('data-wr')) runWatch(Number(b.getAttribute('data-wr')));
+    else if(b.hasAttribute('data-we')) watchForm(get('data-we'));
+    else if(b.hasAttribute('data-wt')){ var w=get('data-wt'); A.rpc('jag_investor_watch_save',{ p:Object.assign({}, w, { active:!w.active }) }).then(refreshMe); }
+    else if(b.hasAttribute('data-wd')){ if(b.dataset.sure){ A.rpc('jag_investor_watch_remove',{ p_id:Number(b.getAttribute('data-wd')) }).then(refreshMe); } else { b.dataset.sure='1'; b.textContent=lang()==='en'?'Tap again to remove':'Toque otra vez para quitar'; } }
+  });
+  $('flist').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    if(b.hasAttribute('data-fa')){ $('addr').value=b.getAttribute('data-fa'); window.scrollTo({ top:0, behavior:'smooth' }); analyze(); }
+    if(b.hasAttribute('data-fd')){ A.rpc('jag_investor_find_dismiss',{ p_id:Number(b.getAttribute('data-fd')) }).then(refreshMe); }
+  });
+
+  /* ---------- one-page deal sheet (print / save as PDF) ---------- */
+  function printSheet(){
+    if(!RUN||!LAST) return;
+    var r=RUN.result, s=r.subject||{}, D=LAST.D, I=IN, arv=LAST.arv, f=r.flood||{}, rent=LAST.rent;
+    var row=function(a,b){ return '<tr><td>'+esc(a)+'</td><td>'+b+'</td></tr>'; };
+    var kept=(r.comps||[]).filter(function(c){ return !EXCL[cid(c)] && c.cond!=='fixer'; }).slice(0,6);
+    var lola=String(RUN.lola||'').split('\n').filter(Boolean).slice(0,2).join(' ');
+    $('sheet').innerHTML='<div class="sh"><div><b>JAG</b> <span style="font-weight:700;letter-spacing:.2em;font-size:9px">REAL ESTATE · eXp REALTY</span><div style="font-size:16px;font-weight:800;margin-top:4px">'+esc(t('sh_title'))+' · '+esc(s.address||RUN.address)+'</div></div>'+
+      '<div style="text-align:right">'+esc(new Date().toLocaleDateString(lang()==='en'?'en-US':'es-MX',{year:'numeric',month:'long',day:'numeric'}))+(ME&&ME.name?'<br>'+esc(t('sh_for'))+' '+esc(ME.name):'')+'</div></div>'+
+      '<div class="g2"><div><h3>'+esc(t('h_prop'))+'</h3><table>'+
+        row(t('beds')+' / '+t('baths'),esc((s.beds!=null?s.beds:'—')+' / '+(s.baths!=null?s.baths:'—')))+row(t('sqft'),s.sqft?Number(s.sqft).toLocaleString('en-US'):'—')+row(t('k_year'),esc(s.year||'—'))+
+        row(t('k_sub'),esc(s.subdivision||'—'))+row(t('k_tax',{y:s.tax&&s.tax.year||''}),s.tax&&s.tax.total?money(s.tax.total):'—')+
+        row('FEMA',esc((f.zone||'—')+(f.risk?' · '+t(f.risk==='high'?'fl_high':f.risk==='moderate'?'fl_moderate':'fl_minimal').split(/[.:]/)[0]:'')))+
+        row(t('asis'),r.as_is?money(r.as_is.value):'—')+'</table></div>'+
+      '<div><h3>'+esc(t('h_arv'))+'</h3><table><tr><th></th><th>'+esc(t('worst'))+'</th><th>'+esc(t('mid'))+'</th><th>'+esc(t('best'))+'</th></tr>'+
+        '<tr><td>ARV</td><td>'+money(arv.worst)+'</td><td><b>'+money(arv.mid)+'</b></td><td>'+money(arv.best)+'</td></tr>'+
+        '<tr><td>'+esc(t('t_profit'))+'</td><td>'+money(D.worst.profit)+'</td><td><b>'+money(D.mid.profit)+'</b></td><td>'+money(D.best.profit)+'</td></tr>'+
+        '<tr><td>'+esc(t('s_margin'))+'</td><td>'+pctf(D.worst.margin,1)+'</td><td>'+pctf(D.mid.margin,1)+'</td><td>'+pctf(D.best.margin,1)+'</td></tr></table>'+
+        '<div style="margin-top:6px">'+esc(t('g_'+LAST.g))+' ('+LAST.g+') · '+esc(t('conf_'+(r.confidence||'low')))+'</div></div></div>'+
+      '<div class="g2"><div><h3>'+esc(t('h_calc'))+'</h3><table>'+
+        row(t('i_price'),money(I.price))+(I.fee?row(t('i_fee'),money(I.fee)):'')+row(t('t_rehab'),money(D.rehabT))+row(t('t_bclose'),money(D.bclose))+
+        (FIN==='hm'?row(t('t_fin'),money(D.fin)):'')+row(t('t_hold')+' ('+I.months+')',money(D.hold))+row(t('k_allin'),'<b>'+money(D.allin)+'</b>')+
+        row(t('k_cash'),'<b>'+money(D.cash)+'</b>')+row(t('k_mao'),money(Math.max(0,LAST.mao)))+row(t('k_max'),LAST.M.price==null?'—':money(LAST.M.price))+'</table></div>'+
+      '<div><h3>'+esc(t('h_stress'))+'</h3><table>'+Object.keys(LAST.stress||{}).map(function(k){ return row(t(k),money(LAST.stress[k])); }).join('')+
+        row(t('be_price'),LAST.bePrice==null?'—':money(LAST.bePrice))+'</table>'+
+        (rent&&RIN.rent?'<h3>'+esc(t('h_rent').split('(')[0])+'</h3><table>'+row(t('r_rent'),money(RIN.rent))+row(t('ro_cf'),money(rent.cf))+row(t('ro_dscr'),rent.dscr?rent.dscr.toFixed(2):'—')+row(t('ro_left'),money(Math.max(0,rent.left)))+'</table>':'')+'</div></div>'+
+      '<h3>'+esc(t('h_comps'))+'</h3><table><tr><th>'+esc(lang()==='en'?'Address':'Dirección')+'</th><th>'+esc(lang()==='en'?'Sold':'Vendida')+'</th><th>'+esc(lang()==='en'?'Adjusted':'Ajustada')+'</th><th>'+esc(t('sqft'))+'</th><th>mi</th></tr>'+
+        kept.map(function(c){ return '<tr><td>'+esc(c.address||'')+(c.sold_date?' · '+esc(dfmt(c.sold_date)):'')+'</td><td>'+money(c.sold_price)+'</td><td>'+money(c.adj!=null?c.adj:c.sold_price)+'</td><td>'+(c.sqft?Number(c.sqft).toLocaleString('en-US'):'')+'</td><td>'+(c.miles!=null?c.miles:'')+'</td></tr>'; }).join('')+'</table>'+
+      (lola?'<h3>Lola</h3><div>'+esc(lola)+'</div>':'')+
+      '<div class="foot">'+esc(t('sh_prep'))+' · Jason Aguirre Group · eXp Realty · (832) 702-3574 · jasonaguirregroup.company<br>'+esc(t('disc'))+'</div>';
+    document.body.classList.add('printing');
+    var done=function(){ document.body.classList.remove('printing'); window.removeEventListener('afterprint',done); };
+    window.addEventListener('afterprint',done);
+    setTimeout(function(){ window.print(); setTimeout(done,1500); },60);
+  }
 
   function show(which){ ['loading','g_in','g_no','app'].forEach(function(id){ $(id).hidden=id!==which; }); }
   function boot(){
     var u=A.user();
     if(!u){ show('g_in'); return; }
     A.rpc('jag_investor_me').then(function(j){
-      if(j&&j.ok){ ME=j; show('app'); paintHello(); var q=new URLSearchParams(location.search).get('a'); if(q){ $('addr').value=q; analyze(); } }
+      if(j&&j.ok){ ME=j; show('app'); paintHello(); paintFinder(); var q=new URLSearchParams(location.search).get('a'); if(q){ $('addr').value=q; analyze(); }
+        else if(location.hash==='#finder') setTimeout(function(){ $('finder').scrollIntoView({ behavior:'smooth' }); },200); }
       else { $('g_no_em').textContent=t('gn_em',{e:u.email}); show('g_no'); }
     }).catch(function(e){ if(String(e&&e.message)==='signed_out'){ show('g_in'); } else { $('g_no_em').textContent=''; show('g_no'); } });
   }

@@ -116,3 +116,67 @@ returns text language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function public.jag_rentcast_key() from public, anon, authenticated;
 grant execute on function public.jag_rentcast_key() to service_role;
+
+-- =====================================================================================================
+-- Round 2 (applied as migrations jag_investor_tools + jag_investor_run_status, 2026-10-27):
+-- deal pipeline, deal finder (MLS watch + finds), "List it with JAG" / lender requests.
+-- =====================================================================================================
+alter table public.jag_investor_runs add column if not exists status text not null default 'analyzing';
+alter table public.jag_investor_runs add column if not exists status_at timestamptz;
+alter table public.jag_investor_runs add column if not exists actual jsonb;
+do $$ begin alter table public.jag_investor_runs add constraint jag_investor_runs_status check (status in ('analyzing','offer','contract','rehab','listed','sold','passed')); exception when duplicate_object then null; end $$;
+
+create table if not exists public.jag_investor_watches (
+  id bigint generated always as identity primary key,
+  user_id uuid not null,
+  label text,
+  areas text[] not null default '{}',          -- ZIP codes or city names
+  min_price int, max_price int, min_beds int,
+  min_profit int not null default 30000,
+  min_sqft int, max_sqft int,
+  active boolean not null default true,
+  removed_at timestamptz,
+  created_at timestamptz not null default now(), last_run_at timestamptz, last_sent_at timestamptz
+);
+create index if not exists jag_investor_watches_user on public.jag_investor_watches (user_id);
+alter table public.jag_investor_watches enable row level security;
+do $$ begin create policy "investor reads own watches" on public.jag_investor_watches for select using (user_id = auth.uid()); exception when duplicate_object then null; end $$;
+do $$ begin create policy "staff reads watches" on public.jag_investor_watches for select using (public.jag_is_staff()); exception when duplicate_object then null; end $$;
+
+create table if not exists public.jag_investor_finds (
+  id bigint generated always as identity primary key,
+  watch_id bigint not null, user_id uuid not null,
+  mls text not null, address text, list_price numeric, photo text,
+  arv jsonb, est jsonb, why text[], listing jsonb,
+  first_seen timestamptz not null default now(), emailed_at timestamptz, dismissed boolean not null default false
+);
+create unique index if not exists jag_investor_finds_once on public.jag_investor_finds (watch_id, mls);
+create index if not exists jag_investor_finds_user on public.jag_investor_finds (user_id, first_seen desc);
+alter table public.jag_investor_finds enable row level security;
+do $$ begin create policy "investor reads own finds" on public.jag_investor_finds for select using (user_id = auth.uid()); exception when duplicate_object then null; end $$;
+do $$ begin create policy "staff reads finds" on public.jag_investor_finds for select using (public.jag_is_staff()); exception when duplicate_object then null; end $$;
+
+create table if not exists public.jag_investor_requests (
+  id bigint generated always as identity primary key,
+  user_id uuid not null, run_id bigint, kind text not null check (kind in ('list','lender')),
+  note text, target_date date, created_at timestamptz not null default now(), emailed_at timestamptz, email_error text
+);
+alter table public.jag_investor_requests enable row level security;
+do $$ begin create policy "investor reads own requests" on public.jag_investor_requests for select using (user_id = auth.uid()); exception when duplicate_object then null; end $$;
+do $$ begin create policy "staff reads requests" on public.jag_investor_requests for select using (public.jag_is_staff()); exception when duplicate_object then null; end $$;
+
+-- Functions added/replaced in round 2 (full bodies live in the database; see supabase_migrations.schema_migrations
+-- name = 'jag_investor_tools' / 'jag_investor_run_status'):
+--   jag_investor_ok()                                   is the caller an active investor
+--   jag_investor_me()                                   + runs' status/actual/price, watches, finds (last 30 days)
+--   jag_investor_run(p_id)                              + status, status_at, actual
+--   jag_investor_set_status(p_id, p_status, p_actual)   pipeline: analyzing/offer/contract/rehab/listed/sold/passed
+--   jag_investor_watch_save(p jsonb)                    deal-finder watch, max 5, areas required
+--   jag_investor_watch_remove(p_id)                     soft remove (removed_at)
+--   jag_investor_find_dismiss(p_id)
+--   jag_investor_request(p_run, p_kind, p_note, p_date) 'list' | 'lender' → ops.kick_client_email('investor_request', id)
+--   jag_investor_admin_list()                           + in_play, watches, requests
+--   ops.kick_invest_scan()                              posts {action:'scan'} to jag-invest with the server token
+
+-- daily deal-finder scan, 7:40 AM Houston (12:40 UTC)
+-- select cron.schedule('jag-invest-scan', '40 12 * * *', 'select ops.kick_invest_scan()');
