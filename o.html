@@ -491,9 +491,9 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
       '<div class="stack"><button type="button" class="btn" id="sendGmail">Email it to the listing agent</button></div>' +
       '<div id="sendBox"></div>' +
       '<div class="attach" style="margin-top:14px"><h3>Or hand it to the TC</h3>' +
-        '<p class="hint">René gets a JAG email with this offer, what is still missing and the steps to prepare it for signing in DigiSign or SkySlope, plus a task in Follow Up Boss.</p>' +
-        '<textarea id="tcNote" rows="2" placeholder="Notes for René (optional)" style="width:100%;box-sizing:border-box;font:inherit;font-size:16px;border:1px solid var(--hair);border-radius:var(--r-sm);padding:10px;margin:8px 0"></textarea>' +
-        '<div class="stack"><button type="button" class="btn line" id="sendTc">Send to René to prepare</button></div></div>';
+        '<p class="hint">The JAG team gets an email with this offer, what is still missing and the steps to prepare it for signing in DigiSign or SkySlope, plus a task in Follow Up Boss.</p>' +
+        '<textarea id="tcNote" rows="2" placeholder="Notes for the team (optional)" style="width:100%;box-sizing:border-box;font:inherit;font-size:16px;border:1px solid var(--hair);border-radius:var(--r-sm);padding:10px;margin:8px 0"></textarea>' +
+        '<div class="stack"><button type="button" class="btn line" id="sendTc">Send to the JAG team to prepare</button></div></div>';
     $('send').innerHTML = html;
     prepared = null;
   }
@@ -607,10 +607,10 @@ main{max-width:880px;margin:0 auto;padding:18px 16px 140px}
     (dirty ? save() : Promise.resolve()).catch(function(){}).then(function(){
       return rpc('ops_offer_send_tc', { p_token: token, p_note: ($('tcNote') || {}).value || null });
     }).then(function(r){
-      if(r && r.ok){ b.textContent = 'Sent to ' + (r.tc || 'René') + ' ✓'; setStatus('Sent to ' + (r.tc || 'René') + '. He gets the email with the steps and a Follow Up Boss task.'); return; }
-      b.disabled = false; b.textContent = 'Send to René to prepare';
-      setStatus(r && r.reason === 'just_sent' ? 'Already sent a moment ago.' : 'Could not send it to René. Try again.', true);
-    }).catch(function(){ b.disabled = false; b.textContent = 'Send to René to prepare'; setStatus('Could not send it to René. Try again.', true); });
+      if(r && r.ok){ b.textContent = 'Sent to the JAG team ✓'; setStatus('Sent to the JAG team. They get the email with the steps and a Follow Up Boss task.'); return; }
+      b.disabled = false; b.textContent = 'Send to the JAG team to prepare';
+      setStatus(r && r.reason === 'just_sent' ? 'Already sent a moment ago.' : 'Could not send it to the team. Try again.', true);
+    }).catch(function(){ b.disabled = false; b.textContent = 'Send to the JAG team to prepare'; setStatus('Could not send it to the team. Try again.', true); });
   }
   function shareNow(){
     if(!prepared) return;

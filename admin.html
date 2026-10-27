@@ -14,6 +14,7 @@
 <script src="jag-capture.js?v=3"></script>
 <script src="jag-file-format.js?v=5"></script>
 <script src="jag-offer.js?v=1"></script>
+<script src="jag-offer-edit.js?v=1"></script>
 <script src="jag-handoff.js?v=1"></script>
 <script>
 /* If a password-recovery link lands here (Supabase's default is Site URL "/"),
@@ -1078,14 +1079,20 @@ function loadOfferPanel(r){
     var pct=o.list_price&&o.offer_price?(o.offer_price/o.list_price*100).toFixed(1)+'% of list':'';
     box.innerHTML='<div class="sect">Offer · status the client sees in their portal</div>'+
       '<div class="ofp"><div class="ofp-h"><b>$'+Math.round(o.offer_price||0).toLocaleString('en-US')+'</b><span>'+esc(pct)+'</span>'+prioHtml(o.priority)+'</div>'+
+      '<div class="ofp-a"><b>'+esc(o.name||'')+(o.co_buyer?' &amp; '+esc(o.co_buyer):'')+'</b>'+(o.email?' · '+esc(o.email):'')+(o.phone?' · '+esc(o.phone):'')+'</div>'+
       '<div class="ofp-a">'+esc(o.address||'')+(o.mls?' · MLS '+esc(o.mls):'')+'</div>'+
       '<div class="ofp-a">'+esc(o.financing==='cash'?'Cash':'Financed'+(o.loan_type?' · '+o.loan_type:''))+' · pre-approval/proof: '+esc(o.proof||'—')+
         (o.earnest?' · earnest $'+Math.round(o.earnest).toLocaleString('en-US'):'')+(o.option_days?' · option '+o.option_days+'d':'')+(o.close_date?' · close '+esc(o.close_date):'')+'</div>'+
       (st?'<div style="margin:10px 0 2px">'+JagOffer.meter(st.level,{title:'Strength shown to client'})+'</div>':'')+
       '<div class="ofp-st" role="group" aria-label="Offer status">'+OFFER_ST.map(function(x){ return '<button type="button" class="chip'+(o.status===x[0]?' on':'')+'" data-ost="'+x[0]+'">'+x[1]+'</button>'; }).join('')+'</div>'+
       '<textarea class="noteta" id="ofp-note" placeholder="Note for the client (shows in their portal), e.g. Seller countered at $285,000. We will call you today." style="min-height:64px">'+esc(o.status_note||'')+'</textarea>'+
-      '<div style="display:flex;gap:10px;align-items:center;margin-top:8px"><button type="button" class="savebtn" id="ofp-save">Update offer</button><span class="dt" id="ofp-by">'+
-        (o.status_at?'Last update '+fmtDate(o.status_at)+(o.status_by?' by '+esc(o.status_by):''):'')+'</span></div></div>';
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px"><button type="button" class="savebtn" id="ofp-save">Update offer</button>'+
+        (o.can_edit?'<button type="button" class="linkbtn" id="ofp-edit">Edit details</button>':'')+'<span class="dt" id="ofp-by">'+
+        (o.status_at?'Last update '+fmtDate(o.status_at)+(o.status_by?' by '+esc(o.status_by):''):'')+(o.edited_at?' · details cleaned up '+fmtDate(o.edited_at)+(o.edited_by?' by '+esc(o.edited_by):''):'')+'</span></div></div>';
+    if($('ofp-edit')) $('ofp-edit').onclick=function(){
+      JagOfferEdit.open(o,{call:function(n,a){ return api('/rest/v1/rpc/'+n,{method:'POST',body:JSON.stringify(a)}).then(function(res){ return res.json(); }); },
+        onSaved:function(){ toast('Offer details saved. The client sees the corrected offer in their portal.',true); loadOfferPanel(r); }});
+    };
     var pick=o.status;
     box.querySelectorAll('[data-ost]').forEach(function(b){ b.onclick=function(){ pick=b.dataset.ost; box.querySelectorAll('[data-ost]').forEach(function(x){ x.classList.toggle('on',x===b); }); }; });
     $('ofp-save').onclick=function(){

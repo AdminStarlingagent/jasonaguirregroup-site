@@ -378,6 +378,8 @@ body{background:var(--paper)}
 <script src="jag-capture.js"></script>
 <script src="jag-share.js?v=4"></script>
 <script src="jag-offer.js"></script>
+<script src="jag-team-offer.js?v=2"></script>
+<script src="jag-offer-edit.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -673,7 +675,7 @@ body{background:var(--paper)}
       p && (p.in_contact || p.proof_pending) ? '<span class="prio p2">' + (p.proof_pending ? 'Proof uploaded: review it' : 'In contact') + '</span>' : '<span class="prio p3">' + (p ? 'Not verified' : 'No account yet') + '</span>';
     var pct = o.list_price && o.offer_price ? (o.offer_price / o.list_price * 100).toFixed(1) + '% of list' : '';
     var ph = digits(o.phone);
-    return '<div class="of" data-oid="' + esc(o.id) + '">' + (o.name ? '<div class="of-who"><b>' + esc(o.name) + '</b>' + badge + '</div>' : badge) +
+    return '<div class="of" data-oid="' + esc(o.id) + '">' + (o.name ? '<div class="of-who"><b>' + esc(o.name) + (o.co_buyer ? ' &amp; ' + esc(o.co_buyer) : '') + '</b>' + badge + '</div>' : badge) +
       '<div class="of-p">' + money(o.offer_price) + '<small>' + esc(pct) + '</small></div>' +
       '<div class="of-a">' + esc(o.address || '') + (o.mls ? ' · <a href="homes#' + encodeURIComponent(o.mls) + '" target="_blank" rel="noopener">MLS ' + esc(o.mls) + '</a>' : '') + '</div>' +
       '<div class="of-a">' + (o.financing === 'cash' ? 'Cash' : 'Financed' + (o.loan_type ? ' · ' + esc(o.loan_type) : '')) + ' · proof: ' + esc(o.proof || '—') +
@@ -682,11 +684,19 @@ body{background:var(--paper)}
       '<div class="ost">' + OST.map(function(x){ return '<button type="button" class="chip' + (o.status === x[0] ? ' on' : '') + '" data-ost="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
       '<textarea class="onote" placeholder="Note for the client (shows in their portal)">' + esc(o.status_note || '') + '</textarea>' +
       '<div class="acts">' + (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a><a href="sms:+1' + ph + '">Text</a>' : '') +
-        '<button type="button" class="call" data-osave="1">Update offer</button></div>' +
-      (o.status_at ? '<small class="ofm">Last update ' + ago(o.status_at) + (o.status_by ? ' by ' + esc(o.status_by) : '') + '</small>' : '') + '</div>';
+        '<button type="button" class="call" data-osave="1">Update offer</button>' +
+        (o.can_edit ? '<button type="button" data-oedit="1">Edit details</button>' : '') +
+        (o.can_edit && window.JagTeamOffer ? '<button type="button" data-oprep="1">Prepare contract</button>' : '') + '</div>' +
+      (o.status_at ? '<small class="ofm">Last update ' + ago(o.status_at) + (o.status_by ? ' by ' + esc(o.status_by) : '') + '</small>' : '') +
+      (o.edited_at ? '<small class="ofm">Details cleaned up ' + ago(o.edited_at) + (o.edited_by ? ' by ' + esc(o.edited_by) : '') + '</small>' : '') + '</div>';
   }
   function offerClick(e){
     var st = e.target.closest('[data-ost]'), sv = e.target.closest('[data-osave]'), vw = e.target.closest('[data-view]');
+    var ed = e.target.closest('[data-oedit]'), pr = e.target.closest('[data-oprep]');
+    if(ed || pr){ var oid = (ed || pr).closest('.of').getAttribute('data-oid'), oo = offersAll.filter(function(x){ return String(x.id) === oid; })[0]; if(!oo) return true;
+      if(ed) JagOfferEdit.open(oo, { call: rpc, onSaved: function(){ loadOffers(); } });
+      else JagTeamOffer.open({ mlsNumber: oo.mls || '', listPrice: oo.list_price || 0 }, oo, 'en');
+      return true; }
     if(vw){ var w = window.open('about:blank', '_blank');
       JagShare.token().then(function(t){ return fetch(BASE + '/storage/v1/object/sign/client-proof/' + vw.getAttribute('data-view').split('/').map(encodeURIComponent).join('/'),
         { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 300 }) }); })

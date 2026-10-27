@@ -1,10 +1,12 @@
 /* ============================================================
    JAG team: "Comenzar oferta" on a listing (signed-in team only, via the Agent Hub sign-in).
    A short set of questions → the usual offer draft (jasonaguirregroup.company/o#code), already
-   filled with what HAR knows (legal description, county, HOA, MUD, listing agent + brokerage)
-   and the answers. Optionally hands it to the TC (René): JAG-branded email with step-by-step
-   prep instructions + a Follow Up Boss task (edge function jag-offer-tc).
-   JagTeamOffer.box(listing) → HTML for the side panel; JagTeamOffer.bind(root, listing, lang)
+   filled with what HAR knows (legal description, county, HOA, MUD, listing agent + brokerage — team only,
+   never shown to clients) and the answers. Picking a client fills in their details and, when they sent an
+   offer on this home from the website, their price and terms. Optionally hands it to the JAG team (the TC):
+   JAG-branded email with step-by-step prep instructions + a Follow Up Boss task (edge function jag-offer-tc).
+   JagTeamOffer.box(listing) → HTML for the side panel; JagTeamOffer.bind(root, listing, lang);
+   JagTeamOffer.open(listing, websiteOffer?) → open it directly, pre-filled from a client's website offer
    ============================================================ */
 (function () {
   'use strict';
@@ -13,26 +15,26 @@
   var lang = 'es', ov = null, clients = null;
   var T = {
     es: {
-      team: 'Solo equipo JAG', h: 'Comenzar oferta', p: 'Contestas unas preguntas y queda el contrato TREC listo con los datos de HAR. René lo prepara para firmar.',
+      team: 'Solo equipo JAG', h: 'Comenzar oferta', p: 'Contestas unas preguntas y queda el contrato TREC listo con los datos de HAR. El equipo JAG lo prepara para firmar.',
       go: 'Comenzar oferta', title: 'Oferta para ', har: 'De HAR (ya va en el contrato)', buyer: 'Comprador', pick: 'Cliente con cuenta (opcional)', pick0: 'Elegir…',
       names: 'Nombre(s) legal(es) completo(s)', names_h: 'Como van a firmar. Varios: "Ana López y Juan López".', email: 'Correo', phone: 'Teléfono',
       money: 'Precio y préstamo', price: 'Precio de la oferta', loan: 'Tipo de préstamo', down: 'Enganche (%)', conc: 'Concesión del vendedor ($)', conc_h: 'Para gastos de cierre del comprador. Vacío = ninguna.',
       earn: 'Earnest money ($)', ofee: 'Option fee ($)', odays: 'Días de opción', close: 'Fecha de cierre', titleco: 'Compañía de título', warr: 'Garantía de casa hasta ($)',
-      tc: 'Mandar a René para preparar', tc_h: 'Le llega un correo JAG con todo y los pasos, y una tarea en Follow Up Boss.', note: 'Notas para René (opcional)',
+      tc: 'Mandar al equipo JAG para preparar', tc_h: 'El equipo recibe un correo JAG con todo y los pasos, y una tarea en Follow Up Boss.', note: 'Notas para el equipo (opcional)',
       note_ph: 'Ej. el cliente firma el martes; agregar la pre-aprobación de Aron.', make: 'Crear la oferta', making: 'Creando…', cancel: 'Cancelar',
-      done: 'Oferta creada', open: 'Abrir el borrador', left: 'Falta llenar:', none: 'No falta nada obligatorio.', sent: '✓ Enviada a ', sent2: '. Le llegó el correo con los pasos.',
+      done: 'Oferta creada', open: 'Abrir el borrador', left: 'Falta llenar:', none: 'No falta nada obligatorio.', sent: '✓ Enviada al equipo JAG', sent2: '. Ya tienen el correo con los pasos.', fromweb: 'Llenado con la oferta que el cliente mandó desde la página. Revisa antes de crear.',
       need: 'Escribe el nombre del comprador y el precio.', err: 'No se pudo crear. Revisa tu sesión del Agent Hub e intenta de nuevo.', yes: 'Sí', no: 'No',
       legal: 'Legal', county: 'Condado', hoa: 'HOA', mud: 'MUD / distrito', la: 'Agente del vendedor', bk: 'Brokerage', unknown: 'no aparece en HAR',
     },
     en: {
-      team: 'JAG team only', h: 'Begin offer', p: 'Answer a few questions and the TREC contract is filled in with the HAR data. René prepares it for signing.',
+      team: 'JAG team only', h: 'Begin offer', p: 'Answer a few questions and the TREC contract is filled in with the HAR data. The JAG team prepares it for signing.',
       go: 'Begin offer', title: 'Offer for ', har: 'From HAR (already in the contract)', buyer: 'Buyer', pick: 'Client with an account (optional)', pick0: 'Choose…',
       names: 'Full legal name(s)', names_h: 'Exactly as they will sign. Several: "Ana López and Juan López".', email: 'Email', phone: 'Phone',
       money: 'Price and loan', price: 'Offer price', loan: 'Loan type', down: 'Down payment (%)', conc: 'Seller concession ($)', conc_h: 'Toward the buyer\'s closing costs. Blank = none.',
       earn: 'Earnest money ($)', ofee: 'Option fee ($)', odays: 'Option days', close: 'Closing date', titleco: 'Title company', warr: 'Home warranty up to ($)',
-      tc: 'Send to René to prepare', tc_h: 'He gets a JAG email with everything and the steps, plus a Follow Up Boss task.', note: 'Notes for René (optional)',
+      tc: 'Send to the JAG team to prepare', tc_h: 'The team gets a JAG email with everything and the steps, plus a Follow Up Boss task.', note: 'Notes for the team (optional)',
       note_ph: 'E.g. client signs Tuesday; add the pre-approval from Aron.', make: 'Create the offer', making: 'Creating…', cancel: 'Cancel',
-      done: 'Offer created', open: 'Open the draft', left: 'Still needed:', none: 'Nothing required is missing.', sent: '✓ Sent to ', sent2: '. The email with the steps is on its way.',
+      done: 'Offer created', open: 'Open the draft', left: 'Still needed:', none: 'Nothing required is missing.', sent: '✓ Sent to the JAG team', sent2: '. The email with the steps is on its way.', fromweb: 'Filled in from the offer the client sent on the website. Check it before you create it.',
       need: 'Type the buyer\'s name and the price.', err: 'Could not create it. Check your Agent Hub sign-in and try again.', yes: 'Yes', no: 'No',
       legal: 'Legal', county: 'County', hoa: 'HOA', mud: 'MUD / district', la: 'Listing agent', bk: 'Brokerage', unknown: 'not on HAR',
     }
@@ -124,14 +126,14 @@
     var b = root && root.querySelector('[data-jto]'); if (b) b.onclick = function () { open(l); };
   }
 
-  function open(l) {
-    css();
+  function open(l, pre, lg) {
+    css(); l = l || {}; if (lg) lang = lg === 'en' ? 'en' : 'es';
     if (!ov) { ov = document.createElement('div'); ov.className = 'jto-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); document.body.appendChild(ov);
       ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ov.classList.contains('on')) { e.stopPropagation(); close(); } }, true); }
-    var price = Math.round(l.listPrice || 0);
-    ov.innerHTML = '<div class="jto-m"><div class="jto-hd"><b>' + esc(t('title')) + esc(facts(l).address) + '</b><button type="button" class="jto-x" data-x aria-label="' + esc(t('cancel')) + '">×</button></div>' +
-      '<div class="jto-bd" id="jto-bd"><h5>' + esc(t('har')) + '</h5><div class="jto-har" id="jto-har">…</div>' +
+    var price = Math.round(l.listPrice || (pre && pre.list_price) || 0);
+    ov.innerHTML = '<div class="jto-m"><div class="jto-hd"><b>' + esc(t('title')) + esc(facts(l).address || (pre && pre.address) || '') + '</b><button type="button" class="jto-x" data-x aria-label="' + esc(t('cancel')) + '">×</button></div>' +
+      '<div class="jto-bd" id="jto-bd">' + (pre ? '<p class="jto-web" style="background:#e9f5ec;color:#1a5c31;border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:600;margin:12px 0 0">' + esc(t('fromweb')) + '</p>' : '') + '<h5>' + esc(t('har')) + '</h5><div class="jto-har" id="jto-har">…</div>' +
       '<h5>' + esc(t('buyer')) + '</h5><div class="jto-g jto-f">' +
         '<div class="full"><label for="jto-c">' + esc(t('pick')) + '</label><select id="jto-c"><option value="">' + esc(t('pick0')) + '</option></select></div>' +
         '<div class="full"><label for="jto-n">' + esc(t('names')) + '</label><input id="jto-n" autocomplete="off"><small>' + esc(t('names_h')) + '</small></div>' +
@@ -154,24 +156,51 @@
       '<div class="jto-ft" id="jto-ft"><button type="button" class="sec" data-x>' + esc(t('cancel')) + '</button><button type="button" class="pri" id="jto-go">' + esc(t('make')) + '</button></div></div>';
     ov.classList.add('on');
     ov.querySelectorAll('[data-x]').forEach(function (x) { x.onclick = close; });
-    var F = facts(l), full = null;
+    var F = facts(l), full = null, mls = l.mlsNumber || (pre && pre.mls) || '';
+    if (!F.address && pre && pre.address) F.address = String(pre.address).split(',')[0];
     paintHar(F);
-    fetch(API + '?detail=1&mlsNumber=' + encodeURIComponent(l.mlsNumber)).then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { full = j && j.listings && j.listings[0]; if (full) { F = facts(l, full); paintHar(F); } }).catch(function () {});
+    if (mls) fetch(API + '?detail=1&mlsNumber=' + encodeURIComponent(mls)).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { full = j && j.listings && j.listings[0]; if (full) { F = facts(full.address ? full : l, full); if (!F.address && pre && pre.address) F.address = String(pre.address).split(',')[0]; paintHar(F); } }).catch(function () {});
     var DOWN = { fha: '3.5', conventional: '5', va: '0', usda: '0', cash: '' };
     var lt = ov.querySelector('#jto-lt'), dp = ov.querySelector('#jto-dp');
     lt.onchange = function () { dp.value = DOWN[lt.value]; dp.disabled = lt.value === 'cash'; };
+    if (pre) fillFrom(pre);
     // website clients of this agent
     (clients ? Promise.resolve(clients) : rpc('jag_agent_clients').then(function (j) { clients = (j && j.clients) || []; return clients; }).catch(function () { return []; }))
       .then(function (list) {
         var sel = ov.querySelector('#jto-c'); if (!sel) return;
         list.slice().sort(function (a, b) { return String(a.name || a.email).localeCompare(String(b.name || b.email)); }).forEach(function (c) {
           var op = document.createElement('option'); op.value = c.user_id; op.textContent = (c.name || c.email) + (c.email && c.name ? ' · ' + c.email : ''); sel.appendChild(op); });
+        if (pre && pre.user_id) sel.value = pre.user_id;
         sel.onchange = function () { var c = list.filter(function (x) { return x.user_id === sel.value; })[0]; if (!c) return;
-          ov.querySelector('#jto-n').value = c.name || ''; ov.querySelector('#jto-e').value = c.email || ''; ov.querySelector('#jto-p').value = c.phone ? phone(c.phone) : ''; };
+          ov.querySelector('#jto-n').value = c.name || ''; ov.querySelector('#jto-e').value = c.email || ''; ov.querySelector('#jto-p').value = c.phone ? phone(c.phone) : '';
+          // their website offer on this home (cleaned up by the team) fills in the rest
+          webOffers().then(function (all) { var w = all.filter(function (o) { return o.user_id === c.user_id && (mls ? String(o.mls || '') === String(mls) : true) && o.status !== 'withdrawn'; })[0]; if (w) fillFrom(w); });
+        };
       });
-    ov.querySelector('#jto-go').onclick = function () { submit(l, F, this); };
+    ov.querySelector('#jto-go').onclick = function () { submit(l.mlsNumber ? l : Object.assign({}, l, { mlsNumber: mls }), F, this); };
     setTimeout(function () { var n = ov.querySelector('#jto-n'); if (n && matchMedia('(pointer:fine)').matches) n.focus(); }, 60);
+  }
+  var offersP = null;
+  function webOffers() { return offersP || (offersP = rpc('jag_offers_team').then(function (j) { return (j && j.offers) || []; }).catch(function () { offersP = null; return []; })); }
+  var LOAN = { fha: 'fha', conventional: 'conventional', va: 'va', usda: 'usda' };
+  function fillFrom(w) {
+    if (!ov) return;
+    var set = function (id, v) { var e = ov.querySelector('#' + id); if (e && v != null && v !== '') e.value = v; };
+    var amp = lang === 'es' ? ' y ' : ' and ';
+    set('jto-n', [w.name, w.co_buyer].filter(Boolean).join(amp)); set('jto-e', w.email ? String(w.email).toLowerCase() : ''); set('jto-p', w.phone ? phone(w.phone) : '');
+    if (w.offer_price) set('jto-pr', Math.round(w.offer_price));
+    var lt = ov.querySelector('#jto-lt'), dp = ov.querySelector('#jto-dp'), lk = String(w.loan_type || '').toLowerCase();
+    if (w.financing === 'cash') { lt.value = 'cash'; dp.value = ''; dp.disabled = true; }
+    else if (LOAN[lk]) { lt.value = LOAN[lk]; dp.disabled = false; }
+    if (w.financing !== 'cash' && w.down_payment) { var m = String(w.down_payment).match(/([0-9.]+)\s*%/); if (m) dp.value = m[1]; }
+    if (w.earnest) set('jto-em', Math.round(w.earnest));
+    if (w.option_days) set('jto-od', w.option_days);
+    if (w.close_date) set('jto-cd', String(w.close_date).slice(0, 10));
+    var extra = [w.lender ? (lang === 'es' ? 'Prestamista: ' : 'Lender: ') + w.lender : '', w.loan_type && !LOAN[lk] && w.financing !== 'cash' ? (lang === 'es' ? 'Tipo de préstamo del cliente: ' : 'Client loan type: ') + w.loan_type : '',
+      w.down_payment && !/%/.test(w.down_payment) && w.financing !== 'cash' ? (lang === 'es' ? 'Enganche: ' : 'Down payment: ') + w.down_payment : '',
+      (w.contingencies || []).length ? (lang === 'es' ? 'Condiciones: ' : 'Conditions: ') + w.contingencies.join(', ') : '', w.notes ? (lang === 'es' ? 'Notas del cliente: ' : 'Client notes: ') + w.notes : ''].filter(Boolean).join('\n');
+    var nt = ov.querySelector('#jto-nt'); if (nt && extra && !nt.value) nt.value = extra;
   }
   function paintHar(F) {
     var el = ov && ov.querySelector('#jto-har'); if (!el) return;
@@ -216,7 +245,7 @@
     var bd = ov.querySelector('#jto-bd'), ft = ov.querySelector('#jto-ft');
     var miss = r.missing || [];
     bd.innerHTML = '<div class="jto-ok"><div style="font-size:40px">📝</div><h3>' + esc(t('done')) + '</h3>' +
-      (s && s.ok ? '<p><b>' + esc(t('sent')) + esc(s.tc || 'René') + '</b>' + esc(t('sent2')) + '</p>' : '') +
+      (s && s.ok ? '<p><b>' + esc(t('sent')) + '</b>' + esc(t('sent2')) + '</p>' : '') +
       (miss.length ? '<p style="margin:14px 0 0">' + esc(t('left')) + '</p><ul>' + miss.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>' : '<p>' + esc(t('none')) + '</p>') + '</div>';
     ft.innerHTML = '<button type="button" class="sec" data-x>' + (lang === 'es' ? 'Cerrar' : 'Close') + '</button><a class="pri" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + esc(t('open')) + '</a>';
     ft.querySelector('[data-x]').onclick = close;
