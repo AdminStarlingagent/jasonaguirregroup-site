@@ -214,6 +214,7 @@ body{background:var(--paper)}
 .th-c button:disabled{background:#d6d5dc}
 .th-c button svg{width:20px;height:20px;fill:currentColor}
 .th-n{font-size:12.5px;color:var(--muted);margin:8px 4px 0}
+.mcard{display:flex;flex-direction:column;width:260px;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:var(--ink);margin-top:4px}.mc-ph{display:block;height:130px;background:#f6f5f3 center/cover no-repeat}.mc-tx{display:flex;flex-direction:column;gap:2px;padding:9px 11px;font-size:13.5px}.mc-tx b{font-size:18px;font-weight:800}
 </style>
 </head>
 <body>
@@ -749,7 +750,11 @@ body{background:var(--paper)}
       if(d.toDateString() !== last){ h += '<div class="th-d">' + esc(dayLbl(d)) + '</div>'; last = d.toDateString(); }
       var tm = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       var lab = m.fail ? 'Not sent. Try again.' : (m.tmp && !m.id) ? 'Sending…' : ((mine && m.name && m.name !== myName ? m.name + ' · ' : '') + tm + (m.via === 'sms' ? ' · by text' : ''));
-      h += '<div class="mr ' + (mine ? 'out' : 'in') + (m.fail ? ' fail' : '') + '"><div class="bb">' + linkify(m.body) + '</div><div class="tm">' + esc(lab) + '</div></div>';
+      var c = m.card, cardH = '';
+      if(c){ var cu = c.url || (c.mls ? 'homes#' + encodeURIComponent(c.mls) : 'homes');
+        cardH = '<a class="mcard" href="' + esc(cu) + '" target="_blank" rel="noopener">' + (c.photo ? '<span class="mc-ph" style="background-image:url(\'https://cdn.repliers.io/' + esc(c.photo) + '?class=small\')"></span>' : '') +
+          '<span class="mc-tx">' + (c.price ? '<b>' + money(c.price) + '</b>' : '') + '<span>' + esc(c.title || (c.kind === 'search' ? 'Home search' : 'Home')) + '</span>' + (c.mls ? '<span>MLS ' + esc(c.mls) + '</span>' : '') + '</span></a>'; }
+      h += '<div class="mr ' + (mine ? 'out' : 'in') + (m.fail ? ' fail' : '') + '">' + (c && m.body === c.title ? '' : '<div class="bb">' + linkify(m.body) + '</div>') + cardH + '<div class="tm">' + esc(lab) + (c ? ' · sent to their app' : '') + '</div></div>';
     });
     var stick = force || l.scrollHeight - l.scrollTop - l.clientHeight < 90;
     l.innerHTML = h; if(stick) l.scrollTop = l.scrollHeight;

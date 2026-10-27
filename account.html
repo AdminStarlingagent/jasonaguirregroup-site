@@ -298,6 +298,10 @@ section[data-pane]{padding-bottom:50px}
 .mx-c button:disabled{background:#d6d5dc;cursor:default}
 .mx-c button svg{width:20px;height:20px;fill:currentColor}
 .mx-n{max-width:760px;font-size:13.5px;color:var(--muted);margin:10px 4px 0}.mx-n a{color:var(--ink);font-weight:700}
+.mcard{display:flex;flex-direction:column;width:280px;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:var(--ink);margin-top:4px}
+.mcard:hover{border-color:#c9c8d0}.mc-ph{display:block;height:150px;background:var(--card) center/cover no-repeat}.mc-ic{display:grid;place-items:center;font-size:40px;height:90px}
+.mc-tx{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px;font-size:14px}.mc-tx b{font-size:20px;font-weight:800;letter-spacing:-.02em}.mc-tx span{color:#3d3c44}
+.mc-tx u{text-decoration:none;color:var(--buy-d);font-weight:800;margin-top:6px}
 .mx-x{max-width:760px;font-size:14px;color:var(--buy-d);margin:8px 4px 0;font-weight:700}.mx-x:empty{display:none}
 .chk{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;cursor:pointer}
 .chk input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--buy)}
@@ -473,7 +477,7 @@ var T={
   m_chips:['Quiero ver una casa','¿Cuánto puedo comprar?','Tengo una pregunta sobre mi préstamo','¿Qué sigue en mi proceso?'],
   m_note:'Le avisamos por correo cuando {a} le conteste.',m_note2:'Le avisamos por correo y por texto cuando {a} le conteste.',m_sms:'Avisarme también por texto',
   m_today:'Hoy',m_yest:'Ayer',m_seen:'Visto',m_sending:'Enviando…',m_fail:'No se envió · Toque para reintentar',m_limit:'Envió muchos mensajes seguidos. Espere unos minutos e intente de nuevo.',
-  m_agent:'su agente',m_load:'No pudimos cargar sus mensajes. Revise su conexión.',
+  m_agent:'su agente',m_see:'Ver la casa',m_seeS:'Ver las casas',m_srch:'Búsqueda de casas',m_load:'No pudimos cargar sus mensajes. Revise su conexión.',
   sm_h:'Avisos por texto',sm_l:'Mándenme un texto cuando mi agente me conteste',
   sm_fine:'Al marcar esta casilla acepta recibir mensajes de texto de Jason Aguirre Group al teléfono de su perfil, solo para avisarle de mensajes nuevos de su agente. La frecuencia varía. Pueden aplicar tarifas de mensajes y datos. Responda STOP para cancelar o HELP para ayuda. No es requisito para comprar.',
   sm_need:'Agregue su teléfono arriba y toque «Guardar cambios» para activar los textos.',sm_yes:'Listo: le mandaremos un texto cuando su agente le conteste.',sm_no:'Textos desactivados. Le seguimos avisando por correo.',
@@ -526,7 +530,7 @@ var T={
   m_chips:['I want to see a home','How much can I afford?','I have a question about my loan','What’s next in my process?'],
   m_note:'We’ll email you when {a} replies.',m_note2:'We’ll email and text you when {a} replies.',m_sms:'Text me too',
   m_today:'Today',m_yest:'Yesterday',m_seen:'Seen',m_sending:'Sending…',m_fail:'Not sent · Tap to retry',m_limit:'You sent a lot of messages in a row. Wait a few minutes and try again.',
-  m_agent:'your agent',m_load:'We couldn’t load your messages. Check your connection.',
+  m_agent:'your agent',m_see:'See the home',m_seeS:'See the homes',m_srch:'Home search',m_load:'We couldn’t load your messages. Check your connection.',
   sm_h:'Text alerts',sm_l:'Text me when my agent replies',
   sm_fine:'By checking this box you agree to receive text messages from Jason Aguirre Group at the phone in your profile, only to let you know about new messages from your agent. Message frequency varies. Message and data rates may apply. Reply STOP to cancel or HELP for help. Not required to buy.',
   sm_need:'Add your phone above and tap “Save changes” to turn on texts.',sm_yes:'Done: we’ll text you when your agent replies.',sm_no:'Texts turned off. We’ll keep emailing you.',
@@ -903,10 +907,20 @@ function paintMsgs(){
     if(dk!==last){ html+='<div class="mx-day">'+esc(dayLabel(d))+'</div>'; last=dk; }
     var tm=d.toLocaleTimeString(loc(),{hour:'numeric',minute:'2-digit'});
     var st=m.fail?t('m_fail'):(m.tmp&&!m.id)?t('m_sending'):((!me&&m.name&&m.name!==nm?m.name+' · ':'')+tm+(me&&i===lastMine&&m.read?' · '+t('m_seen'):''));
-    html+='<div class="mr '+(me?'me':'them')+(m.fail?' fail':(m.tmp&&!m.id)?' sending':'')+'"'+(m.fail?' data-retry="'+m.tmp+'" role="button" tabindex="0"':'')+'><div class="bb">'+linkify(m.body)+'</div><div class="tm">'+esc(st)+'</div></div>';
+    var showBody=!(m.card&&m.body===m.card.title);
+    html+='<div class="mr '+(me?'me':'them')+(m.fail?' fail':(m.tmp&&!m.id)?' sending':'')+'"'+(m.fail?' data-retry="'+m.tmp+'" role="button" tabindex="0"':'')+'>'+(showBody?'<div class="bb">'+linkify(m.body)+'</div>':'')+(m.card?msgCard(m.card):'')+'<div class="tm">'+esc(st)+'</div></div>';
   });
   var stick=M.bottom||l.scrollHeight-l.scrollTop-l.clientHeight<90;
   l.innerHTML=html; if(stick){ l.scrollTop=l.scrollHeight; } M.bottom=false;
+}
+/* a home or search the agent sent to this account */
+function msgCard(c){
+  var home=c.kind!=='search'&&c.kind!=='site', url=c.url||(c.mls?'homes#'+encodeURIComponent(c.mls):'homes');
+  url=url.replace(/^https:\/\/(www\.)?jasonaguirregroup\.(company|us)\//,'');
+  var sp=[c.beds!=null?c.beds+' '+t('bd'):'',c.baths!=null?c.baths+' '+t('ba'):'',c.sqft?num(c.sqft)+' '+t('sqft'):''].filter(Boolean).join(' · ');
+  return '<a class="mcard" href="'+esc(url)+'">'+(c.photo?'<span class="mc-ph" style="background-image:url(\''+img(c.photo,'small')+'\')"></span>':'<span class="mc-ph mc-ic">'+(home?'🏠':'🔎')+'</span>')+
+    '<span class="mc-tx">'+(c.price?'<b>'+money(c.price)+'</b>':'')+(sp?'<span>'+esc(sp)+'</span>':'')+'<span>'+esc(c.title||(home?'':t('m_srch')))+'</span>'+
+    '<u>'+t(home?'m_see':'m_seeS')+' ›</u></span></a>';
 }
 function loadThread(){
   if(!A||!A.user()) return Promise.resolve();

@@ -110,7 +110,11 @@
     '.js-sh textarea{width:100%;box-sizing:border-box;min-height:150px;border:2px solid #e3e3e8;border-radius:14px;padding:11px;font:500 14.5px/1.45 "Plus Jakarta Sans",sans-serif;resize:vertical}' +
     '.js-gr{display:grid;grid-template-columns:1fr 1fr;gap:8px}.js-gr button,.js-gr a{display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:14px;padding:13px 10px;font:700 14.5px "Plus Jakarta Sans",sans-serif;text-decoration:none;cursor:pointer}' +
     '.js-sms{background:#c8102e;color:#fff}.js-wa{background:#1f9d55;color:#fff}.js-em{background:#2653d9;color:#fff}.js-cp{background:#f5f5f7;color:#17161c}' +
-    '.js-note{font-size:12px;color:#6a6972;margin:0}';
+    '.js-note{font-size:12px;color:#6a6972;margin:0}' +
+    '.js-app{background:#fdecef;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}.js-app b{font-size:14.5px}.js-app small{color:#6a6972;font-size:12px}' +
+    '.js-app select,.js-app input{width:100%;box-sizing:border-box;border:2px solid #e3e3e8;border-radius:12px;padding:10px;font:500 15px "Plus Jakarta Sans",sans-serif;background:#fff}' +
+    '.js-go{border:0;border-radius:14px;padding:13px 10px;font:800 15px "Plus Jakarta Sans",sans-serif;background:#c8102e;color:#fff;cursor:pointer}.js-go:disabled{opacity:.55}' +
+    '.js-ok{color:#0f8a4d;font-weight:700;font-size:13.5px}.js-bad{color:#a30d26;font-weight:700;font-size:13.5px}.js-or{font-size:12px;color:#6a6972;text-align:center;margin:2px 0 -4px}';
   // o.as: agent object from jag_agent_me (screener / admin sign-in), o.token: that session's token,
   // o.to: { phone, email } to address the text/email to the client, o.lang: 'es' | 'en' for the message.
   function open(o){
@@ -122,6 +126,12 @@
     var ov = document.createElement('div'); ov.className = 'js-ov';
     ov.innerHTML = '<div class="js-sh" role="dialog" aria-modal="true" aria-label="Compartir"><div class="js-top"><h3>' + (o.title || 'Compartir') + '</h3>' +
       '<span class="js-lg" style="margin-left:10px"><button type="button" data-l="es">ES</button><button type="button" data-l="en">EN</button></span><button type="button" class="js-x" aria-label="Cerrar">×</button></div>' +
+      (kind !== 'site' ? '<div class="js-app"><b>📲 ' + (L === 'en' ? 'To their JAG app' : 'A su app JAG') + '</b>' +
+        '<small>' + (L === 'en' ? 'Lands in Messages in their account (red badge). They get an email, and a text from Lola if they turned texts on.' : 'Le llega a Mensajes en su cuenta (globito rojo). Recibe un correo, y un texto de Lola si activó los textos.') + '</small>' +
+        '<select id="js-cl" aria-label="Cliente"><option value="">' + (L === 'en' ? 'Loading clients…' : 'Cargando clientes…') + '</option></select>' +
+        '<input id="js-note" maxlength="300" aria-label="Nota">' +
+        '<button type="button" class="js-go" id="js-app-go" disabled>' + (L === 'en' ? 'Send to their app' : 'Enviar a su app') + '</button><div id="js-app-st" role="status"></div></div>' +
+        '<p class="js-or">' + (L === 'en' ? 'or send the link from your phone' : 'o mande el enlace desde su teléfono') + '</p>' : '') +
       '<textarea id="js-msg" aria-label="Mensaje"></textarea>' +
       '<div class="js-gr"><a class="js-sms" data-c="sms">💬 Texto</a><a class="js-wa" data-c="whatsapp" target="_blank" rel="noopener">WhatsApp</a>' +
       '<a class="js-em" data-c="email">✉️ Email</a><button type="button" class="js-cp" data-c="copy">Copiar</button></div>' +
@@ -147,11 +157,52 @@
       if(ch === 'more'){ e.preventDefault(); navigator.share({ text: ta.value }).catch(function(){}); }
     });
     paint();
+    if(kind !== 'site') appSection(o, a, L, ov, function(){ return buildUrl(o, a.code, sid); });
     // get a share id first so opens are counted; the message updates when it arrives
     (o.token ? Promise.resolve(o.token) : agentToken()).then(function(t){
       if(!t) return;
       return rpc('jag_agent_share', { p_kind: kind, p_mls: o.mls || null, p_label: o.label || o.summary || null, p_channel: 'link' }, t).then(function(j){ if(j && j.id){ sid = j.id; paint(); } });
     }).catch(function(){});
+  }
+
+  /* ---------- "A su app JAG": the home lands in the client's Mensajes ---------- */
+  var clientsCache = null;
+  var NOTE = { es: { listing: '¡Hola! Te comparto esta casa que creo que te va a gustar.', search: 'Te preparé esta búsqueda de casas.' },
+               en: { listing: 'Hi! Here\'s a home I think you\'ll like.', search: 'I set up this home search for you.' } };
+  function appSection(o, a, L, ov, urlOf){
+    var kind = o.kind || 'listing', sel = ov.querySelector('#js-cl'), note = ov.querySelector('#js-note'), go = ov.querySelector('#js-app-go'), st = ov.querySelector('#js-app-st');
+    note.value = (NOTE[L] || NOTE.es)[kind] || ''; note.placeholder = L === 'en' ? 'Note (optional)' : 'Nota (opcional)';
+    var card = Object.assign({ kind: kind, mls: o.mls || null, title: o.label || o.summary || null }, o.card || {});
+    // a home: fill photo, price and specs from the listing when the caller didn't pass them
+    if(kind === 'listing' && o.mls && !card.photo){
+      fetch(BASE + '/functions/v1/home-search?mlsNumber=' + encodeURIComponent(o.mls)).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+        var l = j && j.listings && j.listings[0]; if(!l) return; var ad = l.address || {}, d = l.details || {};
+        card.photo = (l.images || [])[0] || null; card.price = l.listPrice || null; card.beds = d.numBedrooms; card.baths = d.numBathrooms; card.sqft = d.sqft ? String(d.sqft).replace(/\D/g, '') : null; card.city = ad.city || null;
+        if(ad.streetName) card.title = [ad.streetNumber, ad.streetDirectionPrefix, ad.streetName, ad.streetSuffix, ad.streetDirection].filter(Boolean).join(' ') + (ad.city ? ', ' + ad.city : '');
+      }).catch(function(){});
+    }
+    var want = String((o.to || {}).email || '').toLowerCase();
+    (clientsCache ? Promise.resolve(clientsCache) : agentToken().then(function(t){ return t ? rpc('jag_agent_clients', {}, t) : null; }).then(function(j){ clientsCache = (j && j.clients) || []; return clientsCache; }))
+      .then(function(list){
+        list = list.slice().sort(function(x, y){ return String(x.name || x.email || '').localeCompare(String(y.name || y.email || '')); });
+        if(!list.length){ sel.innerHTML = '<option value="">' + (L === 'en' ? 'No clients with an account yet' : 'Todavía no hay clientes con cuenta') + '</option>'; return; }
+        sel.innerHTML = '<option value="">' + (L === 'en' ? 'Choose a client with an account…' : 'Elija un cliente con cuenta…') + '</option>' + list.map(function(c){
+          return '<option value="' + esc(c.user_id) + '"' + (want && String(c.email || '').toLowerCase() === want ? ' selected' : '') + '>' + esc(c.name || c.email) + (c.name && c.email ? ' · ' + esc(c.email) : '') + '</option>'; }).join('');
+        go.disabled = !sel.value;
+      }).catch(function(){ sel.innerHTML = '<option value="">' + (L === 'en' ? 'Could not load clients' : 'No se pudieron cargar los clientes') + '</option>'; });
+    sel.onchange = function(){ go.disabled = !sel.value; st.textContent = ''; };
+    go.onclick = function(){
+      if(!sel.value) return; go.disabled = true; st.className = ''; st.textContent = L === 'en' ? 'Sending…' : 'Enviando…';
+      var name = sel.options[sel.selectedIndex].text.split(' · ')[0];
+      card.url = urlOf();
+      agentToken().then(function(t){ if(!t) throw new Error('signin'); return rpc('jag_msg_share', { p_user: sel.value, p_body: note.value.trim() || null, p_card: card }, t); })
+        .then(function(r){
+          if(!r || !r.ok) throw new Error((r && r.reason) || 'x');
+          st.className = 'js-ok'; st.textContent = (L === 'en' ? '✓ Sent to ' + name + '\'s app. They get an email now.' : '✓ Enviada a la app de ' + name + '. Le llega un correo ahora.');
+          go.textContent = L === 'en' ? 'Send to another client' : 'Enviar a otro cliente'; go.disabled = false; sel.value = ''; go.disabled = true;
+        })
+        .catch(function(e){ go.disabled = false; st.className = 'js-bad'; st.textContent = String(e && e.message) === 'signin' ? (L === 'en' ? 'Sign in to the Agent Hub again.' : 'Vuelva a iniciar sesión en el Agent Hub.') : (L === 'en' ? 'Could not send it. Try again.' : 'No se pudo enviar. Intente de nuevo.'); });
+    };
   }
 
   window.JagShare = { open: open, me: me, agent: function(){ return agent; }, agentCard: agentCard, onAgent: function(f){ listeners.push(f); if(agent) f(agent); }, token: agentToken, fmtPhone: fmtPhone };
