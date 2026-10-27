@@ -486,6 +486,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 <script src="jag-install.js" defer></script>
 <script src="jag-share.js"></script>
 <script src="jag-premium.js?v=1"></script>
+<script src="jag-team-offer.js?v=1"></script>
 <script src="jag-chat.js" defer></script>
 <script>
 /* ============================================================
@@ -1050,6 +1051,7 @@ function openDetail(i){
   window.JAG_CHAT_CTX={mls:String(l.mlsNumber), address:full, price:l.listPrice||null};
   if(window.JagPremium&&window.JagAccount&&JagAccount.user()){ JagPremium.agent().then(function(ag){ var sd=s.querySelector('aside.side'); if(!ag||!ag.agent||!sd||cur!==l) return; var old=sd.querySelector('.ja-card'); if(old) old.remove(); sd.insertAdjacentHTML('afterbegin','<div class="jp-side">'+JagPremium.card({agent:ag,noVisit:lease})+'</div>'); JagPremium.bind(sd.querySelector('.jp-side'),{home:lease?null:premHome(l)}); }); }
   else if(window.JagShare){ JagShare.onAgent(function(){ var sd=s.querySelector('aside.side'); if(sd&&!sd.querySelector('.ja-card')) sd.insertAdjacentHTML('afterbegin',JagShare.agentCard()); }); }
+  if(window.JagTeamOffer&&!lease){ var tsd=s.querySelector('aside.side'), tbx=JagTeamOffer.box(); if(tsd&&tbx){ tsd.insertAdjacentHTML('afterbegin',tbx); JagTeamOffer.bind(tsd,l,lang); } }
   s.querySelector('.stg-ph').addEventListener('click',function(e){ var b=e.target.closest('button'); if(b) showLB(+b.getAttribute('data-k')); });
   $('dfav').onclick=function(){ var on=toggleFav(l.mlsNumber); this.classList.toggle('on',on); this.querySelector('span').textContent=t(on?'saved':'savehome'); var h=document.querySelector('.c[data-i="'+i+'"] .heart'); if(h) h.classList.toggle('on',on); };
   if(window.JagShare&&JagShare.me()) $('dshare').querySelector('span').textContent=(lang==='es'?'Enviar a cliente':'Send to client');

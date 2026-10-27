@@ -38,6 +38,10 @@ const FIELDS_DETAIL = [
   "listDate", "address", "map", "images", "photoCount", "daysOnMarket", "updatedOn",
   "details", "lot", "taxes", "condominium", "nearby",
   "office.brokerageName", "agents", "permissions", "raw.NewConstructionYN", "raw.BuilderName",
+  // facts the team's "Comenzar oferta" pre-fills (all shown publicly on HAR as well)
+  "raw.AssociationYN", "raw.AssociationName", "raw.AssociationPhone", "raw.AssociationFee", "raw.AssociationFeeFrequency",
+  "raw.ListAgentFullName", "raw.ListAgentEmail", "raw.ListAgentPreferredPhone", "raw.ListAgentStateLicense",
+  "raw.ListOfficeName", "raw.ListOfficePhone", "raw.Disclosures", "raw.CountyOrParish", "raw.SubdivisionName",
 ].join(",");
 
 const MAX_PER_PAGE = 24;
@@ -73,6 +77,18 @@ function clean(l: any) {
   const r = l.raw || {};
   l.newConstruction = r.NewConstructionYN === true;
   l.builder = typeof r.BuilderName === "string" && r.BuilderName.trim() ? r.BuilderName.trim().slice(0, 80) : null;
+  if ("ListAgentFullName" in r || "AssociationYN" in r || "CountyOrParish" in r) {
+    const t = (v: unknown) => typeof v === "string" && v.trim() ? v.trim().slice(0, 120) : null;
+    l.offer = {
+      hoa: r.AssociationYN === true ? true : r.AssociationYN === false ? false : null,
+      hoaName: t(r.AssociationName), hoaPhone: t(r.AssociationPhone),
+      hoaFee: typeof r.AssociationFee === "number" ? r.AssociationFee : null, hoaFreq: t(r.AssociationFeeFrequency),
+      agent: t(r.ListAgentFullName), agentEmail: t(r.ListAgentEmail), agentPhone: t(r.ListAgentPreferredPhone),
+      agentLicense: t(r.ListAgentStateLicense), office: t(r.ListOfficeName), officePhone: t(r.ListOfficePhone),
+      disclosures: Array.isArray(r.Disclosures) ? r.Disclosures.slice(0, 12).map(String) : [],
+      county: t(r.CountyOrParish), subdivision: t(r.SubdivisionName),
+    };
+  }
   delete l.raw;
   return l;
 }
