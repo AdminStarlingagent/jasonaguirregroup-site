@@ -8,9 +8,22 @@
 --                                      second "Screened" row. Returns the app lead id, or null when there is none.
 -- ============================================================
 
+-- what a merged row brings to the row it is merged into (used by jag_merge_leads and the one-time backfill)
+create or replace function public.jag_lead_carry(p_keep jsonb, p_drop jsonb, p_type text)
+returns jsonb language sql immutable set search_path = '' as $$
+  select coalesce(jsonb_object_agg(case when coalesce(p_keep, '{}'::jsonb) ? e.key then e.key || ' (from ' || coalesce(nullif(p_type, ''), 'other') || ')' else e.key end, e.value), '{}'::jsonb)
+    from jsonb_each(coalesce(p_drop, '{}'::jsonb)) e
+   where e.key not in ('access_key', 'botcheck', 'subject', 'from_name', '__name', 'Merged into', 'Merged from', 'Screening ID', 'Screening', 'Screened By',
+                       'Screening Readiness', 'Follow Up Boss', 'Also known as')
+     and e.value is not null and e.value not in ('""'::jsonb, 'null'::jsonb)
+     and not (coalesce(p_keep, '{}'::jsonb) ? e.key and (p_keep -> e.key) = e.value)
+     -- contact details live on the row itself: no "Phone (from chat)" duplicates
+     and not (coalesce(p_keep, '{}'::jsonb) ? e.key and lower(e.key) in ('phone', 'email', 'name', 'first name', 'last name', 'preferred language', 'texting consent', 'sms consent'));
+$$;
+
 create or replace function public.jag_merge_leads(p_keep uuid, p_drop uuid)
 returns json language plpgsql security definer set search_path = '' as $$
-declare k public.jag_leads; d public.jag_leads; v_sid uuid; s public.jag_screenings; v_extra jsonb;
+declare k public.jag_leads; d public.jag_leads; v_sid uuid; s public.jag_screenings; v_extra jsonb; v_carry jsonb;
 begin
   if not (coalesce(auth.role(), '') = 'service_role' or coalesce(public.jag_is_team(), false)) then
     return json_build_object('ok', false, 'reason', 'not_team');
@@ -35,8 +48,12 @@ begin
     'Also known as', case when lower(trim(coalesce(d.name, ''))) <> lower(trim(coalesce(k.name, ''))) and coalesce(trim(d.name), '') <> '' then d.name end,
     'Merged from', d.type || ' · ' || to_char(d.created_at at time zone 'America/Chicago', 'Mon DD HH12:MI AM')));
 
+  -- everything the other row knew comes along (question asked, property, MLS #, answers…). Keys the kept row
+  -- doesn't have are copied as they are; a different value for a key it already has is kept as "<key> (from <type>)".
+  v_carry := public.jag_lead_carry(k.payload, d.payload, d.type);
+
   update public.jag_leads
-     set payload = coalesce(payload, '{}'::jsonb) || v_extra,
+     set payload = coalesce(payload, '{}'::jsonb) || v_carry || v_extra,
          email = coalesce(nullif(email, ''), d.email),
          phone = coalesce(nullif(phone, ''), d.phone),
          est_amount = coalesce(est_amount, d.est_amount),
@@ -86,3 +103,7 @@ revoke all on function public.jag_merge_leads(uuid, uuid) from public, anon;
 grant execute on function public.jag_merge_leads(uuid, uuid) to authenticated, service_role;
 revoke all on function public.jag_attach_screening_to_app(uuid) from public, anon, authenticated;
 grant execute on function public.jag_attach_screening_to_app(uuid) to service_role;
+
+-- one-time backfill (Oct 27 2026): rows merged before the carry-over existed get the other row's details now
+-- update public.jag_leads k set payload = k.payload || public.jag_lead_carry(k.payload, d.payload, d.type)
+--   from public.jag_leads d where d.status = 'Merged' and d.payload->>'Merged into' = k.id::text;

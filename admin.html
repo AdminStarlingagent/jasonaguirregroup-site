@@ -645,7 +645,7 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-27.2</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-27.3</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -2107,7 +2107,7 @@ function renderFacts(){
     var inc=leadIncome(p); if(inc>0) F.push(['Monthly income',fmtMoney(inc)+(p['Co-borrower']==='Yes'?' with co-borrower':'')]);
   } else if(r){ var k=keyFigure(r); if(k&&k!=='—') F.push([typeShort(r.type),String(k)]); }
   [['Timeline to Buy','Timeline'],['Credit Range (self-reported)','Credit (they said)'],['Down Payment','Down payment'],['Qualifying With','Qualifying with'],
-   ['Buying Stage','Stage'],['Property','Property'],['Screened By','Screened by']].forEach(function(x){ if(hasVal(p[x[0]])) F.push([x[1],String(p[x[0]])]); });
+   ['Buying Stage','Stage'],['Question','They asked'],['Property','Property they asked about'],['MLS #','MLS #'],['Screened By','Screened by'],['Merged from','Also came in as']].forEach(function(x){ if(hasVal(p[x[0]])) F.push([x[1],String(p[x[0]])]); });
   F.push(['Language',prof.lang==='en'?'English':'Español']);
   if(acct&&(acct.agent_name||acct.agent_code)) F.push(['Agent',acct.agent_name||acct.agent_code]);
   $('d-facts').innerHTML='<div class="facts">'+F.map(function(f){ return '<div class="fact"><small>'+esc(f[0])+'</small><b>'+esc(f[1])+'</b></div>'; }).join('')+'</div>';
