@@ -418,7 +418,7 @@ body.on-msgs .jc-b,body.on-msgs .jc{display:none!important}
 
     <section data-pane="saved">
       <h1 class="pt" data-t="r_saved"></h1>
-      <p class="ps" data-t="saved_sub"></p><div id="saved" class="grid"></div>
+      <p class="ps" data-t="saved_sub"></p><div class="tour-slot"></div><div id="saved" class="grid"></div>
     </section>
 
     <section data-pane="messages">
@@ -516,6 +516,7 @@ body.on-msgs .jc-b,body.on-msgs .jc{display:none!important}
 
 <script src="jag-account.js"></script>
 <script src="jag-premium.js?v=1"></script>
+<script src="jag-tour-plan.js?v=1"></script>
 <script src="jag-install.js" defer></script>
 <script>
 var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
@@ -970,7 +971,7 @@ function paintPlan(){
     '<div class="tiles">'+tile('🧮',t('t_calc'),'calculadora')+tile('🤝',t('t_dpa'),null,'data-guide="dpa"')+tile('📈',t('t_credit'),'#mensajes')+'</div>';
   // 2) home
   var ssOn=(D.searches||[]).filter(function(x){ return x.alerts; }).length;
-  $('sb').querySelector('[data-step="home"]').innerHTML='<div class="hero"><h3>'+t('h_h')+'</h3><p>'+t('h_p')+'</p><div class="inner prem-slot"></div></div>'+
+  $('sb').querySelector('[data-step="home"]').innerHTML='<div class="tour-slot"></div><div class="hero"><h3>'+t('h_h')+'</h3><p>'+t('h_p')+'</p><div class="inner prem-slot"></div></div>'+
     '<div class="tiles">'+tile('❤️',[t('t_saved')[0],fill(t('t_saved')[1],{n:(D.favs||[]).length})],'#saved')+tile('🔔',[t('t_ss')[0],fill(t('t_ss')[1],{n:ssOn})],'#novedades')+tile('🔎',t('t_search'),'homes')+'</div>';
   // 4) close
   var acc=acceptedOffer();
@@ -978,7 +979,7 @@ function paintPlan(){
     t('c_list').map(function(x){ return '<li><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></li>'; }).join('')+'</ul></div></div>';
   // learn
   $('learn').innerHTML=['how','expect','itin','dpa'].map(function(k){ var L=t('lrn')[k]; return '<button type="button" class="lc" data-guide="'+k+'"><span class="li">'+L[0]+'</span><b>'+esc(L[1])+'</b><span>'+esc(L[2])+'</span><u>'+t('more')+'</u></button>'; }).join('');
-  paintPrem();
+  paintPrem(); paintTour();
 }
 document.addEventListener('click',function(e){
   var g=e.target.closest('[data-guide]'); if(g){ openGuide(g.getAttribute('data-guide')); return; }
@@ -1007,7 +1008,7 @@ function setTab(h){
 }
 window.addEventListener('hashchange',function(){ setTab(location.hash.slice(1)); });
 
-function paintAll(){ paintSaved(); paintOffers(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); paintPlan(); paintPrem(); if(window.M){ M.sig=''; paintMsgs(); paintSms(); } }
+function paintAll(){ paintSaved(); paintOffers(); paintSearches(); paintAlerts(); paintPicks(); paintProfile(); paintPlan(); paintPrem(); paintTour(); if(window.M){ M.sig=''; paintMsgs(); paintSms(); } }
 
 /* ---------- premium: dedicated agent + showing requests ---------- */
 function paintPrem(){
@@ -1018,6 +1019,12 @@ function paintPrem(){
     JagPremium.bind(el,{homes:D.favs||[],onDone:loadPrem});
   });
 }
+/* ---------- tours with the showing agent (clients the team sent for showings) ---------- */
+function paintTour(){
+  if(!window.JagTourPlan) return;
+  document.querySelectorAll('.tour-slot').forEach(function(el){ el.innerHTML=JagTourPlan.card(); JagTourPlan.bind(el,loadTour); });
+}
+function loadTour(){ if(window.JagTourPlan) JagTourPlan.load().then(paintTour); }
 function loadPrem(){
   if(!window.JagPremium) return;
   Promise.all([JagPremium.agent(), JagPremium.showings()]).then(function(r){ D.agent=r[0]; D.showings=r[1]; paintPrem(); paintMsgs(); });
@@ -1210,7 +1217,7 @@ function start(){
     A.alerts().then(function(r){ D.alerts=r||[]; }).catch(function(){ D.alerts=[]; }),
     A.activity(300).then(function(r){ D.activity=r||[]; }).catch(function(){ D.activity=[]; })
   ]).then(function(){ paintAll(); setTab(location.hash.slice(1)||tab); loadPicks(); });
-  loadOffers().then(paintPlan); loadPrem(); loadPlan(); loadMsgStatus(); loadCo();
+  loadOffers().then(paintPlan); loadPrem(); loadPlan(); loadTour(); loadMsgStatus(); loadCo();
 }
 $('gatebtn').onclick=function(){ A.requireSignIn().catch(function(){}); };
 if(A){ A.mountButton($('acct')); A.onChange(start); }

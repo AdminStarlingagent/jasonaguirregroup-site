@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<title>Su recorrido de casas — JAG Real Estate</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* The client's tour page (tour#<token>, from the schedule text/email): times, directions, quick feedback after each
+   home, and "Make an offer" from the phone. Spanish first. */
+:root{--ink:#17161c;--paper:#fff;--card:#f6f5f3;--line:#e8e6e2;--red:#c8102e;--red-d:#a30d26;--red-t:#fdecef;--green:#0f8a4d;--green-t:#e7f5ee;--muted:#6a6972;--gold:#f2a900;
+  --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--card);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--red)}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+[hidden]{display:none!important}
+.wrap{max-width:620px;margin:0 auto;padding:0 16px 60px}
+header{background:#fff;border-bottom:3px solid var(--red)}
+header .in{max-width:620px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lock{display:flex;flex-direction:column;line-height:1;text-decoration:none;color:var(--ink)}
+.lock b{font-size:22px;font-weight:800;letter-spacing:-.02em}.lock small{font-size:8px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:3px}
+.langs{display:flex;border:1.5px solid var(--ink);border-radius:8px;overflow:hidden}
+.langs button{border:0;background:#fff;font-size:12.5px;font-weight:800;padding:7px 11px;min-height:36px}.langs button.on{background:var(--ink);color:#fff}
+.hero{background:#fff;border-radius:22px;padding:18px;margin:16px 0 12px}
+.eb{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+h1{font-size:26px;line-height:1.2;letter-spacing:-.02em;margin:6px 0 6px}
+.sub{color:var(--muted);margin:0 0 12px;font-size:15px}
+.st{display:inline-block;font-size:13px;font-weight:800;border-radius:99px;padding:5px 12px;background:var(--card)}.st.g{background:var(--green-t);color:var(--green)}.st.y{background:#fff4d6;color:#7a5600}
+.ag{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.ag img,.ag i{width:52px;height:52px;border-radius:26px;object-fit:cover;flex:none;background:var(--ink);color:#fff;font-style:normal;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center}
+.ag{flex-wrap:wrap}.ag>div:not(.acts){flex:1;min-width:0}.ag b{display:block}.ag small{color:var(--muted);font-size:13px}.ag .acts{margin-left:auto;display:flex;gap:6px}
+@media(max-width:480px){.ag .acts{width:100%;margin-left:0}.ag .acts .btn{flex:1}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:2px solid var(--red);background:#fff;color:var(--red);border-radius:14px;padding:11px 14px;font-weight:800;text-decoration:none;min-height:48px;font-size:15px}
+.btn.pri{background:var(--red);color:#fff}.btn.dk{background:var(--ink);border-color:var(--ink);color:#fff}.btn.full{width:100%}.btn.sm{min-height:42px;padding:8px 12px;font-size:14px;border-radius:12px}
+.btn[disabled]{opacity:.55}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>.btn{flex:1 1 auto}
+.wait{background:#fff4d6;border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:15px}
+/* homes */
+.h{background:#fff;border-radius:22px;overflow:hidden;margin:0 0 14px}
+.h .ph{position:relative;aspect-ratio:16/9;background:#e8e6e2 center/cover no-repeat}
+.h .tm{position:absolute;left:12px;top:12px;background:var(--ink);color:#fff;border-radius:12px;padding:6px 11px;font-weight:800;font-size:17px}
+.h .tm.no{background:#8a8992;font-size:14px}
+.h .num{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:16px;background:#fff;color:var(--ink);font-weight:800;display:flex;align-items:center;justify-content:center}
+.h .bd{padding:14px 16px 16px}
+.h .pr{font-size:22px;font-weight:800;letter-spacing:-.02em}.h .ad{color:var(--muted);font-size:14.5px;margin:2px 0 10px}
+.h.off{opacity:.6}.h.off .ph{filter:grayscale(1)}
+.fbd{background:var(--green-t);color:var(--green);border-radius:12px;padding:9px 12px;font-weight:700;font-size:14px;margin-top:10px}
+.ofd{background:var(--red-t);color:var(--red-d);border-radius:12px;padding:9px 12px;font-weight:800;font-size:14px;margin-top:10px}
+/* feedback */
+.fb{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.fb h3{margin:0 0 8px;font-size:17px}
+.q{font-weight:800;font-size:14.5px;margin:12px 0 6px}
+.stars{display:flex;gap:4px}.stars button{border:0;background:none;font-size:36px;line-height:1;color:#d6d4cf;padding:2px;min-width:44px;min-height:44px}.stars button.on{color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{border:2px solid var(--line);background:#fff;border-radius:99px;padding:8px 13px;font-weight:700;font-size:14px;min-height:42px}
+.chips button.on{border-color:var(--red);background:var(--red-t);color:var(--red-d)}
+textarea,.in-t{width:100%;border:1.5px solid #d9d6d1;background:var(--card);border-radius:14px;padding:11px 12px;font-size:16px}
+textarea{min-height:76px;resize:vertical}
+/* offer sheet */
+.ov{position:fixed;inset:0;background:rgba(15,14,20,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:660px){.ov{align-items:center}}
+.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:620px;max-height:94vh;display:flex;flex-direction:column}
+@media(min-width:660px){.sheet{border-radius:22px}}
+.sh-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:16px 18px 8px;border-bottom:1px solid var(--line)}
+.sh-h b{font-size:19px;line-height:1.25}.sh-h small{display:block;color:var(--muted);font-size:13.5px;font-weight:600}
+.sh-h button{border:0;background:none;font-size:30px;line-height:1;color:var(--muted);padding:0 6px;min-height:44px}
+.sh-b{overflow:auto;padding:6px 18px 14px;flex:1}
+.sh-f{padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);display:flex;gap:8px}.sh-f .btn{flex:1}
+.lbl{display:block;font-weight:800;font-size:15.5px;margin:16px 0 6px}
+.hint{font-size:13.5px;color:var(--muted);margin:6px 0 0}
+.money{position:relative}.money span{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted)}.money input{padding-left:28px;font-weight:800;font-size:20px}
+.info{background:var(--card);border-radius:16px;padding:12px 14px;margin:10px 0;font-size:14.5px}
+.info b{display:block;margin-bottom:2px}
+.info.g{background:var(--green-t)}
+.rv{background:var(--card);border-radius:16px;padding:4px 14px;margin:10px 0}
+.rv div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}.rv div:last-child{border:0}
+.rv span{color:var(--muted)}.rv b{text-align:right}
+.err{color:var(--red-d);font-weight:800;font-size:14.5px;margin:10px 0 0}
+.okbig{text-align:center;padding:26px 8px}.okbig b{display:block;font-size:26px;margin-bottom:8px}.okbig p{color:#4a4952;margin:0 0 8px}
+.msg{text-align:center;padding:60px 20px;color:var(--muted)}
+.foot{text-align:center;color:var(--muted);font-size:12.5px;margin-top:24px}
+.toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:99px;padding:10px 16px;font-weight:700;font-size:14px;z-index:30;max-width:92vw}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <a class="lock" href="./"><small>Jason Aguirre Group</small><b>JAG</b><small>eXp Realty</small></a>
+  <div class="langs" role="group" aria-label="Idioma / Language"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></div>
+</div></header>
+<main class="wrap" id="main"><p class="msg">Cargando… / Loading…</p></main>
+
+<script src="jag-capture.js?v=3"></script>
+<script src="jag-team-offer.js?v=2"></script>
+<script>
+(function(){
+  'use strict';
+  var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
+  var API = BASE + '/functions/v1/home-search', CDN = 'https://cdn.repliers.io/';
+  var H0 = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim();
+  var TOKEN = H0.split('&')[0], FOCUS = ((H0.match(/[&?]h=(\d+)/) || [])[1]) || '';
+  var D = null, lang = 'es', fbOpen = {}, FB = {};
+  var T = {
+    es: { eb: 'Su recorrido de casas', h1: 'Su recorrido es el {d}', st: { requested: 'Pidiendo las citas', scheduling: 'Pidiendo las citas', scheduled: 'Confirmado', done: 'Terminado', cancelled: 'Cancelado' },
+      wait: '{a} está pidiendo las citas con los vendedores. Le avisamos por texto y correo en cuanto estén confirmadas.', canc: 'Este recorrido se canceló. {a} le contactará para programar otro.',
+      sub_ok: '{n} casa(s) confirmada(s). Llegue unos minutos antes y traiga una identificación.', your: 'Su agente de recorridos', call: 'Llamar', text: 'Texto',
+      route: 'Ruta en el mapa', dir: 'Cómo llegar', see: 'Ver la casa', tbd: 'Hora por confirmar', notav: 'No disponible', pending: 'Pendiente',
+      fb_btn: '¿Qué le pareció? (10 seg)', fb_h: '¿Qué le pareció esta casa?', fb_stars: 'Calificación', fb_live: '¿Se ve viviendo aquí?', live: { yes: '¡Sí! 😍', maybe: 'Tal vez 🤔', no: 'No 🙅' },
+      fb_like: '¿Qué le gustó?', fb_dis: '¿Qué no le gustó?', fb_note: 'Algo más (opcional)', fb_send: 'Enviar', fb_ok: '¡Gracias! {a} ya lo sabe.', fb_done: 'Ya nos dijo: {s}',
+      likes: ['Cocina', 'Tamaño', 'Patio', 'Ubicación', 'Precio', 'Distribución', 'Recámaras', 'Baños', 'Garaje', 'Vecindario', 'Escuelas', 'Luz natural'],
+      dislikes: ['Cocina', 'Muy pequeña', 'Patio', 'Ubicación', 'Precio', 'Distribución', 'Necesita reparaciones', 'Olor', 'Ruido', 'Vecindario', 'HOA', 'Lejos del trabajo'],
+      offer_btn: '📝 Hacer una oferta', offer_sent: 'Oferta enviada: {p} · {s}', love: '¿Le encantó? Puede empezar su oferta desde aquí. Su equipo JAG la revisa antes de mandarla.',
+      o_h: 'Oferta para {a}', o_list: 'Precio de lista: {p}', o_price: '¿Cuánto quiere ofrecer?', o_price_h: 'Su agente le puede decir si conviene ofrecer menos, el precio de lista o más.',
+      o_cc: '¿Quiere que el vendedor pague parte de sus costos de cierre?', o_cc_h: 'Los costos de cierre suelen ser 2%–4% del precio (≈ {lo}–{hi}). Pedir que el vendedor ayude es muy común; puede hacer la oferta un poco menos fuerte.',
+      cc_no: 'No pedir', cc_other: 'Otra cantidad', cc_amt: 'Cantidad que pide',
+      o_loan: 'Tipo de préstamo', o_loan_h: 'Lo llenamos con lo que nos dijo. Si no está seguro, elija "No sé" y su agente lo confirma.', loans: { fha: 'FHA', conventional: 'Convencional', va: 'VA', usda: 'USDA', cash: 'Efectivo', '': 'No sé' },
+      o_close: '¿Cuándo quiere cerrar (mudarse)?', d30: 'En ~30 días', d45: 'En ~45 días', d21: 'Lo antes posible (~21)',
+      o_note: 'Algo más para su agente (opcional)', o_note_ph: 'Ej.: queremos que dejen el refrigerador…',
+      i_title: 'Compañía de título: nosotros nos encargamos', i_title_p: 'Es la empresa neutral que hace el cierre y confirma que la casa no tenga deudas. Normalmente la escoge el vendedor; René la confirma con el agente del vendedor. Usted no tiene que hacer nada.',
+      i_war: 'Garantía de casa: la pedimos para usted', i_war_p: 'Vamos a pedir que el vendedor pague una garantía de casa (hasta $700). Cubre reparaciones de aire, calefacción, plomería y aparatos el primer año. A usted no le cuesta.',
+      i_em: 'Al firmar: depósito y periodo de opción', i_em_p: 'Deposita ~1% ({e}) en la compañía de título como “earnest money”; se acredita a su favor al cerrar. Y se pagan ~$200 por 7 días de opción para hacer la inspección: si algo no le gusta, puede cancelar y recuperar su depósito.',
+      review: 'Revisar', back: 'Atrás', send: 'Enviar mi oferta', sending: 'Enviando…', close: 'Cerrar',
+      rv_h: 'Revise su oferta', rv_price: 'Precio', rv_cc: 'El vendedor paga de sus costos', rv_loan: 'Préstamo', rv_close: 'Cierre', rv_war: 'Garantía de casa', rv_war_v: 'La paga el vendedor (hasta $700)', rv_title: 'Compañía de título', rv_title_v: 'La confirma su equipo',
+      rv_note: 'Todavía no es un contrato. Su equipo JAG lo prepara y lo revisa; le llega para firmar electrónicamente a su correo.',
+      ok_h: '¡Oferta enviada! 🎉', ok_p: 'René está preparando su contrato y Katherine o Jason lo revisan. Le llega para firmar electrónicamente a su correo. {a} le llama si hay alguna pregunta.',
+      e_price: 'Escriba el precio que quiere ofrecer.', e_cc: 'Escriba la cantidad o elija "No pedir".', e_just: 'Ya mandó una oferta para esta casa hace unos minutos. Su equipo ya la tiene.', e_send: 'No pudimos enviarla. Intente de nuevo o llame a {a}.',
+      notfound: 'No encontramos este recorrido. Abra el enlace completo de su texto o correo, o llame al (832) 702-3574.', neterr: 'No pudimos conectar. Revise su internet e intente de nuevo.', foot: 'Jason Aguirre Group · eXp Realty · (832) 702-3574' },
+    en: { eb: 'Your home tour', h1: 'Your tour is on {d}', st: { requested: 'Booking the showings', scheduling: 'Booking the showings', scheduled: 'Confirmed', done: 'Done', cancelled: 'Canceled' },
+      wait: '{a} is booking the showings with the sellers. We\'ll text and email you as soon as they\'re confirmed.', canc: 'This tour was canceled. {a} will reach out to set a new one.',
+      sub_ok: '{n} home(s) confirmed. Arrive a few minutes early and bring an ID.', your: 'Your showing agent', call: 'Call', text: 'Text',
+      route: 'Route on the map', dir: 'Directions', see: 'See the home', tbd: 'Time TBD', notav: 'Not available', pending: 'Pending',
+      fb_btn: 'How did you like it? (10 sec)', fb_h: 'How did you like this home?', fb_stars: 'Rating', fb_live: 'Can you see yourself living here?', live: { yes: 'Yes! 😍', maybe: 'Maybe 🤔', no: 'No 🙅' },
+      fb_like: 'What did you like?', fb_dis: 'What didn\'t you like?', fb_note: 'Anything else (optional)', fb_send: 'Send', fb_ok: 'Thanks! {a} has it.', fb_done: 'You told us: {s}',
+      likes: ['Kitchen', 'Size', 'Yard', 'Location', 'Price', 'Layout', 'Bedrooms', 'Bathrooms', 'Garage', 'Neighborhood', 'Schools', 'Natural light'],
+      dislikes: ['Kitchen', 'Too small', 'Yard', 'Location', 'Price', 'Layout', 'Needs repairs', 'Smell', 'Noise', 'Neighborhood', 'HOA', 'Far from work'],
+      offer_btn: '📝 Make an offer', offer_sent: 'Offer sent: {p} · {s}', love: 'Love it? You can start your offer right here. Your JAG team reviews it before it goes out.',
+      o_h: 'Offer on {a}', o_list: 'List price: {p}', o_price: 'How much do you want to offer?', o_price_h: 'Your agent can tell you whether to offer under, at, or over list price.',
+      o_cc: 'Do you want the seller to pay part of your closing costs?', o_cc_h: 'Closing costs are usually 2%–4% of the price (≈ {lo}–{hi}). Asking the seller to help is very common; it can make the offer a little less strong.',
+      cc_no: 'Don\'t ask', cc_other: 'Other amount', cc_amt: 'Amount you\'re asking for',
+      o_loan: 'Loan type', o_loan_h: 'Filled in from what you told us. Not sure? Pick "Not sure" and your agent confirms it.', loans: { fha: 'FHA', conventional: 'Conventional', va: 'VA', usda: 'USDA', cash: 'Cash', '': 'Not sure' },
+      o_close: 'When do you want to close (move in)?', d30: 'In ~30 days', d45: 'In ~45 days', d21: 'ASAP (~21)',
+      o_note: 'Anything else for your agent (optional)', o_note_ph: 'E.g. we\'d like them to leave the fridge…',
+      i_title: 'Title company: we handle it', i_title_p: 'It\'s the neutral company that runs the closing and makes sure the home has no debts on it. The seller usually picks it; René confirms it with the seller\'s agent. Nothing for you to do.',
+      i_war: 'Home warranty: we ask for it for you', i_war_p: 'We\'ll ask the seller to pay for a home warranty (up to $700). It covers repairs to A/C, heating, plumbing and appliances the first year. It costs you nothing.',
+      i_em: 'When you sign: deposit and option period', i_em_p: 'You deposit ~1% ({e}) with the title company as "earnest money"; it\'s credited to you at closing. And ~$200 buys a 7-day option period for the inspection: if you don\'t like what they find, you can cancel and get your deposit back.',
+      review: 'Review', back: 'Back', send: 'Send my offer', sending: 'Sending…', close: 'Close',
+      rv_h: 'Review your offer', rv_price: 'Price', rv_cc: 'Seller pays toward your costs', rv_loan: 'Loan', rv_close: 'Closing', rv_war: 'Home warranty', rv_war_v: 'Seller pays (up to $700)', rv_title: 'Title company', rv_title_v: 'Your team confirms it',
+      rv_note: 'This isn\'t a contract yet. Your JAG team prepares and reviews it; it comes to your email to sign electronically.',
+      ok_h: 'Offer sent! 🎉', ok_p: 'René is preparing your contract and Katherine or Jason reviews it. It comes to your email to sign electronically. {a} will call you with any questions.',
+      e_price: 'Type the price you want to offer.', e_cc: 'Type the amount or pick "Don\'t ask".', e_just: 'You sent an offer on this home a few minutes ago. Your team already has it.', e_send: 'We couldn\'t send it. Try again or call {a}.',
+      notfound: 'We couldn\'t find this tour. Open the full link from your text or email, or call (832) 702-3574.', neterr: 'We couldn\'t connect. Check your internet and try again.', foot: 'Jason Aguirre Group · eXp Realty · (832) 702-3574' }
+  };
+  function t(k){ return (T[lang] || T.es)[k]; }
+  function fill(s, o){ return String(s).replace(/\{(\w+)\}/g, function(_, k){ return o[k] == null ? '' : o[k]; }); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function money(n){ n = Number(n); return n > 0 ? '$' + Math.round(n).toLocaleString('en-US') : ''; }
+  function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
+  function fmtPhone(p){ var d = digits(p); return d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : ''; }
+  function $(id){ return document.getElementById(id); }
+  function toast(m){ var x = document.createElement('div'); x.className = 'toast'; x.setAttribute('role', 'status'); x.textContent = m; document.body.appendChild(x); setTimeout(function(){ x.remove(); }, 3000); }
+  function rpc(name, args){
+    return fetch(BASE + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) })
+      .then(function(r){ if(!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+  function dayLbl(d){ return new Date(d + 'T12:00:00').toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }); }
+  function aFirst(){ var a = D && D.agent; return a ? (a.first_name || String(a.name || '').split(' ')[0]) : 'JAG'; }
+  function full(h){ var s = h.snap || {}; return [s.addr, s.city, 'TX', s.zip].filter(Boolean).join(', '); }
+  function img(p){ return !p ? '' : /^https?:/.test(p) ? p : CDN + p + '?class=medium'; }
+  function addDays(n){ var d = new Date(); d.setDate(d.getDate() + n); while(d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function canFb(h){ if(h.status !== 'confirmed') return false; if(h.start_at) return Date.now() > new Date(h.start_at).getTime() - 15 * 6e4; return new Date(D.date + 'T00:00:00') <= new Date(); }
+  function fbLine(f){ return [f.stars ? '★★★★★'.slice(0, f.stars) : '', f.live ? t('live')[f.live] : ''].filter(Boolean).join(' · '); }
+
+  function setLang(l){ lang = l === 'en' ? 'en' : 'es'; try{ localStorage.setItem('jag_lang', lang); }catch(e){}
+    document.documentElement.lang = lang; document.querySelectorAll('[data-lang]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang') === lang); });
+    document.title = lang === 'es' ? 'Su recorrido de casas — JAG Real Estate' : 'Your home tour — JAG Real Estate'; if(D) render(); }
+  document.querySelector('.langs').addEventListener('click', function(e){ var b = e.target.closest('[data-lang]'); if(b) setLang(b.getAttribute('data-lang')); });
+
+  function load(){
+    if(!/^[0-9a-f]{16,64}$/i.test(TOKEN)){ $('main').innerHTML = '<p class="msg">' + esc(t('notfound')) + '</p>'; return; }
+    rpc('jag_tour_view', { p_token: TOKEN }).then(function(j){
+      if(!j || !j.ok){ $('main').innerHTML = '<p class="msg">' + esc(t('notfound')) + '</p>'; return; }
+      D = j; var sv = null; try{ sv = localStorage.getItem('jag_lang'); }catch(e){}
+      setLang(sv === 'en' || sv === 'es' ? sv : (j.client && j.client.lang) || 'es');
+      if(FOCUS){ var fh = (D.homes || []).filter(function(h){ return String(h.id) === FOCUS; })[0];
+        (fh && !fh.fb ? [fh] : []).concat((D.homes || []).filter(function(h){ return !h.fb && canFb(h); })).forEach(function(h){ fbOpen[h.id] = 1; });
+        render(); setTimeout(function(){ var el = document.querySelector('[data-h="' + FOCUS + '"]'); if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
+    }).catch(function(){ $('main').innerHTML = '<p class="msg">' + esc(t('neterr')) + '</p>'; });
+  }
+
+  function render(){
+    var a = D.agent, ph = a && digits(a.phone), n = aFirst();
+    var hs = (D.homes || []).filter(function(h){ return h.status !== 'removed'; });
+    var sent = D.sent && D.status !== 'cancelled';
+    var shown = sent ? hs.filter(function(h){ return h.status === 'confirmed' || h.status === 'declined'; }) : hs;
+    shown.sort(function(x, y){ var c = x.status === 'declined' ? 1 : 0, d = y.status === 'declined' ? 1 : 0; return c - d || String(x.start_at || '9').localeCompare(String(y.start_at || '9')); });
+    var conf = hs.filter(function(h){ return h.status === 'confirmed'; });
+    var stc = D.status === 'scheduled' ? 'g' : D.status === 'cancelled' ? '' : 'y';
+    var route = 'https://www.google.com/maps/dir/' + conf.slice().sort(function(x, y){ return String(x.start_at || '9').localeCompare(String(y.start_at || '9')); }).map(function(h){ return encodeURIComponent(full(h)); }).join('/');
+    var html = '<section class="hero"><div class="eb">' + esc(t('eb')) + '</div><h1>' + esc(fill(t('h1'), { d: dayLbl(D.date) })) + '</h1>' +
+      '<span class="st ' + stc + '">' + esc(sent ? (t('st')[D.status] || D.status) : t('st').requested) + '</span>' +
+      (D.status === 'cancelled' ? '<p class="sub" style="margin-top:10px">' + esc(fill(t('canc'), { a: n })) + '</p>' :
+        sent ? '<p class="sub" style="margin-top:10px">' + esc(fill(t('sub_ok'), { n: conf.length })) + '</p>' + (conf.length > 1 ? '<a class="btn full" href="' + route + '" target="_blank" rel="noopener">🗺️ ' + esc(t('route')) + '</a>' : '') :
+        '<p class="wait" style="margin-top:12px">⏳ ' + esc(fill(t('wait'), { a: n })) + '</p>') +
+      (a ? '<div class="ag">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : '<i>' + esc(String(a.name || 'J').charAt(0)) + '</i>') +
+        '<div><b>' + esc(a.name) + '</b><small>' + esc(t('your')) + (ph ? ' · ' + fmtPhone(ph) : '') + '</small></div>' +
+        (ph ? '<div class="acts"><a class="btn sm dk" href="tel:+1' + ph + '">' + esc(t('call')) + '</a><a class="btn sm" href="sms:+1' + ph + '">' + esc(t('text')) + '</a></div>' : '') + '</div>' : '') +
+      '</section>' +
+      shown.map(function(h, i){ return home(h, i, sent); }).join('') +
+      '<p class="foot">' + esc(t('foot')) + '</p>';
+    $('main').innerHTML = html;
+  }
+  function home(h, i, sent){
+    var s = h.snap || {}, off = h.status === 'declined', tm = h.start || '';
+    var fbOk = canFb(h) && D.status !== 'cancelled';
+    var b = '<article class="h' + (off ? ' off' : '') + '" data-h="' + h.id + '">' +
+      '<div class="ph" style="background-image:url(\'' + esc(img(s.photo)) + '\')">' +
+        (sent ? '<span class="tm' + (off || !tm ? ' no' : '') + '">' + esc(off ? t('notav') : tm ? '🕑 ' + tm : t('tbd')) + '</span>' : '<span class="tm no">' + esc(t('pending')) + '</span>') + '<span class="num">' + (i + 1) + '</span></div>' +
+      '<div class="bd"><div class="pr">' + money(s.price) + '</div><div class="ad">' + esc([s.addr, s.city].filter(Boolean).join(', ')) + '</div>' +
+      '<div class="row">' + (!off ? '<a class="btn sm" href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(full(h)) + '" target="_blank" rel="noopener">📍 ' + esc(t('dir')) + '</a>' : '') +
+        (h.mls ? '<a class="btn sm" href="homes#' + encodeURIComponent(h.mls) + '" target="_blank" rel="noopener">' + esc(t('see')) + '</a>' : '') + '</div>';
+    if(h.offer) b += '<div class="ofd">📝 ' + esc(fill(t('offer_sent'), { p: money(h.offer.price), s: offerSt(h.offer.status) })) + '</div>';
+    if(fbOk && h.fb && !fbOpen[h.id]) b += '<div class="fbd">✓ ' + esc(fill(t('fb_done'), { s: fbLine(h.fb) })) + '</div>';
+    if(fbOk && !h.fb && !fbOpen[h.id]) b += '<div class="row" style="margin-top:10px"><button type="button" class="btn pri" data-fbo>💬 ' + esc(t('fb_btn')) + '</button></div>';
+    if(fbOk && fbOpen[h.id]) b += fbForm(h);
+    if(fbOk && !h.offer && !off){
+      var hot = h.fb && (h.fb.live === 'yes' || h.fb.stars >= 4);
+      b += (hot ? '<p class="hint" style="margin-top:12px">' + esc(t('love')) + '</p>' : '') + '<div class="row" style="margin-top:10px"><button type="button" class="btn ' + (hot ? 'pri' : '') + '" data-offer>' + esc(t('offer_btn')) + '</button></div>';
+    }
+    return b + '</div></article>';
+  }
+  function offerSt(s){ var M = { submitted: lang === 'es' ? 'recibida' : 'received', reviewing: lang === 'es' ? 'en revisión' : 'in review', sent: lang === 'es' ? 'enviada al vendedor' : 'sent to the seller',
+    countered: lang === 'es' ? 'contraoferta' : 'counteroffer', accepted: lang === 'es' ? '¡aceptada!' : 'accepted!', declined: lang === 'es' ? 'no aceptada' : 'declined', withdrawn: lang === 'es' ? 'retirada' : 'withdrawn' }; return M[s] || s || ''; }
+
+  /* ---------- feedback ---------- */
+  function fbForm(h){
+    var f = FB[h.id] || (FB[h.id] = { stars: 0, live: '', likes: [], dislikes: [], note: '' });
+    function chips(list, key){ return '<div class="chips">' + list.map(function(x){ var on = f[key].indexOf(x) > -1; return '<button type="button" data-chip="' + key + '" data-v="' + esc(x) + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '">' + esc(x) + '</button>'; }).join('') + '</div>'; }
+    return '<div class="fb"><h3>' + esc(t('fb_h')) + '</h3>' +
+      '<div class="q">' + esc(t('fb_stars')) + '</div><div class="stars" role="group" aria-label="' + esc(t('fb_stars')) + '">' + [1, 2, 3, 4, 5].map(function(n){ return '<button type="button" data-star="' + n + '" class="' + (f.stars >= n ? 'on' : '') + '" aria-label="' + n + '/5" aria-pressed="' + (f.stars === n) + '">★</button>'; }).join('') + '</div>' +
+      '<div class="q">' + esc(t('fb_live')) + '</div><div class="chips">' + ['yes', 'maybe', 'no'].map(function(k){ return '<button type="button" data-live="' + k + '" class="' + (f.live === k ? 'on' : '') + '" aria-pressed="' + (f.live === k) + '">' + esc(t('live')[k]) + '</button>'; }).join('') + '</div>' +
+      '<div class="q">' + esc(t('fb_like')) + '</div>' + chips(t('likes'), 'likes') +
+      '<div class="q">' + esc(t('fb_dis')) + '</div>' + chips(t('dislikes'), 'dislikes') +
+      '<div class="q">' + esc(t('fb_note')) + '</div><textarea data-fbn maxlength="500">' + esc(f.note) + '</textarea>' +
+      '<div class="row" style="margin-top:12px"><button type="button" class="btn pri" data-fbs>' + esc(t('fb_send')) + '</button></div></div>';
+  }
+  function rerenderKeep(){ var y = window.scrollY; render(); window.scrollTo(0, y); }
+  $('main').addEventListener('input', function(e){ var n = e.target.closest('[data-fbn]'); if(n){ var id = n.closest('[data-h]').getAttribute('data-h'); FB[id].note = n.value; } });
+  $('main').addEventListener('click', function(e){
+    var art = e.target.closest('[data-h]'); if(!art) return;
+    var id = art.getAttribute('data-h'), h = D.homes.filter(function(x){ return String(x.id) === id; })[0]; if(!h) return;
+    var f = FB[id];
+    if(e.target.closest('[data-fbo]')){ fbOpen[id] = 1; rerenderKeep(); return; }
+    var st = e.target.closest('[data-star]'); if(st){ f.stars = +st.getAttribute('data-star'); rerenderKeep(); return; }
+    var lv = e.target.closest('[data-live]'); if(lv){ f.live = lv.getAttribute('data-live'); rerenderKeep(); return; }
+    var ch = e.target.closest('[data-chip]'); if(ch){ var k = ch.getAttribute('data-chip'), v = ch.getAttribute('data-v'), i = f[k].indexOf(v); if(i > -1) f[k].splice(i, 1); else f[k].push(v); rerenderKeep(); return; }
+    var sb = e.target.closest('[data-fbs]');
+    if(sb){ if(!f.stars && !f.live && !f.likes.length && !f.dislikes.length && !f.note.trim()) return;
+      sb.disabled = true;
+      rpc('jag_tour_feedback', { p_token: TOKEN, p_home: +id, p: { stars: f.stars || null, live: f.live || null, likes: f.likes, dislikes: f.dislikes, note: f.note || null } }).then(function(j){
+        if(!j || !j.ok) throw new Error('no');
+        h.fb = { stars: f.stars, live: f.live, likes: f.likes, dislikes: f.dislikes, note: f.note }; delete fbOpen[id];
+        toast(fill(t('fb_ok'), { a: aFirst() })); rerenderKeep();
+      }).catch(function(){ sb.disabled = false; toast(t('neterr')); });
+      return; }
+    if(e.target.closest('[data-offer]')) openOffer(h);
+  });
+
+  /* ---------- the client's offer ---------- */
+  function openOffer(h){
+    var s = h.snap || {}, L = D.loan || {}, list = Math.round(Number(s.price) || 0);
+    var lt = String(L.loan_type || '').toLowerCase(); if(!/^(fha|conventional|va|usda)$/.test(lt)) lt = L.financing === 'cash' ? 'cash' : '';
+    var O = { step: 1, price: list ? String(list) : '', cc: 'no', ccAmt: '', loan: lt, close: 30, note: '', facts: null, busy: false };
+    var ov = document.createElement('div'); ov.className = 'ov';
+    ov.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="oh"><div class="sh-h"><div><b id="oh">' + esc(fill(t('o_h'), { a: s.addr || ('MLS ' + h.mls) })) + '</b><small>' + esc(list ? fill(t('o_list'), { p: money(list) }) : '') + '</small></div><button type="button" data-x aria-label="' + esc(t('close')) + '">×</button></div><div class="sh-b"></div><div class="sh-f"></div></div>';
+    document.body.appendChild(ov); document.body.style.overflow = 'hidden';
+    var B = ov.querySelector('.sh-b'), F = ov.querySelector('.sh-f');
+    function close(){ ov.remove(); document.body.style.overflow = ''; }
+    // what HAR has for the contract (county, HOA, listing agent…) goes to René with the offer
+    if(h.mls) fetch(API + '?detail=1&mlsNumber=' + encodeURIComponent(h.mls)).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }).then(function(j){
+      var l = j && j.listings && j.listings[0]; if(!l) return;
+      try{ O.facts = window.JagTeamOffer ? JagTeamOffer.facts(l, l) : null; }catch(e){ O.facts = null; }
+      if(O.facts && l.details && l.details.yearBuilt && !O.facts.year_built) O.facts.year_built = l.details.yearBuilt;
+    });
+    function num(v){ return Number(String(v || '').replace(/[^0-9.]/g, '')) || 0; }
+    function ccVal(){ var p = num(O.price); return O.cc === 'no' ? 0 : O.cc === 'other' ? num(O.ccAmt) : Math.round(p * (+O.cc) / 100); }
+    function closeDate(){ return addDays(O.close); }
+    function err(m){ var x = B.querySelector('.err'); if(!x){ x = document.createElement('p'); x.className = 'err'; x.setAttribute('role', 'alert'); B.appendChild(x); } x.textContent = m; x.scrollIntoView({ block: 'nearest' }); }
+    function keep(){ var a = B.querySelector('#o-p'), b = B.querySelector('#o-cc'), c = B.querySelector('#o-n'); if(a) O.price = a.value; if(b) O.ccAmt = b.value; if(c) O.note = c.value; }
+    function draw(){
+      var p = num(O.price) || list;
+      if(O.step === 1){
+        var ccChips = [['no', t('cc_no')], ['2', '2% (' + money(p * .02) + ')'], ['3', '3% (' + money(p * .03) + ')'], ['other', t('cc_other')]];
+        B.innerHTML = '<label class="lbl" for="o-p">' + esc(t('o_price')) + '</label><div class="money"><span>$</span><input class="in-t" id="o-p" inputmode="numeric" autocomplete="off" value="' + esc(O.price ? Number(num(O.price)).toLocaleString('en-US') : '') + '"></div><p class="hint">' + esc(t('o_price_h')) + '</p>' +
+          '<label class="lbl">' + esc(t('o_cc')) + '</label><div class="chips">' + ccChips.map(function(c){ return '<button type="button" data-cc="' + c[0] + '" class="' + (O.cc === c[0] ? 'on' : '') + '" aria-pressed="' + (O.cc === c[0]) + '">' + esc(c[1]) + '</button>'; }).join('') + '</div>' +
+          (O.cc === 'other' ? '<label class="lbl" for="o-cc" style="font-size:14px">' + esc(t('cc_amt')) + '</label><div class="money"><span>$</span><input class="in-t" id="o-cc" inputmode="numeric" value="' + esc(O.ccAmt) + '"></div>' : '') +
+          '<p class="hint">' + esc(fill(t('o_cc_h'), { lo: money(p * .02), hi: money(p * .04) })) + '</p>' +
+          '<label class="lbl">' + esc(t('o_loan')) + '</label><div class="chips">' + ['fha', 'conventional', 'va', 'usda', 'cash', ''].map(function(k){ return '<button type="button" data-loan="' + k + '" class="' + (O.loan === k ? 'on' : '') + '" aria-pressed="' + (O.loan === k) + '">' + esc(t('loans')[k]) + '</button>'; }).join('') + '</div><p class="hint">' + esc(t('o_loan_h')) + '</p>' +
+          '<label class="lbl">' + esc(t('o_close')) + '</label><div class="chips">' + [[21, t('d21')], [30, t('d30')], [45, t('d45')]].map(function(c){ return '<button type="button" data-close="' + c[0] + '" class="' + (O.close === c[0] ? 'on' : '') + '" aria-pressed="' + (O.close === c[0]) + '">' + esc(c[1]) + '</button>'; }).join('') + '</div>' +
+          '<div class="info g" style="margin-top:18px"><b>🏢 ' + esc(t('i_title')) + '</b>' + esc(t('i_title_p')) + '</div>' +
+          '<div class="info g"><b>🛠️ ' + esc(t('i_war')) + '</b>' + esc(t('i_war_p')) + '</div>' +
+          '<div class="info"><b>✍️ ' + esc(t('i_em')) + '</b>' + esc(fill(t('i_em_p'), { e: money(Math.max(500, Math.round(p * .01 / 100) * 100)) })) + '</div>' +
+          '<label class="lbl" for="o-n">' + esc(t('o_note')) + '</label><textarea id="o-n" maxlength="600" placeholder="' + esc(t('o_note_ph')) + '">' + esc(O.note) + '</textarea>';
+        F.innerHTML = '<button type="button" class="btn" data-x>' + esc(t('close')) + '</button><button type="button" class="btn pri" data-rv>' + esc(t('review')) + '</button>';
+      } else if(O.step === 2){
+        var cc = ccVal();
+        B.innerHTML = '<label class="lbl">' + esc(t('rv_h')) + '</label><div class="rv">' +
+          '<div><span>' + esc(t('rv_price')) + '</span><b>' + money(num(O.price)) + '</b></div>' +
+          '<div><span>' + esc(t('rv_cc')) + '</span><b>' + (cc ? money(cc) : esc(t('cc_no'))) + '</b></div>' +
+          '<div><span>' + esc(t('rv_loan')) + '</span><b>' + esc(t('loans')[O.loan]) + '</b></div>' +
+          '<div><span>' + esc(t('rv_close')) + '</span><b>' + esc(new Date(closeDate() + 'T12:00:00').toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })) + '</b></div>' +
+          '<div><span>' + esc(t('rv_war')) + '</span><b>' + esc(t('rv_war_v')) + '</b></div>' +
+          '<div><span>' + esc(t('rv_title')) + '</span><b>' + esc(t('rv_title_v')) + '</b></div>' +
+          (O.note.trim() ? '<div><span>📝</span><b style="font-weight:600">' + esc(O.note.trim()) + '</b></div>' : '') + '</div>' +
+          '<p class="hint">' + esc(t('rv_note')) + '</p>';
+        F.innerHTML = '<button type="button" class="btn" data-back>' + esc(t('back')) + '</button><button type="button" class="btn pri" data-send>' + esc(t('send')) + '</button>';
+      } else {
+        B.innerHTML = '<div class="okbig"><b>' + esc(t('ok_h')) + '</b><p>' + esc(fill(t('ok_p'), { a: aFirst() })) + '</p></div>';
+        F.innerHTML = '<button type="button" class="btn pri" data-x>' + esc(t('close')) + '</button>';
+      }
+    }
+    ov.addEventListener('input', function(e){ if(e.target.id === 'o-p' || e.target.id === 'o-cc'){ var d = String(e.target.value).replace(/[^0-9]/g, ''); e.target.value = d ? Number(d).toLocaleString('en-US') : ''; } });
+    ov.addEventListener('click', function(e){
+      if(e.target === ov || e.target.closest('[data-x]')){ close(); if(O.step === 3) load(); return; }
+      var c;
+      if((c = e.target.closest('[data-cc]'))){ keep(); O.cc = c.getAttribute('data-cc'); var y = B.scrollTop; draw(); B.scrollTop = y; if(O.cc === 'other'){ var i = B.querySelector('#o-cc'); if(i) i.focus(); } return; }
+      if((c = e.target.closest('[data-loan]'))){ keep(); O.loan = c.getAttribute('data-loan'); var y2 = B.scrollTop; draw(); B.scrollTop = y2; return; }
+      if((c = e.target.closest('[data-close]'))){ keep(); O.close = +c.getAttribute('data-close'); var y3 = B.scrollTop; draw(); B.scrollTop = y3; return; }
+      if(e.target.closest('[data-rv]')){ keep();
+        if(num(O.price) < 10000){ err(t('e_price')); B.querySelector('#o-p').focus(); return; }
+        if(O.cc === 'other' && !num(O.ccAmt)){ err(t('e_cc')); return; }
+        O.step = 2; draw(); B.scrollTop = 0; return; }
+      if(e.target.closest('[data-back]')){ O.step = 1; draw(); return; }
+      var sb = e.target.closest('[data-send]');
+      if(sb && !O.busy){ O.busy = true; sb.disabled = true; sb.textContent = t('sending');
+        rpc('jag_tour_offer', { p_token: TOKEN, p_home: h.id, p: { price: String(num(O.price)), cc: String(ccVal()), loan_type: O.loan || null, close_date: closeDate(), note: O.note.trim() || null, facts: O.facts || {} } }).then(function(j){
+          O.busy = false;
+          if(j && j.ok){ O.step = 3; draw(); return; }
+          sb.disabled = false; sb.textContent = t('send');
+          err(j && j.reason === 'just_sent' ? t('e_just') : j && j.reason === 'price' ? t('e_price') : fill(t('e_send'), { a: aFirst() }));
+        }).catch(function(){ O.busy = false; sb.disabled = false; sb.textContent = t('send'); err(fill(t('e_send'), { a: aFirst() })); });
+      }
+    });
+    draw();
+  }
+
+  window.addEventListener('hashchange', function(){ location.reload(); });
+  try{ var sv0 = localStorage.getItem('jag_lang'); if(sv0 === 'en') lang = 'en'; }catch(e){}
+  document.querySelectorAll('[data-lang]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang') === lang); });
+  load();
+})();
+</script>
+</body>
+</html>

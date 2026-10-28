@@ -206,12 +206,16 @@ details summary{cursor:pointer;font-weight:700;color:var(--red);min-height:40px;
 
     var html = '<h1>' + esc(D.offer.property) + '</h1><p class="sub">' + esc([D.offer.client, D.offer.mls ? 'MLS ' + D.offer.mls : '', D.by && D.by.first ? 'from ' + D.by.first : ''].filter(Boolean).join(' · ')) + '</p>' +
       (D.done_at ? '<div class="done-all">🎉 All done. Great job!</div>' : '') +
+      (D.needs_ok && !D.ok_at ? '<div class="note" style="background:#fff4d6"><b style="color:#7a5600">⏸ Wait for an OK before signatures</b>The client sent this offer from the app. Prepare it now, but don\'t send it for signatures until Katherine or Jason OKs it. Lola will text you the moment they do.</div>' : '') +
+      (D.needs_ok && D.ok_at ? '<div class="note" style="background:var(--green-t)"><b style="color:var(--green)">✅ OK\'d by ' + esc(D.ok_by || 'the team') + '</b>You can send it for signatures.</div>' : '') +
       (D.note ? '<div class="note"><b>Note from ' + esc((D.by && D.by.first) || 'the agent') + '</b>' + esc(D.note) + '</div>' : '');
     html += STEPS.map(function(k, i){
       var s = S[k], ok = !!P[k], isCur = k === cur;
       return '<section class="step' + (ok ? ' ok' : '') + (isCur ? ' cur' : '') + '" id="s-' + k + '"><div class="sh"><span class="num">' + (ok ? '✓' : i + 1) + '</span><div><h3>' + esc(s.t) + '</h3><p>' + esc(s.p) + '</p></div></div>' +
         (ok && !isCur ? '<div class="check"><span class="b okd" style="flex:0 1 auto">✓ ' + esc(s.done) + '</span><button type="button" class="undo" data-undo="' + k + '">Undo</button></div>'
-          : '<div class="how">' + s.how + '</div><div class="check"><button type="button" class="b pri full" data-done="' + k + '">✓ ' + esc(s.done) + '</button></div>') + '</section>';
+          : '<div class="how">' + s.how + '</div><div class="check">' + (blocked(k)
+            ? '<button type="button" class="b full" disabled style="border-color:#e0c46a;color:#7a5600;background:#fff4d6">⏸ Waiting for Katherine or Jason\'s OK</button><button type="button" class="undo" data-recheck>Check again</button>'
+            : '<button type="button" class="b pri full" data-done="' + k + '">✓ ' + esc(s.done) + '</button>') + '</div>') + '</section>';
     }).join('');
     // the numbers
     html += '<div class="nums"><h2>The numbers (tap Copy, paste in SkySlope)</h2>' +
@@ -235,6 +239,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--red);min-height:40px;
     var fs = $('f-save'); if(fs) fs.onclick = saveFill;
   }
 
+  function blocked(k){ return (k === 'signatures' || k === 'sent') && D.needs_ok && !D.ok_at; }
   function saveFill(){
     var p = { title_company: $('f-title').value, seller_names: $('f-sellers').value };
     if($('f-laemail')) p.listing_agent_email = $('f-laemail').value;
@@ -253,9 +258,11 @@ details summary{cursor:pointer;font-weight:700;color:var(--red);min-height:40px;
       (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function(){ cp.textContent = 'Copied'; cp.classList.add('ok'); setTimeout(function(){ cp.textContent = 'Copy'; cp.classList.remove('ok'); }, 1500); })
         .catch(function(){ window.prompt('Copy this:', v); });
       return; }
+    if(e.target.closest('[data-recheck]')){ rpc('jag_tc_view', { p_token: TOKEN, p_open: false }).then(function(j){ if(j && j.ok){ D = j; paint(); toast(D.ok_at ? 'OK\'d ✅ Send it for signatures.' : 'Not OK\'d yet. Lola will text you.'); } }); return; }
     var d = e.target.closest('[data-done]'), u = e.target.closest('[data-undo]');
     if(d || u){ var k = (d || u).getAttribute(d ? 'data-done' : 'data-undo'); (d || u).disabled = true;
       rpc('jag_tc_check', { p_token: TOKEN, p_step: k, p_done: !!d }).then(function(j){
+        if(j && j.reason === 'needs_ok'){ toast('Wait for Katherine or Jason\'s OK first.'); (d || u).disabled = false; return; }
         if(!j || !j.ok) throw 0; D.progress = j.progress || {}; D.done_at = j.done_at;
         if(d) toast(k === 'sent' ? 'Nice! The team knows it\'s out 🎉' : k === 'signatures' ? 'Done. Lola told the team ✍️' : 'Done ✓');
         paint(); var nx = STEPS.filter(function(s){ return !D.progress[s]; })[0]; if(d && nx) setTimeout(function(){ var el = $('s-' + nx); if(el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 80);

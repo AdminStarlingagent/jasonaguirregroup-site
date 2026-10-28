@@ -82,8 +82,9 @@ a{color:inherit}
 .hd .out.scr{text-decoration:none;white-space:nowrap}
 .hd .out{margin-left:auto;border:1px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:99px;padding:8px 13px;font-size:13px;font-weight:700}
 .tabs{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line)}
-.tabs .wrap{display:flex;gap:4px}
-.tabs button{flex:1;border:0;background:none;padding:14px 6px 12px;font-weight:700;font-size:14.5px;color:var(--muted);border-bottom:3px solid transparent}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}.tabs .wrap::-webkit-scrollbar{display:none}
+.tabs button[hidden]{display:none}
+.tabs button{flex:1 0 auto;white-space:nowrap;border:0;background:none;padding:14px 6px 12px;font-weight:700;font-size:14.5px;color:var(--muted);border-bottom:3px solid transparent}
 .tabs button.on{color:var(--ink);border-color:var(--red)}
 main{padding-block:16px 60px}
 
@@ -289,7 +290,7 @@ body{background:var(--paper)}
     <span id="hd-ph"></span>
     <div><b id="hd-name"></b><small id="hd-sub"></small></div>
     <button class="out scr" type="button" data-lola-offer title="Tell Lola about an offer">&#128221; New offer</button>
-    <a class="out scr" href="screener.html" title="Call screener with Lola">&#128222; Call screener</a>
+    <a class="out scr" id="scr-link" href="screener.html" title="Call screener with Lola" hidden>&#128222; Call screener</a>
     <button class="out" type="button" id="stbtn" style="margin-left:0">Settings</button>
     <button class="out" type="button" id="pwbtn" style="margin-left:0">Password</button>
     <button class="out" type="button" id="out" style="margin-left:0">Sign out</button>
@@ -297,6 +298,7 @@ body{background:var(--paper)}
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
     <button type="button" data-tab="clients" class="on">Clients</button>
     <button type="button" data-tab="messages">Messages <span class="tc" id="tc-msgs"></span></button>
+    <button type="button" data-tab="showings" id="tab-showings" hidden>Showings <span class="tc" id="tc-shows"></span></button>
     <button type="button" data-tab="offers">Offers <span class="tc" id="tc-offers"></span></button>
     <button type="button" data-tab="share">Share</button>
     <button type="button" data-tab="links">My links</button>
@@ -332,7 +334,13 @@ body{background:var(--paper)}
       <div id="tview" hidden></div>
     </section>
 
+    <section id="t-showings" hidden>
+      <div id="showings"><div class="empty">Loading tours…</div></div>
+      <p class="note">Clients you're showing homes to pick homes and a day in their app; Lola texts you each request. Mark each home <b>Asked</b> when you request the showing, <b>Confirmed</b> (with a time) when it's approved, or <b>Not available</b>. Then tap <b>Send schedule</b>: the client gets a text from the JAG line and an email. After each showing the client gets a few quick questions; their answers show here, and 🔥 means they loved it. They can start an offer from their phone; René prepares it after Katherine or Jason OKs it.</p>
+    </section>
+
     <section id="t-offers" hidden>
+      <div id="ok-wait"></div>
       <div id="lola-cta"></div>
       <div id="tc-mine"></div>
       <div class="bar" id="ochips">
@@ -385,6 +393,7 @@ body{background:var(--paper)}
 <script src="jag-team-offer.js?v=2"></script>
 <script src="jag-offer-edit.js?v=1"></script>
 <script src="jag-lola-offer.js?v=2"></script>
+<script src="jag-showings.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -565,6 +574,11 @@ body{background:var(--paper)}
         return;
       }
       me = j.agent;
+      var roles = me.roles || []; me.isLead = !!j.staff || roles.indexOf('lead') >= 0; me.canShow = me.isLead || roles.indexOf('showing') >= 0;
+      $('scr-link').hidden = !(me.isLead || roles.indexOf('screener') >= 0);
+      $('tab-showings').hidden = !me.canShow;
+      if(window.JagShowings) JagShowings.init({ rpc: rpc, me: me, onCount: function(n){ $('tc-shows').textContent = n ? n : ''; } });
+      if(me.canShow && window.JagShowings) JagShowings.load();
       var s = ls('jag_agent'); Object.assign(s, { code: me.code, name: me.name, first_name: me.first_name, phone: me.phone, photo_url: me.photo_url }); ls('jag_agent', s);
       $('signin').hidden = true; $('app').hidden = false;
       $('hd-ph').innerHTML = me.photo_url ? '<img src="' + esc(me.photo_url) + '" alt="">' : '<span class="ph"></span>';
@@ -618,7 +632,8 @@ body{background:var(--paper)}
     var prio = pr.proof ? '<span class="prio p1">Verified ' + (pr.proof === 'pof' ? 'proof of funds' : 'pre-approval') + ' ✓</span>' :
       pr.proof_pending ? '<span class="prio p2">Proof uploaded: review it</span>' : pr.in_contact ? '<span class="prio p2">In contact</span>' : '';
     var offerPill = pr.offers ? '<span class="pill">' + pr.offers + ' offer' + (pr.offers === 1 ? '' : 's') + (pr.last_offer ? ' · ' + esc(JagOffer.text().st[pr.last_offer] || pr.last_offer) : '') + '</span>' : '';
-    var owner = c.agent_code ? (c.agent_code === me.code ? '<span class="pill b">Your client</span>' : '<span class="pill">via ' + esc(c.agent_code) + '</span>') : '';
+    var shw = c.showing_agent_code ? '<span class="pill b">👟 Showing: ' + esc(c.showing_agent_code === me.code ? 'you' : c.showing_agent_code.charAt(0).toUpperCase() + c.showing_agent_code.slice(1)) + '</span>' : '';
+    var owner = shw + (c.agent_code ? (c.agent_code === me.code ? '<span class="pill b">Your client</span>' : '<span class="pill">via ' + esc(c.agent_code) + '</span>') : '');
     var h = '<article class="cl ' + cls + '" data-u="' + esc(c.user_id) + '">' +
       (prio ? '<div>' + prio + '</div>' : '') +
       '<div class="cl-top"><div class="who"><b>' + esc(c.name || c.email) + '</b><small>' + esc(c.lang === 'en' ? 'English' : 'Español') + ' · last on the site ' + esc(ago(c.last_seen_at)) + '</small>' + prefLine(c) + '</div>' +
@@ -632,6 +647,7 @@ body{background:var(--paper)}
       (c.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + c.fub_person_id + '" target="_blank" rel="noopener">FUB</a>' : '') +
       '<button type="button" data-msg="' + esc(c.user_id) + '">Message</button>' +
       (window.JagLolaOffer ? '<button type="button" data-lofr="' + esc(c.user_id) + '">📝 Offer</button>' : '') +
+      (me.isLead && window.JagShowings ? '<button type="button" data-shw="' + esc(c.user_id) + '">👟 ' + (c.showing_agent_code ? 'Showing agent' : 'Send for showings') + '</button>' : '') +
       '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide details' : 'Offers & activity') + '</button></div>' +
       (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
       '</article>';
@@ -669,6 +685,9 @@ body{background:var(--paper)}
       var seen = {}; hs = hs.filter(function(h){ if(!h.mls || seen[h.mls]) return false; seen[h.mls] = 1; return true; });
       JagLolaOffer.open({ client: { name: c0.name, email: c0.email, phone: c0.phone, user_id: u0 }, homes: hs });
       return; }
+    var sw = e.target.closest('[data-shw]');
+    if(sw){ var u1 = sw.getAttribute('data-shw'), c1 = rows.filter(function(x){ return x.user_id === u1; })[0]; if(!c1) return;
+      JagShowings.handoff(c1, function(code){ c1.showing_agent_code = code; paint(); if(window.JagShowings) JagShowings.load(); }); return; }
     var mg = e.target.closest('[data-msg]'); if(mg){ showTab('messages'); openThread(mg.getAttribute('data-msg')); return; }
     var pv = e.target.closest('[data-pv]');
     if(pv){ pv.disabled = true; rpc('jag_proof_review', { p_id: pv.getAttribute('data-pv'), p_status: 'verified' }).then(function(j){
@@ -729,6 +748,7 @@ body{background:var(--paper)}
     return false;
   }
   function loadOffers(){
+    if(window.JagShowings) JagShowings.waiting($('ok-wait'));
     if(window.JagLolaOffer){ if(!$('lola-cta').innerHTML) $('lola-cta').innerHTML = JagLolaOffer.cta(); JagLolaOffer.mine($('tc-mine')); }
     rpc('jag_offers_team').then(function(j){
       offersAll = (j && j.ok && j.offers) || [];
@@ -775,8 +795,8 @@ body{background:var(--paper)}
   function showTab(t){
     curTab = t;
     document.querySelectorAll('.tabs [data-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tab') === t); });
-    ['clients', 'messages', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
-    if(t === 'messages'){ if(!thUser) loadInbox(); } else if(t !== 'share') load();
+    ['clients', 'messages', 'showings', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
+    if(t === 'messages'){ if(!thUser) loadInbox(); } else if(t === 'showings'){ if(window.JagShowings) JagShowings.load(); } else if(t !== 'share') load();
   }
   document.querySelector('.tabs').addEventListener('click', function(e){
     var b = e.target.closest('[data-tab]'); if(!b) return;
@@ -784,8 +804,10 @@ body{background:var(--paper)}
     if(t === 'messages' && curTab === 'messages' && thUser) closeThread();
     showTab(t);
     if(t === 'messages' && location.hash.indexOf('#mensajes') !== 0) history.replaceState(null, '', '#mensajes');
+    else if(t === 'showings') history.replaceState(null, '', '#showings');
+    else if(t !== 'messages' && location.hash) history.replaceState(null, '', location.pathname + location.search);
   });
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else load(); } });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else if(curTab === 'showings') JagShowings.load(); else load(); } });
 
   /* ---------------- messages (Mensajes from website clients) ---------------- */
   var threads = [], mfilter = 'mine', thUser = null, th = null, thPending = [], thSig = '', thBusy = false;
@@ -881,6 +903,7 @@ body{background:var(--paper)}
   setInterval(function(){ if(!me || document.hidden) return; if(curTab === 'messages') msgTickNow(); else loadInbox(); }, 20000);
   window.addEventListener('hashchange', function(){ routeHash(); });
   function routeHash(){
+    if(/^#(showings|tours)/i.test(location.hash) && me){ if(me.canShow) showTab('showings'); return; }
     var m = location.hash.match(/^#(?:mensajes|messages)(?:\/([0-9a-f-]{36}))?/i); if(!m || !me) return;
     showTab('messages'); if(m[1]) openThread(m[1]);
   }

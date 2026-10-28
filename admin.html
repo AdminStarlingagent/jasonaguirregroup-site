@@ -428,6 +428,7 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
 #screensview table,#teamview table{min-width:760px}
 .teamnote{background:var(--loan-t);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;margin:0 0 16px}
 .switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700}
+.jobs{display:flex;flex-wrap:wrap;gap:5px;min-width:220px}.job{border:1.5px solid #d6d5dd;background:#fff;color:#6a6972;border-radius:99px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.job.on{background:#17161c;border-color:#17161c;color:#fff}.job[disabled]{cursor:default;opacity:.85}.job:not([disabled]):hover{border-color:#17161c}.jobhelp{margin:-6px 0 16px;font-size:13px;color:#6a6972;line-height:1.5}
 .switch input{position:absolute;opacity:0;width:1px;height:1px}
 .switch span{position:relative;width:40px;height:23px;border-radius:99px;background:#d6d5dd;transition:background .15s;flex:none}
 .switch span::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
@@ -545,8 +546,9 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
 
   <section id="teamview" hidden>
     <p class="teamnote" id="teamnote"></p>
+    <p class="jobhelp" id="jobhelp"><b>Jobs</b> decide what each person gets in the Agent Hub and which Lola texts they receive: <b>Lead</b> sends clients to showing agents and sees every tour · <b>Screener</b> does pre-qual call screenings · <b>Showing</b> books tours for clients · <b>TC</b> prepares offers in SkySlope (gets René's checklist texts) · <b>Offer OK</b> approves client offers before they go out for signatures. To get Lola's texts, a person also needs a mobile number on the Lola team list.</p>
     <div class="tablecard"><table>
-      <thead><tr><th>Person</th><th>Email</th><th>Has signed in</th><th>Access</th></tr></thead>
+      <thead><tr><th>Person</th><th>Email</th><th>Has signed in</th><th>Jobs</th><th>Access</th></tr></thead>
       <tbody id="trows"></tbody></table></div>
     <form class="addform" id="t-add" hidden>
       <input id="t-email" type="email" placeholder="Give admin access to another email…" aria-label="Email">
@@ -2807,13 +2809,13 @@ $('s-csv').addEventListener('click', exportScreenReport);
    and only sees their own screenings. */
 var team = { data:null, busy:false };
 function loadTeam(){
-  $('trows').innerHTML='<tr><td colspan="4" class="muted" style="padding:22px">Loading team…</td></tr>';
+  $('trows').innerHTML='<tr><td colspan="5" class="muted" style="padding:22px">Loading team…</td></tr>';
   api('/rest/v1/rpc/jag_team_access',{method:'POST',body:'{}'}).then(function(r){ return r.ok?r.json():null; })
   .then(function(j){ team.data=j; renderTeam(); }).catch(function(){ team.data=null; renderTeam(); });
 }
 function renderTeam(){
   var j=team.data;
-  if(!j || !j.ok){ $('trows').innerHTML='<tr><td colspan="4" class="muted" style="padding:22px">Could not load the team. Refresh and try again.</td></tr>'; return; }
+  if(!j || !j.ok){ $('trows').innerHTML='<tr><td colspan="5" class="muted" style="padding:22px">Could not load the team. Refresh and try again.</td></tr>'; return; }
   var owner=!!j.owner;
   $('teamnote').innerHTML = owner
     ? 'Turn on <b>Admin access</b> for anyone who should see every Home Loan application, every call screening and this admin page. Everyone else on the team can still use the call screener and the Agent Hub, and only sees their <b>own</b> screenings.'
@@ -2823,11 +2825,32 @@ function renderTeam(){
     var locked = !owner || p.role==='owner';
     return '<tr><td><b>'+esc(p.name||p.email)+'</b>'+(p.role==='owner'?' <span class="typechip t-loan">Owner</span>':'')+(p.agent?'':' <small class="muted">not in Follow Up Boss team</small>')+'</td>'+
       '<td>'+esc(p.email||'')+'</td><td>'+(p.has_login?'Yes':'<span class="muted">Not yet</span>')+'</td>'+
+      '<td>'+(p.code?'<div class="jobs">'+JOBS.map(function(jb){ var on=(p.roles||[]).indexOf(jb[0])>=0;
+        return '<button type="button" class="job'+(on?' on':'')+'" data-job="'+jb[0]+'" data-code="'+esc(p.code)+'" aria-pressed="'+on+'"'+(owner?'':' disabled')+' title="'+esc(jb[2])+'">'+(on?'✓ ':'')+jb[1]+'</button>'; }).join('')+'</div>':'<span class="muted">Add them to the team in Follow Up Boss first</span>')+'</td>'+
       '<td><label class="switch'+(locked?' locked':'')+'"><input type="checkbox" data-acc="'+esc(p.email||'')+'"'+(p.access?' checked':'')+(locked?' disabled':'')+'><span></span>'+(p.access?'Admin access':'Own screenings only')+'</label></td></tr>';
   }).join('');
+  $('trows').querySelectorAll('[data-job]').forEach(function(b){
+    b.addEventListener('click', function(){ if(owner) toggleJob(this.dataset.code, this.dataset.job); });
+  });
   $('trows').querySelectorAll('[data-acc]').forEach(function(cb){
     cb.addEventListener('change', function(){ setAccess(this.dataset.acc, this.checked, this); });
   });
+}
+var JOBS=[['lead','Lead','Sends clients to showing agents, sees every tour'],['screener','Screener','Pre-qual call screenings'],['showing','Showing','Books tours for clients'],
+  ['tc','TC','Prepares offers in SkySlope'],['offer_ok','Offer OK','Approves client offers before signatures']];
+function toggleJob(code, job){
+  if(team.busy) return;
+  var p=(team.data.people||[]).filter(function(x){ return x.code===code; })[0]; if(!p) return;
+  var roles=(p.roles||[]).slice(), i=roles.indexOf(job), adding=i<0;
+  if(adding) roles.push(job); else roles.splice(i,1);
+  var name=(p.name||code).split(' ')[0], label=JOBS.filter(function(x){ return x[0]===job; })[0][1];
+  team.busy=true; p.roles=roles; renderTeam();
+  api('/rest/v1/rpc/jag_set_roles',{method:'POST',body:JSON.stringify({p_code:code,p_roles:roles})})
+  .then(function(r){ return r.ok?r.json():null; }).then(function(j){
+    team.busy=false;
+    if(j && j.ok){ p.roles=j.roles||roles; renderTeam(); toast(name+(adding?' is now ':' is no longer ')+(job==='tc'?'a TC':job==='offer_ok'?'an Offer OK':'a '+label)+'.', true); }
+    else { toast(j && j.reason==='owner_only' ? 'Only Jason can change jobs.' : 'Could not change the job. Try again.'); loadTeam(); }
+  }).catch(function(){ team.busy=false; toast('Could not reach the database. Try again.'); loadTeam(); });
 }
 function setAccess(email, on, cb){
   if(team.busy) return; team.busy=true;
