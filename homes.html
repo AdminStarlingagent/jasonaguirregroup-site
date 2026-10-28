@@ -401,6 +401,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   .mbar .outbtn{border-width:2px}
 }
 </style>
+<script src="jag-track.js?v=1"></script>
 </head>
 <body>
 
@@ -797,6 +798,7 @@ document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.
 /* Anonymous attention signal (MLS number + kind only) — feeds "featured homes" on the homepage. */
 var logged={};
 function logEvent(mls,kind){
+  try{ if(window.JagTrack&&mls) JagTrack.ev('home_'+kind,{mls:mls}); }catch(e){}
   try{
     var c=window.JAG_CRM||{}; if(!c.url||!c.anonKey||!mls) return;
     var k=kind+':'+mls; if(logged[k]) return; logged[k]=1;
@@ -972,6 +974,7 @@ function openForm(kind,l,pre){
       Property:full,'MLS #':l.mlsNumber,'List Price':l.listPrice,Agent:(window.JAG_AGENT?JAG_AGENT.name:null)};
     if(kind==='tour'){ var dd=days[+form.day.value]; data['Preferred Day']=dd.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}); data['Preferred Time']=form.time.value+' Central'; }
     if(window.jagCapture) window.jagCapture('home-search',data);
+    if(kind==='tour'){ try{ if(window.JagTrack) JagTrack.ev('showing_request',{mls:l.mlsNumber,detail:'form'}); }catch(x){} }
     logEvent(l.mlsNumber,'inquiry'); act('inquiry',l);
     form.innerHTML='<div class="ok">'+t('thanks')+(isLease(l)?'':'<a class="oklink" href="'+esc(evalUrl(l))+'">'+t('ev_after')+'</a>')+'</div>';
   });

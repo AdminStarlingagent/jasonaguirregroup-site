@@ -111,7 +111,7 @@
     if(!on && t) t.remove();
   }
 
-  function open(){ box.classList.add('on'); bub.style.display = 'none'; setTimeout(function(){ var t = box.querySelector('textarea'); if(t && innerWidth > 520) t.focus(); }, 50); }
+  function open(){ try{ if(window.JagTrack) JagTrack.ev('chat_open'); }catch(e){} box.classList.add('on'); bub.style.display = 'none'; setTimeout(function(){ var t = box.querySelector('textarea'); if(t && innerWidth > 520) t.focus(); }, 50); }
   function close(){ box.classList.remove('on'); bub.style.display = ''; }
   bub.addEventListener('click', open);
   box.querySelector('.jc-x').addEventListener('click', close);

@@ -25,6 +25,11 @@ window.jagCapture = function(type, data){
       source: location.pathname + location.search,
       payload: data
     };
+    /* funnel tracking: tie the lead to the anonymous visitor + channel (jag-track.js) */
+    if (window.JagTrack && window.JagTrack.id()) {
+      body.visitor_id = window.JagTrack.id(); body.channel = window.JagTrack.channel();
+      try{ window.JagTrack.ev('lead', { detail: type }); }catch(e){}
+    }
     fetch(c.url.replace(/\/+$/,'') + '/rest/v1/jag_leads', {
       method: 'POST',
       headers: {
@@ -56,6 +61,11 @@ window.jagCaptureSecure = function(type, data, secure){
       source: location.pathname + location.search,
       payload: data
     };
+    /* funnel tracking: tie the lead to the anonymous visitor + channel (jag-track.js) */
+    if (window.JagTrack && window.JagTrack.id()) {
+      body.visitor_id = window.JagTrack.id(); body.channel = window.JagTrack.channel();
+      try{ window.JagTrack.ev('lead', { detail: type }); }catch(e){}
+    }
     var base = c.url.replace(/\/+$/,'');
     /* Generate the lead id HERE — the anon key can insert but (correctly) cannot
        read rows back, so asking for the inserted row rejects the whole insert. */

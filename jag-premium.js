@@ -182,6 +182,7 @@
         .then(function(r){
           if(!r || !r.ok){ go.disabled = false; go.textContent = t('send'); er.textContent = t(r && r.reason === 'limit' ? 'limit' : 'err'); return; }
           if(a.logActivity) a.logActivity({ kind: 'inquiry', mls: h.mls || null });
+          try{ if(window.JagTrack) JagTrack.ev('showing_request', { mls: h.mls || null, detail: 'premium' }); }catch(x){}
           var nm = r.agent_first || first;
           ov.querySelector('.jp-bx').innerHTML = '<div class="jp-ok"><b>' + t('ok_h') + '</b><p>' + esc(fill(t(lateNow() ? 'ok_late' : 'ok_p'), { a: nm })) + '</p>' +
             (ag && digits(ag.phone) ? '<a class="jp-b" style="width:100%;margin-bottom:8px" href="tel:+1' + digits(ag.phone) + '">📞 ' + t('call') + ' ' + esc(nm) + ' · ' + esc(fmtPhone(ag.phone)) + '</a>' : '') +
