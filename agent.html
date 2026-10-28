@@ -152,6 +152,7 @@ body{background:var(--paper)}
 .hd .out{border:2px solid var(--red);color:var(--red);min-height:40px}
 .hd .out.scr{background:var(--ink);border-color:var(--ink);color:#fff;display:inline-flex;align-items:center;gap:6px}
 @media (max-width:420px){.hd .wrap{flex-wrap:wrap}.hd .out.scr{margin-left:0;order:3;flex:1 1 auto;justify-content:center}}
+.hd button.out.scr{background:var(--red);border-color:var(--red);cursor:pointer}
 .tabs button{font-size:14px}
 .tabs .tc{display:inline-block;min-width:20px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;padding:1px 6px;margin-left:4px}
 .tabs .tc:empty{display:none}
@@ -287,6 +288,7 @@ body{background:var(--paper)}
   <header class="hd"><div class="wrap">
     <span id="hd-ph"></span>
     <div><b id="hd-name"></b><small id="hd-sub"></small></div>
+    <button class="out scr" type="button" data-lola-offer title="Tell Lola about an offer">&#128221; New offer</button>
     <a class="out scr" href="screener.html" title="Call screener with Lola">&#128222; Call screener</a>
     <button class="out" type="button" id="stbtn" style="margin-left:0">Settings</button>
     <button class="out" type="button" id="pwbtn" style="margin-left:0">Password</button>
@@ -331,6 +333,8 @@ body{background:var(--paper)}
     </section>
 
     <section id="t-offers" hidden>
+      <div id="lola-cta"></div>
+      <div id="tc-mine"></div>
       <div class="bar" id="ochips">
         <button type="button" class="chip on" data-of="open">Open</button>
         <button type="button" class="chip" data-of="all">All</button>
@@ -380,6 +384,7 @@ body{background:var(--paper)}
 <script src="jag-offer.js"></script>
 <script src="jag-team-offer.js?v=2"></script>
 <script src="jag-offer-edit.js?v=1"></script>
+<script src="jag-lola-offer.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -712,6 +717,7 @@ body{background:var(--paper)}
     return false;
   }
   function loadOffers(){
+    if(window.JagLolaOffer){ if(!$('lola-cta').innerHTML) $('lola-cta').innerHTML = JagLolaOffer.cta(); JagLolaOffer.mine($('tc-mine')); }
     rpc('jag_offers_team').then(function(j){
       offersAll = (j && j.ok && j.offers) || [];
       offersAll.sort(function(a, b){ return prioRank(a) - prioRank(b) || new Date(b.created_at) - new Date(a.created_at); });
@@ -725,6 +731,7 @@ body{background:var(--paper)}
     $('offers').innerHTML = list.length ? list.map(offerBox).join('') : '<div class="empty">No offers here yet. Offers from the website show up the moment a client sends one.</div>';
   }
   $('offers').addEventListener('click', offerClick);
+  if(window.JagLolaOffer) JagLolaOffer.onSent = function(){ JagLolaOffer.mine($('tc-mine')); };
   $('ochips').addEventListener('click', function(e){ var b = e.target.closest('[data-of]'); if(!b) return; ofilter = b.getAttribute('data-of'); this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x === b); }); paintOffers(); });
 
   function paintLinks(){
