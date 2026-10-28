@@ -510,7 +510,7 @@ var T={
   bb:'Recámaras y baños',h_beds:'Recámaras',h_baths:'Baños',any:'Todas',bdS:' rec.',baS:' ba.',
   kind:'Tipo de casa',h_kind:'Tipo de propiedad',newc:'Construcción nueva',nc_tag:'Construcción nueva',f_builder:'Constructora',ss_newc:'construcción nueva',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
   apply:'Aplicar',save:'Guardar búsqueda',ss_saved:'Búsqueda guardada. Le avisaremos cuando salgan casas nuevas.',ss_go:'Ver mis búsquedas',ss_err:'No pudimos guardar la búsqueda. Intente de nuevo.',ss_map:'Área del mapa',ss_upto:'hasta ',ss_from:'desde ',ss_bd:'+ rec',ss_ba:'+ ba',mapnote:'Mostrando casas en esta zona del mapa',
-  ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',near:'Cerca de mí',near_t:'su zona',near_wide:'Pocas casas muy cerca: ampliamos la búsqueda a 10 millas.',near_denied:'Para buscar cerca de usted, permita el acceso a su ubicación en su navegador.',near_fail:'No pudimos encontrar su ubicación. Escriba su ciudad o código postal.',near_out:'Por ahora solo mostramos casas en Texas. Escriba una ciudad o código postal de Texas.',near_me:'Usted está aquí',
+  picked:'Casas seleccionadas para usted',picked_all:'Ver todas las casas',ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',near:'Cerca de mí',near_t:'su zona',near_wide:'Pocas casas muy cerca: ampliamos la búsqueda a 10 millas.',near_denied:'Para buscar cerca de usted, permita el acceso a su ubicación en su navegador.',near_fail:'No pudimos encontrar su ubicación. Escriba su ciudad o código postal.',near_out:'Por ahora solo mostramos casas en Texas. Escriba una ciudad o código postal de Texas.',near_me:'Usted está aquí',
   res:' resultados',res1:' resultado',sortl:'Ordenar:',s_new:'Más recientes',s_low:'Precio (menor)',s_high:'Precio (mayor)',
   none:'No encontramos casas con esos filtros. Mueve el mapa o cambia los filtros.',
   fail:'No pudimos cargar las casas. Intenta de nuevo.',prev:'‹ Anterior',next:'Siguiente ›',page:'Página ',of:' de ',
@@ -554,7 +554,7 @@ var T={
   bb:'Beds & baths',h_beds:'Bedrooms',h_baths:'Bathrooms',any:'Any',bdS:' bd',baS:' ba',
   kind:'Home type',h_kind:'Home type',newc:'New construction',nc_tag:'New construction',f_builder:'Builder',ss_newc:'new construction',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
   apply:'Apply',save:'Save search',ss_saved:'Search saved. We will email you when new homes hit the market.',ss_go:'See my searches',ss_err:'We could not save the search. Please try again.',ss_map:'Map area',ss_upto:'up to ',ss_from:'from ',ss_bd:'+ bd',ss_ba:'+ ba',mapnote:'Showing homes in this map area',
-  ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',near:'Near me',near_t:'your area',near_wide:'Few homes right nearby, so we widened the search to 10 miles.',near_denied:'To search near you, allow location access in your browser.',near_fail:'We couldn’t find your location. Type your city or ZIP code.',near_out:'For now we only show homes in Texas. Type a Texas city or ZIP code.',near_me:'You are here',
+  picked:'Homes picked for you',picked_all:'See all homes',ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',near:'Near me',near_t:'your area',near_wide:'Few homes right nearby, so we widened the search to 10 miles.',near_denied:'To search near you, allow location access in your browser.',near_fail:'We couldn’t find your location. Type your city or ZIP code.',near_out:'For now we only show homes in Texas. Type a Texas city or ZIP code.',near_me:'You are here',
   res:' results',res1:' result',sortl:'Sort:',s_new:'Newest',s_low:'Price (low to high)',s_high:'Price (high to low)',
   none:'No homes match those filters. Move the map or change the filters.',
   fail:'We couldn\'t load homes. Please try again.',prev:'‹ Previous',next:'Next ›',page:'Page ',of:' of ',
@@ -675,7 +675,7 @@ document.querySelectorAll('.apply').forEach(function(b){ b.addEventListener('cli
   var ks=[].map.call(document.querySelectorAll('#kinds input:checked'),function(i){return i.value;}); F.kinds=ks.length?ks:['Residential']; segs();
   commit();
 }); });
-$('qf').addEventListener('submit',function(e){ e.preventDefault();
+$('qf').addEventListener('submit',function(e){ e.preventDefault(); PICKS=[];
   var qv=$('q').value.trim();
   if(qv&&window.JagAccount&&JagAccount.user()) JagAccount.logActivity(/^\d{5}$/.test(qv)?{kind:'search',zip:qv,beds:F.beds||null,baths:F.baths||null,price:F.maxp||null}:{kind:'search',city:qv.slice(0,60),beds:F.beds||null,baths:F.baths||null,price:F.maxp||null});
   state.bounds=null; setNear(false); $('mapnote').classList.remove('on'); state.page=1; load(); });
@@ -694,7 +694,10 @@ document.querySelectorAll('.langs button').forEach(function(b){
 });
 
 /* ---------- data ---------- */
+/* /homes?homes=MLS1,MLS2: just the homes an agent picked for this client */
+var PICKS=(function(){ try{ var v=new URLSearchParams(location.search).get('homes')||''; return v.split(',').map(function(x){ return x.trim(); }).filter(function(x){ return /^[A-Za-z0-9-]{3,24}$/.test(x); }).slice(0,24); }catch(e){ return []; } })();
 function query(){
+  if(PICKS.length){ var pk=new URLSearchParams({resultsPerPage:24}); PICKS.forEach(function(m){ pk.append('mlsNumber',m); }); return pk; }
   var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:state.page,sortBy:$('sort').value});
   var q=$('q').value.trim();
   if(state.bounds){ var b=state.bounds; p.set('map',JSON.stringify([[[b.getWest(),b.getSouth()],[b.getEast(),b.getSouth()],[b.getEast(),b.getNorth()],[b.getWest(),b.getNorth()]]])); }
@@ -708,7 +711,7 @@ function query(){
 function load(fit){
   /* a word like "Willis" is a city first; if HAR has no city by that name it's a keyword (street, subdivision…) */
   var qq=$('q').value.trim(), qk=qq.toLowerCase();
-  if(!state.bounds&&qq&&!/\d/.test(qq)&&!state.qkind[qk]){
+  if(!PICKS.length&&!state.bounds&&qq&&!/\d/.test(qq)&&!state.qkind[qk]){
     var chk=++state.req; $('grid').style.opacity=.45;
     fetch(API+'?'+new URLSearchParams({state:STATE,city:qq,resultsPerPage:1})).then(function(r){ return r.ok?r.json():null; })
       .then(function(d){ state.qkind[qk]=d&&d.count>0?'city':'search'; }).catch(function(){ state.qkind[qk]='search'; })
@@ -733,7 +736,7 @@ function render(fit){
   if(state.count===undefined) return;
   var g=$('grid'), lease=F.type==='lease'; g.style.opacity=1;
   var q=$('q').value.trim();
-  $('title').textContent=t(lease?'ttl_lease':'ttl_sale')+t('ttl_in')+(state.near&&state.bounds?t('near_t'):state.bounds?t('area'):(q||t('tx')));
+  $('title').textContent=PICKS.length?t('picked'):t(lease?'ttl_lease':'ttl_sale')+t('ttl_in')+(state.near&&state.bounds?t('near_t'):state.bounds?t('area'):(q||t('tx')));
   if(state.count===null){ $('count').textContent=''; g.innerHTML='<div class="empty">'+t('fail')+'</div>'; $('pager').innerHTML=''; return; }
   $('count').textContent=num(state.count)+(state.count===1?t('res1'):t('res'));
   if(!state.items.length){ g.innerHTML='<div class="empty">'+t('none')+'</div>'; $('pager').innerHTML=''; drawPins(false); return; }
@@ -1158,7 +1161,7 @@ try{
   layer=L.layerGroup().addTo(map);
   var mt;
   map.on('moveend',function(){
-    if(quiet>0) return;
+    if(quiet>0||PICKS.length) return;
     clearTimeout(mt); mt=setTimeout(function(){ state.bounds=map.getBounds(); setNear(false); $('mapnote').classList.add('on'); state.page=1; load(false); },350);
   });
 }catch(e){ map=null; }

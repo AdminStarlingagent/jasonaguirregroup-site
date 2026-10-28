@@ -1,0 +1,237 @@
+// jag-client-hub — what the admin client profile does on a person's behalf (team logins only).
+//  { action: 'fub', email, phone, name, lead_id?, add? }  → the Follow Up Boss person (found by phone, then email).
+//      Not there and add=true: sent to FUB as a website inquiry (normal lead flow), then looked up again.
+//      The link is kept on the lead row ("Follow Up Boss") so the next open is instant.
+//  { action: 'save_search', email, name, phone, lang, label, api, ui, freq, send_now, note }
+//      → makes sure the person has a home-search account (created quietly for loan-app clients; they sign in with a code
+//        to that email any time), saves the search with alerts on, and sets how often new-home emails go out.
+//        send_now: emails today's best matches right away with the agent's note ("homes picked for you").
+//        The hourly listing-alerts job sends new matches from then on; every email has a one-click unsubscribe.
+//  { action: 'email_homes', email, name, lang, mls[], note, label } → a JAG-branded email with those homes, reply-to the agent.
+// Every send is logged in jag_homes_sent (the profile's "Homes sent" list).
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import { SITE, esc, money, row, button, homeCard, h1, lead, shell, C, OFFICE, OFFICE_TEL, phoneFmt, tel } from "./jag-email.ts";
+
+const SB_URL = Deno.env.get("SUPABASE_URL")!;
+const SRK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
+const RK = Deno.env.get("REPLIERS_API_KEY") || "";
+const RESEND = Deno.env.get("RESEND_API_KEY") || "";
+const FROM = Deno.env.get("ALERTS_FROM") || "Jason Aguirre Group <alerts@updates.jasonhoustonrealty.com>";
+const FUB = "https://api.followupboss.com/v1";
+const FUB_APP = "https://jasonhoustonrealty.followupboss.com/2/people/view/";
+const ALLOWED = [SITE, "https://www.jasonaguirregroup.company", "http://127.0.0.1:8765"];
+const SEARCH_KEYS = new Set(["type", "state", "city", "zip", "search", "minPrice", "maxPrice", "minBedrooms", "minBaths", "propertyType", "newc"]);
+const FIELDS = "mlsNumber,listPrice,type,address,images,details.numBedrooms,details.numBathrooms,details.sqft,details.propertyType,permissions,standardStatus,daysOnMarket";
+type Row = Record<string, any>;
+
+function cors(req: Request) {
+  const o = req.headers.get("origin") || "";
+  return { "Access-Control-Allow-Origin": ALLOWED.includes(o) ? o : SITE, "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+    "Access-Control-Allow-Methods": "POST, OPTIONS", Vary: "Origin" };
+}
+const digits10 = (p: unknown) => { const d = String(p || "").replace(/\D/g, "").replace(/^1(?=\d{10}$)/, ""); return d.length === 10 ? d : ""; };
+const cleanEmail = (e: unknown) => { const v = String(e || "").trim().toLowerCase(); return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? v : ""; };
+
+async function repliers(q: URLSearchParams): Promise<Row[]> {
+  q.set("boardId", "147");
+  const r = await fetch("https://api.repliers.io/listings?" + q.toString(), { headers: { "REPLIERS-API-KEY": RK, Accept: "application/json" } });
+  if (!r.ok) return [];
+  const d = await r.json();
+  return (d.listings || []).filter((l: Row) => { const p = l.permissions || {}; return p.displayPublic !== "N" && p.displayInternetEntireListing !== "N"; });
+}
+function snap(l: Row) {
+  const a = l.address || {}, d = l.details || {}, hide = (l.permissions || {}).displayAddressOnInternet === "N";
+  return { price: l.listPrice ?? null, beds: d.numBedrooms ?? null, baths: d.numBathrooms ?? null, sqft: d.sqft ?? null, photo: (l.images || [])[0] || null,
+    zip: a.zip || null, city: a.city || null, type: l.type || null, ptype: d.propertyType || null,
+    addr: hide ? "" : [a.streetNumber, a.streetDirectionPrefix, a.streetName, a.streetSuffix, a.streetDirection].filter(Boolean).join(" ") + (a.unitNumber ? " #" + a.unitNumber : "") };
+}
+
+const T = {
+  es: { hi: "Hola", picked: (n: number) => n === 1 ? "Una casa para usted" : `${n} casas para usted`, from: "de", view: "Ver la casa", bd: "rec", ba: "baños", sqft: "pies²",
+    alerts_on: "Desde hoy le avisamos por correo cuando salga una casa nueva que coincida con:", all: "Ver más casas", call: "¿Quiere verla? Responda a este correo o llame al",
+    why: "Recibe este correo porque su agente de Jason Aguirre Group le mandó estas casas.", why_alert: "Recibe este correo porque su agente de Jason Aguirre Group le preparó avisos de casas.",
+    unsub: "Dejar de recibir avisos", manage: "Mis avisos", disc: "Información de listados de HAR a través de Repliers; se considera confiable pero no garantizada.",
+    signin: "Puede entrar a su cuenta con este correo para guardar casas y cambiar sus avisos.", none: "Por ahora no hay casas que coincidan; le avisamos en cuanto salga una." },
+  en: { hi: "Hi", picked: (n: number) => n === 1 ? "A home for you" : `${n} homes for you`, from: "from", view: "View home", bd: "bd", ba: "ba", sqft: "sqft",
+    alerts_on: "Starting today we'll email you when a new home comes up that matches:", all: "See more homes", call: "Want to see it? Reply to this email or call",
+    why: "You get this email because your Jason Aguirre Group agent sent you these homes.", why_alert: "You get this email because your Jason Aguirre Group agent set up home alerts for you.",
+    unsub: "Unsubscribe from alerts", manage: "My alerts", disc: "Listing information from HAR through Repliers; deemed reliable but not guaranteed.",
+    signin: "Sign in to your account with this email to save homes and change your alerts.", none: "No homes match right now; we'll let you know as soon as one does." },
+};
+
+async function sig(uid: string) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(SRK), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const s = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode("unsub:" + uid));
+  return Array.from(new Uint8Array(s)).slice(0, 16).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function homesEmail(o: { es: boolean; name: string; homes: Row[]; note: string; agent: Row; label?: string; alertLabel?: string; unsub?: string; code: string }) {
+  const L = T[o.es ? "es" : "en"], first = String(o.name || "").trim().split(/\s+/)[0];
+  const subject = o.alertLabel && !o.homes.length ? (o.es ? "Sus avisos de casas están listos" : "Your home alerts are set up") : L.picked(o.homes.length) + (o.label ? ` · ${o.label}` : "");
+  const agentLine = `${o.agent.name || "Jason Aguirre"} · ${phoneFmt(o.agent.phone) || OFFICE}`;
+  const cards = o.homes.slice(0, 12).map((h) => {
+    const s = h.snap, specs = [s.beds != null ? `${s.beds} ${L.bd}` : "", s.baths != null ? `${s.baths} ${L.ba}` : "", s.sqft ? `${Number(s.sqft).toLocaleString("en-US")} ${L.sqft}` : ""].filter(Boolean).join("  ·  ");
+    return homeCard({ url: `${SITE}/homes?a=${encodeURIComponent(o.code)}&src=agent#${encodeURIComponent(h.mls)}`, photo: s.photo, price: s.price, specs,
+      addr: [[s.addr, s.city].filter(Boolean).join(", "), s.zip].filter(Boolean).join(" "), btn: L.view });
+  }).join("");
+  const note = o.note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td style="background:${C.card};border-left:4px solid ${C.red};border-radius:0 12px 12px 0;padding:14px 18px;font-size:16px;line-height:1.55;color:${C.ink};white-space:pre-wrap">${esc(o.note)}<div style="font-size:13px;color:${C.muted};margin-top:8px;white-space:normal">— ${esc(agentLine)}</div></td></tr></table>` : "";
+  const alertBox = o.alertLabel ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td style="background:${C.okTint};border-radius:12px;padding:14px 18px;font-size:15px;line-height:1.5;color:${C.ink}">${esc(L.alerts_on)}<br><b>${esc(o.alertLabel)}</b><div style="font-size:13px;color:${C.muted};margin-top:6px">${esc(L.signin)}</div></td></tr></table>` : "";
+  const html = shell({ es: o.es, title: subject, preheader: o.note ? o.note.slice(0, 90) : subject,
+    body: row(h1(`${L.hi}${first ? " " + first : ""},`) + note + alertBox + (cards || lead(L.none))
+      + `<div style="text-align:center;margin:4px 0 20px">${button(SITE + "/homes?a=" + encodeURIComponent(o.code), L.all, { kind: "outline" })}</div>`
+      + `<div style="border-top:1px solid ${C.line};padding-top:16px;text-align:center;font-size:14px;color:${C.muted}">${esc(L.call)} <a href="tel:${esc(tel(o.agent.phone) || OFFICE_TEL)}" style="color:${C.ink};font-weight:700;text-decoration:none">${esc(phoneFmt(o.agent.phone) || OFFICE)}</a>.</div>`, "0 32px"),
+    links: o.unsub ? [[L.manage, SITE + "/account#settings"], [L.unsub, o.unsub]] : [],
+    footerNote: (o.alertLabel ? L.why_alert : L.why) + " " + L.disc });
+  return { subject, html };
+}
+
+Deno.serve(async (req) => {
+  const H = { ...cors(req), "Content-Type": "application/json" };
+  const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: H });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
+  if (req.method !== "POST") return json({ ok: false, error: "POST only" }, 405);
+  const auth = req.headers.get("Authorization") || "";
+  const userDb = createClient(SB_URL, ANON, { global: { headers: { Authorization: auth } } });
+  const { data: isTeam } = await userDb.rpc("jag_is_team");
+  if (isTeam !== true) return json({ ok: false, error: "not_team" }, 403);
+  const db = createClient(SB_URL, SRK);
+  const { data: u } = await db.auth.getUser(auth.replace(/^Bearer\s+/i, ""));
+  const me = u && u.user ? u.user : null;
+  const { data: agentRow } = me ? await db.from("jag_agents").select("code,name,first_name,phone,phone_override,email").eq("user_id", me.id).eq("active", true).maybeSingle() : { data: null };
+  const agent: Row = agentRow ? { ...agentRow, phone: agentRow.phone_override || agentRow.phone } : { code: "jason", name: "Jason Aguirre", phone: OFFICE, email: "jason.aguirre@jasonhoustonrealty.com" };
+  let b: Row = {}; try { b = await req.json(); } catch { /* empty */ }
+  const email = cleanEmail(b.email), phone = digits10(b.phone), name = String(b.name || "").trim().slice(0, 120);
+  const lang = b.lang === "en" ? "en" : "es";
+
+  // ---------- Follow Up Boss ----------
+  if (b.action === "fub") {
+    if (!email && !phone) return json({ ok: false, error: "no email or phone" }, 400);
+    const clean = (k: string) => String(k || "").trim().replace(/^basic\s+/i, "").replace(/:$/, "").trim();
+    let key = clean(Deno.env.get("FUB_API_KEY") || "");
+    if (!key) { const { data } = await db.rpc("jag_fub_key"); key = clean((data as string) || ""); }
+    if (!key) return json({ ok: false, error: "FUB key not set" }, 500);
+    const FH = { Authorization: "Basic " + btoa(key + ":"), "Content-Type": "application/json", "X-System": "JAG-Admin" };
+    const find = async () => {
+      for (const q of [phone ? `phone=${phone}` : "", email ? `email=${encodeURIComponent(email)}` : ""].filter(Boolean)) {
+        const r = await fetch(`${FUB}/people?${q}&limit=1&fields=id,firstName,lastName,stage,assignedTo`, { headers: FH });
+        if (r.ok) { const j = await r.json(); const p = (j.people || [])[0]; if (p) return p; }
+      }
+      return null;
+    };
+    let p = await find(), added = false;
+    if (!p && b.add) {
+      const parts = name.split(/\s+/).filter(Boolean);
+      const person: Row = { firstName: parts[0] || "Cliente", lastName: parts.slice(1).join(" "), tags: ["JAG Website"] };
+      if (phone) person.phones = [{ value: phone, type: "mobile" }];
+      if (email) person.emails = [{ value: email, type: "home" }];
+      const r = await fetch(`${FUB}/events`, { method: "POST", headers: FH, body: JSON.stringify({ source: "JAG Website", system: "JAG-Admin", type: "General Inquiry",
+        message: String(b.note || "Added from the JAG admin client profile.").slice(0, 500), person }) });
+      if (!r.ok) return json({ ok: false, error: "FUB " + r.status + " " + (await r.text()).slice(0, 160) }, 502);
+      added = true;
+      for (let i = 0; i < 3 && !p; i++) { await new Promise((ok) => setTimeout(ok, 700)); p = await find(); }
+    }
+    if (!p) return json({ ok: true, found: false, added });
+    const url = FUB_APP + p.id;
+    if (b.lead_id) {
+      const { data: l } = await db.from("jag_leads").select("payload").eq("id", b.lead_id).maybeSingle();
+      if (l) await db.from("jag_leads").update({ payload: { ...(l.payload || {}), "Follow Up Boss": url } }).eq("id", b.lead_id);
+    }
+    return json({ ok: true, found: true, added, person_id: p.id, url, name: [p.firstName, p.lastName].filter(Boolean).join(" "), stage: p.stage || null, assigned: p.assignedTo || null });
+  }
+
+  // ---------- email homes the agent picked ----------
+  if (b.action === "email_homes") {
+    if (!email) return json({ ok: false, error: "This client has no valid email." }, 400);
+    const mls = (Array.isArray(b.mls) ? b.mls : []).map((m: unknown) => String(m).replace(/[^A-Za-z0-9-]/g, "").slice(0, 24)).filter(Boolean).slice(0, 12);
+    if (!mls.length) return json({ ok: false, error: "Pick at least one home." }, 400);
+    if (!RESEND) return json({ ok: false, error: "Email is not set up (RESEND_API_KEY)." }, 503);
+    const q = new URLSearchParams({ fields: FIELDS, resultsPerPage: "24" }); q.append("status", "A"); q.append("status", "U");
+    mls.forEach((m: string) => q.append("mlsNumber", m));
+    const ls = await repliers(q);
+    const homes = mls.map((m: string) => ls.find((l) => String(l.mlsNumber) === m)).filter(Boolean).map((l: Row) => ({ mls: String(l.mlsNumber), snap: snap(l) }));
+    if (!homes.length) return json({ ok: false, error: "Those homes are no longer on HAR." }, 404);
+    const { data: acct } = await db.from("jag_clients").select("user_id,lang").ilike("email", email).maybeSingle();
+    const es = (acct && acct.lang ? acct.lang : lang) !== "en";
+    const m = homesEmail({ es, name, homes, note: String(b.note || "").slice(0, 1000), agent, label: String(b.label || "").slice(0, 80), code: agent.code,
+      unsub: acct ? `${SITE}/unsubscribe?u=${acct.user_id}&s=${await sig(acct.user_id)}` : undefined });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM.replace(/^[^<]*</, `${agent.name || "Jason Aguirre"} · JAG <`), to: [email], reply_to: agent.email || undefined, subject: m.subject, html: m.html }) });
+    if (!r.ok) return json({ ok: false, error: "Email failed: " + (await r.text()).slice(0, 160) }, 502);
+    await db.from("jag_homes_sent").insert({ agent_code: agent.code, sent_by: me?.email || null, email, phone: phone || null, user_id: acct ? acct.user_id : null, channel: "email",
+      mls: homes.map((h: Row) => h.mls), label: String(b.label || "").slice(0, 200) || null, note: String(b.note || "").slice(0, 1000) || null });
+    return json({ ok: true, sent: homes.length });
+  }
+
+  // ---------- automatic alerts: account + saved search ----------
+  if (b.action === "save_search") {
+    if (!email) return json({ ok: false, error: "This client needs a valid email for alerts." }, 400);
+    const api: Row = {};
+    for (const [k, v] of Object.entries(b.api || {})) if (SEARCH_KEYS.has(k) && v != null && v !== "") api[k] = Array.isArray(v) ? v.slice(0, 12).map(String) : String(v).slice(0, 200);
+    if (!api.zip && !api.city && !api.search) return json({ ok: false, error: "Add at least one ZIP or city." }, 400);
+    api.type = "sale"; api.state = "TX";
+    const freq = b.freq === "daily" ? "daily" : "instant";
+    // 1. the account (existing, or created quietly with this email)
+    let { data: acct } = await db.from("jag_clients").select("*").ilike("email", email).maybeSingle();
+    let created = false;
+    if (!acct) {
+      let uid: string | null = null;
+      const cr = await db.auth.admin.createUser({ email, email_confirm: true, user_metadata: { lang, created_by: "team", agent: agent.code } });
+      if (cr.data && cr.data.user) uid = cr.data.user.id;
+      else {
+        // already a login (e.g. signed in once but never finished): find it
+        for (let page = 1; page <= 10 && !uid; page++) {
+          const { data: lst } = await db.auth.admin.listUsers({ page, perPage: 200 });
+          const f = (lst?.users || []).find((x: Row) => String(x.email || "").toLowerCase() === email);
+          if (f) uid = f.id; if (!lst || (lst.users || []).length < 200) break;
+        }
+      }
+      if (!uid) return json({ ok: false, error: "Could not set up the account: " + String(cr.error?.message || "unknown").slice(0, 120) }, 500);
+      const ins = await db.from("jag_clients").insert({ user_id: uid, email, name: name || null, phone: phone || null, lang, agent_code: agent.code, agent_set_at: new Date().toISOString(),
+        notify: { new: freq, price: "instant", status: "instant" }, alert_freq: freq }).select("*").single();
+      if (ins.error) return json({ ok: false, error: "Could not set up the account: " + ins.error.message.slice(0, 120) }, 500);
+      acct = ins.data; created = true;
+      // Follow Up Boss already has this client from their application: skip the "new registration" event
+      await db.from("jag_fub_queue").update({ sent_at: new Date().toISOString(), error: "skipped: account set up by the team" }).eq("user_id", uid).eq("kind", "Registration").is("sent_at", null);
+    } else {
+      // they unsubscribed themselves: we don't turn emails back on for them
+      if (acct.alert_freq === "off" || (acct.notify && acct.notify.new === "off")) {
+        return json({ ok: false, reason: "unsubscribed", error: "This client turned off new-home emails. They can turn them back on in their account (Ajustes)." }, 409);
+      }
+      if (acct.paused_by_staff) await db.from("jag_clients").update({ paused_by_staff: false }).eq("user_id", acct.user_id);
+      if (b.freq && acct.notify?.new !== freq && acct.alert_freq !== "off") await db.from("jag_clients").update({ notify: { ...(acct.notify || {}), new: freq } }).eq("user_id", acct.user_id);
+    }
+    // 2. the search, in the same shape the home search page saves
+    const label = String(b.label || "").trim().slice(0, 120) || ([] as unknown[]).concat(api.zip || api.city || api.search).join(", ");
+    const ui: Row = { ...(b.ui || {}), type: "sale" };
+    const { data: s, error: se } = await db.from("jag_client_searches").insert({ user_id: acct.user_id, label, params: { ui, api, by: agent.code }, alerts: true,
+      last_checked_at: new Date().toISOString() }).select("id").single();
+    if (se) return json({ ok: false, error: "Could not save the search: " + se.message.slice(0, 120) }, 500);
+    // 3. optional: today's best matches by email now (and marked so the hourly job doesn't send them again)
+    let sent = 0;
+    if (b.send_now && RESEND) {
+      const q = new URLSearchParams({ status: "A", hasImages: "true", sortBy: "createdOnDesc", resultsPerPage: "8", fields: FIELDS });
+      q.append("class", "residential"); q.append("class", "condo");
+      for (const [k, v] of Object.entries(api)) { if (k === "newc") continue; for (const x of ([] as unknown[]).concat(v)) q.append(k, String(x)); }
+      if (String(api.newc) === "1") q.set("raw.NewConstructionYN", "true");
+      const picks = Array.isArray(b.mls) && b.mls.length ? (b.mls as string[]).slice(0, 12) : null;
+      let ls = await repliers(q);
+      if (picks) { const q2 = new URLSearchParams({ fields: FIELDS, resultsPerPage: "24", status: "A" }); picks.forEach((m) => q2.append("mlsNumber", m)); ls = await repliers(q2); }
+      const homes = ls.map((l) => ({ mls: String(l.mlsNumber), snap: snap(l) }));
+      const m = homesEmail({ es: (acct.lang || lang) !== "en", name: acct.name || name, homes, note: String(b.note || "").slice(0, 1000), agent, alertLabel: label, code: agent.code,
+        unsub: `${SITE}/unsubscribe?u=${acct.user_id}&s=${await sig(acct.user_id)}` });
+      const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from: FROM.replace(/^[^<]*</, `${agent.name || "Jason Aguirre"} · JAG <`), to: [email], reply_to: agent.email || undefined, subject: m.subject, html: m.html }) });
+      if (r.ok) {
+        sent = homes.length;
+        const now = new Date().toISOString();
+        if (homes.length) await db.from("jag_client_alerts").upsert(homes.map((h) => ({ user_id: acct.user_id, kind: "new", mls: h.mls, search_id: s.id, dedupe: "new:" + h.mls,
+          detail: { label, snap: h.snap, by: agent.code }, emailed_at: now })), { onConflict: "user_id,dedupe", ignoreDuplicates: true });
+        await db.from("jag_homes_sent").insert({ agent_code: agent.code, sent_by: me?.email || null, email, phone: phone || null, user_id: acct.user_id, channel: "email",
+          mls: homes.map((h) => h.mls), label: "Alerts: " + label, note: String(b.note || "").slice(0, 1000) || null });
+      }
+    }
+    return json({ ok: true, search_id: s.id, user_id: acct.user_id, account_created: created, emailed: sent, freq });
+  }
+  return json({ ok: false, error: "unknown action" }, 400);
+});

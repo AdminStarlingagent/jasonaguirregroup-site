@@ -180,11 +180,11 @@ async function collect(clients: Map<string, Row>) {
 /* ---------------- email (JAG design from jag-email.ts) ---------------- */
 const TXT: Record<string, Record<string, any>> = {
   es: { hi: "Hola", intro: "Tenemos novedades de casas para usted:", new: "Casa nueva", smart: "Casa nueva parecida a lo que busca", price: "Cambió de precio", status: "Cambió de estado",
-    view: "Ver la casa", manage: "Administrar mis avisos", unsub: "Dejar de recibir estos correos", why: "Recibe este correo porque creó una cuenta en jasonaguirregroup.company y pidió avisos de casas.",
+    view: "Ver la casa", manage: "Administrar mis avisos", unsub: "Dejar de recibir estos correos", why: "Recibe este correo porque tiene avisos de casas en su cuenta de jasonaguirregroup.company (usted o su agente los activó).",
     disc: "Información de listados de HAR a través de Repliers; se considera confiable pero no garantizada.", bd: "rec", ba: "baños", sqft: "pies²", for: "Para su búsqueda: ",
     s_new: (n: number) => n === 1 ? "1 casa nueva para usted" : `${n} casas nuevas para usted`, s_change: "Novedades de sus casas guardadas", cta: "¿Quiere verla o saber si califica? Responda a este correo o llámenos al", all: "Ver todo en mi cuenta" },
   en: { hi: "Hi", intro: "Here is what is new for you:", new: "New home", smart: "New home like what you are looking for", price: "Price change", status: "Status change",
-    view: "View home", manage: "Manage my alerts", unsub: "Unsubscribe from these emails", why: "You get this email because you created an account at jasonaguirregroup.company and asked for home alerts.",
+    view: "View home", manage: "Manage my alerts", unsub: "Unsubscribe from these emails", why: "You get this email because your jasonaguirregroup.company account has home alerts on (set up by you or your agent).",
     disc: "Listing information from HAR through Repliers; deemed reliable but not guaranteed.", bd: "bd", ba: "ba", sqft: "sqft", for: "For your search: ",
     s_new: (n: number) => n === 1 ? "1 new home for you" : `${n} new homes for you`, s_change: "Updates on your saved homes", cta: "Want to see it or find out if you qualify? Reply to this email or call", all: "See everything in my account" },
 };
