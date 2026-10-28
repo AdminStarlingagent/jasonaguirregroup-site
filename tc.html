@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<title>Offer checklist — JAG</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* René's offer checklist: one offer, six steps, big buttons. Opened from Lola's text (tc#<token>). */
+:root{--ink:#17161c;--paper:#fff;--card:#f6f5f3;--line:#e8e6e2;--red:#c8102e;--red-d:#a30d26;--red-t:#fdecef;--green:#0f8a4d;--green-t:#e7f5ee;--muted:#6a6972;
+  --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--red)}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 120px}
+[hidden]{display:none!important}
+header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px calc(10px)}
+header .in{max-width:640px;margin:0 auto}
+.lock{display:flex;align-items:center;gap:10px}
+.lock b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.bar{height:8px;background:var(--card);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .3s}
+.cnt{font-size:13px;font-weight:700;color:var(--muted);margin-top:4px}
+h1{font-size:26px;line-height:1.2;letter-spacing:-.02em;margin:18px 0 4px}
+.sub{color:var(--muted);margin:0 0 12px;font-size:15px}
+.note{background:var(--red-t);border-radius:16px;padding:12px 14px;margin:12px 0;white-space:pre-wrap;font-size:15px}
+.note b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--red-d);margin-bottom:2px}
+.done-all{background:var(--green-t);color:var(--green);border-radius:16px;padding:14px;font-weight:800;text-align:center;margin:12px 0}
+/* the numbers */
+.nums{background:var(--card);border-radius:18px;padding:6px 14px;margin:14px 0}
+.nums h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+.n{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.n:last-child{border:0}
+.n .k{flex:0 0 42%;font-size:13.5px;color:var(--muted)}
+.n .k small{display:block;font-size:11.5px;color:#9a99a3}
+.n .v{flex:1;min-width:0;font-weight:700;overflow-wrap:anywhere}
+.n .v.miss{color:var(--red-d)}
+.cp{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700;color:var(--muted);min-height:36px}
+.cp.ok{border-color:var(--green);color:var(--green)}
+/* steps */
+.step{border:2px solid var(--line);border-radius:20px;padding:14px;margin:12px 0;background:#fff;scroll-margin-top:96px}
+.step.cur{border-color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.step.ok{border-color:#cfe9db;background:#fbfefc}
+.sh{display:flex;gap:12px;align-items:flex-start}
+.num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800}
+.step.ok .num{background:var(--green)}
+.sh h3{margin:4px 0 2px;font-size:18px;line-height:1.25}
+.sh p{margin:0;color:var(--muted);font-size:14.5px}
+.how{margin:10px 0 0 46px;font-size:15px}
+.how ol,.how ul{margin:6px 0;padding-left:20px}.how li{margin:4px 0}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:2px solid var(--red);background:#fff;color:var(--red);border-radius:14px;padding:11px 14px;font-weight:800;text-decoration:none;min-height:48px;font-size:15px}
+.b.pri{background:var(--red);color:#fff}
+.b.dk{background:var(--ink);border-color:var(--ink);color:#fff}
+.b.full{width:100%}
+.check{margin:12px 0 0 46px;display:flex;gap:8px;flex-wrap:wrap}
+.check .b{flex:1 1 auto}
+.check .b.okd{background:var(--green);border-color:var(--green);color:#fff}
+.undo{border:0;background:none;color:var(--muted);font-size:13px;font-weight:700;text-decoration:underline;min-height:40px}
+.em{background:var(--card);border-radius:14px;padding:12px;font-size:14px;white-space:pre-wrap;margin-top:8px}
+details summary{cursor:pointer;font-weight:700;color:var(--red);min-height:40px;display:flex;align-items:center}
+.f label{display:block;font-size:13px;font-weight:700;margin:10px 0 4px}
+.f input{width:100%;border:1px solid #d9d6d1;background:var(--card);border-radius:12px;padding:11px 12px;font-size:16px}
+.f input:focus{outline:3px solid var(--red-t);border-color:var(--red)}
+.saved{color:var(--green);font-weight:700;font-size:14px;margin:6px 0 0}
+/* stuck */
+.stuck{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.stuck .in{max-width:640px;margin:0 auto;display:flex;gap:8px}
+.stuck .b{flex:1}
+.ov{position:fixed;inset:0;background:rgba(15,14,20,.55);display:flex;align-items:flex-end;justify-content:center;z-index:9;padding:0}
+.sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:640px;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet h3{margin:0 0 6px}
+.sheet textarea{width:100%;min-height:96px;border:1px solid #d9d6d1;background:var(--card);border-radius:14px;padding:12px;font-size:16px;resize:vertical}
+.msg{text-align:center;padding:60px 20px;color:var(--muted)}
+.toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:99px;padding:10px 16px;font-weight:700;font-size:14px;z-index:10}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <div class="lock"><b>JAG · Offer checklist</b></div>
+  <div class="bar"><i id="bar" style="width:0"></i></div>
+  <div class="cnt" id="cnt"></div>
+</div></header>
+<main class="wrap" id="main"><p class="msg">Loading…</p></main>
+<div class="stuck" id="stuckbar" hidden><div class="in">
+  <button type="button" class="b" id="stuck">🆘 I'm stuck</button>
+  <a class="b" id="draft" target="_blank" rel="noopener">Offer draft</a>
+</div></div>
+
+<script src="jag-capture.js?v=3"></script>
+<script>
+(function(){
+  'use strict';
+  var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
+  var TOKEN = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim();
+  var CLOSINGS = 'closings@jasonhoustonrealty.com', OFFICE = '(832) 702-3574';
+  var FUB = 'https://jasonhoustonrealty.followupboss.com/2/people/view/';
+  var CAD = { harris: 'https://hcad.org/property-search/', 'fort bend': 'https://www.fbcad.org/', montgomery: 'https://mcad-tx.org/', galveston: 'https://www.galvestoncad.org/', brazoria: 'https://www.brazoriacad.org/' };
+  var LOAN = { fha: 'FHA', conventional: 'Conventional', va: 'VA', usda: 'USDA', cash: 'Cash' };
+  var STEPS = ['la_email', 'skyslope', 'filled', 'signatures', 'sent', 'fub'];
+  var D = null;
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function money(n){ var v = Number(String(n == null ? '' : n).replace(/[^0-9.]/g, '')); return v > 0 ? '$' + Math.round(v).toLocaleString('en-US') : ''; }
+  function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
+  function rpc(name, args){
+    return fetch(BASE + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) })
+      .then(function(r){ if(!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+  function toast(t){ var e = document.createElement('div'); e.className = 'toast'; e.textContent = t; document.body.appendChild(e); setTimeout(function(){ e.remove(); }, 2200); }
+  function niceDate(d){ return /^\d{4}-\d{2}-\d{2}$/.test(d || '') ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' }) : (d || ''); }
+
+  function load(){
+    if(!TOKEN){ $('main').innerHTML = '<p class="msg">This link is missing its code. Open it from Lola\'s text.</p>'; return; }
+    rpc('jag_tc_view', { p_token: TOKEN, p_open: true }).then(function(j){
+      if(!j || !j.ok){ $('main').innerHTML = '<p class="msg">This checklist link isn\'t valid anymore. Ask Jason for a new one.</p>'; return; }
+      D = j; paint();
+    }).catch(function(){ $('main').innerHTML = '<p class="msg">Couldn\'t load. Check your internet and refresh.</p>'; });
+  }
+
+  function la(){
+    var t = D.offer.terms || {}, miss = D.offer.missing || [];
+    var first = String(t.listing_agent || '').trim().split(/\s+/)[0] || '';
+    var titleTbd = !String(t.title_company || '').trim() || /\b(ask|tbd|tba|unknown|listing agent)\b/i.test(String(t.title_company));
+    var city = [t.city, ['TX', t.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+    var addr = D.offer.property + (city ? ', ' + city : '');
+    var asks = [titleTbd ? 'The title company and escrow officer the seller wants to use (name, email, phone)' : 'Is ' + t.title_company + ' OK with the seller for title? If not, which title company and escrow officer?',
+      'Seller name(s) exactly as they appear on title',
+      'The Seller\'s Disclosure Notice' + (String(t.hoa) === 'true' || t.district_notices ? ' and any HOA / MUD documents' : ''),
+      'The existing survey and T-47, if they have them',
+      'Anything the seller is looking for in an offer (closing date, leaseback, multiple offers or a deadline)'];
+    var subj = 'Buyer interest: ' + addr + (D.offer.mls ? ' (MLS ' + D.offer.mls + ')' : '');
+    var body = 'Hi' + (first ? ' ' + first : '') + ',\n\nI\'m with the Jason Aguirre Group at eXp Realty. ' + (D.by && D.by.first ? D.by.first + ' on our team' : 'Our team') + ' showed ' + D.offer.property +
+      ' to our buyer, and they\'re interested. We\'re getting an offer ready for you.\n\nSo we can write it correctly, could you send us:\n' + asks.map(function(a){ return '- ' + a; }).join('\n') +
+      '\n\nThank you!\n\nJason Aguirre Group | eXp Realty\n' + OFFICE + ' | ' + CLOSINGS;
+    var to = String(t.listing_agent_email || '').trim(), cc = (D.by && D.by.email) || '', q = encodeURIComponent;
+    return { addr: addr, subj: subj, body: body, to: to, first: first, phone: t.listing_agent_phone || '', titleTbd: titleTbd,
+      gmail: 'https://mail.google.com/mail/?authuser=' + q(CLOSINGS) + '&view=cm&fs=1&to=' + q(to) + '&cc=' + q(cc) + '&su=' + q(subj) + '&body=' + q(body),
+      mailto: 'mailto:' + to + '?cc=' + q(cc) + '&subject=' + q(subj) + '&body=' + q(body) };
+  }
+
+  function row(k, hint, v, copy){
+    var miss = !v;
+    return '<div class="n"><span class="k">' + esc(k) + (hint ? '<small>' + esc(hint) + '</small>' : '') + '</span><span class="v' + (miss ? ' miss' : '') + '">' + (miss ? 'Ask the listing agent' : esc(v)) + '</span>' +
+      (!miss && copy !== false ? '<button type="button" class="cp" data-cp="' + esc(v) + '">Copy</button>' : '') + '</div>';
+  }
+
+  function paint(){
+    var t = D.offer.terms || {}, P = D.progress || {}, L = la(), lt = String(t.loan_type || '').toLowerCase();
+    var done = STEPS.filter(function(s){ return P[s]; }).length, cur = STEPS.filter(function(s){ return !P[s]; })[0];
+    $('bar').style.width = Math.round(done / STEPS.length * 100) + '%';
+    $('cnt').textContent = done + ' of ' + STEPS.length + ' steps done';
+    var price = Number(String(t.sales_price || '').replace(/[^0-9.]/g, '')) || 0;
+    var downPct = lt !== 'cash' ? parseFloat(String(t.down_payment || '').replace(/[^0-9.]/g, '')) : 100;
+    var cashPart = price && downPct >= 0 && downPct <= 100 ? Math.round(price * downPct / 100) : 0;
+    var yb = parseInt(t.year_built, 10);
+    var forms = ['One to Four Family Residential Contract (Resale)'].concat(lt && lt !== 'cash' ? ['Third Party Financing Addendum'] : [], String(t.hoa) === 'true' ? ['HOA Addendum'] : [],
+      t.district_notices ? ['MUD / district notice'] : [], yb && yb < 1978 ? ['Lead-Based Paint Addendum (built ' + yb + ')'] : []);
+    var legal = [t.lot ? 'Lot ' + t.lot : '', t.block ? 'Block ' + t.block : '', t.addition || ''].filter(Boolean).join(', ');
+    var cad = CAD[String(t.county || '').toLowerCase()] || '';
+    var buyerContact = [t.buyer_email, t.buyer_phone].filter(Boolean).join(' / ');
+    var sentQ = encodeURIComponent, sentSubj = 'Offer: ' + L.addr + (t.buyer_names ? ' · ' + t.buyer_names : '');
+    var sentBody = 'Hi' + (L.first ? ' ' + L.first : '') + ',\n\nAttached is our buyer\'s signed offer on ' + D.offer.property + ', with their ' + (lt === 'cash' ? 'proof of funds' : 'pre-approval letter') +
+      '.\n\nPlease confirm you received it. Thank you!\n\nJason Aguirre Group | eXp Realty\n' + OFFICE + ' | ' + CLOSINGS;
+    var sentGmail = 'https://mail.google.com/mail/?authuser=' + sentQ(CLOSINGS) + '&view=cm&fs=1&to=' + sentQ(L.to) + '&cc=' + sentQ((D.by && D.by.email) || '') + '&su=' + sentQ(sentSubj) + '&body=' + sentQ(sentBody);
+
+    var S = {
+      la_email: { t: 'Email the listing agent', p: 'Ask for the title company and the seller names. The email is already written.',
+        how: (L.to ? '<div class="btns"><a class="b pri" href="' + esc(L.gmail) + '" target="_blank" rel="noopener">✉️ Write it in Gmail</a><a class="b" href="' + esc(L.mailto) + '">Email app</a>' +
+            (L.phone ? '<a class="b" href="tel:+1' + digits(L.phone) + '">Call ' + esc(L.first || '') + '</a>' : '') + '</div>'
+          : '<p>HAR has no email for this agent. ' + (L.phone ? 'Call or text them: <a href="tel:+1' + digits(L.phone) + '"><b>' + esc(L.phone) + '</b></a>.' : 'Ask ' + esc((D.by && D.by.first) || 'the agent') + ' who the listing agent is.') + '</p>') +
+          '<details><summary>See the email</summary><div class="em">' + esc((L.to ? 'To: ' + L.to + '\nSubject: ' + L.subj + '\n\n' : '') + L.body) + '</div></details>', done: 'I emailed them' },
+      skyslope: { t: 'Start the offer in SkySlope', p: 'New buyer file for ' + L.addr + '.',
+        how: '<ol><li>Open <b>SkySlope</b> and start a new <b>Buyer</b> file with this address.</li><li>Add these forms:<ul>' + forms.map(function(f){ return '<li><b>' + esc(f) + '</b></li>'; }).join('') +
+          '</ul></li><li>Fill them in with <b>The numbers</b> below. Tap <b>Copy</b> next to any number and paste it in SkySlope.</li></ol>' +
+          '<div class="btns"><a class="b" href="https://forms.skyslope.com" target="_blank" rel="noopener">Open SkySlope</a></div>', done: 'It\'s started in SkySlope' },
+      filled: { t: 'Fill in what the listing agent sends', p: 'Title company and seller names. Save them here, then type them in SkySlope.',
+        how: '<div class="f"><label for="f-title">Title company</label><input id="f-title" value="' + esc(L.titleTbd ? '' : t.title_company) + '" placeholder="e.g. Capital Title">' +
+          '<label for="f-sellers">Seller name(s), as on title</label><input id="f-sellers" value="' + esc(t.seller_names || '') + '" placeholder="e.g. Jose and Ana Perez">' +
+          (!L.to ? '<label for="f-laemail">Listing agent email</label><input id="f-laemail" type="email" placeholder="agent@brokerage.com">' : '') +
+          '<div class="btns"><button type="button" class="b dk" id="f-save">Save</button></div><p class="saved" id="f-ok" hidden>Saved ✓</p></div>' +
+          (cad ? '<p style="font-size:14px;color:var(--muted)">Listing agent slow? Seller names are on the tax record: <a href="' + cad + '" target="_blank" rel="noopener">look up the address</a>.</p>' : ''),
+        done: 'Title + sellers are in' },
+      signatures: { t: 'Send it to the client for signatures', p: 'From SkySlope (DigiSign).',
+        how: '<ol><li>Add <b>' + esc(t.buyer_names || 'the buyer') + '</b> as signer' + (/ and | y /i.test(t.buyer_names || '') ? 's' : '') + (buyerContact ? ' (' + esc(buyerContact) + ')' : '') + '.</li>' +
+          '<li>Signature and initials on <b>every page</b>. The agent signs the broker section.</li><li>Send it, then text the client that it\'s on its way.</li></ol>' +
+          '<p style="font-size:14px;color:var(--muted)">When you tap done, Lola tells ' + esc((D.by && D.by.first) || 'the agent') + ' and Katherine.</p>', done: 'Sent for signatures' },
+      sent: { t: 'Once signed, send it to the listing agent', p: 'With the ' + (lt === 'cash' ? 'proof of funds' : 'pre-approval letter') + '. Cc closings@.',
+        how: (L.to ? '<div class="btns"><a class="b pri" href="' + esc(sentGmail) + '" target="_blank" rel="noopener">✉️ Write it in Gmail</a></div><p style="font-size:14px;color:var(--muted)">Attach the signed offer and the ' + (lt === 'cash' ? 'proof of funds' : 'pre-approval') + ' before you send.</p>' : '<p>Email the signed offer to the listing agent.</p>') +
+          '<p>Then call or text ' + esc(L.first || 'the listing agent') + (L.phone ? ' (<a href="tel:+1' + digits(L.phone) + '">' + esc(L.phone) + '</a>)' : '') + ' to confirm they got it.</p>' +
+          '<p style="font-size:14px;color:var(--muted)">When you tap done, Lola tells the team the offer is out. 🎉</p>', done: 'The offer is out' },
+      fub: { t: 'Update Follow Up Boss', p: 'Mark your task done so everyone knows.',
+        how: (D.fub_person_id ? '<div class="btns"><a class="b" href="' + FUB + encodeURIComponent(D.fub_person_id) + '" target="_blank" rel="noopener">Open in Follow Up Boss</a></div>' : '<p>Find the client in Follow Up Boss.</p>') +
+          '<p>Mark the <b>Prepare offer</b> task done and add a note: "Offer sent to listing agent".</p>', done: 'Follow Up Boss is updated' },
+    };
+
+    var html = '<h1>' + esc(D.offer.property) + '</h1><p class="sub">' + esc([D.offer.client, D.offer.mls ? 'MLS ' + D.offer.mls : '', D.by && D.by.first ? 'from ' + D.by.first : ''].filter(Boolean).join(' · ')) + '</p>' +
+      (D.done_at ? '<div class="done-all">🎉 All done. Great job!</div>' : '') +
+      (D.note ? '<div class="note"><b>Note from ' + esc((D.by && D.by.first) || 'the agent') + '</b>' + esc(D.note) + '</div>' : '');
+    html += STEPS.map(function(k, i){
+      var s = S[k], ok = !!P[k], isCur = k === cur;
+      return '<section class="step' + (ok ? ' ok' : '') + (isCur ? ' cur' : '') + '" id="s-' + k + '"><div class="sh"><span class="num">' + (ok ? '✓' : i + 1) + '</span><div><h3>' + esc(s.t) + '</h3><p>' + esc(s.p) + '</p></div></div>' +
+        (ok && !isCur ? '<div class="check"><span class="b okd" style="flex:0 1 auto">✓ ' + esc(s.done) + '</span><button type="button" class="undo" data-undo="' + k + '">Undo</button></div>'
+          : '<div class="how">' + s.how + '</div><div class="check"><button type="button" class="b pri full" data-done="' + k + '">✓ ' + esc(s.done) + '</button></div>') + '</section>';
+    }).join('');
+    // the numbers
+    html += '<div class="nums"><h2>The numbers (tap Copy, paste in SkySlope)</h2>' +
+      row('Buyer(s)', 'Para 1', t.buyer_names) +
+      row('Address', 'Para 2', D.offer.property) + row('City / ZIP', '', [t.city, t.zip].filter(Boolean).join(' ')) +
+      row('Legal description', 'Para 2', legal || t.legal_raw) + row('County', 'Para 2', t.county ? t.county + ' County' : '') +
+      row('Sales price', 'Para 3', money(t.sales_price)) +
+      (lt === 'cash' ? row('Financing', 'Para 3', 'Cash', false) : row('Loan type', 'Para 3 + financing addendum', (LOAN[lt] || t.loan_type || '') + (t.down_payment ? ' · ' + t.down_payment + ' down' : ''), false) +
+        (cashPart ? row('Cash portion (down)', 'Para 3A', money(cashPart)) : '') + (cashPart && price ? row('Loan amount', 'Para 3B', money(price - cashPart)) : '')) +
+      row('Earnest money', 'Para 5', money(t.earnest_money)) + row('Option fee', 'Para 5', money(t.option_fee)) + row('Option days', 'Para 5', t.option_days ? String(t.option_days) : '') +
+      row('Title company', 'Para 6', L.titleTbd ? '' : t.title_company) + row('Seller name(s)', 'Para 1', t.seller_names) +
+      row('Home warranty', 'Para 7H', money(t.service_contract) || 'None') +
+      row('Closing date', 'Para 9', niceDate(t.closing_date)) +
+      row('Seller pays closing costs', 'Para 12', money(t.seller_concession) || 'None') +
+      (String(t.hoa) === 'true' ? row('HOA', 'HOA addendum', [t.hoa_name, t.hoa_phone].filter(Boolean).join(' · ') || 'Yes') : '') +
+      row('Listing agent', '', [t.listing_agent, t.listing_firm].filter(Boolean).join(', ')) + row('Listing agent email', '', t.listing_agent_email) + row('Listing agent phone', '', t.listing_agent_phone) +
+      row('Buyer email', '', t.buyer_email) + row('Buyer phone', '', t.buyer_phone) + '</div>';
+    $('main').innerHTML = html;
+    $('stuckbar').hidden = false; $('draft').href = D.offer.link;
+    var c = cur && $('s-' + cur); if(c && !paint.scrolled){ paint.scrolled = true; if(done) setTimeout(function(){ c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 60); }
+    var fs = $('f-save'); if(fs) fs.onclick = saveFill;
+  }
+
+  function saveFill(){
+    var p = { title_company: $('f-title').value, seller_names: $('f-sellers').value };
+    if($('f-laemail')) p.listing_agent_email = $('f-laemail').value;
+    $('f-save').disabled = true;
+    rpc('jag_tc_fill', { p_token: TOKEN, p: p }).then(function(j){
+      $('f-save').disabled = false; if(!j || !j.ok) throw 0;
+      ['title_company', 'seller_names', 'listing_agent_email'].forEach(function(k){ if(String(p[k] || '').trim()) D.offer.terms[k] = p[k].trim(); });
+      D.offer.missing = j.missing || D.offer.missing; $('f-ok').hidden = false; toast('Saved ✓');
+      setTimeout(paint, 700);
+    }).catch(function(){ $('f-save').disabled = false; toast('Couldn\'t save. Try again.'); });
+  }
+
+  document.addEventListener('click', function(e){
+    var cp = e.target.closest('[data-cp]');
+    if(cp){ var v = cp.getAttribute('data-cp');
+      (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(function(){ cp.textContent = 'Copied'; cp.classList.add('ok'); setTimeout(function(){ cp.textContent = 'Copy'; cp.classList.remove('ok'); }, 1500); })
+        .catch(function(){ window.prompt('Copy this:', v); });
+      return; }
+    var d = e.target.closest('[data-done]'), u = e.target.closest('[data-undo]');
+    if(d || u){ var k = (d || u).getAttribute(d ? 'data-done' : 'data-undo'); (d || u).disabled = true;
+      rpc('jag_tc_check', { p_token: TOKEN, p_step: k, p_done: !!d }).then(function(j){
+        if(!j || !j.ok) throw 0; D.progress = j.progress || {}; D.done_at = j.done_at;
+        if(d) toast(k === 'sent' ? 'Nice! The team knows it\'s out 🎉' : k === 'signatures' ? 'Done. Lola told the team ✍️' : 'Done ✓');
+        paint(); var nx = STEPS.filter(function(s){ return !D.progress[s]; })[0]; if(d && nx) setTimeout(function(){ var el = $('s-' + nx); if(el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 80);
+      }).catch(function(){ (d || u).disabled = false; toast('Didn\'t save. Check your internet.'); });
+    }
+  });
+
+  $('stuck').onclick = function(){
+    var ov = document.createElement('div'); ov.className = 'ov';
+    ov.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="st-h"><h3 id="st-h">What are you stuck on?</h3><p style="margin:0 0 10px;color:var(--muted);font-size:14.5px">Lola texts Jason and ' + esc((D && D.by && D.by.first) || 'the agent') + ' right away.</p>' +
+      '<textarea id="st-t" placeholder="e.g. SkySlope won\'t let me add the HOA addendum"></textarea><div class="btns"><button type="button" class="b pri" id="st-go" style="flex:1">Send</button><button type="button" class="b" id="st-x">Cancel</button></div></div>';
+    document.body.appendChild(ov);
+    var close = function(){ ov.remove(); };
+    ov.addEventListener('click', function(e){ if(e.target === ov) close(); });
+    $('st-x').onclick = close;
+    $('st-go').onclick = function(){ this.disabled = true;
+      rpc('jag_tc_stuck', { p_token: TOKEN, p_note: $('st-t').value }).then(function(j){ close(); toast(j && j.again ? 'Already sent. Help is on the way.' : 'Sent. Help is on the way.'); })
+        .catch(function(){ close(); toast('Didn\'t send. Call Jason.'); }); };
+    setTimeout(function(){ $('st-t').focus(); }, 50);
+  };
+  window.addEventListener('hashchange', function(){ TOKEN = decodeURIComponent(location.hash.replace(/^#/, '')).trim(); paint.scrolled = false; load(); });
+  load();
+})();
+</script>
+</body>
+</html>

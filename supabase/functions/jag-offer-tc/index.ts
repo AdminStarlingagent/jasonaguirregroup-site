@@ -163,13 +163,13 @@ Deno.serve(async (req) => {
         + `<div style="height:6px;line-height:6px;font-size:0">&nbsp;</div>` + h1(o ? o.property : (P.title || L.task))
         + (client ? `<div style="font-size:15px;margin:0 0 2px"><span style="color:${C.muted}">${L.client}:</span> <b>${esc(client)}</b></div>` : "")
         + (fullAddr ? `<div style="font-size:15px;margin:0 0 14px"><span style="color:${C.muted}">${L.prop}:</span> ${esc(fullAddr)}${o.mls ? ` · MLS ${esc(o.mls)}` : ""}</div>` : `<div style="height:8px"></div>`)
-        + (o ? button(o.link, "Open the offer draft") : "") + (fubUrl ? button(fubUrl, L.fub, { kind: o ? "outline" : "primary" }) : "") + (homeUrl ? button(homeUrl, L.listing, { kind: "outline" }) : ""), "0 32px")
+        + (o && P.checklist ? button(P.checklist, "Open the step-by-step checklist") : "") + (o ? button(o.link, "Open the offer draft", { kind: P.checklist ? "outline" : "primary" }) : "") + (fubUrl ? button(fubUrl, L.fub, { kind: o ? "outline" : "primary" }) : "") + (homeUrl ? button(homeUrl, L.listing, { kind: "outline" }) : ""), "0 32px")
       + (custom.length ? row(callout(`<div style="font-weight:800;margin-bottom:10px">${esc(L.notes)} ${esc(by.first || "")}</div>` + (custom.length > 1 ? steps(custom.map(esc)) : `<div style="white-space:pre-wrap">${esc(custom[0])}</div>`), "red"), "14px 32px 0") : "")
       + (o ? row(laBlock
         + h2("The listing") + facts(listingRows)
         + h2("The offer") + facts(offerRows)
         + h2("Still needed") + (missing.length ? callout(`<ul style="margin:0;padding-left:20px;color:${C.redDark};font-weight:700">${missing.map((m) => `<li style="margin:0 0 4px">${esc(m)}</li>`).join("")}</ul>`, "red") : callout(`<b style="color:${C.ok}">Nothing. Just review and prepare.</b>`, "green"))
-        + h2("2. Prepare it in SkySlope, step by step") + steps(stepsOffer), "4px 32px 0") : ""),
+        + h2("2. Prepare it in SkySlope, step by step") + (P.checklist ? `<p style="margin:0 0 12px;font-size:14px;color:${C.muted}">Easier on your phone: <a href="${esc(P.checklist)}" style="color:${C.red};font-weight:700">the checklist</a> has these steps with Copy buttons for every number, and tells the team when it's sent.</p>` : "") + steps(stepsOffer), "4px 32px 0") : ""),
     footerNote: o ? `Sent from the JAG Agent Hub (Lola). Reply all to reach ${by.name || "the agent"} and the team.`
       : `${es ? "Enviado desde JAG (sitio o Lola). Conteste este correo para hablar con" : "Sent from JAG (website or Lola). Reply to this email to reach"} ${by.name || (es ? "el agente" : "the agent")}.` });
 

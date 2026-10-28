@@ -384,7 +384,7 @@ body{background:var(--paper)}
 <script src="jag-offer.js"></script>
 <script src="jag-team-offer.js?v=2"></script>
 <script src="jag-offer-edit.js?v=1"></script>
-<script src="jag-lola-offer.js?v=1"></script>
+<script src="jag-lola-offer.js?v=2"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -631,6 +631,7 @@ body{background:var(--paper)}
       (c.email ? '<a href="mailto:' + esc(c.email) + '">Email</a>' : '') +
       (c.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + c.fub_person_id + '" target="_blank" rel="noopener">FUB</a>' : '') +
       '<button type="button" data-msg="' + esc(c.user_id) + '">Message</button>' +
+      (window.JagLolaOffer ? '<button type="button" data-lofr="' + esc(c.user_id) + '">📝 Offer</button>' : '') +
       '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide details' : 'Offers & activity') + '</button></div>' +
       (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
       '</article>';
@@ -647,7 +648,9 @@ body{background:var(--paper)}
           (p.status !== 'verified' ? '<button type="button" class="lk" data-pv="' + esc(p.id) + '" data-u="' + esc(uid) + '">Verify</button>' : '') + '</span></li>'; }).join('') + '</ul>';
       if((j.offers || []).length) h += '<h4>Offers (' + j.offers.length + ')</h4>' + j.offers.map(function(o){ var c = rows.filter(function(x){ return x.user_id === uid; })[0]; o.priority = c ? c.priority : null; return offerBox(o); }).join('');
       h += '<h4>Saved homes (' + j.favorites.length + ')</h4>' + (j.favorites.length ? '<ul>' + j.favorites.slice(0, 10).map(function(f){ var s = f.snap || {};
-        return '<li><span><a href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">' + esc(s.addr || 'MLS ' + f.mls) + '</a>' + (s.city ? ', ' + esc(s.city) : '') + ' · ' + money(f.last_price || s.price) + (f.last_status && f.last_status !== 'Active' ? ' · ' + esc(f.last_status) : '') + '</span><time>' + ago(f.saved_at) + '</time></li>'; }).join('') + '</ul>' : '<span>None yet.</span>');
+        return '<li><span><a href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">' + esc(s.addr || 'MLS ' + f.mls) + '</a>' + (s.city ? ', ' + esc(s.city) : '') + ' · ' + money(f.last_price || s.price) + (f.last_status && f.last_status !== 'Active' ? ' · ' + esc(f.last_status) : '') +
+          (window.JagLolaOffer ? ' <button type="button" class="lk" data-lola-offer data-mls="' + esc(f.mls) + '" data-addr="' + esc(s.addr || '') + '" data-uid="' + esc(uid) + '">📝 Offer</button>' : '') + '</span><time>' + ago(f.saved_at) + '</time></li>'; }).join('') + '</ul>' : '<span>None yet.</span>');
+      favs[uid] = j.favorites || [];
       h += '<h4>Saved searches (' + j.searches.length + ')</h4>' + (j.searches.length ? '<ul>' + j.searches.map(function(s){ return '<li><span>' + esc(s.label) + '</span><time>' + ago(s.created_at) + '</time></li>'; }).join('') + '</ul>' : '<span>None yet.</span>');
       h += '<h4>Recent activity</h4>' + (j.activity.length ? '<ul>' + j.activity.slice(0, 20).map(function(a){
         var w = (KIND[a.kind] || a.kind) + (a.mls ? ' · <a href="homes#' + encodeURIComponent(a.mls) + '" target="_blank" rel="noopener">MLS ' + esc(a.mls) + '</a>' : '') + (a.kind === 'search' ? ' ' + esc(a.zip || a.city || '') : '') + (a.price ? ' · ' + money(a.price) : '');
@@ -655,8 +658,17 @@ body{background:var(--paper)}
       open[uid] = h; paint();
     }).catch(function(){ open[uid] = 'Could not load.'; paint(); });
   }
+  var favs = {};
   $('list').addEventListener('click', function(e){
     if(offerClick(e)) return;
+    var lo = e.target.closest('[data-lofr]');
+    if(lo){ var u0 = lo.getAttribute('data-lofr'), c0 = rows.filter(function(x){ return x.user_id === u0; })[0] || {};
+      // the homes they saved (newest first), then the ones they keep viewing
+      var hs = (favs[u0] || []).map(function(f){ var sn = f.snap || {}; return { mls: f.mls, addr: sn.addr || '', price: f.last_price || sn.price }; })
+        .concat((c0.homes || []).map(function(h){ return { mls: h.mls, addr: h.addr || '', price: h.price }; }));
+      var seen = {}; hs = hs.filter(function(h){ if(!h.mls || seen[h.mls]) return false; seen[h.mls] = 1; return true; });
+      JagLolaOffer.open({ client: { name: c0.name, email: c0.email, phone: c0.phone, user_id: u0 }, homes: hs });
+      return; }
     var mg = e.target.closest('[data-msg]'); if(mg){ showTab('messages'); openThread(mg.getAttribute('data-msg')); return; }
     var pv = e.target.closest('[data-pv]');
     if(pv){ pv.disabled = true; rpc('jag_proof_review', { p_id: pv.getAttribute('data-pv'), p_status: 'verified' }).then(function(j){

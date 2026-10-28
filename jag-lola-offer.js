@@ -165,8 +165,10 @@
 
   var STEPS = {
     home: { run: function () {
-      her('Which house? Type the address or the MLS #.');
-      ask({ ph: 'e.g. 23022 Earlmist or 37442433', done: function (v) { me(v); find(v); } });
+      var H = (S.homes || []).filter(function (h) { return h && h.mls; }).slice(0, 6);
+      her(H.length ? 'Which house? These are the ones ' + (tc(S.names).split(' ')[0] || 'they') + ' looked at most, or type the address or MLS #.' : 'Which house? Type the address or the MLS #.');
+      ask({ ph: 'e.g. 23022 Earlmist or 37442433', done: function (v) { me(v); find(v); },
+        chips: H.map(function (h) { var lb = (h.addr || 'MLS ' + h.mls) + (h.price ? ' · ' + money(h.price) : ''); return { label: lb, go: function () { me(lb); pickMls(h.mls, h.addr); } }; }) });
     } },
     la: { skip: function () { return !S.manual; }, run: function () {
       her('Who\'s the listing agent? Name and phone or email, whatever you have. The TC will reach out to them.');
@@ -335,8 +337,10 @@
         herBlock(card(full, false, factsHtml(S.F)));
         var gaps = [!S.F.listing_agent_email ? 'the listing agent\'s email' : '', 'the title company', 'the seller names'].filter(Boolean);
         her('The TC will ask the listing agent for ' + gaps.join(', ').replace(/, ([^,]*)$/, ' and $1') + '. You don\'t need them.');
-        webOfferFor(null).then(function (w) {
-          if (w && !S.names) {
+        webOfferFor(S.user_id || null).then(function (w) {
+          if (w && S.user_id && w.user_id === S.user_id && !S.fromWeb) {
+            fillFrom(w); her('They already sent an offer on this house from the website, so I filled in their numbers. Check each one.'); next('home');
+          } else if (w && !S.names) {
             her('Heads up: ' + (tc(w.name) || 'a client') + ' sent an offer on this house from the website' + (w.offer_price ? ' (' + money(w.offer_price) + ')' : '') + '. Is that your buyer?');
             var el = input(chipsHtml([{ label: 'Yes, use their offer', pri: true }, { label: 'No, someone else' }]));
             el.querySelector('[data-c="0"]').onclick = function () { me('Yes, use their offer'); fillFrom(w); her('Done. I filled in what they sent. Just check each answer.'); next('home'); };
@@ -456,7 +460,7 @@
         me('Send it');
         typing(500).then(function () {
           her(r.tc_ok === false ? 'I saved the offer, but the email didn\'t go out. Text Jason so he can send it.' :
-            'Sent! 🎉 ' + who + ' have it. They\'ll email the listing agent for the title info and get it ready in SkySlope for signatures. You\'re copied on the email.');
+            'Sent! 🎉 René got a text with his step-by-step checklist, and ' + who + ' have the email. I\'ll text you when it goes to the client for signatures and when it\'s out to the listing agent.');
           var el = input('<div class="lo-btns"><a class="lo-sub" href="' + esc(r.link) + '" target="_blank" rel="noopener">Open the offer draft</a>' +
             '<button type="button" class="lo-send" id="lo-again">Another offer</button><button type="button" class="lo-sub" id="lo-done">Close</button></div>');
           el.querySelector('#lo-again').onclick = restart; el.querySelector('#lo-done').onclick = close;
@@ -485,8 +489,10 @@
     ov.classList.add('on'); document.documentElement.style.overflow = 'hidden';
   }
   function restart() { S = { ofee: null, odays: null }; back = null; ls(null); shell(); her('Ooh, an offer! 💅 Let\'s get it to Katherine and the TC.'); go('home'); }
-  function open() {
+  // o (optional): { mls, address, client: { name, email, phone, user_id } } — from a client's saved home in the Agent Hub
+  function open(o) {
     shell(); back = null; sending = false;
+    if (o && (o.mls || o.address || o.client)) return openFor(o);
     var saved = ls();
     if (saved && saved.S && saved.S.home && Date.now() - saved.at < 3 * 86400000 && saved.step) {
       her('We were working on an offer for ' + saved.S.home + (saved.S.names ? ' (' + saved.S.names + ')' : '') + '. Pick up where we left off?');
@@ -498,6 +504,24 @@
     S = { ofee: null, odays: null };
     her('Ooh, an offer! 💅 Let\'s get it to Katherine and the TC.');
     go('home');
+  }
+  function openFor(o) {
+    var c = o.client || {};
+    S = { ofee: null, odays: null, names: c.name || '', email: c.email ? String(c.email).toLowerCase() : '', phone: c.phone || '', user_id: c.user_id || null, homes: o.homes || null };
+    var first = tc(S.names).split(' ')[0];
+    if (!o.mls && !o.address) { her('Ooh, an offer' + (first ? ' for ' + first : '') + '! 💅 Let\'s get it to Katherine and René.'); return go('home'); }
+    her('Ooh, an offer! 💅' + (first ? ' ' + first + ' wants this one?' : '') + ' Pulling it up from HAR…');
+    if (!o.mls) { me(o.address); return find(o.address); }
+    pickMls(o.mls, o.address);
+  }
+  function pickMls(mls, address) {
+    var wait = typing(500);
+    fetch(API + '?mlsNumber=' + encodeURIComponent(mls)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) {
+      wait.then(function () {
+        var l = j && j.listings && j.listings[0];
+        if (l) pick(l); else if (address) find(address); else { her('I couldn\'t find MLS ' + mls + ' on HAR anymore (it may be off the market). Type the address and I\'ll still send it.'); go('home'); }
+      });
+    });
   }
   function close() { if (!ov) return; ov.classList.remove('on'); ov.innerHTML = ''; document.documentElement.style.overflow = ''; }
 
@@ -513,13 +537,25 @@
     return rpc('jag_tc_mine').then(function (j) {
       var R = (j && j.rows) || [];
       el.innerHTML = R.length ? '<div class="lo-mine"><h3>Sent to the TC</h3>' + R.slice(0, 6).map(function (r) {
-        var st = r.sent_at ? '<span class="st ok">✓ Emailed</span>' : r.failed ? '<span class="st bad">Didn\'t send, tell Jason</span>' : '<span class="st">Sending…</span>';
+        var P = r.progress || {}, n = ['la_email', 'skyslope', 'filled', 'signatures', 'sent', 'fub'].filter(function (k) { return P[k]; }).length;
+        var st = r.failed ? '<span class="st bad">Didn\'t send, tell Jason</span>' : !r.sent_at ? '<span class="st">Sending…</span>'
+          : r.done_at || P.sent ? '<span class="st ok">🎉 Out to listing agent</span>' : P.signatures ? '<span class="st ok">✍️ Out for signatures</span>'
+          : r.opened_at ? '<span class="st">René: ' + n + ' of 6</span>' : '<span class="st">Waiting for René</span>';
         return '<div class="lo-sent"><div class="t"><b>' + esc(r.property) + '</b><small>' + esc([r.client, money(r.price), ago(r.created_at)].filter(Boolean).join(' · ')) + '</small></div>' + st +
-          (r.link ? '<a href="' + esc(r.link) + '" target="_blank" rel="noopener">Draft</a>' : '') + '</div>';
+          (r.checklist ? '<a href="' + esc(r.checklist) + '" target="_blank" rel="noopener">Checklist</a>' : r.link ? '<a href="' + esc(r.link) + '" target="_blank" rel="noopener">Draft</a>' : '') + '</div>';
       }).join('') + '</div>' : '';
     }).catch(function () { el.innerHTML = ''; });
   }
-  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-lola-offer]'); if (b) { e.preventDefault(); open(); } });
+  // <button data-lola-offer data-mls="…" data-addr="…" data-uid="…"> — data-uid is a website client of this agent
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-lola-offer]'); if (!b) return; e.preventDefault();
+    var mls = b.getAttribute('data-mls'), addr = b.getAttribute('data-addr'), uid = b.getAttribute('data-uid');
+    if (!mls && !addr) return open();
+    loadClients().then(function (list) {
+      var c = uid ? list.filter(function (x) { return x.user_id === uid; })[0] : null;
+      open({ mls: mls, address: addr, client: c ? { name: c.name, email: c.email, phone: c.phone, user_id: c.user_id } : { name: b.getAttribute('data-name') || '' } });
+    });
+  });
 
   window.JagLolaOffer = { open: open, close: close, cta: cta, mine: mine, onSent: null };
 })();
