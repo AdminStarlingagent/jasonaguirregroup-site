@@ -645,7 +645,7 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-27.1</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-27.2</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -686,14 +686,14 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
           <label>Baths<select id="h-baths"><option value="">Any</option><option>1</option><option>2</option><option>3</option></select></label>
         </div>
         <div class="hrow"><label class="hck"><input type="checkbox" id="h-newc"> New construction only</label>
-          <button type="button" class="savebtn" id="h-go">Search HAR</button></div>
+          <button type="button" class="savebtn" id="h-go">Search JAG Homes</button></div>
         <p class="hmsg" id="h-msg" role="status"></p>
       </div>
       <div id="h-res"></div>
       <div class="hsend" id="h-send" hidden></div>
       <div class="halert" id="h-alert" hidden>
         <div class="sect" style="margin-top:0">Automatic email alerts for this search</div>
-        <p class="hhelp">They get an email when a new home that matches comes on HAR. Every email has an unsubscribe link.</p>
+        <p class="hhelp">They get an email when a new home that matches is listed on JAG Homes. Every email has an unsubscribe link.</p>
         <div class="hgrid">
           <label>How often<select id="h-freq"><option value="instant">As soon as it lists</option><option value="daily">One daily summary</option></select></label>
           <label class="full">Note in the first email (optional)<textarea id="h-anote" rows="2"></textarea></label>
@@ -2008,7 +2008,7 @@ function closeDrawer(){
 /* ================= client profile =================
    Click a name (loan apps, clients, other inquiries) → one profile: Call / Text / Email / Follow Up Boss,
    Overview (status, facts, notes, their home-search account and what we've sent them),
-   Homes & alerts (search HAR like Matrix, pick homes, email or text them, save automatic email alerts),
+   Homes & alerts (search JAG Homes like Matrix, pick homes, email or text them, save automatic email alerts),
    and the loan application itself. Server side: jag_person (read), jag-client-hub (FUB, email, alerts). */
 var prof={seq:0,lead:null,acct:null,person:null,email:'',phone:'',name:'',lang:'es',results:[],total:0,sel:{},crit:null,fub:null};
 var FUB_VIEW='https://jasonhoustonrealty.followupboss.com/2/people/view/';
@@ -2166,7 +2166,7 @@ $('d-person').addEventListener('click',function(e){
   }
 });
 
-/* ---------- homes & alerts: search HAR, pick, send, automate ---------- */
+/* ---------- homes & alerts: search JAG Homes, pick, send, automate ---------- */
 function prefillArea(){
   var P=prof.person||{}, a=P.account, area='';
   if(P.searches&&P.searches[0]){ var api0=(P.searches[0].params||{}).api||{}; area=[].concat(api0.zip||[],api0.city||[]).join(', '); }
@@ -2201,7 +2201,7 @@ function hmsg(t,cls){ var m=$('h-msg'); m.textContent=t||''; m.className='hmsg'+
 function runSearch(){
   var c=readCrit();
   if(!c.zips.length&&!c.cities.length){ hmsg('Type at least one ZIP code or city.','bad'); $('h-area').focus(); return; }
-  var seq=prof.seq; prof.crit=c; prof.sel={}; prof.searched=true; $('h-send').hidden=true; hmsg('Searching HAR…'); $('h-go').disabled=true;
+  var seq=prof.seq; prof.crit=c; prof.sel={}; prof.searched=true; $('h-send').hidden=true; hmsg('Searching JAG Homes…'); $('h-go').disabled=true;
   Promise.all(groupsOf(c).map(function(g){
     var a=apiOf(c,g), q=new URLSearchParams({resultsPerPage:'24',sortBy:'createdOnDesc'});
     Object.keys(a).forEach(function(k){ [].concat(a[k]).forEach(function(v){ q.append(k,v); }); });
@@ -2212,7 +2212,7 @@ function runSearch(){
     rs.forEach(function(d){ total+=d.count||0; (d.listings||[]).forEach(function(l){ if(!seen[l.mlsNumber]){ seen[l.mlsNumber]=1; list.push(l); } }); });
     list.sort(function(a,b){ return (a.daysOnMarket==null?999:a.daysOnMarket)-(b.daysOnMarket==null?999:b.daysOnMarket); });
     prof.results=list; prof.total=total; $('h-go').disabled=false; hmsg(''); paintResults(); $('h-alert').hidden=false; paintNow();
-  }).catch(function(){ if(seq!==prof.seq) return; $('h-go').disabled=false; hmsg('Could not reach HAR. Try again.','bad'); });
+  }).catch(function(){ if(seq!==prof.seq) return; $('h-go').disabled=false; hmsg('Could not load homes. Try again.','bad'); });
 }
 $('h-go').addEventListener('click',runSearch);
 function cardHtml(l){
