@@ -250,7 +250,7 @@ body{background:var(--paper)}
     <button class="btn" type="submit" id="si-btn">Sign in</button>
     <button class="btn ghost" type="button" id="si-mode">Email me a code instead</button>
     <button class="btn ghost" type="button" id="si-back" hidden>Use a different email</button>
-    <p class="si-note" id="si-note">No password yet, or forgot it? Tap <b>Email me a code</b>. Once you're in, you can set a password.</p>
+    <p class="si-note" id="si-note">No password yet, or forgot it? <button type="button" class="lnk" id="si-forgot" style="border:0;background:none;padding:0;color:inherit;font-weight:800;text-decoration:underline;cursor:pointer">Email me a link to set my password</button>. After that, no more codes.</p>
   </form>
 </section>
 
@@ -451,6 +451,18 @@ body{background:var(--paper)}
     if(msg){ $('si-err').textContent = msg; $('si-err').hidden = false; }
   }
   $('si-mode').onclick = function(){ setMode(mode === 'pw' ? 'code' : 'pw'); };
+  $('si-forgot').onclick = function(){
+    var em = $('si-email').value.trim().toLowerCase();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ siErr('Type your email first, then tap the link.'); $('si-email').focus(); return; }
+    try{ localStorage.setItem('jag_last_team_email', em); var nx = new URLSearchParams(location.search).get('next'); if(nx) localStorage.setItem('jag_reset_next', nx); }catch(x){}
+    var b = this; b.disabled = true;
+    fetch(BASE + '/auth/v1/recover?redirect_to=' + encodeURIComponent('https://jasonaguirregroup.company/reset-password.html'), { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em }) })
+      .then(function(r){ b.disabled = false;
+        if(r.status === 429){ siErr('Please wait a minute before asking for another link.'); return; }
+        if(!r.ok){ siErr('Could not send the link. Try again.'); return; }
+        $('si-err').hidden = true; $('si-msg').textContent = 'Check your email: we sent a link to set your password to ' + em + '. It works for 60 minutes (check spam too).'; })
+      .catch(function(){ b.disabled = false; siErr('Could not send the link. Check your connection.'); });
+  };
   $('si-eye').onclick = function(){ var i = $('si-pass'), on = i.type === 'password'; i.type = on ? 'text' : 'password'; this.setAttribute('aria-pressed', String(on)); this.setAttribute('aria-label', on ? 'Hide password' : 'Show password'); };
   $('si-back').onclick = function(){ setMode('code'); };
   function siErr(t){ $('si-err').textContent = t; $('si-err').hidden = false; }

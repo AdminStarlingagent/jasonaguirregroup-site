@@ -39,7 +39,9 @@ main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:c
 h1{font-size:clamp(25px,6vw,30px);font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:0 0 8px}
 .lead{color:var(--muted);margin:0 0 20px}
 .who{display:flex;gap:8px;margin:0 0 20px;flex-wrap:wrap}
-.who span{display:inline-flex;align-items:center;gap:6px;background:var(--card);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.who span,.who button{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid transparent;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.who button[aria-pressed="true"]{background:#fff;border-color:var(--ink);color:var(--ink)}
+.pw{position:relative}.pw input{padding-right:64px}.pw .eye{position:absolute;right:8px;top:8px;border:0;background:var(--card);border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700}
 .who svg{width:14px;height:14px}
 label{display:block;font-weight:700;font-size:13px;margin:0 0 6px}
 input{width:100%;border:1.5px solid #c9c8d0;border-radius:12px;padding:13px 14px;font-size:16px;margin:0 0 14px;background:#fff}
@@ -67,6 +69,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
 .foot{text-align:center;font-size:12px;color:var(--soft);padding:0 16px 24px}
 @media (max-width:420px){.brok{display:none}.card{padding:26px 20px 22px}}
 </style>
+<script>(function(){ var h = location.hash || ""; if(h.indexOf("type=recovery") > -1 || h.indexOf("error_code=otp_expired") > -1) location.replace("reset-password.html" + h); })();</script>
 <script src="jag-track.js?v=1"></script>
 </head>
 <body>
@@ -101,7 +104,13 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
       scr:'Screener de llamadas', scr_s:'Guía para llamadas con Lola y registro en Follow Up Boss',
       adm:'Admin', adm_s:'Panel completo del equipo (pide su contraseña)',
       client_hi:'Ya entró', client_p:'Está conectado como ', acct:'Ir a mi cuenta', homes:'Buscar casas', apply:'Aplicar para un préstamo',
-      out:'Cerrar sesión', wrong:'¿No es usted? Cerrar sesión'
+      out:'Cerrar sesión', wrong:'¿No es usted? Cerrar sesión',
+      lead_a:'Agentes del equipo: entren con el correo de Follow Up Boss y su contraseña.', pass:'Contraseña', show:'Ver', hide:'Ocultar', signin:'Entrar',
+      forgot:'Olvidé mi contraseña / crear una', usecode:'Mejor envíenme un código', usepw:'Entrar con contraseña',
+      badpw:'Correo o contraseña incorrectos. ¿No tiene contraseña? Toque “Olvidé mi contraseña” y le mandamos un enlace para crearla.',
+      nopw:'¿Primera vez o se le olvidó? Le mandamos un enlace a su correo para crear su contraseña. Después ya no necesita códigos.',
+      rs_h:'Revise su correo', rs_p:'Le enviamos un enlace para crear una contraseña nueva a ', rs_n:'El enlace dura 60 minutos. Si no lo ve, revise spam o promociones.', back:'Volver a entrar',
+      mx:'Matrix', mx_s:'Búsqueda tipo HAR Matrix, listas de clientes y correos'
     },
     en: {
       title:'Sign in', h1:'Sign in', lead:'No password: we email you a code. Clients and team agents sign in here.',
@@ -116,7 +125,13 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
       scr:'Call screener', scr_s:'Call guide with Lola, logs to Follow Up Boss',
       adm:'Admin', adm_s:'Full team dashboard (asks for your password)',
       client_hi:'You are signed in', client_p:'Signed in as ', acct:'Go to my account', homes:'Search homes', apply:'Apply for a loan',
-      out:'Sign out', wrong:'Not you? Sign out'
+      out:'Sign out', wrong:'Not you? Sign out',
+      lead_a:'Team agents: sign in with your Follow Up Boss email and password.', pass:'Password', show:'Show', hide:'Hide', signin:'Sign in',
+      forgot:'Forgot password / create one', usecode:'Email me a code instead', usepw:'Sign in with password',
+      badpw:'Wrong email or password. No password yet? Tap “Forgot password” and we\'ll email you a link to create one.',
+      nopw:'First time, or forgot it? We email you a link to create your password. After that, no more codes.',
+      rs_h:'Check your email', rs_p:'We sent a link to set a new password to ', rs_n:'The link works for 60 minutes. Don\'t see it? Check spam or promotions.', back:'Back to sign in',
+      mx:'Matrix', mx_s:'HAR Matrix-style search, client lists and emails'
     }
   };
   function lang(){ try{ var v = localStorage.getItem('jag_lang'); if(v === 'en' || v === 'es') return v; }catch(e){} return 'es'; }
@@ -150,21 +165,64 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
 
   /* ---------- screens ---------- */
   function err(m, ok){ var e = $('err'); if(!e) return; e.textContent = m; e.className = ok ? 'ok' : 'err on'; }
+  // Clients sign in with an emailed code. Team agents sign in with a password (and can still use a code).
+  var TEAMPAGE = /^(agent|matrix|screener|admin|tc|m|r)\.html/i;
+  var tab = (function(){
+    var v = ''; try{ v = localStorage.getItem('jag_signin_tab') || ''; }catch(e){}
+    if(/[?&]team=1/.test(location.search) || TEAMPAGE.test(next)) return 'agent';
+    if(v) return v;
+    try{ if(localStorage.getItem('jag_last_team_email')) return 'agent'; }catch(e){}
+    return 'client';
+  })();
+  var agentMode = 'pw';
+  function setTab(v){ tab = v; try{ localStorage.setItem('jag_signin_tab', v); }catch(e){} agentMode = 'pw'; screenEmail(); }
   function screenEmail(){
     document.title = t('title') + ' — JAG Real Estate';
-    card.innerHTML = '<h1>' + t('h1') + '</h1><p class="lead">' + t('lead') + '</p>' +
-      '<div class="who"><span>' + IC.home + t('who_c') + '</span><span>' + IC.hub + t('who_a') + '</span></div>' +
-      '<form id="f" novalidate><label for="e">' + t('email') + '</label><input id="e" type="email" autocomplete="email" inputmode="email" value="' + esc(email) + '">' +
-      '<div class="err" id="err"></div><button class="btn red" type="submit" id="go">' + t('send') + '</button>' +
+    if(!email){ try{ email = tab === 'agent' ? (localStorage.getItem('jag_last_team_email') || '') : ''; }catch(e){} }
+    var pwMode = tab === 'agent' && agentMode === 'pw';
+    card.innerHTML = '<h1>' + t('h1') + '</h1><p class="lead">' + (tab === 'agent' ? t('lead_a') : t('lead')) + '</p>' +
+      '<div class="who" role="group"><button type="button" data-tab="client" aria-pressed="' + (tab === 'client') + '">' + IC.home + t('who_c') + '</button><button type="button" data-tab="agent" aria-pressed="' + (tab === 'agent') + '">' + IC.hub + t('who_a') + '</button></div>' +
+      '<form id="f" novalidate><label for="e">' + t('email') + '</label><input id="e" type="email" autocomplete="' + (pwMode ? 'username' : 'email') + '" inputmode="email" value="' + esc(email) + '">' +
+      (pwMode ? '<label for="pw">' + t('pass') + '</label><div class="pw"><input id="pw" type="password" autocomplete="current-password"><button type="button" class="eye" id="eye">' + t('show') + '</button></div>' : '') +
+      '<div class="err" id="err"></div><button class="btn red" type="submit" id="go">' + (pwMode ? t('signin') : t('send')) + '</button>' +
+      (tab === 'agent' ? '<div class="row"><button type="button" class="link" id="fg">' + t('forgot') + '</button><button type="button" class="link" id="md">' + (pwMode ? t('usecode') : t('usepw')) + '</button></div>' +
+        (pwMode ? '<p class="fine">' + t('nopw') + '</p>' : '') : '') +
       '<p class="fine">' + t('agent_hint') + '</p><p class="fine" style="margin-top:6px">' + t('terms') + '</p></form>';
-    var inp = $('e'); setTimeout(function(){ inp.focus(); }, 60);
+    card.querySelectorAll('[data-tab]').forEach(function(b){ b.onclick = function(){ email = $('e').value.trim().toLowerCase(); setTab(b.dataset.tab); }; });
+    var inp = $('e'); setTimeout(function(){ (pwMode && inp.value ? $('pw') : inp).focus(); }, 60);
+    if($('eye')) $('eye').onclick = function(){ var i = $('pw'), on = i.type === 'password'; i.type = on ? 'text' : 'password'; this.textContent = on ? t('hide') : t('show'); };
+    if($('md')) $('md').onclick = function(){ email = inp.value.trim().toLowerCase(); agentMode = agentMode === 'pw' ? 'code' : 'pw'; screenEmail(); };
+    if($('fg')) $('fg').onclick = function(){
+      var v = inp.value.trim().toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ inp.focus(); return err(t('bademail')); }
+      this.disabled = true; email = v;
+      try{ localStorage.setItem('jag_last_team_email', v); if(next) localStorage.setItem('jag_reset_next', next); }catch(e){}
+      fetch(BASE + '/auth/v1/recover?redirect_to=' + encodeURIComponent('https://jasonaguirregroup.company/reset-password.html'), { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: v }) })
+        .then(function(r){ if(r.status === 429){ var x = new Error('wait'); x.status = 429; throw x; } if(!r.ok) throw new Error('send'); screenReset(); })
+        .catch(function(x){ var b = $('fg'); if(b) b.disabled = false; err(x.status === 429 ? t('wait') : t('neterr')); });
+    };
     $('f').onsubmit = function(ev){ ev.preventDefault();
       var v = inp.value.trim().toLowerCase();
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return err(t('bademail'));
+      if(tab === 'agent'){ try{ localStorage.setItem('jag_last_team_email', v); }catch(e){} }
+      if(pwMode){
+        var pw = $('pw').value; if(!pw){ $('pw').focus(); return err(t('badpw')); }
+        $('go').disabled = true; email = v;
+        post('/auth/v1/token?grant_type=password', { email: v, password: pw })
+          .then(function(r){ return r.json().then(function(j){ if(!r.ok || !j.access_token) throw new Error('bad'); return j; }); })
+          .then(function(j){ try{ localStorage.setItem('jag_pw_' + v, '1'); }catch(e){} return route(j, 'pw'); })
+          .catch(function(){ $('go').disabled = false; $('pw').value = ''; err(t('badpw')); });
+        return;
+      }
       $('go').disabled = true;
       sendCode(v).then(function(){ email = v; cooldown = Date.now() + 60000; screenCode(); })
         .catch(function(x){ $('go').disabled = false; err(x.status === 429 ? t('wait') : t('neterr')); });
     };
+  }
+  function screenReset(){
+    card.innerHTML = '<h1>' + t('rs_h') + '</h1><p class="lead">' + t('rs_p') + '<b>' + esc(email) + '</b></p><p class="fine" style="margin:0 0 18px">' + t('rs_n') + '</p>' +
+      '<button class="btn ghost" type="button" id="bk">' + t('back') + '</button>';
+    $('bk').onclick = function(){ agentMode = 'pw'; screenEmail(); };
   }
   function screenCode(){
     card.innerHTML = '<h1>' + t('h2') + '</h1><p class="lead">' + t('p2') + '<b>' + esc(email) + '</b></p>' +
@@ -189,13 +247,15 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
   }
 
   // After the code: team member (their FUB email is on the team) → team screen; anyone else → client account.
-  function route(j){
+  function route(j, how){
     session = j;
     return post('/rest/v1/rpc/jag_agent_me', {}, j.access_token).then(function(r){ return r.json(); }).catch(function(){ return null; }).then(function(a){
       if(a && a.ok && a.agent){
         var ag = a.agent;
         ls(AGENT, { t: j.access_token, r: j.refresh_token, x: Date.now() + (j.expires_in || 3600) * 1000, e: email,
-          code: ag.code, name: ag.name, first_name: ag.first_name, phone: ag.phone, photo_url: ag.photo_url, staff: !!a.staff });
+          code: ag.code, name: ag.name, first_name: ag.first_name, phone: ag.phone, photo_url: ag.photo_url, staff: !!a.staff, how: how || 'code' });
+        try{ localStorage.setItem('jag_last_team_email', email); localStorage.setItem('jag_signin_tab', 'agent'); }catch(e){}
+        if(TEAMPAGE.test(next)){ location.href = next; return; }
         screenTeam();
         return;
       }
@@ -226,7 +286,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
     card.innerHTML = '<div class="hello">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : '<span class="ph"></span>') +
       '<div><h1 style="margin:0">' + t('team_hi') + esc(a.first_name || '') + '</h1></div></div>' +
       '<p class="lead">' + t('team_p') + '</p><div class="stack">' +
-      tile('agent.html', 'hub', t('hub'), t('hub_s')) + tile('screener.html', 'scr', t('scr'), t('scr_s')) +
+      tile('agent.html', 'hub', t('hub'), t('hub_s')) + tile('matrix.html', 'home', t('mx'), t('mx_s')) + tile('screener.html', 'scr', t('scr'), t('scr_s')) +
       (a.staff ? tile('admin.html', 'adm', t('adm'), t('adm_s')) : '') +
       '</div><div class="row" style="margin-top:14px"><span class="fine" style="margin:0">' + esc(a.e || '') + '</span><button type="button" class="link" id="out">' + t('out') + '</button></div>';
     $('out').onclick = function(){ signOut(AGENT, a.t); };
@@ -245,7 +305,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
 
   function start(){
     var a = ls(AGENT), c = ls(CLIENT);
-    if(a && a.r) screenTeam();
+    if(a && a.r){ if(TEAMPAGE.test(next)){ location.replace(next); return; } screenTeam(); }
     else if(c && c.refresh_token) screenClient();
     else screenEmail();
   }

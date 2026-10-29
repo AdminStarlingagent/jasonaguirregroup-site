@@ -280,7 +280,7 @@ table.mini td{padding:7px 8px;border-bottom:1px solid var(--line)}
   <div style="display:flex;justify-content:center"><span class="lock" style="color:var(--ink)"><small>Jason Aguirre</small><b>JAG</b><i>Real Estate</i></span></div>
   <h1 style="margin:0;font-size:22px">JAG Matrix</h1>
   <p style="margin:0;color:var(--muted)" id="gate-msg">Sign in with your team login to search HAR like Matrix, build client lists and send home emails.</p>
-  <a class="btn" style="justify-content:center" href="agent.html?next=matrix.html">Sign in</a>
+  <a class="btn" style="justify-content:center" href="signin?team=1&amp;next=matrix.html">Sign in</a>
 </div>
 
 <div id="app" hidden>
@@ -545,7 +545,7 @@ table.mini td{padding:7px 8px;border-bottom:1px solid var(--line)}
     }).then(function(r){ if(r.status === 401) throw new Error('signin'); return r.json(); });
   }
   function fail(e){
-    if(String(e && e.message) === 'signin'){ $('app').hidden = true; $('gate').hidden = false; $('gate-msg').textContent = 'Your sign-in expired. Sign in again to keep searching.'; return; }
+    if(String(e && e.message) === 'signin'){ ls('jag_agent', null); $('app').hidden = true; $('gate').hidden = false; $('gate-msg').textContent = 'Your sign-in expired. Sign in again to keep searching.'; return; }
     toast('Something went wrong. Check your connection and try again.');
   }
 
@@ -1270,7 +1270,7 @@ table.mini td{padding:7px 8px;border-bottom:1px solid var(--line)}
     var a = window.JagShare && JagShare.me ? JagShare.me() : null;
     if(!a){ $('gate').hidden = false; return; }
     rpc('jag_agent_me').then(function(j){
-      if(!j || !j.ok){ $('gate').hidden = false; $('gate-msg').textContent = j && j.reason === 'not_agent' ? 'This login isn\'t on the JAG team. Ask Jason to add you.' : 'Sign in with your team login.'; return; }
+      if(!j || !j.ok){ ls('jag_agent', null); $('gate').hidden = false; $('gate-msg').textContent = j && j.reason === 'not_agent' ? 'This login isn\'t on the JAG team. Ask Jason to add you.' : 'Sign in with your team login.'; return; }
       me = j.agent; var roles = me.roles || [];
       $('app').hidden = false;
       $('me-name').textContent = me.first_name || me.name;
