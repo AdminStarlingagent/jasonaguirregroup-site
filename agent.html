@@ -101,6 +101,11 @@ main{padding-block:16px 60px}
 .bar input{flex:1 1 200px;min-width:0;height:44px;border:2px solid var(--line);border-radius:12px;padding:0 12px;font-weight:600;background:var(--paper)}
 .chip{border:2px solid var(--line);background:var(--paper);border-radius:99px;padding:8px 13px;font-weight:700;font-size:13.5px}
 .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.bar select{height:44px;max-width:100%;border:1px solid #d9d6d1;border-radius:14px;padding:0 10px;font-weight:700;font-size:14px;background:#f6f5f3;color:var(--ink)}
+.bar select:focus{outline:3px solid var(--red-t);border-color:var(--red)}
+#more-box .cnt{text-align:center;color:var(--muted);font-size:13px;font-weight:700;margin:12px 0 6px}
+#more-box .more{display:block;width:100%;min-height:48px;border:2px solid var(--red);background:#fff;color:var(--red);border-radius:99px;font-weight:800;font-size:15px}
+#more-box .more:disabled{opacity:.6}
 
 /* client cards */
 .list{display:flex;flex-direction:column;gap:10px}
@@ -311,17 +316,21 @@ body{background:var(--paper)}
       <div class="pwbar" id="pwbar" hidden><b>Tired of email codes? Set a password and sign in with it next time.</b><button type="button" id="pwbar-go">Set a password</button><button type="button" class="x" id="pwbar-x">Not now</button></div>
       <div class="stats" id="stats"></div>
       <div class="bar">
-        <input id="q" type="search" placeholder="Search name, phone, ZIP…" aria-label="Search clients">
+        <input id="q" type="search" placeholder="Search name, phone, email or tag…" aria-label="Search contacts">
+        <select id="f-stage" aria-label="Stage"><option value="">All stages</option></select>
+        <select id="f-owner" aria-label="Agent" hidden><option value="">Every agent</option></select>
       </div>
       <div class="bar" id="chips">
         <button type="button" class="chip on" data-f="all">All</button>
-        <button type="button" class="chip" data-f="prio">Priority</button>
         <button type="button" class="chip" data-f="mine">Mine</button>
-        <button type="button" class="chip" data-f="hot">Hot (70+)</button>
+        <button type="button" class="chip" data-f="prio">Hot stages</button>
+        <button type="button" class="chip" data-f="new">New this week</button>
         <button type="button" class="chip" data-f="week">Active this week</button>
+        <button type="button" class="chip" data-f="hot">Score 70+</button>
       </div>
-      <div class="list" id="list"><div class="empty">Loading clients…</div></div>
-      <p class="note">Clients are sorted by priority: <b>verified</b> buyers first (pre-approval or proof of funds checked by the team), then buyers <b>in contact</b> with us, then everyone else by score. Score (0-100) = how actively a client is shopping on our website right now, updated hourly. "Mine" = clients who signed up through one of your links.</p>
+      <div class="list" id="list"><div class="empty">Loading contacts…</div></div>
+      <div id="more-box"></div>
+      <p class="note">Contacts = everyone in Follow Up Boss who's being worked (every stage except Lead and Trash, plus leads from the last 6 months) and everyone with an app account. Stage changes, notes, calls, texts and emails you make here go to Follow Up Boss within a minute; changes made in Follow Up Boss show up here within 5 minutes. Moving someone to <b>Applied, Loan Approved, Showing homes, Submitting offers</b> or <b>Under contract</b> hands them to that stage's teammate, who gets a notification and a text. Most recent activity first. Score (0-100) = how actively an app client is shopping on our website, updated hourly.</p>
     </section>
 
     <section id="t-messages" hidden>
@@ -397,8 +406,8 @@ body{background:var(--paper)}
 <script src="jag-offer-edit.js?v=1"></script>
 <script src="jag-lola-offer.js?v=2"></script>
 <script src="jag-showings.js?v=1"></script>
-<script src="jag-crm.js?v=2"></script>
-<script src="jag-profile.js?v=1"></script>
+<script src="jag-crm.js?v=3"></script>
+<script src="jag-profile.js?v=2"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -608,10 +617,11 @@ body{background:var(--paper)}
       var nx = ''; try{ nx = new URLSearchParams(location.search).get('next') || ''; }catch(x){}
       if(/^[a-z0-9-]+\.html([?#][\w=&#.-]*)?$/i.test(nx)){ location.replace(nx); return; }
       if(window.JagCRM) JagCRM.init({ rpc: rpc, me: me, isLead: me.isLead, canScreen: me.isLead || roles.indexOf('screener') >= 0, seeAll: me.isLead,
-        reload: load, findRow: function(u){ return rows.filter(function(x){ return x.user_id === u; })[0] || null; }, focusClient: focusClient });
+        reload: load, findRow: findC, focusClient: focusClient });
+      rpc('jag_stage_owners_get').then(function(j){ if(j && j.ok){ team = j.team || []; paintFilters(); if(contacts.length) paint(); } }).catch(function(){});
       if(window.JagProfile) JagProfile.init({ rpc: rpc, me: me, isLead: me.isLead,
-        listIds: function(){ return filtered().map(function(x){ return x.user_id; }); },
-        findRow: function(u){ return rows.filter(function(x){ return x.user_id === u; })[0] || null; },
+        listIds: function(){ return contacts.map(function(x){ return x.id; }); },
+        findRow: findC,
         handoff: function(c, cb){ if(window.JagShowings) JagShowings.handoff(c, function(code){ c.showing_agent_code = code; paint(); if(cb) cb(code); }); },
         openThread: function(u){ showTab('messages'); openThread(u); }, reload: load, onClose: function(){ load(); } });
       load(); routeHash();
@@ -621,68 +631,99 @@ body{background:var(--paper)}
     });
   }
   function load(){
+    // app accounts (shares / links, offers and messages still use them)
     rpc('jag_agent_clients').then(function(j){
-      if(!j || !j.ok){ $('list').innerHTML = '<div class="empty">Could not load clients.</div>'; return; }
+      if(!j || !j.ok) return;
       rows = j.clients || []; shares = j.shares || [];
-      paint(); paintLinks(); loadOffers(); if(curTab !== 'messages') loadInbox();
-    }).catch(function(e){ if(String(e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); } else $('list').innerHTML = '<div class="empty">Could not load clients. Pull down to refresh.</div>'; });
+      paintLinks(); loadOffers(); if(curTab !== 'messages') loadInbox();
+    }).catch(function(e){ if(String(e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); } });
+    loadContacts(contacts.length ? 'refresh' : true);
   }
 
-  // a notification was tapped: open Contacts and show that client
-  var pendingFocus = null;
-  function focusClient(uid){ if(uid && window.JagProfile){ JagProfile.open(uid); return; } pendingFocus = uid || null; filter = 'all'; q = ''; if($('q')) $('q').value = ''; document.querySelectorAll('#chips .chip').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-f') === 'all'); }); showTab('clients'); }
-  function filtered(){
-    var s = q.toLowerCase(), wk = Date.now() - 7 * 864e5;
-    return rows.filter(function(c){
-      if(filter === 'mine' && c.agent_code !== me.code) return false;
-      if(filter === 'prio' && !(c.tier <= 2)) return false;
-      if(filter === 'hot' && !(c.score >= 70)) return false;
-      if(filter === 'week' && !(c.days_7 > 0)) return false;
-      if(s && [c.name, c.email, c.phone, c.top_zip, (c.homes || []).map(function(h){ return h.zip + ' ' + h.city; }).join(' ')].join(' ').toLowerCase().indexOf(s) < 0) return false;
-      return true;
+  /* ---------------- Contacts: everyone (Follow Up Boss leads + app accounts), paged on the server ---------------- */
+  var contacts = [], ctot = 0, ccounts = {}, cstages = [], cstage = '', cowner = '', cbusy = false, cseq = 0, CPAGE = 40, team = [];
+  function loadContacts(mode){
+    var seq = ++cseq, more = mode === false, off = more ? contacts.length : 0;
+    var lim = mode === 'refresh' ? Math.min(100, Math.max(CPAGE, contacts.length)) : CPAGE;
+    if(!more && mode !== 'refresh') $('list').innerHTML = '<div class="empty">Loading contacts…</div>';
+    cbusy = true; paintMore();
+    rpc('jag_contacts_list', { p: { q: q, view: filter, stage: cstage, owner: cowner, limit: lim, offset: off } }).then(function(j){
+      if(seq !== cseq) return; cbusy = false;
+      if(!j || !j.ok){ $('list').innerHTML = '<div class="empty">Could not load contacts.</div>'; paintMore(); return; }
+      contacts = more ? contacts.concat(j.contacts || []) : (j.contacts || []);
+      ctot = j.total || 0; ccounts = j.counts || {}; cstages = j.stages || [];
+      paintFilters(); paint();
+    }).catch(function(e){
+      if(seq !== cseq) return; cbusy = false;
+      if(String(e && e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); return; }
+      if(!contacts.length) $('list').innerHTML = '<div class="empty">Could not load contacts. Check your connection.</div>'; paintMore();
     });
   }
+  function findC(id){ if(!id) return null; return contacts.filter(function(x){ return x.id === id || x.user_id === id; })[0] || rows.filter(function(x){ return x.user_id === id; })[0] || null; }
+  function cap(s){ s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); }
+  function agentNm(code){ var a = team.filter(function(x){ return x.code === code; })[0]; return a ? a.name.split(' ')[0] : cap(code); }
+  function paintFilters(){
+    var sel = $('f-stage'), cur = cstage;
+    sel.innerHTML = '<option value="">All stages</option>' + cstages.filter(function(s){ return s.n > 0 || s.name === cur; }).map(function(s){
+      return '<option value="' + esc(s.name) + '"' + (s.name === cur ? ' selected' : '') + '>' + esc(s.name) + ' (' + s.n.toLocaleString('en-US') + ')</option>'; }).join('');
+    var ow = $('f-owner'); ow.hidden = !me.isLead || !team.length;
+    if(!ow.hidden && ow.options.length <= 2) ow.innerHTML = '<option value="">Every agent</option>' + team.map(function(a){ return '<option value="' + esc(a.code) + '">' + esc(a.name) + '</option>'; }).join('') + '<option value="none">Nobody assigned</option>';
+    ow.value = cowner;
+  }
+
+  // a notification was tapped: open that contact's profile
+  var pendingFocus = null;
+  function focusClient(uid){ if(uid && window.JagProfile){ JagProfile.open(uid); return; } showTab('clients'); }
+  function stat(n, label){ return '<div class="stat"><b class="num">' + (n || 0).toLocaleString('en-US') + '</b><span>' + label + '</span></div>'; }
   function paint(){
-    var hot = rows.filter(function(c){ return c.score >= 70; }).length, wk = rows.filter(function(c){ return c.days_7 > 0; }).length,
-        mine = rows.filter(function(c){ return c.agent_code === me.code; }).length, ver = rows.filter(function(c){ return c.tier === 1; }).length;
-    $('stats').innerHTML = '<div class="stat"><b class="num">' + ver + '</b><span>Verified buyers</span></div><div class="stat"><b class="num">' + hot + '</b><span>Hot right now</span></div>' +
-      '<div class="stat"><b class="num">' + wk + '</b><span>Active this week</span></div><div class="stat"><b class="num">' + mine + '</b><span>From your links</span></div>';
-    var list = filtered();
-    if(!list.length){ $('list').innerHTML = '<div class="empty">' + (rows.length ? 'No contacts match.' : 'No contacts yet. Tap ＋ Invite a client to add your first one.') + '</div>'; return; }
-    $('list').innerHTML = list.map(card).join('');
-    if(pendingFocus){ var fe = document.querySelector('.cl[data-u="' + pendingFocus + '"]'); pendingFocus = null; if(fe){ fe.scrollIntoView({ block: 'center', behavior: 'smooth' }); fe.classList.add('flash'); } }
+    $('stats').innerHTML = stat(ccounts.all, 'Contacts') + stat(ccounts.prio, 'In a hot stage') + stat(ccounts.week, 'Active this week') + stat(ccounts.mine, 'Yours');
+    if(!contacts.length){
+      $('list').innerHTML = '<div class="empty">' + (q || cstage || cowner || filter !== 'all' ? 'No contacts match.' : 'No contacts yet. Tap ＋ Invite a client to add your first one.') + '</div>';
+      paintMore(); return;
+    }
+    $('list').innerHTML = contacts.map(card).join('');
+    paintMore();
+  }
+  function paintMore(){
+    var b = $('more-box'); if(!b) return;
+    var left = ctot - contacts.length;
+    b.innerHTML = contacts.length ? '<p class="cnt">Showing ' + contacts.length.toLocaleString('en-US') + ' of ' + ctot.toLocaleString('en-US') + '</p>' +
+      (left > 0 ? '<button type="button" class="more" id="more-go"' + (cbusy ? ' disabled' : '') + '>' + (cbusy ? 'Loading…' : 'Show ' + Math.min(left, CPAGE) + ' more') + '</button>' : '') : '';
+    if($('more-go')) $('more-go').onclick = function(){ loadContacts(false); };
   }
   var TAGL = { price: 'Price-focused', area: 'Area-focused', ready: 'Ready to act' };
   function card(c){
-    var sc = c.score || 0, cls = sc >= 70 ? 'hot' : sc >= 40 ? 'warm' : '';
-    var ph = digits(c.phone), first = (c.name || '').split(' ')[0] || '';
+    var app = !!c.user_id, sc = c.score || 0, cls = app && sc >= 70 ? 'hot' : app && sc >= 40 ? 'warm' : '';
+    var ph = digits(c.phone), key = c.id || c.user_id;
     var top = (c.homes || [])[0];
-    var tags = (c.tags || []).map(function(t){ return '<span class="pill r">' + esc(TAGL[t] || t) + (t === 'area' && c.top_zip ? ' · ' + esc(c.top_zip) : '') + '</span>'; }).join('');
+    var stags = (c.score_tags || []).map(function(t){ return '<span class="pill r">' + esc(TAGL[t] || t) + (t === 'area' && c.top_zip ? ' · ' + esc(c.top_zip) : '') + '</span>'; }).join('');
+    var ftags = (c.tags || []).slice(0, 3).map(function(t){ return '<span class="pill">' + esc(t) + '</span>'; }).join('') + ((c.tags || []).length > 3 ? '<span class="pill">+' + (c.tags.length - 3) + '</span>' : '');
     var pr = c.priority || {};
     var prio = pr.proof ? '<span class="prio p1">Verified ' + (pr.proof === 'pof' ? 'proof of funds' : 'pre-approval') + ' ✓</span>' :
       pr.proof_pending ? '<span class="prio p2">Proof uploaded: review it</span>' : pr.in_contact ? '<span class="prio p2">In contact</span>' : '';
     var offerPill = pr.offers ? '<span class="pill">' + pr.offers + ' offer' + (pr.offers === 1 ? '' : 's') + (pr.last_offer ? ' · ' + esc(JagOffer.text().st[pr.last_offer] || pr.last_offer) : '') + '</span>' : '';
-    var shw = c.showing_agent_code ? '<span class="pill b">👟 Showing: ' + esc(c.showing_agent_code === me.code ? 'you' : c.showing_agent_code.charAt(0).toUpperCase() + c.showing_agent_code.slice(1)) + '</span>' : '';
-    var owner = shw + (c.agent_code ? (c.agent_code === me.code ? '<span class="pill b">Your client</span>' : '<span class="pill">via ' + esc(c.agent_code) + '</span>') : '');
-    var h = '<article class="cl ' + cls + '" data-u="' + esc(c.user_id) + '">' +
+    var shw = c.showing_agent_code ? '<span class="pill b">👟 Showing: ' + esc(c.showing_agent_code === me.code ? 'you' : agentNm(c.showing_agent_code)) + '</span>' : '';
+    var owner = shw + (c.agent_code ? (c.agent_code === me.code ? '<span class="pill b">Yours</span>' : '<span class="pill">' + esc(agentNm(c.agent_code)) + '</span>') : '<span class="pill">' + (c.pond_id ? 'In a pond' : 'Nobody assigned') + '</span>');
+    var due = c.open_tasks ? '<span class="pill r">' + c.open_tasks + ' task' + (c.open_tasks === 1 ? '' : 's') + (c.next_due && new Date(c.next_due) < new Date() ? ' · overdue' : '') + '</span>' : '';
+    var sub = [c.lang === 'en' ? 'English' : c.lang === 'es' ? 'Español' : '', c.source || '', app ? 'on the app ' + ago(c.last_seen_at) : 'not on the app yet',
+      c.last_comm_at ? 'last contact ' + ago(c.last_comm_at) : ''].filter(Boolean).join(' · ');
+    return '<article class="cl ' + cls + '" data-u="' + esc(key) + '">' +
       (prio ? '<div>' + prio + '</div>' : '') +
-      '<div class="cl-top"><div class="who"><b><a class="cl-nm" href="#c/' + esc(c.user_id) + '" data-prof="' + esc(c.user_id) + '">' + esc(c.name || c.email) + '</a></b><small>' + esc(c.lang === 'en' ? 'English' : 'Español') + ' · last on the site ' + esc(ago(c.last_seen_at)) + '</small>' + prefLine(c) + '</div>' +
-      '<div class="score ' + cls + '"><b class="num">' + sc + '</b><span>score</span></div></div>' +
-      '<div class="facts"><span class="pill g num">' + (c.days_7 || 0) + ' day' + (c.days_7 === 1 ? '' : 's') + ' this week</span><span class="pill num">' + (c.days_30 || 0) + ' day' + (c.days_30 === 1 ? '' : 's') + ' this month</span>' +
-      '<span class="pill num">' + (c.views_30 || 0) + ' home' + (c.views_30 === 1 ? '' : 's') + ' viewed</span><span class="pill num">' + (c.favorites || 0) + ' saved</span>' +
-      (c.best_hour != null ? '<span class="pill">Online ~' + hourLbl(c.best_hour) + '</span>' : '') + offerPill + tags + owner + '</div>' +
+      '<div class="cl-top"><div class="who"><b><a class="cl-nm" href="#c/' + esc(key) + '" data-prof="' + esc(key) + '">' + esc(c.name || c.email || fmtPhone(c.phone) || 'No name') + '</a></b><small>' + esc(sub) + '</small>' + prefLine(c) + '</div>' +
+      (app ? '<div class="score ' + cls + '"><b class="num">' + sc + '</b><span>score</span></div>' : '') + '</div>' +
+      '<div class="facts">' + (c.stage ? '<span class="pill g">' + esc(c.stage) + '</span>' : '') + owner + due + offerPill +
+        (app ? '<span class="pill num">' + (c.days_7 || 0) + ' day' + (c.days_7 === 1 ? '' : 's') + ' this week</span><span class="pill num">' + (c.views_30 || 0) + ' home' + (c.views_30 === 1 ? '' : 's') + ' viewed</span><span class="pill num">' + (c.favorites || 0) + ' saved</span>' +
+          (c.best_hour != null ? '<span class="pill">Online ~' + hourLbl(c.best_hour) + '</span>' : '') : '') + stags + ftags + '</div>' +
       (window.JagCRM ? JagCRM.journey(c) : '') +
       (top ? '<a class="home" href="homes#' + encodeURIComponent(top.mls) + '" target="_blank" rel="noopener">Keeps looking at: <b>MLS ' + esc(top.mls) + '</b>' + (top.city ? ' · ' + esc(top.city) : '') + (top.price ? ' · ' + money(top.price) : '') + ' · viewed ' + top.views + 'x</a>' : '') +
       '<div class="acts">' + (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a><a href="sms:+1' + ph + '">Text</a>' : '') +
       (c.email ? '<a href="mailto:' + esc(c.email) + '">Email</a>' : '') +
-      (c.fub_person_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + c.fub_person_id + '" target="_blank" rel="noopener">FUB</a>' : '') +
-      '<button type="button" data-msg="' + esc(c.user_id) + '">Message</button>' +
-      (window.JagLolaOffer ? '<button type="button" data-lofr="' + esc(c.user_id) + '">📝 Offer</button>' : '') +
-      (me.isLead && window.JagShowings ? '<button type="button" data-shw="' + esc(c.user_id) + '">👟 ' + (c.showing_agent_code ? 'Showing agent' : 'Send for showings') + '</button>' : '') +
-      '<button type="button" data-prof="' + esc(c.user_id) + '">👤 Profile</button></div>' +
-      (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
+      (c.fub_id ? '<a href="https://jasonhoustonrealty.followupboss.com/2/people/view/' + c.fub_id + '" target="_blank" rel="noopener">FUB</a>' : '') +
+      (app ? '<button type="button" data-msg="' + esc(c.user_id) + '">Message</button>' : '<button type="button" data-inv="' + esc(key) + '">📱 Invite to app</button>') +
+      (window.JagLolaOffer ? '<button type="button" data-lofr="' + esc(key) + '">📝 Offer</button>' : '') +
+      (app && me.isLead && window.JagShowings ? '<button type="button" data-shw="' + esc(key) + '">👟 ' + (c.showing_agent_code ? 'Showing agent' : 'Send for showings') + '</button>' : '') +
+      '<button type="button" data-prof="' + esc(key) + '">👤 Profile</button></div>' +
       '</article>';
-    return h;
   }
   var KIND = { view: 'Viewed', search: 'Searched', calc: 'Used payment calculator', photos: 'Looked at photos', eval: 'Clicked "see what I qualify for"', form_open: 'Opened showing form', inquiry: 'Sent a showing/contact request', alert_return: 'Came back from an alert email', value: 'Checked home value' };
   function detail(uid){
@@ -711,16 +752,18 @@ body{background:var(--paper)}
     var pf = e.target.closest('[data-prof]');
     if(pf && window.JagProfile){ e.preventDefault(); JagProfile.open(pf.getAttribute('data-prof')); return; }
     if(offerClick(e)) return;
+    var iv = e.target.closest('[data-inv]');
+    if(iv){ var ci = findC(iv.getAttribute('data-inv')) || {}; if(window.JagCRM) JagCRM.invite({ name: ci.name || '', phone: ci.phone || '', email: ci.email || '', lang: ci.lang || 'es' }); return; }
     var lo = e.target.closest('[data-lofr]');
-    if(lo){ var u0 = lo.getAttribute('data-lofr'), c0 = rows.filter(function(x){ return x.user_id === u0; })[0] || {};
+    if(lo){ var c0 = findC(lo.getAttribute('data-lofr')) || {}, u0 = c0.user_id || null;
       // the homes they saved (newest first), then the ones they keep viewing
-      var hs = (favs[u0] || []).map(function(f){ var sn = f.snap || {}; return { mls: f.mls, addr: sn.addr || '', price: f.last_price || sn.price }; })
+      var hs = ((u0 && favs[u0]) || []).map(function(f){ var sn = f.snap || {}; return { mls: f.mls, addr: sn.addr || '', price: f.last_price || sn.price }; })
         .concat((c0.homes || []).map(function(h){ return { mls: h.mls, addr: h.addr || '', price: h.price }; }));
       var seen = {}; hs = hs.filter(function(h){ if(!h.mls || seen[h.mls]) return false; seen[h.mls] = 1; return true; });
       JagLolaOffer.open({ client: { name: c0.name, email: c0.email, phone: c0.phone, user_id: u0 }, homes: hs });
       return; }
     var sw = e.target.closest('[data-shw]');
-    if(sw){ var u1 = sw.getAttribute('data-shw'), c1 = rows.filter(function(x){ return x.user_id === u1; })[0]; if(!c1) return;
+    if(sw){ var c1 = findC(sw.getAttribute('data-shw')); if(!c1 || !c1.user_id) return;
       JagShowings.handoff(c1, function(code){ c1.showing_agent_code = code; paint(); if(window.JagShowings) JagShowings.load(); }); return; }
     var mg = e.target.closest('[data-msg]'); if(mg){ showTab('messages'); openThread(mg.getAttribute('data-msg')); return; }
     var pv = e.target.closest('[data-pv]');
@@ -731,8 +774,11 @@ body{background:var(--paper)}
     if(open[u]){ delete open[u]; paint(); return; }
     open[u] = true; paint(); detail(u);
   });
-  $('q').addEventListener('input', function(){ q = this.value; paint(); });
-  $('chips').addEventListener('click', function(e){ var b = e.target.closest('[data-f]'); if(!b) return; filter = b.getAttribute('data-f'); this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x === b); }); paint(); });
+  var qT = null;
+  $('q').addEventListener('input', function(){ var v = this.value; clearTimeout(qT); qT = setTimeout(function(){ q = v.trim(); loadContacts(true); }, 300); });
+  $('chips').addEventListener('click', function(e){ var b = e.target.closest('[data-f]'); if(!b) return; filter = b.getAttribute('data-f'); this.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x === b); }); loadContacts(true); });
+  $('f-stage').addEventListener('change', function(){ cstage = this.value; loadContacts(true); });
+  $('f-owner').addEventListener('change', function(){ cowner = this.value; loadContacts(true); });
 
   /* ---------------- offers: status the client sees ---------------- */
   var OST = [['submitted','Received'],['reviewing','In review'],['sent','Sent to seller'],['countered','Counteroffer'],['accepted','Accepted'],['declined','Declined'],['withdrawn','Withdrawn']];

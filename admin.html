@@ -438,6 +438,8 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
 
 #screensview .tablecard,#teamview .tablecard{overflow-x:auto}
 #screensview table,#teamview table{min-width:760px}
+#teamview table.hotable{min-width:0}.hoh{margin:28px 0 8px;font-size:17px}
+.hotable select{height:38px;border:1.5px solid #d6d5dd;border-radius:10px;padding:0 8px;font:inherit;font-weight:700;background:#fff;min-width:180px}
 .teamnote{background:var(--loan-t);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;margin:0 0 16px}
 .switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700}
 .jobs{display:flex;flex-wrap:wrap;gap:5px;min-width:220px}.job{border:1.5px solid #d6d5dd;background:#fff;color:#6a6972;border-radius:99px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.job.on{background:#17161c;border-color:#17161c;color:#fff}.job[disabled]{cursor:default;opacity:.85}.job:not([disabled]):hover{border-color:#17161c}.jobhelp{margin:-6px 0 16px;font-size:13px;color:#6a6972;line-height:1.5}
@@ -567,6 +569,9 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
       <input id="t-email" type="email" placeholder="Give admin access to another email…" aria-label="Email">
       <button class="solid" type="submit">Give access</button>
     </form>
+    <h3 class="hoh">Hand-offs in Contacts</h3>
+    <p class="jobhelp">When someone in the Agent Hub moves a contact to one of these stages, the contact is handed to this teammate (in Follow Up Boss too), and they get a notification and a text from Lola. "No hand-off" keeps the contact with whoever has it.</p>
+    <div class="tablecard"><table class="hotable"><thead><tr><th>Stage</th><th>Goes to</th></tr></thead><tbody id="horows"><tr><td colspan="2" class="muted" style="padding:18px">Loading…</td></tr></tbody></table></div>
   </section>
 
   <section id="dealsview" hidden>
@@ -2938,7 +2943,25 @@ $('s-csv').addEventListener('click', exportScreenReport);
    Only the owner (Jason) can change it. Everyone else on the team signs in to the screener and the Agent Hub
    and only sees their own screenings. */
 var team = { data:null, busy:false };
+// stage -> teammate hand-offs (jag_stage_owners, supabase-contacts-phase2.sql)
+var HO_MAIN=['Hot Prospect','Applied','Loan Approved','Showing homes','Submitting offers','Under contract','Pending','Closed'];
+function loadHandoffs(){
+  rpcJ('jag_stage_owners_get').then(function(j){
+    if(!j || !j.ok){ $('horows').innerHTML='<tr><td colspan="2" class="muted" style="padding:18px">Could not load the hand-offs.</td></tr>'; return; }
+    var st=(j.stages||[]).slice().sort(function(a,b){ var ia=HO_MAIN.indexOf(a.stage), ib=HO_MAIN.indexOf(b.stage); return (a.owner?0:1)-(b.owner?0:1) || (ia<0?99:ia)-(ib<0?99:ib); });
+    $('horows').innerHTML=st.map(function(x){
+      return '<tr><td><b>'+esc(x.stage)+'</b></td><td><select data-ho="'+esc(x.stage)+'"'+(j.can_edit?'':' disabled')+'><option value="">No hand-off</option>'+
+        (j.team||[]).map(function(a){ return '<option value="'+esc(a.code)+'"'+(a.code===x.owner?' selected':'')+'>'+esc(a.name)+'</option>'; }).join('')+'</select></td></tr>';
+    }).join('');
+    $('horows').querySelectorAll('[data-ho]').forEach(function(sel){ sel.addEventListener('change', function(){
+      var stg=this.dataset.ho, v=this.value, nm=this.options[this.selectedIndex].text;
+      rpcJ('jag_stage_owner_set',{p_stage:stg,p_code:v}).then(function(r){ if(r && r.ok) toast(v ? stg+' now goes to '+nm+'.' : 'No hand-off for '+stg+'.', true); else { toast('Could not save. Only admins and Leads can change hand-offs.'); loadHandoffs(); } })
+        .catch(function(){ toast('Could not reach the database. Try again.'); loadHandoffs(); });
+    }); });
+  }).catch(function(){ $('horows').innerHTML='<tr><td colspan="2" class="muted" style="padding:18px">Could not load the hand-offs.</td></tr>'; });
+}
 function loadTeam(){
+  loadHandoffs();
   $('trows').innerHTML='<tr><td colspan="5" class="muted" style="padding:22px">Loading team…</td></tr>';
   api('/rest/v1/rpc/jag_team_access',{method:'POST',body:'{}'}).then(function(r){ return r.ok?r.json():null; })
   .then(function(j){ team.data=j; renderTeam(); }).catch(function(){ team.data=null; renderTeam(); });

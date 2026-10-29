@@ -9,9 +9,11 @@
 //        The hourly listing-alerts job sends new matches from then on; every email has a one-click unsubscribe.
 //  { action: 'email_homes', email, name, lang, mls[], note, label } → a JAG-branded email with those homes, reply-to the agent.
 //  { action: 'invite', invite_id } → the client's personal app invite (jag_invites, made by jag_invite_create) by email, from the agent.
-//  { action: 'email', user_id, subject, body } → an email to the client from their profile (agent's name, replies to the agent),
-//      logged on the profile timeline (jag_contact_notes kind 'email').
-//  { action: 'fub_history', user_id } → the client's Follow Up Boss notes and calls (read-only), for the profile timeline while both run.
+//  { action: 'email', contact_id (or user_id), subject, body } → an email to the contact from their profile (agent's name, replies
+//      to the agent), logged on the profile timeline (jag_contact_notes kind 'email') and copied to Follow Up Boss as a note.
+//  { action: 'fub_history', contact_id (or user_id) } → the contact's Follow Up Boss notes and calls (read-only), for the profile
+//      timeline while both run. Notes/calls the workspace itself wrote back to FUB are left out (they're already on the timeline).
+//  Both only work on contacts this team member can see (jag_contact_basic).
 // Every send is logged in jag_homes_sent (the profile's "Homes sent" list).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SITE, esc, money, row, button, homeCard, h1, lead, shell, C, OFFICE, OFFICE_TEL, phoneFmt, tel, agentStrip, steps, quote } from "./jag-email.ts";
@@ -273,8 +275,15 @@ Deno.serve(async (req) => {
   }
 
   // ---------- email the client from their profile ----------
+  const contactId = String(b.contact_id || b.user_id || "");
+  const contact = async (): Promise<Row | null> => {
+    if (!/^[0-9a-f-]{36}$/i.test(contactId)) return null;
+    const { data } = await userDb.rpc("jag_contact_basic", { p_id: contactId });
+    return (data as Row) || null;
+  };
+
   if (b.action === "email") {
-    const { data: cl } = await db.from("jag_clients").select("user_id,email,name,lang").eq("user_id", String(b.user_id || "")).maybeSingle();
+    const cl = await contact();
     const to = cleanEmail(cl?.email);
     if (!cl || !to) return json({ ok: false, error: "This client has no valid email." }, 400);
     const subject = String(b.subject || "").trim().slice(0, 200), text = String(b.body || "").trim().slice(0, 8000);
@@ -291,14 +300,20 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ from: FROM.replace(/^[^<]*</, `${agent.name || "Jason Aguirre"} · JAG <`), to: [to], reply_to: agent.email || undefined, subject, html }) });
     if (!r.ok) return json({ ok: false, error: "Email failed: " + (await r.text()).slice(0, 160) }, 502);
     const sent = await r.json().catch(() => ({}));
-    await db.from("jag_contact_notes").insert({ user_id: cl.user_id, agent_code: agent.code, author_name: agent.name || null, kind: "email", subject, body: text,
+    await db.from("jag_contact_notes").insert({ contact_id: cl.id, user_id: cl.user_id, agent_code: agent.code, author_name: agent.name || null, kind: "email", subject, body: text,
       meta: { to, resend_id: (sent as Row).id || null, lola: !!b.lola } });
+    await db.from("jag_contacts").update({ last_comm_at: new Date().toISOString() }).eq("id", cl.id);
+    if (cl.fub_id) {   // copy to Follow Up Boss (sent by fub-sync)
+      await db.from("jag_fub_out").insert({ contact_id: cl.id, fub_id: cl.fub_id, kind: "note", by_code: agent.code,
+        payload: { who: agent.name || "JAG team", body: `📧 Email sent to ${to}\nSubject: ${subject}\n\n${text}` } });
+      await db.rpc("jag_fub_kick");
+    }
     return json({ ok: true, to });
   }
 
   // ---------- Follow Up Boss history (notes + calls), read-only ----------
   if (b.action === "fub_history") {
-    const { data: cl } = await db.from("jag_clients").select("user_id,email,phone").eq("user_id", String(b.user_id || "")).maybeSingle();
+    const cl = await contact();
     if (!cl) return json({ ok: false, error: "not found" }, 404);
     const clean = (k: string) => String(k || "").trim().replace(/^basic\s+/i, "").replace(/:$/, "").trim();
     let key = clean(Deno.env.get("FUB_API_KEY") || "");
@@ -307,7 +322,11 @@ Deno.serve(async (req) => {
     const FH = { Authorization: "Basic " + btoa(key + ":"), "Content-Type": "application/json", "X-System": "JAG-Admin" };
     const ph = digits10(cl.phone), em = cleanEmail(cl.email);
     let person: Row | null = null;
-    for (const q of [ph ? `phone=${ph}` : "", em ? `email=${encodeURIComponent(em)}` : ""].filter(Boolean)) {
+    if (cl.fub_id) {
+      const r = await fetch(`${FUB}/people/${cl.fub_id}?fields=id,firstName,lastName,stage,assignedTo,source`, { headers: FH });
+      if (r.ok) person = await r.json();
+    }
+    if (!person) for (const q of [ph ? `phone=${ph}` : "", em ? `email=${encodeURIComponent(em)}` : ""].filter(Boolean)) {
       const r = await fetch(`${FUB}/people?${q}&limit=1&fields=id,firstName,lastName,stage,assignedTo,source`, { headers: FH });
       if (r.ok) { const j = await r.json(); const p = (j.people || [])[0]; if (p) { person = p; break; } }
     }
@@ -317,8 +336,11 @@ Deno.serve(async (req) => {
       fetch(`${FUB}/notes?personId=${person.id}&limit=30&sort=-created`, { headers: FH }).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
       fetch(`${FUB}/calls?personId=${person.id}&limit=30`, { headers: FH }).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
     ]);
-    const notes = ((nr as Row).notes || []).map((n: Row) => ({ at: n.created || n.updated, by: n.createdBy || n.userName || null, subject: n.subject || null, body: strip(n.body).slice(0, 4000) }));
-    const calls = ((cr as Row).calls || []).map((c: Row) => ({ at: c.created || c.dateCreated, by: c.userName || c.createdBy || null, duration: c.duration ?? null,
+    // what the workspace wrote back is already on the timeline: skip those copies
+    const { data: mine } = await db.from("jag_contact_notes").select("body").eq("contact_id", cl.id).eq("kind", "call");
+    const ours = new Set((mine || []).map((x: Row) => String(x.body || "").trim()).filter(Boolean));
+    const notes = ((nr as Row).notes || []).filter((n: Row) => !/\(JAG workspace\)\s*$/.test(String(n.subject || ""))).map((n: Row) => ({ at: n.created || n.updated, by: n.createdBy || n.userName || null, subject: n.subject || null, body: strip(n.body).slice(0, 4000) }));
+    const calls = ((cr as Row).calls || []).filter((c: Row) => !ours.has(strip(c.note))).map((c: Row) => ({ at: c.created || c.dateCreated, by: c.userName || c.createdBy || null, duration: c.duration ?? null,
       outcome: c.outcome || null, note: strip(c.note).slice(0, 2000), incoming: !!c.isIncoming, recording: c.recordingUrl || null }));
     return json({ ok: true, found: true, url: FUB_APP + person.id, stage: person.stage || null, assigned: person.assignedTo || null, source: person.source || null, notes, calls });
   }

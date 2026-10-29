@@ -7,8 +7,10 @@
               screenings, loan apps, tours, offers, and Follow Up Boss notes/calls while both run)
      right   Lola: the next best step and messages ready to send · tasks · collaborators · tours · offers · loan · lists
    Phones: the three columns become three tabs (History · Details · Lola & tasks).
-   Opened at agent.html#c/<user id>. Data: jag_contact_profile (supabase-contact-profile.sql); email + FUB history:
-   jag-client-hub ('email', 'fub_history'); Lola: jag-lola (no names, phones or emails are sent to it).
+   Opened at agent.html#c/<contact id> (an app account id from older links works too). Any contact: Follow Up Boss leads
+   and app accounts alike (jag_contacts). Data: jag_contact_profile (supabase-contacts-phase2.sql); stage / notes / calls /
+   texts / emails are copied to Follow Up Boss by fub-sync; a stage with a default owner hands the contact to them.
+   Email + FUB history: jag-client-hub ('email', 'fub_history'); Lola: jag-lola (no names, phones or emails are sent to it).
    ============================================================ */
 (function(){
   var C = window.JAG_CRM || {}, BASE = String(C.url || '').replace(/\/+$/, ''), KEY = C.anonKey;
@@ -42,7 +44,10 @@
   function agentName(code){ var a = ((P && P.team) || []).filter(function(x){ return x.code === code; })[0]; return a ? a.name : cap(code || ''); }
   function agentFirst(code){ var a = ((P && P.team) || []).filter(function(x){ return x.code === code; })[0]; return a ? (a.first_name || first(a.name)) : cap(code || ''); }
   function initials(n){ return String(n || '?').trim().split(/\s+/).map(function(w){ return w.charAt(0); }).slice(0, 2).join('').toUpperCase() || '?'; }
-  var STAGES = ['New', 'Contacted', 'Applied', 'Pre-approved', 'Shopping', 'Showing', 'Offer', 'Under contract', 'Closed', 'Nurture', 'Lost'];
+  // Follow Up Boss's own stages (the profile gets the live list in P.stages; this is only the fallback)
+  var STAGES = ['Lead', 'Attempted contact', 'Spoke with customer', 'Appointment set', 'Met with customer', 'Hot Prospect', 'Applied', 'Loan Approved', 'Showing homes',
+    'Submitting offers', 'Under contract', 'Pending', 'Closed', 'Past Client', 'Active Client', 'Listing agreement', 'Active listing', 'Nurture', '2027 Follow-up', 'Sphere',
+    'Credit Lead', 'Credit Repair', 'Investor', 'Out Of Town', 'Unresponsive'];
   var LOAN = { received: 'App received', review: 'In review', docs: 'Needs documents', credit: 'Working on credit', paused: 'Paused', done: 'Pre-approved' };
   var LANE = { ready: 'Ready', fha: 'FHA', itin: 'ITIN', prep: 'Prep', credit: 'Credit path', cash: 'Cash' };
 
@@ -181,20 +186,22 @@
     return rpc('jag_contact_profile', { p_user: u }).then(function(j){
       if(u !== uid) return;
       if(!j || !j.ok){ $('pf').innerHTML = '<div class="pf-top"><div class="in"><button type="button" class="pf-back" data-a="close">← Contacts</button></div></div><div class="pf-load">' + (j && j.reason === 'not_found' ? 'This contact no longer exists.' : 'Could not load this profile.') + '</div>'; return; }
+      // old links carry the app account id: from here on use the contact id
+      if(j.contact && j.contact.id && j.contact.id !== uid){ uid = u = j.contact.id; try{ history.replaceState(null, '', '#c/' + u); }catch(e){} }
       P = j; render();
       if(first && !fub[u]) loadFub(u);
     }).catch(function(){ if(u === uid) $('pf').innerHTML = '<div class="pf-top"><div class="in"><button type="button" class="pf-back" data-a="close">← Contacts</button></div></div><div class="pf-load">Could not load this profile. Check your connection.</div>'; });
   }
   function loadFub(u){
     fub[u] = { loading: true };
-    hub('fub_history', { user_id: u }).then(function(j){ fub[u] = j && j.ok ? j : { error: true }; if(u === uid && P) render(); }).catch(function(){ fub[u] = { error: true }; });
+    hub('fub_history', { contact_id: u }).then(function(j){ fub[u] = j && j.ok ? j : { error: true }; if(u === uid && P) render(); }).catch(function(){ fub[u] = { error: true }; });
   }
 
   /* ---------------- render ---------------- */
-  function cObj(){ var c = P.contact; return { user_id: c.user_id, name: c.name, email: c.email, phone: c.phone, lang: c.lang, journey: P.journey, priority: P.priority, created_at: c.created_at }; }
+  function cObj(){ var c = P.contact; return { id: c.id, user_id: c.user_id, stage: c.stage, name: c.name, email: c.email, phone: c.phone, lang: c.lang, journey: P.journey, priority: P.priority, created_at: c.created_at }; }
   function render(){
     var el = $('pf'); if(!el || !P) return;
-    var c = P.contact, ids = o.listIds ? o.listIds() : [], i = ids.indexOf(c.user_id);
+    var c = P.contact, ids = o.listIds ? o.listIds() : [], i = ids.indexOf(c.id);
     var keepScroll = el.scrollTop;
     el.innerHTML =
       '<div class="pf-top"><div class="in"><button type="button" class="pf-back" data-a="close">← Contacts</button>' +
@@ -211,16 +218,17 @@
   function left(){
     var c = P.contact, pr = P.priority || {}, sc = (P.score || {}).score || 0, ph = digits(c.phone);
     var last = P.last_contact ? 'Last contact ' + ago(P.last_contact) : 'No communication yet';
-    var badges = (sc >= 70 ? '<span class="pb hot">🔥 Hot · ' + sc + '</span>' : '<span class="pb">Score ' + sc + '</span>') +
+    var app = !!c.user_id;
+    var badges = (!app ? '<span class="pb">Not on the app yet</span>' : sc >= 70 ? '<span class="pb hot">🔥 Hot · ' + sc + '</span>' : '<span class="pb">Score ' + sc + '</span>') +
       (pr.proof ? '<span class="pb ok">Verified ' + (pr.proof === 'pof' ? 'funds' : 'pre-approval') + '</span>' : '') +
       (c.stage ? '<span class="pb">' + esc(c.stage) + '</span>' : '') + (c.lang === 'en' ? '<span class="pb">English</span>' : '<span class="pb">Español</span>');
     var team = P.team || [];
     var opt = function(v, sel, label){ return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(label) + '</option>'; };
-    return '<div class="pc"><div class="pf-who"><div class="pf-av" aria-hidden="true">' + esc(initials(c.name || c.email)) + '</div><div><h2>' + esc(c.name || c.email) + '</h2><small>' + esc(last) + ' · on the site ' + esc(ago(c.last_seen_at) || 'never') + '</small></div></div>' +
+    return '<div class="pc"><div class="pf-who"><div class="pf-av" aria-hidden="true">' + esc(initials(c.name || c.email)) + '</div><div><h2>' + esc(c.name || c.email) + '</h2><small>' + esc(last) + (app ? ' · on the site ' + esc(ago(c.last_seen_at) || 'never') : '') + '</small></div></div>' +
         '<div class="pf-badges">' + badges + '</div>' +
         '<div class="pf-qa">' + (ph ? '<a href="tel:+1' + ph + '" data-a="callnow">📞<span>Call</span></a><a href="#" data-a="tab" data-t="text">💬<span>Text</span></a>' : '<a class="x">📞<span>Call</span></a><a class="x">💬<span>Text</span></a>') +
           (c.email ? '<a href="#" data-a="tab" data-t="email">✉️<span>Email</span></a>' : '<a class="x">✉️<span>Email</span></a>') +
-          '<button type="button" data-a="msg">🗨️<span>App msg</span></button></div></div>' +
+          (app ? '<button type="button" data-a="msg">🗨️<span>App msg</span></button>' : '<button type="button" data-a="invite">📱<span>Invite to app</span></button>') + '</div></div>' +
       '<div class="pc"><h3>Journey</h3>' + (window.JagCRM ? JagCRM.journey(cObj()) : '') + '</div>' +
       '<div class="pc"><h3>Contact</h3><dl class="kv">' +
         '<dt>Cell</dt><dd>' + (ph ? '<a href="tel:+1' + ph + '">' + esc(fmtPhone(c.phone)) + '</a>' : '<span class="none">No phone</span>') + '</dd>' +
@@ -231,11 +239,15 @@
         '<dt>Texts OK</dt><dd>' + (c.sms_ok ? 'Yes' : 'Not yet') + '</dd>' +
       '</dl></div>' +
       '<div class="pc"><h3>Details</h3><dl class="kv">' +
-        '<dt>Stage</dt><dd><select data-f="stage"><option value="">—</option>' + STAGES.map(function(s){ return opt(s, c.stage, s); }).join('') + '</select></dd>' +
+        // a stage with a default owner hands the contact to that teammate (they get a notification and a text from Lola)
+        '<dt>Stage</dt><dd><select data-f="stage"><option value="">—</option>' + stageList(c.stage).map(function(s){ var ow = (P.stage_owners || {})[s];
+          return opt(s, c.stage, s + (ow && ow !== c.agent_code && s !== c.stage ? '  → ' + agentFirst(ow) : '')); }).join('') + '</select></dd>' +
         '<dt>Assigned to</dt><dd><select data-f="agent_code"><option value="">Nobody</option>' + team.map(function(a){ return opt(a.code, c.agent_code, a.name); }).join('') + '</select></dd>' +
         '<dt>Showing</dt><dd>' + (c.showing_agent_code ? esc(agentName(c.showing_agent_code)) : '<span class="none">Not set</span>') + '</dd>' +
-        '<dt>Source</dt><dd><input type="text" data-f="source" value="' + esc(c.source || (P.journey && P.journey.invite ? 'Invite from ' + agentFirst(P.journey.invite.by) : 'JAG Homes website')) + '"></dd>' +
-        '<dt>Joined</dt><dd>' + esc(when(c.created_at)) + '</dd>' +
+        '<dt>Source</dt><dd><input type="text" data-f="source" value="' + esc(c.source || (!c.user_id ? '' : P.journey && P.journey.invite ? 'Invite from ' + agentFirst(P.journey.invite.by) : 'JAG Homes website')) + '" placeholder="Where they came from"></dd>' +
+        (c.pond ? '<dt>Pond</dt><dd>' + esc(c.pond) + '</dd>' : '') +
+        '<dt>Added</dt><dd>' + esc(when(c.created_at)) + '</dd>' +
+        '<dt>App account</dt><dd>' + (c.joined_at ? esc(when(c.joined_at)) : '<span class="none">Not yet</span>') + '</dd>' +
         '<dt>Tags</dt><dd><div class="tags">' + (c.tags || []).map(function(t){ return '<span class="tag">' + esc(t) + '<button type="button" data-a="untag" data-v="' + esc(t) + '" aria-label="Remove tag ' + esc(t) + '">×</button></span>'; }).join('') +
           '<input type="text" id="pf-tag" placeholder="+ tag" aria-label="Add a tag"></div></dd>' +
       '</dl></div>' +
@@ -243,6 +255,7 @@
       '<div class="pc"><h3>Links</h3><dl class="kv">' + fubLine() +
         '<dt>Admin</dt><dd><a href="admin.html" target="_blank" rel="noopener">Open the admin client list ↗</a></dd></dl></div>';
   }
+  function stageList(cur){ var l = (P.stages && P.stages.length ? P.stages : STAGES).slice(); if(cur && l.indexOf(cur) < 0) l.unshift(cur); return l; }
   function fubLine(){
     var f = fub[uid] || {}, id = P.contact.fub_person_id;
     var url = f.url || (id ? 'https://jasonhoustonrealty.followupboss.com/2/people/view/' + id : '');
@@ -295,7 +308,8 @@
 
   function summary(){
     var c = P.contact, j = P.journey || {}, L = j.looking || {}, sc = P.score || {}, out = [], f = esc(first(c.name) || 'This client');
-    out.push(f + ' joined ' + esc(ago(c.created_at)) + (j.invite ? ' from ' + esc(agentFirst(j.invite.by)) + '\'s invite' : ' on the website') + '; last on the site ' + esc(ago(c.last_seen_at) || 'never') + '.');
+    if(c.user_id) out.push(f + ' joined the app ' + esc(ago(c.joined_at || c.created_at)) + (j.invite ? ' from ' + esc(agentFirst(j.invite.by)) + '\'s invite' : '') + '; last on the site ' + esc(ago(c.last_seen_at) || 'never') + '.');
+    else out.push(f + ' came in ' + esc(ago(c.created_at)) + (c.source ? ' from ' + esc(c.source) : '') + (c.stage ? ' · stage <b>' + esc(c.stage) + '</b>' : '') + '. <b>Not on the app yet</b>: send the invite so they can save homes and you can see what they like.');
     out.push(j.screen ? 'Screened ' + esc(when(j.screen.at).split(' · ')[0]) + (j.screen.by ? ' by ' + esc(j.screen.by) : '') + ': ' + esc(LANE[j.screen.lane] || j.screen.lane || '') + (j.screen.score != null ? ', ' + j.screen.score + '%' : '') + (j.screen.hot ? ', hot 🔥' : '') + '.' : '<b>Not screened yet.</b>');
     out.push(j.loan ? 'Loan: <b>' + esc(LOAN[j.loan.stage] || j.loan.stage) + '</b>' + (j.app ? ' (app sent ' + esc(when(j.app.at).split(' · ')[0]) + ')' : '') + '.' : j.app ? 'Loan app sent ' + esc(when(j.app.at).split(' · ')[0]) + '.' : 'No loan application yet.');
     if((L.views || 0) + (L.saved || 0)) out.push('Looking: ' + (L.views || 0) + ' homes viewed, ' + (L.saved || 0) + ' saved' + (sc.top_zip ? ', mostly in ' + esc(sc.top_zip) : '') + (sc.best_hour != null ? '; usually online ~' + ((sc.best_hour + 11) % 12 + 1) + (sc.best_hour < 12 ? ' AM' : ' PM') : '') + '.');
@@ -406,10 +420,11 @@
     var out = [];
     var T = function(esText, enText){ return es ? esText : enText; };
     if(n === 'scr' || n === 'app' && !j.screen){
-      out.push({ kind: 'text', label: T('Agendar la llamada', 'Book the call'), body: T('¡Hola ' + f + '! Soy ' + a + ' de Jason Aguirre Group. Vi que creaste tu cuenta 🙌 ¿Tienes 5 minutos ' + (hr ? 'hoy como a las ' + hr : 'hoy') + ' para platicar de lo que buscas y ver tus opciones de préstamo?', 'Hi ' + f + '! It\'s ' + a + ' with Jason Aguirre Group. I saw you made your account 🙌 Do you have 5 minutes ' + (hr ? 'today around ' + hr : 'today') + ' to talk about what you\'re looking for and your loan options?') });
-      out.push({ kind: 'email', label: T('Bienvenida + llamada', 'Welcome + call'), subject: T('Bienvenido(a), ' + f + ': su primer paso', 'Welcome, ' + f + ': your first step'),
-        body: T('Hola ' + f + ',\n\nGracias por crear su cuenta. Soy ' + a + ' y le voy a ayudar en todo el proceso.\n\nEl primer paso es una llamada de 5 minutos para entender qué busca y qué opciones de préstamo tiene (no afecta su crédito). ¿Qué día y hora le queda mejor?\n\nMientras tanto puede buscar casas y guardar sus favoritas aquí: ' + homes + '\n\nSaludos,\n' + a,
-          'Hi ' + f + ',\n\nThanks for creating your account. I\'m ' + a + ' and I\'ll help you through the whole process.\n\nThe first step is a 5-minute call so I understand what you\'re looking for and your loan options (no hit to your credit). What day and time work best?\n\nMeanwhile you can search homes and save your favorites here: ' + homes + '\n\nBest,\n' + a) });
+      var acct = !!c.user_id;
+      out.push({ kind: 'text', label: T('Agendar la llamada', 'Book the call'), body: T('¡Hola ' + f + '! Soy ' + a + ' de Jason Aguirre Group. ' + (acct ? 'Vi que creaste tu cuenta 🙌' : 'Vi que te interesa comprar casa 🏡') + ' ¿Tienes 5 minutos ' + (hr ? 'hoy como a las ' + hr : 'hoy') + ' para platicar de lo que buscas y ver tus opciones de préstamo?', 'Hi ' + f + '! It\'s ' + a + ' with Jason Aguirre Group. ' + (acct ? 'I saw you made your account 🙌' : 'I saw you\'re interested in buying a home 🏡') + ' Do you have 5 minutes ' + (hr ? 'today around ' + hr : 'today') + ' to talk about what you\'re looking for and your loan options?') });
+      out.push({ kind: 'email', label: T(acct ? 'Bienvenida + llamada' : 'Primer paso + llamada', acct ? 'Welcome + call' : 'First step + call'), subject: T((acct ? 'Bienvenido(a), ' : 'Hola, ') + f + ': su primer paso', (acct ? 'Welcome, ' : 'Hi ') + f + ': your first step'),
+        body: T('Hola ' + f + ',\n\n' + (acct ? 'Gracias por crear su cuenta. ' : 'Gracias por su interés en comprar casa. ') + 'Soy ' + a + ' y le voy a ayudar en todo el proceso.\n\nEl primer paso es una llamada de 5 minutos para entender qué busca y qué opciones de préstamo tiene (no afecta su crédito). ¿Qué día y hora le queda mejor?\n\nMientras tanto puede buscar casas y guardar sus favoritas aquí: ' + homes + '\n\nSaludos,\n' + a,
+          'Hi ' + f + ',\n\n' + (acct ? 'Thanks for creating your account. ' : 'Thanks for your interest in buying a home. ') + 'I\'m ' + a + ' and I\'ll help you through the whole process.\n\nThe first step is a 5-minute call so I understand what you\'re looking for and your loan options (no hit to your credit). What day and time work best?\n\nMeanwhile you can search homes and save your favorites here: ' + homes + '\n\nBest,\n' + a) });
     }
     if(n === 'app'){
       out.push({ kind: 'text', label: T('Aplicación de préstamo', 'Loan application'), body: T('¡Hola ' + f + '! El siguiente paso es la aplicación de préstamo: toma 5 minutos y no afecta tu crédito. Aquí está: ' + app + ' Cualquier duda me dices.', 'Hi ' + f + '! The next step is the loan application: it takes 5 minutes and doesn\'t affect your credit. Here it is: ' + app + ' Any questions, let me know.') });
@@ -466,7 +481,8 @@
     if(a === 'filt'){ filt = b.getAttribute('data-v'); render(); return; }
     if(a === 'tog'){ var id = b.getAttribute('data-v'); open[id] = !open[id]; render(); return; }
     if(a === 'more'){ open.__all = true; render(); return; }
-    if(a === 'msg'){ closeProfile(); if(o.openThread) o.openThread(uid); return; }
+    if(a === 'msg'){ if(!c.user_id) return invite(); var tu = c.user_id; closeProfile(); if(o.openThread) o.openThread(tu); return; }
+    if(a === 'invite') return invite();
     if(a === 'callnow'){ cmpDraft.call = cmpDraft.call || {}; tab = 'call'; setTimeout(render, 600); return; }   // the phone dials; the log-call form is waiting when they come back
     if(a === 'savenote') return saveNote();
     if(a === 'sendemail') return sendEmail();
@@ -480,7 +496,7 @@
     if(a === 'tadd'){ open.__tadd = !open.__tadd; render(); if(open.__tadd && $('t-title')) $('t-title').focus(); return; }
     if(a === 'tsave'){ var title = ($('t-title').value || '').trim(); if(!title){ $('t-title').focus(); return; }
       var dd = $('t-due').value, due = null; if(dd !== ''){ var dt = new Date(); dt.setDate(dt.getDate() + (+dd)); dt.setHours(17, 0, 0, 0); due = dt.toISOString(); }
-      b.disabled = true; rpc('jag_contact_task', { p: { user_id: uid, title: title, due_at: due, agent_code: $('t-who').value } }).then(function(){ open.__tadd = false; load(); toast('Task added'); }).catch(function(){ b.disabled = false; }); return; }
+      b.disabled = true; rpc('jag_contact_task', { p: { contact_id: uid, title: title, due_at: due, agent_code: $('t-who').value } }).then(function(){ open.__tadd = false; load(); toast('Task added'); }).catch(function(){ b.disabled = false; }); return; }
     if(a === 'tdel'){ rpc('jag_contact_task', { p: { id: +b.getAttribute('data-id'), op: 'delete' } }).then(function(){ load(); }); return; }
     if(a === 'cadd'){ open.__cadd = !open.__cadd; render(); return; }
     if(a === 'csave'){ var who = $('c-who').value; if(!who) return; b.disabled = true; rpc('jag_contact_collab', { p_user: uid, p_code: who, p_add: true }).then(function(){ open.__cadd = false; load(); toast(agentFirst(who) + ' added and notified'); }).catch(function(){ b.disabled = false; }); return; }
@@ -492,7 +508,7 @@
     var t = e.target;
     if(t.matches('[data-a="tdone"]')){ rpc('jag_contact_task', { p: { id: +t.getAttribute('data-id'), op: t.checked ? 'done' : 'reopen' } }).then(function(){ load(); }); return; }
     var f = t.getAttribute('data-f'); if(!f) return;
-    var p = {}; p[f] = t.value; save(p, f === 'agent_code' && t.value ? 'Assigned to ' + agentFirst(t.value) + (t.value !== (me || {}).code ? ' · they were notified' : '') : 'Saved');
+    var p = {}; p[f] = t.value; save(p, f === 'agent_code' && t.value ? 'Assigned to ' + agentFirst(t.value) + (t.value !== (me || {}).code ? ' · they were notified' : '') : f === 'stage' ? 'Stage saved · Follow Up Boss updated' : 'Saved');
   }
   document.addEventListener('keydown', function(e){
     if(!uid) return;
@@ -502,8 +518,8 @@
   });
   function save(p, msg){
     return rpc('jag_contact_update', { p_user: uid, p: p }).then(function(j){
-      if(!j || !j.ok){ toast('Could not save'); return; }
-      toast(msg || 'Saved'); load(); if(o.reload) o.reload();
+      if(!j || !j.ok){ toast(j && j.reason === 'not_yours' ? 'Only the assigned agent or a collaborator can change this contact' : 'Could not save'); return; }
+      toast(j.handoff ? 'Stage saved · handed to ' + agentFirst(j.handoff) + (j.handoff !== (me || {}).code ? ' (notified)' : '') : (msg || 'Saved')); load(); if(o.reload) o.reload();
     }).catch(function(){ toast('Could not save'); });
   }
   function done(m){ cmpDraft[tab] = {}; toast(m); load(); }
@@ -516,7 +532,7 @@
     var sub = ($('cm-sub').value || '').trim(), body = ($('cm-body').value || '').trim();
     if(!sub){ $('cm-sub').focus(); return cmsg('Add a subject.', 'bad'); } if(!body){ $('cm-body').focus(); return cmsg('Write the message.', 'bad'); }
     busyBtn(true); cmsg('Sending…');
-    hub('email', { user_id: uid, subject: sub, body: body, lola: !!(cmpDraft.email || {}).lola }).then(function(j){ busyBtn(false); if(j && j.ok) done('Email sent to ' + j.to); else cmsg((j && j.error) || 'Email failed.', 'bad'); }).catch(function(){ busyBtn(false); cmsg('Email failed. Check your connection.', 'bad'); });
+    hub('email', { contact_id: uid, subject: sub, body: body, lola: !!(cmpDraft.email || {}).lola }).then(function(j){ busyBtn(false); if(j && j.ok) done('Email sent to ' + j.to); else cmsg((j && j.error) || 'Email failed.', 'bad'); }).catch(function(){ busyBtn(false); cmsg('Email failed. Check your connection.', 'bad'); });
   }
   function sendText(via, body, fromDraft){
     body = String(body || '').trim(); var ph = digits(P.contact.phone);
@@ -567,17 +583,24 @@
     var box = document.querySelector('.lola .ans'); if(box) box.textContent = 'Lola is thinking…'; else render();
     lola(q + ' (About one client in the agent hub; context has their journey.)').then(function(ans){ lolaAns = ans; render(); }).catch(function(){ lolaAns = 'Lola is busy right now. Try again in a minute.'; render(); });
   }
-  function showings(){ var c = o.findRow(uid) || { user_id: uid, name: P.contact.name, showing_agent_code: P.contact.showing_agent_code }; if(o.handoff) o.handoff(c, function(){ load(); }); }
+  // showings and app messages need the client's app account
+  function showings(){
+    var pc = P.contact; if(!pc.user_id){ toast(first(pc.name) + ' needs the app for showings: send the invite first'); return invite(); }
+    var c = o.findRow(uid) || { user_id: pc.user_id, name: pc.name, showing_agent_code: pc.showing_agent_code }; c.user_id = pc.user_id;
+    if(o.handoff) o.handoff(c, function(){ load(); });
+  }
+  function invite(){ var c = P.contact; if(window.JagCRM) JagCRM.invite({ name: c.name || '', phone: c.phone || '', email: c.email || '', lang: c.lang || 'es' }); }
   function offer(){
     var hs = (P.favorites || []).map(function(f){ var s = f.snap || {}; return { mls: f.mls, addr: s.addr || '', price: f.last_price || s.price }; })
       .concat(((P.score || {}).homes || []).map(function(h){ return { mls: h.mls, addr: h.addr || '', price: h.price }; }));
     var seen = {}; hs = hs.filter(function(h){ if(!h.mls || seen[h.mls]) return false; seen[h.mls] = 1; return true; });
-    if(window.JagLolaOffer) JagLolaOffer.open({ client: { name: P.contact.name, email: P.contact.email, phone: P.contact.phone, user_id: uid }, homes: hs });
+    if(window.JagLolaOffer) JagLolaOffer.open({ client: { name: P.contact.name, email: P.contact.email, phone: P.contact.phone, user_id: P.contact.user_id || null }, homes: hs });
   }
 
   window.JagProfile = {
     // opts: { rpc, me, isLead, listIds(), findRow(uid), handoff(row, cb), openThread(uid), reload(), onClose() }
     init: function(opts){ o = opts; me = opts.me; },
-    open: openProfile, close: closeProfile, isOpen: function(){ return !!uid; }, current: function(){ return uid; }
+    open: openProfile, close: closeProfile, isOpen: function(){ return !!uid; }, current: function(){ return uid; },
+    contact: function(id){ return P && P.contact && (P.contact.id === id || P.contact.user_id === id) ? P.contact : null; }
   };
 })();

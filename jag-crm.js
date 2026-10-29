@@ -122,11 +122,12 @@
   var STEPS = [['acct', 'Account'], ['scr', 'Screened'], ['app', 'Applied'], ['ok', 'Approved'], ['homes', 'Homes'], ['show', 'Showings'], ['offer', 'Offer']];
   var LOAN = { received: 'App received', review: 'In review', docs: 'Needs documents', credit: 'Working on credit', paused: 'Paused', done: 'Pre-approved' };
   var LANE = { ready: 'Ready', fha: 'FHA', itin: 'ITIN', prep: 'Prep', credit: 'Credit path', cash: 'Cash' };
+  var FSTAGE = { 'Applied': 1, 'Loan Approved': 2, 'Showing homes': 3, 'Submitting offers': 4, 'Under contract': 5, 'Pending': 5, 'Closed': 5, 'Past Client': 5 };
   function state(c){
     var j = c.journey || {}, L = j.looking || {}, s = j.show || {}, sent = (j.sent || {}).n || 0, lists = (j.lists || {}).n || 0;
     var loan = j.loan && j.loan.stage, pr = (c.priority || {}).proof || j.proof;
     var st = {
-      acct: 'done',
+      acct: c.user_id || j.joined ? 'done' : '',
       scr: j.screen ? 'done' : '',
       app: j.app || loan ? 'done' : '',
       ok: pr || loan === 'done' ? 'done' : (loan && loan !== 'paused' ? 'part' : ''),
@@ -137,19 +138,28 @@
     // a pre-approval or an offer means the earlier money steps happened, even if we never logged them here
     if(st.ok === 'done' && !st.app) st.app = 'done';
     if(j.offer && st.ok !== 'done' && pr) st.ok = 'done';
+    // the Follow Up Boss stage counts too (most of the team still moves people there)
+    var fs = j.fub_stage || c.stage || '', at = FSTAGE[fs] || 0;
+    if(at >= 1) st.app = 'done';
+    if(at >= 2) st.ok = 'done';
+    if(at === 3 && !st.show) st.show = 'part';
+    if(at >= 4){ st.homes = st.homes || 'done'; st.show = 'done'; if(st.offer !== 'done') st.offer = 'part'; }
+    if(at >= 5){ st.homes = 'done'; st.offer = 'done'; }
     return st;
   }
   function nextStep(c){
     var j = c.journey || {}, st = state(c), ph = digits(c.phone), nm = first(c.name) || 'them';
     var who = encodeURIComponent(JSON.stringify({ name: c.name || '', phone: c.phone || '', email: c.email || '' }));
-    var forCl = encodeURIComponent(JSON.stringify({ uid: c.user_id, name: c.name || c.email || '', phone: c.phone || '', email: c.email || '', lang: c.lang || 'es' }));
-    if(!st.scr && o.canScreen) return { k: 'scr', t: '<b>Next: screen ' + esc(nm) + '.</b> 5-minute call to see what they qualify for.', a: '<a class="jr-go" href="screener.html#call=' + who + '">📞 Screen now</a>' };
-    if(!st.app) return { k: 'app', t: '<b>Next: loan application.</b> Send ' + esc(nm) + ' the JAG Home Loans app.', a: '<button type="button" class="jr-go" data-jx="app" data-u="' + esc(c.user_id) + '">📝 Send app link</button>' };
+    var key = c.id || c.user_id, app = !!c.user_id;
+    var inv = app ? '' : '<button type="button" class="jr-go" data-jx="inv" data-u="' + esc(key) + '">📱 Invite to app</button>';
+    var forCl = encodeURIComponent(JSON.stringify({ uid: c.user_id || null, name: c.name || c.email || '', phone: c.phone || '', email: c.email || '', lang: c.lang || 'es' }));
+    if(!st.scr && !st.app && o.canScreen) return { k: 'scr', t: '<b>Next: screen ' + esc(nm) + '.</b> 5-minute call to see what they qualify for.', a: '<a class="jr-go" href="screener.html#call=' + who + '">📞 Screen now</a>' };
+    if(!st.app) return { k: 'app', t: '<b>Next: loan application.</b> Send ' + esc(nm) + ' the JAG Home Loans app.', a: '<button type="button" class="jr-go" data-jx="app" data-u="' + esc(key) + '">📝 Send app link</button>' };
     if(st.ok !== 'done') return { k: 'ok', t: '<b>Loan: ' + esc(LOAN[j.loan && j.loan.stage] || 'Waiting on the lender') + '.</b> Keep them shopping while the pre-approval comes in.', a: ph ? '<a class="jr-go" href="sms:+1' + ph + '">💬 Check in</a>' : '' };
-    if(st.homes !== 'done') return { k: 'homes', t: '<b>Next: send homes.</b> Build ' + esc(nm) + '\'s list in Matrix.', a: '<a class="jr-go" href="matrix.html#client=' + forCl + '">🏠 Send homes</a>' };
+    if(st.homes !== 'done') return { k: 'homes', t: '<b>Next: send homes.</b> Build ' + esc(nm) + '\'s list in Matrix.', a: '<a class="jr-go" href="matrix.html#client=' + forCl + '">🏠 Send homes</a>' + inv };
     if(!st.show) return { k: 'show', t: '<b>Next: showings.</b> ' + ((j.looking || {}).saved ? esc(nm) + ' saved ' + j.looking.saved + ' home' + (j.looking.saved === 1 ? '' : 's') + '.' : 'Ask which homes they want to see.'),
-      a: o.isLead ? '<button type="button" class="jr-go" data-shw="' + esc(c.user_id) + '">👟 Set up showings</button>' : (ph ? '<a class="jr-go" href="sms:+1' + ph + '">💬 Ask for showings</a>' : '') };
-    if(!j.offer) return { k: 'offer', t: '<b>Next: write the offer.</b>' + (j.show && j.show.next ? ' Tour on ' + day(j.show.next) + '.' : ''), a: '<button type="button" class="jr-go" data-lofr="' + esc(c.user_id) + '">📝 Write offer</button>' };
+      a: !app ? inv : o.isLead ? '<button type="button" class="jr-go" data-shw="' + esc(key) + '">👟 Set up showings</button>' : (ph ? '<a class="jr-go" href="sms:+1' + ph + '">💬 Ask for showings</a>' : '') };
+    if(!j.offer) return { k: 'offer', t: '<b>Next: write the offer.</b>' + (j.show && j.show.next ? ' Tour on ' + day(j.show.next) + '.' : ''), a: '<button type="button" class="jr-go" data-lofr="' + esc(key) + '">📝 Write offer</button>' };
     if(st.offer !== 'done') return { k: 'offer', t: '<b>Offer ' + esc(j.offer.last || 'sent') + '.</b> ' + j.offer.n + ' offer' + (j.offer.n === 1 ? '' : 's') + ' so far.', a: '' };
     return { k: 'done', t: '<b>🎉 Under contract.</b> Keep them posted through closing.', a: '' };
   }
@@ -172,7 +182,7 @@
     var rows = [];
     function r(y, txt, when){ rows.push('<li class="' + (y ? 'y' : '') + '"><i></i><span>' + txt + (when ? ' <small>· ' + esc(when) + '</small>' : '') + '</span></li>'); }
     if(j.invite) r(true, 'Invited by ' + esc(cap(j.invite.by)), day(j.invite.at));
-    r(true, 'Created their account', day(j.joined || c.created_at));
+    r(!!(j.joined || c.user_id), j.joined || c.user_id ? 'Created their app account' : 'No app account yet', j.joined ? day(j.joined) : '');
     r(!!j.screen, j.screen ? 'Screened' + (j.screen.by ? ' by ' + esc(j.screen.by) : '') + (j.screen.lane ? ' · ' + esc(LANE[j.screen.lane] || j.screen.lane) : '') + (j.screen.score != null ? ' · ' + j.screen.score + '%' : '') + (j.screen.hot ? ' 🔥' : '') : 'Not screened yet', j.screen ? day(j.screen.at) : '');
     r(!!(j.app || j.loan), j.app ? 'Loan application sent' : j.loan ? 'Loan file started by the team' : 'No loan application yet', j.app ? day(j.app.at) : '');
     if(j.loan) r(j.loan.stage === 'done', 'Loan: ' + esc(LOAN[j.loan.stage] || j.loan.stage), j.loan.set_at ? day(j.loan.set_at) : '');
@@ -392,7 +402,8 @@
   /* ---------------- journey buttons that aren't plain links ---------------- */
   document.addEventListener('click', function(e){
     var b = e.target.closest('[data-jx]'); if(!b) return;
-    var c = o.findRow(b.getAttribute('data-u')); if(!c) return;
+    var id = b.getAttribute('data-u'), c = o.findRow(id) || (window.JagProfile && JagProfile.contact ? JagProfile.contact(id) : null); if(!c) return;
+    if(b.getAttribute('data-jx') === 'inv'){ openInvite({ name: c.name || '', phone: c.phone || '', email: c.email || '', lang: c.lang || 'es' }); return; }
     if(b.getAttribute('data-jx') === 'app'){
       var es = c.lang !== 'en', f = first(c.name), af = (me && me.first_name) || 'Jason';
       var url = SITE + '/apply.html';
