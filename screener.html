@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<script src="jag-team.js?v=1" data-sec="screener"></script>
+<script src="jag-team.js?v=2" data-sec="screener"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -1794,6 +1794,19 @@ body.fab #stage{margin-bottom:110px}
     paintLeads();
     if (!leadsData || Date.now() - leadsAt > 60000) loadLeads();
   }
+  // #s=<id> opens a saved screening; #call=<{name,phone,email}> starts a new call for that client (Agent Hub "Screen now").
+  function routeHash(h) {
+    const m = (h || '').match(/^#s=([0-9a-f-]{36})$/i);
+    if (m) { openRow(m[1]); return true; }
+    const c = (h || '').match(/^#call=(.+)$/);
+    if (c) {
+      let x = null; try { x = JSON.parse(decodeURIComponent(c[1])); } catch (e) { x = null; }
+      try { history.replaceState(null, '', location.pathname); } catch (e) {}
+      if (x && (x.name || x.phone || x.email)) { screenLead({ name: x.name || '—', phone: x.phone || '', email: x.email || '' }); return true; }
+    }
+    return false;
+  }
+  window.jagTeamRoute = (suf) => { const h = String(suf || '').replace(/^[^#]*/, ''); return routeHash(h); };
   function closeLeads() { leadsOpen = false; const ov = $('#lq'); if (ov) ov.classList.remove('on'); document.body.style.overflow = ''; }
   $('#go-leads').onclick = openLeads;
   setInterval(() => { if (!document.hidden && $('#go-leads') && !$('#go-leads').hidden) loadLeads(); }, 5 * 60000);   // keep the count fresh
@@ -1848,8 +1861,7 @@ body.fab #stage{margin-bottom:110px}
     $('#signout').hidden = false;
     $('#go-leads').hidden = false; loadLeads(true).catch(() => {});
     loadSent().catch(() => {});
-    const m = (location.hash || '').match(/^#s=([0-9a-f-]{36})$/i);
-    if (m) { openRow(m[1]); return; }
+    if (routeHash(location.hash)) return;
     renderStart();
   }
   s = { screener: defaultCaller() || 'Adriana Pereyra' };

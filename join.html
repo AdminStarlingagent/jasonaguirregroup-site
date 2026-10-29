@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tu invitación — JAG Real Estate</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Tu agente de Jason Aguirre Group te invitó a la app: busca casas, guarda tus favoritas, pide visitas y sigue tu préstamo.">
+<meta property="og:title" content="Te invitaron a la app de Jason Aguirre Group">
+<meta property="og:description" content="Crea tu cuenta gratis: busca casas, guarda tus favoritas y pide visitas con tu agente.">
+<meta property="og:image" content="https://jasonaguirregroup.company/email-logo.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Client invite: an agent made this person's profile and sent /join#<token>. They create their account here
+   (email code, no password), and the account is tied to that agent (jag_invite_accept). Spanish first. */
+:root{
+  --ink:#17161c; --paper:#fff; --card:#f5f5f7; --line:#dddde3;
+  --accent:#c8102e; --accent-d:#a30d26; --accent-t:#fdecef;
+  --muted:#5f5e68; --soft:#85848d; --ok:#1a5c31; --ok-bg:#e9f5ec;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--card);color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+header{background:var(--paper);border-bottom:1px solid var(--line)}
+.hwrap{max-width:1120px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+.lock{display:flex;flex-direction:column;line-height:1}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:25px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--accent);padding-top:3px}
+.brok{font-size:12px;font-weight:600;color:var(--muted);border-left:1px solid var(--line);padding-left:12px}
+.langs{display:flex;border:2px solid var(--ink);border-radius:99px;overflow:hidden;margin-left:auto}
+.langs button{border:0;background:transparent;font-size:13px;font-weight:800;padding:7px 13px;color:var(--ink)}
+.langs button.on{background:var(--ink);color:#fff}
+main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:clamp(20px,5vh,56px) 16px 40px}
+.card{background:var(--paper);border-radius:22px;width:100%;max-width:460px;padding:28px 26px 26px;box-shadow:0 10px 40px rgba(23,22,28,.07)}
+.agent{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:12px 14px;margin:0 0 20px}
+.agent img,.agent .ph{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;background:#e6e5ea}
+.agent .ph{display:grid;place-items:center;font-weight:800;font-size:20px;background:var(--ink);color:#fff}
+.agent b{display:block;font-size:15.5px}
+.agent small{display:block;color:var(--muted);font-size:13px}
+h1{font-size:clamp(24px,6vw,29px);font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:0 0 8px}
+.lead{color:var(--muted);margin:0 0 18px}
+.perks{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:10px}
+.perks li{display:flex;gap:11px;align-items:flex-start;font-weight:600;font-size:14.5px}
+.perks .ic{flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent-t);color:var(--accent-d);display:grid;place-items:center}
+.perks svg{width:17px;height:17px}
+label{display:block;font-weight:700;font-size:13px;margin:0 0 6px}
+input{width:100%;border:1.5px solid #c9c8d0;border-radius:12px;padding:13px 14px;font-size:16px;margin:0 0 14px;background:#fff}
+input:focus{outline:none;border-color:var(--ink)}
+input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:99px;background:var(--accent);color:#fff;font-weight:800;font-size:16px;padding:15px;text-decoration:none}
+.btn:hover{background:var(--accent-d)}.btn[disabled]{opacity:.6;cursor:default}
+.btn.dark{background:var(--ink)}.btn.dark:hover{background:#000}
+.btn.ghost{background:var(--card);color:var(--ink)}.btn.ghost:hover{background:#ebebef}
+.stack{display:grid;gap:10px}
+.row{display:flex;justify-content:space-between;gap:10px;margin-top:8px}
+.link{border:0;background:none;color:#2653d9;font-weight:700;padding:8px 0;font-size:13.5px}
+.err{color:var(--accent-d);font-weight:700;font-size:13px;margin:-6px 0 12px;display:none}.err.on{display:block}
+.err.okm{display:block;color:var(--ok)}
+.fine{font-size:12px;color:var(--soft);margin:14px 0 0}
+.done{width:60px;height:60px;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center;margin:0 0 14px}
+.done svg{width:30px;height:30px}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid #dcdbe2;border-top-color:var(--accent);animation:sp .8s linear infinite;margin:30px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.foot{text-align:center;font-size:12px;color:var(--soft);padding:0 16px 24px}
+@media (max-width:420px){.brok{display:none}.card{padding:24px 20px 22px}}
+</style>
+<script src="jag-track.js?v=1"></script>
+</head>
+<body>
+<header><div class="hwrap">
+  <a class="logo" href="index.html" aria-label="JAG Real Estate">
+    <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span>
+    <span class="brok">eXp Realty</span>
+  </a>
+  <span class="langs" role="group" aria-label="Idioma / Language"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
+</div></header>
+<main><div class="card" id="card" aria-live="polite"><div class="spin" role="status" aria-label="Cargando"></div></div></main>
+<p class="foot">Jason Aguirre Group · eXp Realty · Houston, TX</p>
+
+<script>
+(function(){
+  var BASE = 'https://nyaxywghbpphjhwcmspd.supabase.co';
+  var KEY = 'sb_publishable_a3LN_l283LN8J-bJTEO8hQ_U40t09eh';
+  var CLIENT = 'jag_client_session';
+  var $ = function(id){ return document.getElementById(id); };
+  var card = $('card');
+  var token = (location.hash || '').replace(/^#/, '').replace(/[^0-9a-f]/gi, '').slice(0, 40);
+  var inv = null, email = '', name = '', phone = '', cooldown = 0;
+
+  function ls(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmtPhone(p){ var d = String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); return d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : (p || ''); }
+  var lng = (function(){ try{ var v = localStorage.getItem('jag_lang'); if(v === 'en' || v === 'es') return v; }catch(e){} return ''; })();
+  function lang(){ return lng || (inv && inv.lang) || 'es'; }
+  function post(path, body, tok){
+    return fetch(BASE + path, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + (tok || KEY), 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+  }
+  function rpc(fn, args, tok){ return post('/rest/v1/rpc/' + fn, args, tok).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+
+  var IC = {
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h14V9"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 3 17v4h4l1-1v-2h2v-2h2l1.4-1.4"/><circle cx="15.5" cy="8.5" r="5.5"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+  };
+  var T = {
+    es: {
+      title: 'Tu invitación', hi: function(n){ return '¡Hola' + (n ? ' ' + n : '') + '!'; },
+      invited: function(a){ return a + ' te invitó a la app de Jason Aguirre Group.'; },
+      lead: 'Crea tu cuenta gratis en un minuto. Así trabajamos juntos para encontrar tu casa, paso a paso.',
+      perks: function(a){ return ['Busca casas en todo Houston y guarda tus favoritas.', 'Ve las casas que ' + a + ' te manda y dile cuáles te gustan.', 'Pide visitas y recibe avisos de casas nuevas o que bajan de precio.', 'Sigue tu préstamo y tus próximos pasos en un solo lugar.']; },
+      your: 'Tu agente', name: 'Tu nombre', email: 'Tu correo', phone: 'Tu celular', go: 'Crear mi cuenta gratis',
+      code_h: 'Revisa tu correo', code_p: 'Te mandamos un código de 6 dígitos a ', code: 'Código del correo', verify: 'Entrar', resend: 'Reenviar código', other: 'Usar otro correo',
+      spam: '¿No llega? Revisa la carpeta de spam o promociones.',
+      done_h: function(n){ return '¡Listo' + (n ? ', ' + n : '') + '!'; }, done_p: function(a){ return 'Tu cuenta está creada y ya estás conectado con ' + a + '. Te avisaremos aquí de cada paso.'; },
+      plan: 'Ver mi plan', homes: 'Buscar casas',
+      joined_h: 'Ya creaste tu cuenta', joined_p: 'Entra con tu correo para ver tus casas y tu plan.', signin: 'Entrar a mi cuenta',
+      bad_h: 'Este enlace ya no funciona', bad_p: 'Pídele a tu agente un enlace nuevo, o crea tu cuenta aquí.', create: 'Crear cuenta o entrar',
+      bademail: 'Escribe un correo válido.', badcode: 'Ese código no funcionó o ya venció. Intenta otra vez o pide uno nuevo.', wait: 'Espera un momento antes de pedir otro código.',
+      neterr: 'No pudimos conectar. Intenta de nuevo.', sent_again: 'Código enviado otra vez.',
+      terms: 'Al continuar aceptas nuestros <a href="privacy-terms.html" target="_blank" rel="noopener">términos y privacidad</a>. Tu agente podrá ver las casas que guardas para ayudarte mejor.'
+    },
+    en: {
+      title: 'Your invite', hi: function(n){ return 'Hi' + (n ? ' ' + n : '') + '!'; },
+      invited: function(a){ return a + ' invited you to the Jason Aguirre Group app.'; },
+      lead: 'Create your free account in a minute. It\'s how we work together to find your home, step by step.',
+      perks: function(a){ return ['Search homes all over Houston and save your favorites.', 'See the homes ' + a + ' sends you and say which ones you like.', 'Request showings and get alerts on new homes and price drops.', 'Track your loan and your next steps in one place.']; },
+      your: 'Your agent', name: 'Your name', email: 'Your email', phone: 'Your cell phone', go: 'Create my free account',
+      code_h: 'Check your email', code_p: 'We sent a 6-digit code to ', code: 'Code from the email', verify: 'Sign in', resend: 'Resend code', other: 'Use a different email',
+      spam: 'Not there? Check your spam or promotions folder.',
+      done_h: function(n){ return 'All set' + (n ? ', ' + n : '') + '!'; }, done_p: function(a){ return 'Your account is ready and you\'re connected with ' + a + '. We\'ll keep you posted here on every step.'; },
+      plan: 'See my plan', homes: 'Search homes',
+      joined_h: 'You already made your account', joined_p: 'Sign in with your email to see your homes and your plan.', signin: 'Sign in',
+      bad_h: 'This link doesn\'t work anymore', bad_p: 'Ask your agent for a new link, or create your account here.', create: 'Create an account or sign in',
+      bademail: 'Enter a valid email.', badcode: 'That code didn\'t work or expired. Try again or request a new one.', wait: 'Please wait a moment before requesting another code.',
+      neterr: 'We couldn\'t connect. Please try again.', sent_again: 'Code sent again.',
+      terms: 'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. Your agent can see the homes you save so they can help you better.'
+    }
+  };
+  function t(k){ var v = T[lang()][k]; return v; }
+  function err(m, ok){ var e = $('err'); if(!e) return; e.textContent = m; e.className = ok ? 'err okm' : 'err on'; }
+  function agentFirst(){ var a = (inv && inv.agent) || {}; return a.first_name || String(a.name || 'Jason').split(' ')[0]; }
+  function agentCard(){
+    var a = (inv && inv.agent) || {};
+    var av = a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="" onerror="this.outerHTML=\'<span class=ph>' + esc((a.name || 'J')[0]) + '</span>\'">' : '<span class="ph">' + esc((a.name || 'J')[0]) + '</span>';
+    return '<div class="agent">' + av + '<div><b>' + esc(a.name || 'Jason Aguirre') + '</b><small>' + t('your') + (a.phone ? ' · ' + esc(fmtPhone(a.phone)) : '') + ' · eXp Realty</small></div></div>';
+  }
+
+  /* ---------- screens ---------- */
+  function screenInvite(){
+    var first = (name || (inv && inv.name) || '').split(' ')[0], icons = [IC.home, IC.heart, IC.cal, IC.key];
+    card.innerHTML = agentCard() + '<h1>' + esc(t('hi')(first)) + '</h1><p class="lead"><b style="color:var(--ink)">' + esc(t('invited')(agentFirst())) + '</b> ' + t('lead') + '</p>' +
+      '<ul class="perks">' + t('perks')(agentFirst()).map(function(p, i){ return '<li><span class="ic">' + icons[i] + '</span><span>' + esc(p) + '</span></li>'; }).join('') + '</ul>' +
+      '<form id="f" novalidate>' +
+      '<label for="n">' + t('name') + '</label><input id="n" autocomplete="name" value="' + esc(name || (inv && inv.name) || '') + '">' +
+      '<label for="e">' + t('email') + '</label><input id="e" type="email" inputmode="email" autocomplete="email" value="' + esc(email || (inv && inv.email) || '') + '">' +
+      '<label for="p">' + t('phone') + '</label><input id="p" type="tel" inputmode="tel" autocomplete="tel" value="' + esc(fmtPhone(phone || (inv && inv.phone) || '')) + '">' +
+      '<div class="err" id="err"></div><button class="btn" type="submit" id="go">' + t('go') + '</button>' +
+      '<p class="fine">' + t('terms') + '</p></form>';
+    $('f').onsubmit = function(ev){
+      ev.preventDefault();
+      name = $('n').value.trim(); phone = $('p').value.trim();
+      var v = $('e').value.trim().toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ $('e').focus(); return err(t('bademail')); }
+      email = v; $('go').disabled = true;
+      sendCode().then(function(){ cooldown = Date.now() + 60000; screenCode(); })
+        .catch(function(x){ $('go').disabled = false; err(x && x.status === 429 ? t('wait') : t('neterr')); });
+    };
+  }
+  function sendCode(){
+    return post('/auth/v1/otp', { email: email, create_user: true, data: { lang: lang(), name: name || undefined } }).then(function(r){
+      if(r.ok) return true; var e = new Error('send'); e.status = r.status; throw e; });
+  }
+  function screenCode(){
+    card.innerHTML = agentCard() + '<h1>' + t('code_h') + '</h1><p class="lead">' + t('code_p') + '<b style="color:var(--ink)">' + esc(email) + '</b>.</p>' +
+      '<form id="f" novalidate><label for="c">' + t('code') + '</label><input id="c" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8">' +
+      '<div class="err" id="err"></div><button class="btn" type="submit" id="go">' + t('verify') + '</button>' +
+      '<div class="row"><button type="button" class="link" id="re">' + t('resend') + '</button><button type="button" class="link" id="ot">' + t('other') + '</button></div>' +
+      '<p class="fine">' + t('spam') + '</p></form>';
+    var c = $('c'); setTimeout(function(){ c.focus(); }, 60);
+    c.addEventListener('input', function(){ c.value = c.value.replace(/\D/g, '').slice(0, 8); if(c.value.length === 6) $('f').requestSubmit && $('f').requestSubmit(); });
+    $('f').onsubmit = function(ev){
+      ev.preventDefault();
+      if($('go').disabled) return;
+      var v = c.value.replace(/\D/g, ''); if(v.length < 6) return err(t('badcode'));
+      $('go').disabled = true;
+      post('/auth/v1/verify', { type: 'email', email: email, token: v })
+        .then(function(r){ return r.json().then(function(j){ if(!r.ok || !j.access_token) throw new Error('bad'); return j; }); })
+        .then(finish)
+        .catch(function(){ $('go').disabled = false; c.value = ''; err(t('badcode')); });
+    };
+    $('re').onclick = function(){
+      if(Date.now() < cooldown) return err(t('wait'));
+      sendCode().then(function(){ cooldown = Date.now() + 60000; err(t('sent_again'), true); }).catch(function(x){ err(x && x.status === 429 ? t('wait') : t('neterr')); });
+    };
+    $('ot').onclick = screenInvite;
+  }
+  // signed in: keep the session like /signin does, make the profile, tie it to the agent
+  function finish(j){
+    ls(CLIENT, { access_token: j.access_token, refresh_token: j.refresh_token,
+      expires_at: j.expires_at ? j.expires_at * 1000 : Date.now() + (j.expires_in || 3600) * 1000,
+      user: { id: (j.user || {}).id, email: (j.user || {}).email || email } });
+    try{ localStorage.setItem('jag_signin_tab', 'client'); }catch(e){}
+    return accept(j.access_token);
+  }
+  function accept(tok){
+    card.innerHTML = '<div class="spin" role="status"></div>';
+    return rpc('jag_client_init', { p_name: name || (inv && inv.name) || null, p_phone: phone || (inv && inv.phone) || null, p_lang: lang(), p_terms: true }, tok)
+      .then(function(){ return rpc('jag_invite_accept', { p_token: token }, tok); })
+      .then(function(){ if(inv && inv.agent && inv.agent.code) ls('jag_ref_linked', inv.agent.code); screenDone(); })
+      .catch(function(){ screenDone(); });
+  }
+  function screenDone(){
+    var code = (inv && inv.agent && inv.agent.code) || 'jason', first = (name || (inv && inv.name) || '').split(' ')[0];
+    card.innerHTML = agentCard() + '<div class="done">' + IC.check + '</div><h1>' + esc(t('done_h')(first)) + '</h1><p class="lead">' + esc(t('done_p')(agentFirst())) + '</p>' +
+      '<div class="stack"><a class="btn" href="account">' + t('plan') + '</a><a class="btn ghost" href="homes?a=' + encodeURIComponent(code) + '">' + t('homes') + '</a></div>';
+  }
+  function screenJoined(){
+    card.innerHTML = agentCard() + '<h1>' + t('joined_h') + '</h1><p class="lead">' + t('joined_p') + '</p><div class="stack"><a class="btn dark" href="signin?next=account">' + t('signin') + '</a></div>';
+  }
+  function screenBad(){
+    card.innerHTML = '<h1>' + t('bad_h') + '</h1><p class="lead">' + t('bad_p') + '</p><div class="stack"><a class="btn dark" href="signin?next=account">' + t('create') + '</a><a class="btn ghost" href="homes">' + T[lang()].homes + '</a></div>';
+  }
+
+  // already signed in on this phone as a client: just connect them
+  function signedInToken(){
+    var c = ls(CLIENT); if(!c || !c.refresh_token) return Promise.resolve(null);
+    if(c.access_token && c.expires_at && c.expires_at - Date.now() > 60000) return Promise.resolve(c.access_token);
+    return post('/auth/v1/token?grant_type=refresh_token', { refresh_token: c.refresh_token }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      if(!j || !j.access_token){ return null; }
+      c.access_token = j.access_token; c.refresh_token = j.refresh_token || c.refresh_token; c.expires_at = j.expires_at ? j.expires_at * 1000 : Date.now() + 3600e3; ls(CLIENT, c);
+      return j.access_token;
+    }).catch(function(){ return null; });
+  }
+
+  function paintLang(){
+    document.documentElement.lang = lang();
+    document.title = t('title') + ' — JAG Real Estate';
+    document.querySelectorAll('[data-lang]').forEach(function(b){ var on = b.dataset.lang === lang(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  }
+  var screen = screenInvite;
+  document.querySelectorAll('[data-lang]').forEach(function(b){ b.onclick = function(){
+    lng = b.dataset.lang; try{ localStorage.setItem('jag_lang', lng); }catch(e){}
+    paintLang();
+    if($('c')) screenCode(); else if($('n')){ name = $('n').value.trim(); email = $('e').value.trim(); phone = $('p').value.trim(); screenInvite(); } else if(inv) screen();
+  }; });
+  paintLang();
+
+  if(!token){ screen = screenBad; screenBad(); return; }
+  var isAgent = false; try{ isAgent = !!localStorage.getItem('jag_agent'); }catch(e){}
+  rpc('jag_invite_public', { p_token: token, p_count: !isAgent }).then(function(j){
+    if(!j || !j.ok){ screen = screenBad; paintLang(); screenBad(); return; }
+    inv = j; paintLang();
+    // the rest of the site shows this agent's name and number (jag-share.js reads jag_ref)
+    if(j.agent && j.agent.code) ls('jag_ref', { code: j.agent.code, at: Date.now() });
+    if(j.joined){ screen = screenJoined; screenJoined(); return; }
+    return signedInToken().then(function(tok){ if(tok && !isAgent){ screen = screenDone; accept(tok); } else { screen = screenInvite; screenInvite(); } });
+  }).catch(function(){
+    card.innerHTML = '<h1>' + t('bad_h') + '</h1><p class="lead">' + t('neterr') + '</p><button class="btn dark" type="button" onclick="location.reload()">↻</button>';
+  });
+})();
+</script>
+</body>
+</html>

@@ -8,9 +8,10 @@
 //        send_now: emails today's best matches right away with the agent's note ("homes picked for you").
 //        The hourly listing-alerts job sends new matches from then on; every email has a one-click unsubscribe.
 //  { action: 'email_homes', email, name, lang, mls[], note, label } → a JAG-branded email with those homes, reply-to the agent.
+//  { action: 'invite', invite_id } → the client's personal app invite (jag_invites, made by jag_invite_create) by email, from the agent.
 // Every send is logged in jag_homes_sent (the profile's "Homes sent" list).
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { SITE, esc, money, row, button, homeCard, h1, lead, shell, C, OFFICE, OFFICE_TEL, phoneFmt, tel } from "./jag-email.ts";
+import { SITE, esc, money, row, button, homeCard, h1, lead, shell, C, OFFICE, OFFICE_TEL, phoneFmt, tel, agentStrip, steps, quote } from "./jag-email.ts";
 
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SRK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -232,6 +233,40 @@ Deno.serve(async (req) => {
       }
     }
     return json({ ok: true, search_id: s.id, user_id: acct.user_id, account_created: created, emailed: sent, freq });
+  }
+
+  // ---------- app invite by email ----------
+  if (b.action === "invite") {
+    const { data: inv } = await db.from("jag_invites").select("*").eq("id", String(b.invite_id || "")).maybeSingle();
+    if (!inv || inv.status === "cancelled") return json({ ok: false, error: "Invite not found." }, 404);
+    const { data: staff } = await userDb.rpc("jag_invite_can_see_all");
+    if (inv.agent_code !== agent.code && staff !== true) return json({ ok: false, error: "Not your invite." }, 403);
+    const to = cleanEmail(inv.email);
+    if (!to) return json({ ok: false, error: "Add the client's email first." }, 400);
+    if (!RESEND) return json({ ok: false, error: "Email is not set up (RESEND_API_KEY)." }, 503);
+    const { data: who } = await db.from("jag_agents").select("code,name,first_name,phone,phone_override,photo_url,email").eq("code", inv.agent_code).maybeSingle();
+    const ag: Row = who ? { ...who, phone: who.phone_override || who.phone } : agent;
+    const es = inv.lang !== "en", first = String(inv.name || "").trim().split(/\s+/)[0];
+    const aFirst = ag.first_name || String(ag.name || "Jason").split(" ")[0];
+    const url = `${SITE}/join#${inv.token}`;
+    const subject = es ? `${aFirst} te invitó a la app de Jason Aguirre Group` : `${aFirst} invited you to the Jason Aguirre Group app`;
+    const items = es
+      ? ["Busca casas en todo Houston y guarda tus favoritas.", `Ve las casas que ${esc(aFirst)} te manda y dile cuáles te gustan.`, "Pide visitas y recibe avisos cuando salgan casas nuevas o bajen de precio.", "Sigue tu préstamo y tus pasos para comprar, todo en un lugar."]
+      : ["Search homes all over Houston and save your favorites.", `See the homes ${esc(aFirst)} sends you and tell them which ones you like.`, "Request showings and get alerts when new homes hit the market or drop in price.", "Track your loan and your next steps to buy, all in one place."];
+    const html = shell({ es, title: subject, preheader: es ? "Crea tu cuenta gratis en 1 minuto." : "Create your free account in 1 minute.",
+      body: row(agentStrip(ag.name || "Jason Aguirre", (es ? "Tu agente · " : "Your agent · ") + (phoneFmt(ag.phone) || OFFICE) + " · eXp Realty", ag.photo_url)
+        + h1(es ? `¡Hola${first ? " " + first : ""}! Te invito a nuestra app` : `Hi${first ? " " + first : ""}! You're invited to our app`)
+        + lead(es ? "Es gratis y te ayuda a encontrar tu casa conmigo, paso a paso." : "It's free and helps us find your home together, step by step.")
+        + (inv.note ? quote(String(inv.note).slice(0, 600), ag.name || "") : "")
+        + steps(items)
+        + `<div style="text-align:center;margin:8px 0 22px">${button(url, es ? "Crear mi cuenta" : "Create my account", { full: true })}</div>`
+        + lead(es ? `¿Preguntas? Llámame o mándame texto al ${phoneFmt(ag.phone) || OFFICE}.` : `Questions? Call or text me at ${phoneFmt(ag.phone) || OFFICE}.`)),
+      footerNote: es ? `Recibiste este correo porque ${aFirst} de Jason Aguirre Group te invitó. Si no lo esperabas, ignóralo.` : `You got this email because ${aFirst} at Jason Aguirre Group invited you. If you weren't expecting it, just ignore it.` });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM.replace(/^[^<]*</, `${ag.name || "Jason Aguirre"} · JAG <`), to: [to], reply_to: ag.email || undefined, subject, html }) });
+    if (!r.ok) return json({ ok: false, error: "Email failed: " + (await r.text()).slice(0, 160) }, 502);
+    await db.from("jag_invites").update({ sent_count: (inv.sent_count || 0) + 1, sent_at: new Date().toISOString(), channel: "email", updated_at: new Date().toISOString() }).eq("id", inv.id);
+    return json({ ok: true, to });
   }
   return json({ ok: false, error: "unknown action" }, 400);
 });

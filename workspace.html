@@ -189,7 +189,10 @@ a{color:inherit}
       toast(S(id).long + ' isn\'t turned on for you. Ask Jason to add the ' + (id === 'screener' ? 'Screener' : '') + ' job in Admin → Team.');
       if(cur) return; id = 'hub'; suf = '';
     }
-    var f = frameFor(id, suf, !!suf && !!frames[id]);
+    // a link into a tab that's already open: let the page handle it in place (keeps a call or a search going)
+    var inPlace = false, ex = frames[id];
+    if(suf && ex && ex.dataset.loaded){ try{ inPlace = !!(ex.contentWindow.jagTeamRoute && ex.contentWindow.jagTeamRoute(suf)); }catch(e){} }
+    var f = frameFor(id, suf, !!suf && !!ex && !inPlace);
     Object.keys(frames).forEach(function(k){
       var on = k === id; frames[k].classList.toggle('on', on);
       if(on) frames[k].removeAttribute('inert'); else frames[k].setAttribute('inert', '');

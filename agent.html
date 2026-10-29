@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script src="jag-team.js?v=1" data-sec="hub"></script>
+<script src="jag-team.js?v=2" data-sec="hub"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
 <script src="jag-theme.js?v=2"></script>
@@ -298,7 +298,7 @@ body{background:var(--paper)}
     <button class="out" type="button" id="out" style="margin-left:0">Sign out</button>
   </div></header>
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
-    <button type="button" data-tab="clients" class="on">Clients</button>
+    <button type="button" data-tab="clients" class="on">Contacts</button>
     <button type="button" data-tab="messages">Messages <span class="tc" id="tc-msgs"></span></button>
     <button type="button" data-tab="showings" id="tab-showings" hidden>Showings <span class="tc" id="tc-shows"></span></button>
     <button type="button" data-tab="offers">Offers <span class="tc" id="tc-offers"></span></button>
@@ -396,6 +396,7 @@ body{background:var(--paper)}
 <script src="jag-offer-edit.js?v=1"></script>
 <script src="jag-lola-offer.js?v=2"></script>
 <script src="jag-showings.js?v=1"></script>
+<script src="jag-crm.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -604,6 +605,8 @@ body{background:var(--paper)}
       $('pwbar').hidden = off || hasPw || s.how === 'pw';
       var nx = ''; try{ nx = new URLSearchParams(location.search).get('next') || ''; }catch(x){}
       if(/^[a-z0-9-]+\.html([?#][\w=&#.-]*)?$/i.test(nx)){ location.replace(nx); return; }
+      if(window.JagCRM) JagCRM.init({ rpc: rpc, me: me, isLead: me.isLead, canScreen: me.isLead || roles.indexOf('screener') >= 0, seeAll: me.isLead,
+        reload: load, findRow: function(u){ return rows.filter(function(x){ return x.user_id === u; })[0] || null; }, focusClient: focusClient });
       load(); routeHash();
     }).catch(function(e){
       if(String(e && e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); }
@@ -618,6 +621,9 @@ body{background:var(--paper)}
     }).catch(function(e){ if(String(e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); } else $('list').innerHTML = '<div class="empty">Could not load clients. Pull down to refresh.</div>'; });
   }
 
+  // a notification was tapped: open Contacts and show that client
+  var pendingFocus = null;
+  function focusClient(uid){ pendingFocus = uid || null; filter = 'all'; q = ''; if($('q')) $('q').value = ''; document.querySelectorAll('#chips .chip').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-f') === 'all'); }); showTab('clients'); }
   function filtered(){
     var s = q.toLowerCase(), wk = Date.now() - 7 * 864e5;
     return rows.filter(function(c){
@@ -635,8 +641,9 @@ body{background:var(--paper)}
     $('stats').innerHTML = '<div class="stat"><b class="num">' + ver + '</b><span>Verified buyers</span></div><div class="stat"><b class="num">' + hot + '</b><span>Hot right now</span></div>' +
       '<div class="stat"><b class="num">' + wk + '</b><span>Active this week</span></div><div class="stat"><b class="num">' + mine + '</b><span>From your links</span></div>';
     var list = filtered();
-    if(!list.length){ $('list').innerHTML = '<div class="empty">' + (rows.length ? 'No clients match.' : 'No website accounts yet. Share your links so clients sign up.') + '</div>'; return; }
+    if(!list.length){ $('list').innerHTML = '<div class="empty">' + (rows.length ? 'No contacts match.' : 'No contacts yet. Tap ＋ Invite a client to add your first one.') + '</div>'; return; }
     $('list').innerHTML = list.map(card).join('');
+    if(pendingFocus){ var fe = document.querySelector('.cl[data-u="' + pendingFocus + '"]'); pendingFocus = null; if(fe){ fe.scrollIntoView({ block: 'center', behavior: 'smooth' }); fe.classList.add('flash'); } }
   }
   var TAGL = { price: 'Price-focused', area: 'Area-focused', ready: 'Ready to act' };
   function card(c){
@@ -657,6 +664,7 @@ body{background:var(--paper)}
       '<div class="facts"><span class="pill g num">' + (c.days_7 || 0) + ' day' + (c.days_7 === 1 ? '' : 's') + ' this week</span><span class="pill num">' + (c.days_30 || 0) + ' day' + (c.days_30 === 1 ? '' : 's') + ' this month</span>' +
       '<span class="pill num">' + (c.views_30 || 0) + ' home' + (c.views_30 === 1 ? '' : 's') + ' viewed</span><span class="pill num">' + (c.favorites || 0) + ' saved</span>' +
       (c.best_hour != null ? '<span class="pill">Online ~' + hourLbl(c.best_hour) + '</span>' : '') + offerPill + tags + owner + '</div>' +
+      (window.JagCRM ? JagCRM.journey(c) : '') +
       (top ? '<a class="home" href="homes#' + encodeURIComponent(top.mls) + '" target="_blank" rel="noopener">Keeps looking at: <b>MLS ' + esc(top.mls) + '</b>' + (top.city ? ' · ' + esc(top.city) : '') + (top.price ? ' · ' + money(top.price) : '') + ' · viewed ' + top.views + 'x</a>' : '') +
       '<div class="acts">' + (ph ? '<a class="call" href="tel:+1' + ph + '">Call</a><a href="sms:+1' + ph + '">Text</a>' : '') +
       (c.email ? '<a href="mailto:' + esc(c.email) + '">Email</a>' : '') +
@@ -664,7 +672,7 @@ body{background:var(--paper)}
       '<button type="button" data-msg="' + esc(c.user_id) + '">Message</button>' +
       (window.JagLolaOffer ? '<button type="button" data-lofr="' + esc(c.user_id) + '">📝 Offer</button>' : '') +
       (me.isLead && window.JagShowings ? '<button type="button" data-shw="' + esc(c.user_id) + '">👟 ' + (c.showing_agent_code ? 'Showing agent' : 'Send for showings') + '</button>' : '') +
-      '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide details' : 'Offers & activity') + '</button></div>' +
+      '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide profile' : 'Profile & activity') + '</button></div>' +
       (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
       '</article>';
     return h;
@@ -673,7 +681,8 @@ body{background:var(--paper)}
   function detail(uid){
     rpc('jag_agent_client_detail', { p_user: uid }).then(function(j){
       if(!j || !j.ok){ open[uid] = 'Could not load.'; paint(); return; }
-      var h = '';
+      var c1 = rows.filter(function(x){ return x.user_id === uid; })[0];
+      var h = c1 && window.JagCRM ? JagCRM.timeline(c1) : '';
       if((j.proof || []).length) h += '<h4>Pre-approval / proof of funds</h4><ul>' + j.proof.map(function(p){
         return '<li><span>' + (p.kind === 'pof' ? 'Proof of funds' : 'Pre-approval') + ' · ' + esc(p.file_name || '') + ' · <b>' + esc(p.status) + '</b></span><span class="pa">' +
           '<button type="button" class="lk" data-view="' + esc(p.path) + '">View</button>' +

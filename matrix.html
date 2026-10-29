@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script src="jag-team.js?v=1" data-sec="matrix"></script>
+<script src="jag-team.js?v=2" data-sec="matrix"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>JAG Matrix — Team home search</title>
@@ -1072,12 +1072,12 @@ function topGo(u){ try{ window.top.location.href = u; }catch(e){ location.href =
   };
 
   /* ---------------- client lists (carts) ---------------- */
-  var carts = [], cartHomes = {}, seeAll = false, openCartId = null;
+  var carts = [], cartHomes = {}, seeAll = false, openCartId = null, cartsLoaded = false;
   function curCart(){ var id = $('cartsel').value; return carts.find(function(x){ return x.id === id; }) || null; }
   function loadCarts(){
     return rpc('jag_cart_list', { p_all: seeAll }).then(function(j){
       if(!j || !j.ok) return;
-      carts = j.carts || []; $('allwrap').hidden = !j.see_all;
+      carts = j.carts || []; cartsLoaded = true; $('allwrap').hidden = !j.see_all;
       $('b-carts').textContent = carts.length;
       var keep = $('cartsel').value || ls('jag_mx_cart');
       $('cartsel').innerHTML = '<option value="">— pick a client —</option>' + carts.map(function(x){ return '<option value="' + esc(x.id) + '">' + esc(x.name) + ' (' + x.homes + ')' + (seeAll && x.agent_code !== j.me ? ' · ' + esc(x.agent_code || '') : '') + '</option>'; }).join('');
@@ -1171,8 +1171,8 @@ function topGo(u){ try{ window.top.location.href = u; }catch(e){ location.href =
   $('layer').addEventListener('mousedown', function(e){ if(e.target.hasAttribute && e.target.hasAttribute('data-closebg')) closeLayer(); });
 
   // new / edit client list
-  function cartModal(x, after){
-    var isNew = !x; x = x || { lang: 'es' };
+  function cartModal(x, after, pre){
+    var isNew = !x; x = x || Object.assign({ lang: 'es' }, pre || {});
     modal('<h2>' + (isNew ? 'New client list' : 'Edit ' + esc(x.name)) + '</h2>' +
       (isNew ? '<div class="fld"><label for="cm-find">Find the client</label><input id="cm-find" placeholder="Name, phone or email (website accounts + JAG Home Loan Apps)"></div><div id="cm-sugg"></div>' : '') +
       '<div class="fld"><label for="cm-name">Client name</label><input id="cm-name" value="' + esc(x.name || '') + '" placeholder="Hilda Martinez"></div>' +
@@ -1263,10 +1263,31 @@ function topGo(u){ try{ window.top.location.href = u; }catch(e){ location.href =
   }
 
   /* ---------------- start ---------------- */
-  function routeHash(){
-    var m = location.hash.match(/cart=([0-9a-f-]{36})/); if(m){ openCart(m[1]); return; }
-    var l = location.hash.match(/mls=([0-9A-Za-z-]{3,20})/); if(l) openListing(l[1]);
+  function routeHash(){ route(location.hash); }
+  // #cart=<id> opens a client list · #mls=<n> opens a listing · #client=<{uid,name,phone,email,lang}> (Agent Hub "Send homes"):
+  // picks that client's list (or starts a new one for them) so the agent can check homes and Add.
+  function route(h){
+    h = String(h || '');
+    var m = h.match(/cart=([0-9a-f-]{36})/); if(m){ openCart(m[1]); return true; }
+    var l = h.match(/mls=([0-9A-Za-z-]{3,20})/); if(l){ openListing(l[1]); return true; }
+    var c = h.match(/client=([^&]+)/);
+    if(c){
+      var x = null; try{ x = JSON.parse(decodeURIComponent(c[1])); }catch(e){ x = null; }
+      try{ history.replaceState(null, '', location.pathname); }catch(e){}
+      if(x) forClient(x);
+      return !!x;
+    }
+    return false;
   }
+  function forClient(x){
+    var d = function(p){ var v = String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); return v.length === 10 ? v : ''; };
+    var em = String(x.email || '').toLowerCase(), ph = d(x.phone);
+    var hit = carts.filter(function(k){ return (x.uid && k.user_id === x.uid) || (em && String(k.email || '').toLowerCase() === em) || (ph && d(k.phone) === ph); })[0];
+    showTab('criteria');
+    if(hit){ $('cartsel').value = hit.id; ls('jag_mx_cart', hit.id); loadCartHomes(hit.id); toast('Adding to ' + hit.name + '\'s list: check homes, then Add'); return; }
+    cartModal(null, null, { name: x.name || '', phone: x.phone || '', email: x.email || '', lang: x.lang === 'en' ? 'en' : 'es', user_id: x.uid || '' });
+  }
+  window.jagTeamRoute = function(suf){ var h = String(suf || '').replace(/^[^#]*/, ''); return cartsLoaded ? route(h) : false; };
   window.addEventListener('hashchange', routeHash);
   function start(){
     var a = window.JagShare && JagShare.me ? JagShare.me() : null;

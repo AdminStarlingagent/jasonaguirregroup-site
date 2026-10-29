@@ -5,7 +5,7 @@
      Add ?solo=1 to open a page by itself (debugging).
    - Inside workspace.html: hides the page's own cross-links and sign-out (the workspace bar has them), sends links to the
      other pages to their tab instead of loading them in this frame, opens sms:/tel:/mailto: from the top window,
-     and reports the tab badge (unread messages, leads to call). */
+     and reports the tab badge (unread messages + notifications, leads to call). */
 (function(){
   var me = document.currentScript, sec = me && me.dataset.sec;
   if(!sec) return;
@@ -62,11 +62,11 @@
     host.go(to, u.search + u.hash);
   }, true);
 
-  var BADGE = { hub: '#tc-msgs', screener: '#leads-n' }, last = -1;
+  var BADGE = { hub: '#tc-msgs,#nf-n', screener: '#leads-n' }, last = -1;   // hub: unread messages + new notifications
   function report(){
     var sel = BADGE[sec]; if(!sel) return;
-    var el = document.querySelector(sel), n = 0;
-    if(el && !el.hidden){ n = parseInt(String(el.textContent).replace(/\D/g, ''), 10) || 0; }
+    var n = 0;
+    document.querySelectorAll(sel).forEach(function(el){ if(!el.hidden) n += parseInt(String(el.textContent).replace(/\D/g, ''), 10) || 0; });
     if(n !== last){ last = n; try{ host.badge(sec, n); }catch(e){} }
   }
   if(BADGE[sec]){ window.addEventListener('load', report); setInterval(report, 4000); }
