@@ -227,6 +227,9 @@ section[data-pane]{padding-bottom:50px}
 .hero .go2:hover{background:var(--buy-d)}
 .hero .go2.ghost{background:#fff;color:var(--ink)}
 .track{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative}
+.tnote{background:#fff7e0;border-radius:12px;padding:10px 12px;margin-top:12px;font-size:14px;color:var(--ink);text-align:left;white-space:pre-wrap}.tnote b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7a5600;margin-bottom:2px}
+.inner ul.docs{margin:8px 0 0;padding-left:20px;text-align:left;font-size:14.5px;font-weight:700;color:var(--ink)}.inner ul.docs li{margin:3px 0}
+.hero p.again{margin:6px 0 0;font-size:13px;text-align:center;opacity:.85}
 .track div{text-align:center;font-size:12.5px;font-weight:700;color:var(--muted);position:relative;padding-top:30px}
 .track div::before{content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;border:2.5px solid #d6d5dc;background:#fff;z-index:1}
 .track div::after{content:'';position:absolute;top:13px;left:calc(50% + 12px);right:calc(-50% + 12px);height:2.5px;background:#d6d5dc}
@@ -544,6 +547,11 @@ var T={
   tr:['Aplicación enviada','En revisión','Pre-aprobado'],
   b_n0:'Todavía no ha enviado su aplicación. Toma unos 5 minutos y no afecta su crédito para empezar.',b_n1:'Recibimos su aplicación el {d}. Su especialista la revisa y le llama pronto.',
   b_n2:'Su especialista está revisando su aplicación.',b_nc:'Estamos trabajando con usted para preparar su crédito.',b_n3:'¡Está pre-aprobado! Ya puede buscar casas en su presupuesto.',b_np:'Su aplicación está en pausa. Escríbale a su agente cuando quiera retomarla.',
+  b_nd:'Su especialista necesita unos documentos para seguir:',b_n3a:'¡Está pre-aprobado hasta {a}! Ya puede buscar casas en su presupuesto.',b_pl:'Con {l}',b_px:'Su carta vence el {d}',b_pt:{fha:'FHA',conventional:'Convencional',va:'VA',usda:'USDA',itin:'ITIN',cash:'Efectivo',other:''},
+  b_msg:'Mensaje de su equipo',p_h:'Todavía no, ¡pero hay un camino!',p_pc:'Muchos de nuestros clientes empezaron justo aquí. Vamos a preparar su crédito juntos y en unos meses puede estar listo para comprar.',
+  p_pp:'Por ahora pausamos su pre-aprobación, pero eso no cierra la puerta. Cuando su situación cambie, vuelva a aplicar: le damos números nuevos.',
+  p_tr:['Preparar su crédito y ahorro','Volver a aplicar','Pre-aprobado'],p_cb:'Le sugerimos volver a aplicar a partir del {d}. Le ayudamos a llegar.',p_any:'Puede volver a aplicar cuando quiera. Le ayudamos a llegar.',
+  p_go:'Volver a aplicar',p_gos:'Toma 5 minutos, empieza desde el principio y no afecta su crédito.',
   b_go0:'Empezar mi aplicación',b_go1:'Escribirle a mi agente',b_go3:'Buscar casas',
   t_calc:['Calcule su pago','Pago mensual con impuestos, seguro y PMI'],t_dpa:['Ayuda para el enganche','Programas en Texas que pueden ayudarle'],t_credit:['¿Su crédito necesita ayuda?','Pregúntele a su agente cómo prepararse'],
   h_h:'Su agente le acompaña',h_p:'Su agente le ayuda a encontrar casas, pedir visitas y comparar opciones. Llámele o escríbale cuando quiera.',
@@ -597,6 +605,11 @@ var T={
   tr:['Application sent','In review','Pre-approved'],
   b_n0:'You haven’t sent your application yet. It takes about 5 minutes and starting won’t affect your credit.',b_n1:'We received your application on {d}. Your loan specialist is reviewing it and will call you soon.',
   b_n2:'Your loan specialist is reviewing your application.',b_nc:'We’re working with you to get your credit ready.',b_n3:'You’re pre-approved! You can shop for homes in your budget.',b_np:'Your application is on hold. Message your agent when you want to pick it back up.',
+  b_nd:'Your loan specialist needs a few documents to keep going:',b_n3a:'You’re pre-approved up to {a}! You can shop for homes in your budget.',b_pl:'With {l}',b_px:'Your letter expires {d}',b_pt:{fha:'FHA',conventional:'Conventional',va:'VA',usda:'USDA',itin:'ITIN',cash:'Cash',other:''},
+  b_msg:'A note from your team',p_h:'Not yet — but there’s a path!',p_pc:'Many of our clients started right here. Let’s get your credit ready together, and in a few months you can be ready to buy.',
+  p_pp:'Your pre-approval is on hold for now, but the door isn’t closed. When things change, apply again and we’ll run fresh numbers.',
+  p_tr:['Get your credit and savings ready','Apply again','Pre-approved'],p_cb:'We suggest applying again from {d}. We’ll help you get there.',p_any:'You can apply again whenever you’re ready. We’ll help you get there.',
+  p_go:'Apply again',p_gos:'Takes 5 minutes, starts fresh and doesn’t affect your credit.',
   b_go0:'Start my application',b_go1:'Message my agent',b_go3:'Search homes',
   t_calc:['Estimate your payment','Monthly payment with taxes, insurance and PMI'],t_dpa:['Down payment help','Texas programs that may help you'],t_credit:['Does your credit need help?','Ask your agent how to get ready'],
   h_h:'Your agent is with you',h_p:'Your agent helps you find homes, request showings and compare options. Call or message them any time.',
@@ -961,14 +974,30 @@ function paintPlan(){
     return '<button type="button" role="tab" class="st '+cls+(k===planStep?' on':'')+'" data-step="'+k+'" aria-selected="'+(k===planStep)+'"><span class="ic">'+(st.done[k]?'✓':STEPI[k])+'</span><b>'+esc(x[0])+' <em>'+t('pill')[st.done[k]?'done':k===st.now?'now':'next']+'</em></b><span>'+esc(x[1])+'</span></button>'; }).join('');
   document.querySelectorAll('#sb > div[data-step]').forEach(function(d){ d.classList.toggle('on',d.getAttribute('data-step')===planStep); });
   // 1) budget
-  var lv=appLevel(), a=D.plan&&D.plan.app, note, go;
+  var lv=appLevel(), a=D.plan&&D.plan.app, ad=(a&&a.detail)||{}, note, go, extra='';
+  var LOC=lang==='es'?'es-MX':'en-US', dfmt=function(s){ var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||'')); return m?new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString(LOC,{month:'long',day:'numeric'}):''; };
+  var teamNote=ad.note?'<div class="tnote"><b>'+esc(t('b_msg'))+'</b>'+esc(ad.note)+'</div>':'';
+  if(a&&lv<3&&(a.stage==='credit'||a.stage==='paused')){
+    // didn't qualify yet / working on credit: a plan forward, never a "denied"
+    var pt=t('p_tr');
+    $('sb').querySelector('[data-step="budget"]').innerHTML='<div class="hero"><h3>'+esc(t('p_h'))+'</h3><p>'+esc(t(a.stage==='credit'?'p_pc':'p_pp'))+'</p><div class="inner"><div class="track">'+
+      pt.map(function(x,i){ return '<div class="'+(i===0?'cur':'')+'">'+esc(x)+'</div>'; }).join('')+'</div><p class="trnote">'+esc(ad.check_back?fill(t('p_cb'),{d:dfmt(ad.check_back)}):t('p_any'))+'</p>'+teamNote+'</div>'+
+      '<a class="go2" href="apply.html?lang='+lang+'&again=1">'+esc(t('p_go'))+' →</a><p class="again">'+esc(t('p_gos'))+'</p><a class="go2 ghost" href="#mensajes">'+esc(t('b_go1'))+'</a></div>'+
+      '<div class="tiles">'+tile('📈',t('t_credit'),'#mensajes')+tile('🤝',t('t_dpa'),null,'data-guide="dpa"')+tile('🧮',t('t_calc'),'calculadora')+'</div>';
+  } else {
   if(lv===0){ note=t('b_n0'); go='<a class="go2" href="apply.html?lang='+lang+'">'+t('b_go0')+' →</a>'; }
-  else if(lv===3){ note=t('b_n3'); go='<a class="go2" href="homes">'+t('b_go3')+' →</a>'; }
-  else { note=a.stage==='received'?fill(t('b_n1'),{d:new Date(a.at).toLocaleDateString(lang==='es'?'es-MX':'en-US',{month:'long',day:'numeric'})}):a.stage==='credit'?t('b_nc'):a.stage==='paused'?t('b_np'):t('b_n2'); go='<a class="go2 ghost" href="#mensajes">'+t('b_go1')+'</a>'; }
+  else if(lv===3){ var amt=ad.amount?'$'+Math.round(ad.amount).toLocaleString('en-US'):'';
+    note=amt?fill(t('b_n3a'),{a:amt}):t('b_n3'); go='<a class="go2" href="homes">'+t('b_go3')+' →</a>';
+    var bits=[ad.loan_type&&t('b_pt')[ad.loan_type]?t('b_pt')[ad.loan_type]:'',ad.lender?fill(t('b_pl'),{l:ad.lender}):'',ad.expires?fill(t('b_px'),{d:dfmt(ad.expires)}):''].filter(Boolean);
+    if(bits.length) extra='<p class="trnote" style="margin-top:4px;font-weight:700">'+esc(bits.join(' · '))+'</p>'; }
+  else if(a.stage==='docs'){ note=t('b_nd'); go='<a class="go2" href="#mensajes">'+t('b_go1')+' →</a>';
+    extra='<ul class="docs">'+(ad.docs||[]).map(function(d){ return '<li>'+esc(d)+'</li>'; }).join('')+'</ul>'; }
+  else { note=a.stage==='received'?fill(t('b_n1'),{d:new Date(a.at).toLocaleDateString(LOC,{month:'long',day:'numeric'})}):t('b_n2'); go='<a class="go2 ghost" href="#mensajes">'+t('b_go1')+'</a>'; }
   var tr=t('tr');
   $('sb').querySelector('[data-step="budget"]').innerHTML='<div class="hero"><h3>'+t('b_h')+'</h3><p>'+t('b_p')+'</p><div class="inner"><div class="track">'+
-    tr.map(function(x,i){ var c=lv>i?'ok':(lv===i&&lv>0)?'cur':''; if(lv===0&&i===0) c='cur'; return '<div class="'+c+'">'+esc(x)+'</div>'; }).join('')+'</div><p class="trnote">'+esc(note)+'</p></div>'+go+'</div>'+
+    tr.map(function(x,i){ var c=lv>i?'ok':(lv===i&&lv>0)?'cur':''; if(lv===0&&i===0) c='cur'; return '<div class="'+c+'">'+esc(x)+'</div>'; }).join('')+'</div><p class="trnote">'+esc(note)+'</p>'+extra+teamNote+'</div>'+go+'</div>'+
     '<div class="tiles">'+tile('🧮',t('t_calc'),'calculadora')+tile('🤝',t('t_dpa'),null,'data-guide="dpa"')+tile('📈',t('t_credit'),'#mensajes')+'</div>';
+  }
   // 2) home
   var ssOn=(D.searches||[]).filter(function(x){ return x.alerts; }).length;
   $('sb').querySelector('[data-step="home"]').innerHTML='<div class="tour-slot"></div><div class="hero"><h3>'+t('h_h')+'</h3><p>'+t('h_p')+'</p><div class="inner prem-slot"></div></div>'+

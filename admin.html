@@ -252,6 +252,18 @@ td.inc small{display:block;font-size:11.5px;color:var(--soft);font-weight:600;ma
 .delbtn:disabled{opacity:.6;cursor:default}
 .delconfirm{border:1.5px solid #f0c9c6;background:#fdf3f2;border-radius:14px;padding:12px 14px;margin-top:10px}
 .delconfirm p{margin:0;font-size:13.5px;line-height:1.45;font-weight:600}
+.lp{border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin:4px 0 6px;background:#fff}
+.lp-now{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;margin:0 0 12px}.lp-now b{font-size:15px}.lp-now small{color:var(--muted)}
+.lp-pill{font-size:12px;font-weight:800;border-radius:99px;padding:4px 10px;background:var(--card)}.lp-pill.g{background:#e9f5ec;color:#1a5c31}.lp-pill.y{background:#fff4d6;color:#7a5600}.lp-pill.b{background:#e9efff;color:#2747a8}
+.lp-st{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}.lp-st .chip{padding:7px 12px}
+.lp-h{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.lp-f{margin-top:12px}.lp-f label{display:block;font-size:12.5px;font-weight:800;margin:10px 0 4px}.lp-f label small{font-weight:600;color:var(--muted)}
+.lp-f input,.lp-f select,.lp-f textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;font-size:15px;color:var(--ink);font-family:inherit}
+.lp-f textarea{min-height:64px;resize:vertical}.lp-g{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.lp-docs{display:flex;flex-wrap:wrap;gap:6px}.lp-docs .chip{padding:6px 11px;font-size:12.5px}
+.lp-prev{background:var(--card);border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:12px}.lp-prev b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.lp-ck{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;font-weight:700;margin-top:12px;cursor:pointer}.lp-ck input{width:18px;height:18px;margin-top:1px;accent-color:var(--ink)}
+.lp-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.lp-act .lk{border:0;background:none;color:var(--muted);font-weight:700;text-decoration:underline;cursor:pointer;font-size:13px}
 .noteta{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;min-height:90px;resize:vertical;outline:none}
 .noteta:focus{border-color:var(--ink)}
 .saverow{display:flex;align-items:center;gap:12px;margin-top:10px}
@@ -647,7 +659,7 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
   </div>
 </div>
 
-<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-27.3</p>
+<p id="buildtag" style="text-align:center;color:#8a8992;font-size:11.5px;margin:0 0 24px">JAG Admin build 2026-10-28.1</p>
 
 <!-- drawer -->
 <div class="scrim" id="scrim"></div>
@@ -668,8 +680,10 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
       <div id="d-statuswrap"><div class="sect" style="margin-top:0">Status</div>
       <select class="statussel" id="d-status">
         <option>New</option><option>Contacted</option><option>Working</option><option>Credit</option><option>Won</option><option>Lost</option>
-      </select></div>
+      </select><p class="lp-h" style="margin-top:6px">The team's pipeline status. What the client sees in their app is set in <b>Loan progress</b> below.</p></div>
       <div id="d-facts"></div>
+      <div class="sect">Loan progress <span style="text-transform:none;letter-spacing:0;font-weight:700">· what they see in their app</span></div>
+      <div id="d-loan"><p class="dt">Loading…</p></div>
       <div class="sect">Team notes</div>
       <textarea class="noteta" id="d-notes" placeholder="e.g. Called 7/2 — wants to see homes in Katy this weekend…"></textarea>
       <div class="saverow">
@@ -2051,7 +2065,7 @@ function profileOpen(o){
   $('h-saved').innerHTML='<p class="dt">Loading…</p>'; $('h-anote').value='';
   prefillHomes();
   showPane('over');
-  loadPerson(seq);
+  loadPerson(seq); loadLoan(seq);
 }
 function openAccount(uid){
   var c=(clients.rows||[]).filter(function(x){ return x.user_id===uid; })[0]; if(!c) return;
@@ -2065,6 +2079,121 @@ function openAccount(uid){
   $('d-notes').value=c.staff_note||''; $('d-saved').classList.remove('show');
   profileOpen({acct:c});
   $('drawer').classList.add('open'); $('scrim').classList.add('open'); $('drawer').setAttribute('aria-hidden','false');
+}
+
+/* ---------- loan progress: what the client sees in Mi plan → "Know your budget" ----------
+   For clients who applied by phone, through the lender, or whose result came back. A newer Home Loan application
+   from the client takes over again (they tried again). Co-buyers in the same household see the same thing. */
+var LP={st:null,draft:null,seq:0};
+var LSTAGES=[['none','Not started'],['received','Application sent'],['review','In review'],['docs','Needs documents'],['preapproved','Pre-approved'],['credit','Working on credit'],['paused','Not ready yet · try again later']];
+var LSHOW={received:'Application sent',review:'In review',docs:'Needs documents',done:'Pre-approved',credit:'Working on credit',paused:'Not ready yet (invited to try again)'};
+/* [what the team sees, English for the client, Spanish for the client] */
+var LDOCS=[['Paystubs (30 days)','Paystubs (last 30 days)','Talones de cheque (últimos 30 días)'],['W-2s (2 yrs)','W-2s (last 2 years)','Formas W-2 (últimos 2 años)'],['Tax returns (2 yrs)','Tax returns (last 2 years)','Declaraciones de impuestos (últimos 2 años)'],
+  ['Bank statements (2 mo)','Bank statements (last 2 months)','Estados de cuenta del banco (últimos 2 meses)'],['Photo ID','Photo ID','Identificación con foto'],['ITIN letter','ITIN letter','Carta del ITIN'],
+  ['Letter of explanation','Letter of explanation','Carta de explicación'],['Gift letter','Gift letter','Carta de regalo (gift letter)'],['Rent history','Rent payment history','Historial de pagos de renta']];
+var LTYPES=[['fha','FHA'],['conventional','Conventional'],['va','VA'],['usda','USDA'],['itin','ITIN'],['cash','Cash'],['other','Other']];
+function lpDays(n){ var d=new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function lpNice(s,es){ var d=ymd(s); return d?d.toLocaleDateString(es?'es-MX':'en-US',{month:'long',day:'numeric',year:'numeric'}):''; }
+function loadLoan(seq){
+  LP.seq=seq; LP.st=null; LP.draft=null;
+  var uid=(prof.acct&&prof.acct.user_id)||null;
+  rpcJ('jag_staff_loan_get',{p_user:uid,p_email:prof.email||null,p_phone:prof.phone||null}).then(function(j){
+    if(seq!==prof.seq) return;
+    LP.st=j; if(j&&j.account) LP.draft=lpFrom(j); renderLoan();
+  }).catch(function(){ if(seq===prof.seq) $('d-loan').innerHTML='<p class="dt">Could not load the loan progress.</p>'; });
+}
+function lpFrom(j){ var d=j.detail||{};
+  return {stage:j.stage||(j.shows?({done:'preapproved'}[j.shows.stage]||j.shows.stage):'none'),amount:d.amount||'',loan_type:d.loan_type||'',lender:d.lender||'',expires:d.expires||'',
+    docs:(d.docs||[]).slice(),other:'',check_back:d.check_back||'',note:d.note||'',send:false,msg:'',msgEdited:false}; }
+function lpMsg(D,es,first){
+  var n=first?first+', ':'', m=D.amount?'$'+Math.round(+String(D.amount).replace(/[^0-9.]/g,'')||0).toLocaleString('en-US'):'';
+  var docs=D.docs.concat(D.other.trim()?[D.other.trim()]:[]).join(', ');
+  var M=es?{received:'¡Hola '+n+'recibimos su aplicación! Su especialista la revisa y le llama pronto.',review:'Hola '+n+'su aplicación está en revisión. Le avisamos en cuanto tengamos noticias.',
+      docs:'Hola '+n+'para seguir con su préstamo necesitamos: '+(docs||'unos documentos')+'. Puede contestar aquí o mandarlos por correo.',
+      preapproved:'¡Felicidades '+n+'está pre-aprobado(a)'+(m?' hasta '+m:'')+'! 🎉 Ya puede buscar casas y pedir visitas desde su cuenta.',
+      credit:'Hola '+n+'vamos a preparar su crédito juntos para que pueda comprar casa.'+(D.check_back?' Le sugerimos volver a revisar el '+lpNice(D.check_back,true)+'.':''),
+      paused:'Hola '+n+'por ahora no pudimos completar su pre-aprobación, pero no se preocupe: muchos de nuestros clientes lo logran en unos meses. Cuando esté listo(a), puede volver a aplicar en 5 minutos desde Mi plan, sin costo.'}
+    :{received:'Hi '+n+'we got your application! Your loan specialist is reviewing it and will call you soon.',review:'Hi '+n+'your application is in review. We\'ll let you know as soon as we hear back.',
+      docs:'Hi '+n+'to keep your loan moving we need: '+(docs||'a few documents')+'. You can reply here or email them.',
+      preapproved:'Congratulations '+n+'you\'re pre-approved'+(m?' up to '+m:'')+'! 🎉 You can shop for homes and request showings from your account.',
+      credit:'Hi '+n+'let\'s get your credit ready together so you can buy a home.'+(D.check_back?' We suggest checking again on '+lpNice(D.check_back,false)+'.':''),
+      paused:'Hi '+n+'we couldn\'t complete your pre-approval for now, but don\'t worry: many of our clients get there in a few months. When you\'re ready, you can apply again in 5 minutes from My plan, at no cost.'};
+  return (M[D.stage]||'')+(D.note.trim()?'\n\n'+D.note.trim():'');
+}
+function lpPreview(D,es){
+  var m=D.amount?'$'+Math.round(+String(D.amount).replace(/[^0-9.]/g,'')||0).toLocaleString('en-US'):'';
+  var P=es?{none:'“Empezar mi aplicación” (aún no ha aplicado)',received:'Barra: ● Aplicación enviada ○ En revisión ○ Pre-aprobado',review:'Barra: ✓ Aplicación enviada ● En revisión ○ Pre-aprobado',
+      docs:'Barra en “En revisión” + “Su especialista necesita unos documentos para seguir” con la lista',preapproved:'✓✓✓ “¡Está pre-aprobado'+(m?' hasta '+m:'')+'!” + Buscar casas',
+      credit:'“Todavía no, ¡pero hay un camino!” · su plan: preparar crédito → volver a aplicar → pre-aprobado · botón “Volver a aplicar”',
+      paused:'“Todavía no, ¡pero hay un camino!” · su aplicación en pausa · botón “Volver a aplicar” (5 minutos, no afecta su crédito)'}
+    :{none:'“Start my application” (hasn\'t applied)',received:'Bar: ● Application sent ○ In review ○ Pre-approved',review:'Bar: ✓ Application sent ● In review ○ Pre-approved',
+      docs:'Bar on “In review” + “Your loan specialist needs a few documents” with the list',preapproved:'✓✓✓ “You’re pre-approved'+(m?' up to '+m:'')+'!” + Search homes',
+      credit:'“Not yet — but there’s a path!” · their plan: get credit ready → apply again → pre-approved · “Apply again” button',
+      paused:'“Not yet — but there’s a path!” · application on hold · “Apply again” button (5 minutes, no credit impact)'};
+  return P[D.stage]||'';
+}
+function renderLoan(){
+  var j=LP.st, el=$('d-loan');
+  if(!j||!j.ok){ el.innerHTML='<p class="dt">Only admins can change this.</p>'; return; }
+  if(!j.account){ el.innerHTML='<div class="lp"><p class="dt" style="margin:0">They don\'t have a JAG app account yet, so there\'s no progress bar to update. Invite them to sign up with '+esc(prof.email||'their email')+' (Send homes → Invite) and set it here after.</p></div>'; return; }
+  var D=LP.draft, es=(j.lang||'es')!=='en', sh=j.shows, first=String(j.name||'').trim().split(/\s+/)[0]||'';
+  var now=sh?'<b>'+esc(LSHOW[sh.stage]||sh.stage)+'</b>'+(sh.manual?' <span class="lp-pill b">set by '+esc(j.set_by||'the team')+' · '+crel(j.set_at)+'</span>':' <span class="lp-pill">from their application · '+shortDay(sh.at)+'</span>'):'<b>Not started</b> <span class="lp-pill">no application yet</span>';
+  if(j.app&&sh&&sh.manual===false&&j.stage) now+=' <span class="lp-pill y">they applied again after your update</span>';
+  var h='<div class="lp"><div class="lp-now">They see: '+now+'</div>'+
+    '<div class="lp-st" role="group" aria-label="Loan stage">'+LSTAGES.map(function(x){ return '<button type="button" class="chip'+(D.stage===x[0]?' on':'')+'" data-lst="'+x[0]+'" aria-pressed="'+(D.stage===x[0])+'">'+esc(x[1])+'</button>'; }).join('')+'</div>';
+  h+='<div class="lp-f">';
+  if(D.stage==='preapproved') h+='<div class="lp-g"><div><label for="lp-amt">Pre-approved up to</label><input id="lp-amt" inputmode="numeric" placeholder="$285,000" value="'+esc(D.amount?'$'+Number(String(D.amount).replace(/[^0-9.]/g,'')).toLocaleString('en-US'):'')+'"></div>'+
+    '<div><label for="lp-type">Loan type</label><select id="lp-type"><option value="">—</option>'+LTYPES.map(function(t){ return '<option value="'+t[0]+'"'+(D.loan_type===t[0]?' selected':'')+'>'+t[1]+'</option>'; }).join('')+'</select></div>'+
+    '<div><label for="lp-lender">Lender</label><input id="lp-lender" placeholder="Lock It Lending" value="'+esc(D.lender)+'"></div>'+
+    '<div><label for="lp-exp">Letter expires <small>(optional)</small></label><input id="lp-exp" type="date" value="'+esc(D.expires)+'"></div></div>';
+  if(D.stage==='docs') h+='<label>What they need to send <small>(they see it in '+(es?'Spanish':'English')+')</small></label><div class="lp-docs">'+LDOCS.map(function(d){ var v=es?d[2]:d[1], on=D.docs.indexOf(v)>-1; return '<button type="button" class="chip'+(on?' on':'')+'" data-ldoc="'+esc(v)+'" aria-pressed="'+on+'">'+(on?'✓ ':'')+esc(d[0])+'</button>'; }).join('')+'</div>'+
+    '<input id="lp-other" style="margin-top:8px" placeholder="Something else (e.g. 1099s for 2025)" value="'+esc(D.other)+'">';
+  if(D.stage==='credit'||D.stage==='paused') h+='<label>Suggest they check again <small>(optional; shows in their app)</small></label><div class="lp-docs">'+[[30,'In 30 days'],[60,'In 60 days'],[90,'In 90 days'],[180,'In 6 months']].map(function(x){ var v=lpDays(x[0]); return '<button type="button" class="chip'+(D.check_back===v?' on':'')+'" data-lcb="'+v+'">'+x[1]+'</button>'; }).join('')+
+    '<input id="lp-cb" type="date" value="'+esc(D.check_back)+'" style="width:auto"></div>'+
+    '<p class="lp-h">They never see “denied” or “didn\'t qualify”. They see a friendly plan and an <b>Apply again</b> button. When they apply again, their new application takes over here automatically.</p>';
+  if(D.stage!=='none') h+='<label for="lp-note">Note they see in their app <small>(optional · write it in '+(es?'Spanish':'English')+')</small></label><textarea id="lp-note" maxlength="600" placeholder="'+esc(D.stage==='credit'?(es?'Ej.: Pague la tarjeta Capital One a menos del 30% y no abra cuentas nuevas.':'E.g. Pay the Capital One card under 30% and don\'t open new accounts.'):(es?'Ej.: Aron le va a llamar mañana.':'E.g. Aron will call you tomorrow.'))+'">'+esc(D.note)+'</textarea>';
+  h+='<div class="lp-prev"><b>In their app ('+(es?'Spanish':'English')+')</b>'+esc(lpPreview(D,es))+'</div>';
+  if(D.stage!=='none'){ if(!D.msgEdited) D.msg=lpMsg(D,es,first);
+    h+='<label class="lp-ck"><input type="checkbox" id="lp-send"'+(D.send?' checked':'')+'> Also message '+esc(first||'them')+' (Mensajes in the app + email)</label>'+(D.send?'<textarea id="lp-msg" maxlength="2000" style="margin-top:6px">'+esc(D.msg)+'</textarea>':''); }
+  h+='</div><div class="lp-act"><button type="button" class="savebtn" id="lp-save">Save loan progress</button>'+(j.stage?'<button type="button" class="lk" id="lp-auto">Go back to automatic (from their application)</button>':'')+'</div>'+
+    (j.household>1?'<p class="lp-h">Their co-buyer sees the same progress.</p>':'')+'</div>';
+  el.innerHTML=h;
+}
+function lpKeep(){ var D=LP.draft; if(!D) return; var g=function(id){ var x=$(id); return x?x.value:null; };
+  if(g('lp-amt')!=null) D.amount=g('lp-amt'); if(g('lp-type')!=null) D.loan_type=g('lp-type'); if(g('lp-lender')!=null) D.lender=g('lp-lender'); if(g('lp-exp')!=null) D.expires=g('lp-exp');
+  if(g('lp-other')!=null) D.other=g('lp-other'); if(g('lp-cb')!=null) D.check_back=g('lp-cb'); if(g('lp-note')!=null) D.note=g('lp-note');
+  if(g('lp-msg')!=null) D.msg=g('lp-msg'); var ck=$('lp-send'); if(ck) D.send=ck.checked; }
+$('d-loan').addEventListener('click',function(e){
+  var D=LP.draft; if(!D) return; var b;
+  if((b=e.target.closest('[data-lst]'))){ lpKeep(); D.stage=b.getAttribute('data-lst'); D.msgEdited=false; renderLoan(); return; }
+  if((b=e.target.closest('[data-ldoc]'))){ lpKeep(); var v=b.getAttribute('data-ldoc'), i=D.docs.indexOf(v); if(i>-1) D.docs.splice(i,1); else D.docs.push(v); renderLoan(); return; }
+  if((b=e.target.closest('[data-lcb]'))){ lpKeep(); D.check_back=b.getAttribute('data-lcb'); var cb=$('lp-cb'); if(cb) cb.value=D.check_back;
+    document.querySelectorAll('#d-loan [data-lcb]').forEach(function(x){ x.classList.toggle('on',x===b); }); lpMsgSync(); return; }
+  if(e.target.id==='lp-auto'){ if(!confirm('Go back to automatic? Their progress bar will follow their Home Loan application again.')) return; lpSave(true); return; }
+  if(e.target.id==='lp-save') lpSave(false);
+});
+$('d-loan').addEventListener('change',function(e){
+  if(e.target.id==='lp-send'){ lpKeep(); renderLoan(); return; }
+  if(e.target.id==='lp-amt'){ var d=String(e.target.value).replace(/[^0-9]/g,''); e.target.value=d?'$'+Number(d).toLocaleString('en-US'):''; }
+  if(e.target.id==='lp-cb'){ var v=e.target.value; document.querySelectorAll('#d-loan [data-lcb]').forEach(function(x){ x.classList.toggle('on',x.getAttribute('data-lcb')===v); }); }
+  lpKeep(); lpMsgSync();
+});
+$('d-loan').addEventListener('input',function(e){ if(e.target.id==='lp-msg'){ LP.draft.msgEdited=true; return; } if(e.target.id==='lp-note'||e.target.id==='lp-other'){ lpKeep(); lpMsgSync(); } });
+/* the message to send follows the form until the person edits it */
+function lpMsgSync(){ var D=LP.draft, m=$('lp-msg'); if(!D||!m||D.msgEdited) return; var j=LP.st; D.msg=lpMsg(D,(j.lang||'es')!=='en',String(j.name||'').trim().split(/\s+/)[0]||''); m.value=D.msg; }
+function lpSave(auto){
+  lpKeep(); var D=LP.draft, j=LP.st, seq=prof.seq, btn=$('lp-save');
+  if(!auto&&D.stage==='docs'&&!D.docs.length&&!D.other.trim()){ toast('Pick what they need to send.'); return; }
+  var p=auto?{stage:'auto'}:{stage:D.stage,amount:D.amount,loan_type:D.loan_type,lender:D.lender,expires:D.expires,docs:D.docs.concat(D.other.trim()?[D.other.trim()]:[]),check_back:D.check_back,note:D.note};
+  if(btn) btn.disabled=true;
+  rpcJ('jag_staff_loan_set',{p_user:j.user_id,p:p}).then(function(r){
+    if(btn) btn.disabled=false;
+    if(!r||!r.ok){ toast(r&&r.reason==='not_staff'?'Only admins can change this.':'Could not save. Try again.'); return; }
+    var msg=!auto&&D.send&&D.stage!=='none'?String(D.msg||'').trim():'';
+    var done=function(sent){ if(seq!==prof.seq) return; LP.st=r; LP.draft=lpFrom(r); renderLoan(); toast(auto?'Back to automatic':'Saved. '+(String(r.name||'').split(' ')[0]||'They')+' see'+(r.name?'s':'')+' it in their app'+(sent?' and got your message':'')+'.',true); };
+    if(!msg){ done(false); return; }
+    rpcJ('jag_msg_reply',{p_user:j.user_id,p_body:msg}).then(function(m){ done(!!(m&&m.ok)); if(!(m&&m.ok)) toast('Saved, but the message didn\'t send. Send it from Messages.'); }).catch(function(){ done(false); toast('Saved, but the message didn\'t send.'); });
+  }).catch(function(){ if(btn) btn.disabled=false; toast('Could not reach the database. Try again.'); });
 }
 
 /* ---------- action bar: call, text, email, Follow Up Boss, send homes ---------- */
