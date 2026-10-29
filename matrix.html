@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script src="jag-team.js?v=1" data-sec="matrix"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>JAG Matrix — Team home search</title>
@@ -508,6 +509,7 @@ table.mini td{padding:7px 8px;border-bottom:1px solid var(--line)}
 <script src="jag-share.js?v=4"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
+function topGo(u){ try{ window.top.location.href = u; }catch(e){ location.href = u; } }
 (function(){
   'use strict';
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -1221,9 +1223,9 @@ table.mini td{padding:7px 8px;border-bottom:1px solid var(--line)}
       '<div class="acts"><a class="btn ghost" target="_blank" rel="noopener" href="' + esc(url) + '">Preview what they see ↗</a><button class="btn ghost" data-close type="button">Done</button></div>');
     $$('[data-ch]').forEach(function(b){ b.onclick = function(){
       var ch = b.dataset.ch, body = $('sm-msg').value;
-      if(ch === 'sms') location.href = 'sms:+1' + ph + '?&body=' + encodeURIComponent(body);
+      if(ch === 'sms') topGo('sms:+1' + ph + '?&body=' + encodeURIComponent(body));
       else if(ch === 'whatsapp') window.open('https://wa.me/1' + ph + '?text=' + encodeURIComponent(body), '_blank', 'noopener');
-      else if(ch === 'email') location.href = 'mailto:' + encodeURIComponent(x.email) + '?subject=' + encodeURIComponent(es ? 'Casas para usted, ' + cfirst : 'Homes for you, ' + cfirst) + '&body=' + encodeURIComponent(body);
+      else if(ch === 'email') topGo('mailto:' + encodeURIComponent(x.email) + '?subject=' + encodeURIComponent(es ? 'Casas para usted, ' + cfirst : 'Homes for you, ' + cfirst) + '&body=' + encodeURIComponent(body));
       else copy(body);
       rpc('jag_cart_sent', { p_cart: x.id, p_channel: ch }).then(function(){ loadCarts(); }).catch(function(){});
     }; });

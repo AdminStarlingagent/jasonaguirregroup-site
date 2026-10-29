@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JAG Workspace</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="jag-theme.js?v=2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* One workspace for the whole team: Agent Hub, Matrix and Screener are tabs (each page runs in its own frame and keeps
+   its place when you switch). Tabs show by job (Admin → Team). Admin stays its own page, linked for admins only. */
+:root{
+  --ink:#17161c; --paper:#fff; --card:#f5f5f7; --line:#e3e3e8;
+  --accent:#c8102e; --accent-d:#a30d26; --muted:#5f5e68; --soft:#85848d;
+  --bar:56px; --bnav:62px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--card);color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+
+/* top bar (desktop) — becomes the bottom tab bar on phones */
+.bar{position:fixed;left:0;right:0;top:0;height:var(--bar);background:var(--paper);border-bottom:1px solid var(--line);z-index:20;
+  display:flex;align-items:center;gap:22px;padding:0 18px;padding-top:env(safe-area-inset-top,0px)}
+.lock{display:flex;flex-direction:column;line-height:1;text-decoration:none;color:var(--ink);flex:0 0 auto}
+.lock small{font-size:7px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:22px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:7.5px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--accent);padding-top:3px}
+.tabs{display:flex;align-items:stretch;gap:4px;height:100%}
+.tab{position:relative;display:flex;align-items:center;gap:8px;border:0;background:none;padding:0 14px;font-weight:700;font-size:14px;color:var(--muted);height:100%}
+.tab svg{width:19px;height:19px;flex:0 0 19px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--ink);outline-offset:-4px;border-radius:10px}
+.tab .short{display:none}
+.badge{min-width:19px;height:19px;padding:0 6px;border-radius:99px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.badge[hidden]{display:none}
+.tab.metab{display:none}
+.right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.admin{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:700;font-size:13px;padding:8px 13px;border-radius:99px;background:var(--card)}
+.admin:hover{background:#ebebef}
+.admin svg{width:15px;height:15px}
+.admin[hidden],.mi[hidden]{display:none}
+.mebtn{display:flex;align-items:center;gap:9px;border:0;background:none;padding:4px 6px 4px 4px;border-radius:99px;font-weight:700}
+.mebtn:hover{background:var(--card)}
+.av{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#e9e8ee;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--muted);flex:0 0 32px;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.mebtn svg{width:14px;height:14px;color:var(--soft)}
+
+/* frames */
+#frames{position:fixed;left:0;right:0;top:calc(var(--bar) + env(safe-area-inset-top,0px));bottom:0;background:var(--card)}
+#frames iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--card);visibility:hidden}
+#frames iframe.on{visibility:visible}
+
+/* account menu */
+.menu{position:fixed;z-index:40;right:14px;top:calc(var(--bar) + 6px);width:270px;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 40px rgba(23,22,28,.16);padding:8px}
+.menu[hidden]{display:none}
+.menu .hd{display:flex;gap:11px;align-items:center;padding:10px 10px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.menu .hd .av{width:40px;height:40px;flex-basis:40px}
+.menu .hd b{display:block;font-size:14.5px}
+.menu .hd small{display:block;color:var(--muted);font-size:12px;word-break:break-all}
+.menu .jobs{display:flex;flex-wrap:wrap;gap:5px;padding:2px 10px 10px}
+.menu .jobs span{font-size:11px;font-weight:700;color:var(--muted);background:var(--card);border-radius:99px;padding:3px 8px}
+.mi{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:11px 10px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none}
+.mi:hover{background:var(--card)}
+.mi svg{width:17px;height:17px;color:var(--muted)}
+.mi.out{color:var(--accent-d)}.mi.out svg{color:var(--accent-d)}
+.scrim{position:fixed;inset:0;z-index:30;background:transparent}
+.scrim[hidden]{display:none}
+
+/* boot / errors / toast */
+.boot{position:fixed;inset:0;z-index:50;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center}
+.boot[hidden]{display:none}
+.boot p{margin:0;color:var(--muted);font-weight:600;max-width:340px}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid #dcdbe2;border-top-color:var(--accent);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.btn{border:0;border-radius:99px;background:var(--ink);color:#fff;font-weight:800;padding:12px 22px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:60;background:var(--ink);color:#fff;font-weight:600;font-size:13.5px;padding:12px 18px;border-radius:14px;max-width:min(92vw,440px);box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.toast[hidden]{display:none}
+
+/* phones: tab bar at the bottom, no top bar (each page keeps its own header) */
+@media (max-width:760px){
+  .bar{top:auto;bottom:0;height:calc(var(--bnav) + env(safe-area-inset-bottom,0px));padding:0 4px env(safe-area-inset-bottom,0px);border-bottom:0;border-top:1px solid var(--line);gap:0}
+  .lock,.right{display:none}
+  .tabs{flex:1;gap:0}
+  .tab{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:0 2px;font-size:11px}
+  .tab .long{display:none}.tab .short{display:inline}
+  .tab svg{width:22px;height:22px}
+  .tab .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:17px;height:17px;font-size:10px;padding:0 5px}
+  .tab[aria-selected="true"]::after{top:0;bottom:auto;left:28%;right:28%;border-radius:0 0 3px 3px}
+  .tab.metab{display:flex}
+  .tab.metab .av{width:24px;height:24px;flex-basis:24px;font-size:10px}
+  #frames{top:0;bottom:calc(var(--bnav) + env(safe-area-inset-bottom,0px))}
+  .menu{left:10px;right:10px;width:auto;top:auto;bottom:calc(var(--bnav) + env(safe-area-inset-bottom,0px) + 8px)}
+  .toast{bottom:calc(var(--bnav) + env(safe-area-inset-bottom,0px) + 14px)}
+}
+</style>
+</head>
+<body>
+
+<header class="bar" id="bar" hidden>
+  <a class="lock" href="workspace.html" aria-label="JAG Workspace home"><small>Est. 2018</small><b>JAG</b><i>Team</i></a>
+  <nav class="tabs" role="tablist" aria-label="Workspace" id="tabs"></nav>
+  <div class="right">
+    <a class="admin" id="adm" href="admin.html" hidden title="Full team dashboard (admins only)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Admin</a>
+    <button class="mebtn" id="mebtn" type="button" aria-haspopup="menu" aria-expanded="false"><span class="av" id="me-av"></span><span id="me-first"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+  </div>
+</header>
+
+<main id="frames" aria-live="off"></main>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="menu" id="menu" role="menu" hidden>
+  <div class="hd"><span class="av" id="mn-av"></span><div><b id="mn-name"></b><small id="mn-email"></small></div></div>
+  <div class="jobs" id="mn-jobs"></div>
+  <a class="mi" id="mn-adm" href="admin.html" role="menuitem" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Admin dashboard</a>
+  <button class="mi" id="mn-reload" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Reload this tab</button>
+  <button class="mi out" id="mn-out" type="button" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Sign out</button>
+</div>
+
+<div class="boot" id="boot"><div class="spin"></div><p id="boot-msg">Opening your workspace…</p></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="jag-capture.js?v=3"></script>
+<script src="jag-share.js?v=4"></script>
+<script>
+(function(){
+  'use strict';
+  var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function ls(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
+
+  var I = {
+    hub: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    matrix: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h6"/><circle cx="17" cy="16" r="3"/><path d="m21 20-1.8-1.8"/></svg>',
+    screener: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>'
+  };
+  // Who sees what: everyone on the team gets Agent Hub and Matrix; Screener needs the Screener or Lead job (or admin).
+  var SECS = [
+    { id: 'hub', page: 'agent.html', long: 'Agent Hub', short: 'Hub', title: 'Agent Hub · clients, messages, showings, offers, share links', can: function(){ return true; } },
+    { id: 'matrix', page: 'matrix.html', long: 'Matrix', short: 'Matrix', title: 'Matrix · HAR search, client lists and email campaigns', can: function(){ return true; } },
+    { id: 'screener', page: 'screener.html', long: 'Call Screener', short: 'Screener', title: 'Call Screener · call guide with Lola, logs to Follow Up Boss',
+      can: function(me){ return me.staff || me.roles.indexOf('screener') >= 0 || me.roles.indexOf('lead') >= 0; } }
+  ];
+  var JOB = { lead: 'Lead', screener: 'Screener', showing: 'Showing', tc: 'TC', offer_ok: 'Offer OK' };
+  var me = null, cur = null, frames = {}, allowed = [];
+  function S(id){ return SECS.filter(function(x){ return x.id === id; })[0]; }
+  function ok(id){ return allowed.indexOf(id) >= 0; }
+
+  /* ---------- routing: workspace.html#matrix  or  workspace.html#screener=<encoded ?query#hash for that page> ---------- */
+  function parseHash(){
+    var h = location.hash.replace(/^#/, ''), i = h.indexOf('='), id = i < 0 ? h : h.slice(0, i), suf = '';
+    if(i >= 0){ try{ suf = decodeURIComponent(h.slice(i + 1)); }catch(e){ suf = ''; } }
+    if(suf && !/^[?#]/.test(suf)) suf = '';
+    return { id: S(id) ? id : '', suf: suf };
+  }
+
+  var toastT;
+  function toast(msg){ var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 5200); }
+
+  function frameFor(id, suf, reload){
+    var f = frames[id], src = S(id).page + (suf || '');
+    if(!f){
+      f = document.createElement('iframe');
+      f.dataset.sec = id; f.title = S(id).long;
+      f.setAttribute('allow', 'clipboard-read; clipboard-write; web-share; geolocation; fullscreen');
+      f.addEventListener('load', function(){ f.dataset.loaded = '1'; if(id === cur) settle(); });
+      frames[id] = f; f.src = src; $('frames').appendChild(f);
+    } else if(reload){
+      f.dataset.loaded = ''; f.src = src;
+    }
+    return f;
+  }
+  function settle(){ $('boot').hidden = true; preloadSoon(); }
+
+  function go(id, suf, resetId){
+    if(resetId && frames[resetId] && resetId !== id){ frames[resetId].src = S(resetId).page; }
+    if(!S(id)) id = 'hub';
+    if(!ok(id)){
+      toast(S(id).long + ' isn\'t turned on for you. Ask Jason to add the ' + (id === 'screener' ? 'Screener' : '') + ' job in Admin → Team.');
+      if(cur) return; id = 'hub'; suf = '';
+    }
+    var f = frameFor(id, suf, !!suf && !!frames[id]);
+    Object.keys(frames).forEach(function(k){
+      var on = k === id; frames[k].classList.toggle('on', on);
+      if(on) frames[k].removeAttribute('inert'); else frames[k].setAttribute('inert', '');
+    });
+    document.querySelectorAll('.tab[data-sec]').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.sec === id)); b.tabIndex = b.dataset.sec === id ? 0 : -1; });
+    cur = id;
+    document.title = S(id).long + ' · JAG Workspace';
+    try{ localStorage.setItem('jag_team_tab', id); }catch(e){}
+    if(location.hash !== '#' + id){ try{ history.replaceState(null, '', '#' + id); }catch(e){} }
+    if(f.dataset.loaded) settle();
+    closeMenu();
+  }
+
+  // Load the other tabs in the background once the first one is up, so switching is instant and badges show.
+  var preloaded = false;
+  function preloadSoon(){
+    if(preloaded) return; preloaded = true;
+    var rest = allowed.filter(function(id){ return !frames[id]; }), i = 0;
+    (function next(){ if(i >= rest.length) return; var id = rest[i++]; setTimeout(function(){ if(!frames[id]) frameFor(id, ''); next(); }, 1200); })();
+  }
+
+  function badge(id, n){
+    var els = document.querySelectorAll('.tab[data-sec="' + id + '"] .badge');
+    els.forEach(function(b){ b.hidden = !n; b.textContent = n > 99 ? '99+' : n; });
+  }
+  window.JagTeam = { go: function(id, suf, resetId){ go(id, suf || '', resetId); }, badge: badge, me: function(){ return me; } };
+
+  /* ---------- tabs ---------- */
+  function avatar(){
+    return me.photo_url ? '<img src="' + esc(me.photo_url) + '" alt="">' : esc(((me.first_name || me.name || '?')[0] || '?').toUpperCase());
+  }
+  function paint(){
+    var html = allowed.map(function(id){ var s = S(id);
+      return '<button class="tab" type="button" role="tab" data-sec="' + id + '" title="' + esc(s.title) + '" aria-selected="false">' + I[id] +
+        '<span class="long">' + esc(s.long) + '</span><span class="short">' + esc(s.short) + '</span><span class="badge" hidden></span></button>';
+    }).join('') + '<button class="tab metab" type="button" id="metab" aria-haspopup="menu" aria-expanded="false"><span class="av">' + avatar() + '</span><span>' + esc(me.first_name || 'Me') + '</span></button>';
+    $('tabs').innerHTML = html;
+    $('tabs').querySelectorAll('.tab[data-sec]').forEach(function(b){ b.onclick = function(){ go(b.dataset.sec, ''); }; });
+    $('tabs').addEventListener('keydown', function(ev){
+      if(ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+      var i = allowed.indexOf(cur) + (ev.key === 'ArrowRight' ? 1 : -1); i = (i + allowed.length) % allowed.length;
+      go(allowed[i], ''); var b = document.querySelector('.tab[data-sec="' + allowed[i] + '"]'); if(b) b.focus();
+    });
+    $('metab').onclick = toggleMenu;
+    $('me-av').innerHTML = avatar(); $('mn-av').innerHTML = avatar();
+    $('me-first').textContent = me.first_name || me.name || '';
+    $('mn-name').textContent = me.name || ''; $('mn-email').textContent = me.email || '';
+    $('mn-jobs').innerHTML = (me.staff ? '<span>Admin</span>' : '') + me.roles.filter(function(r){ return JOB[r]; }).map(function(r){ return '<span>' + JOB[r] + '</span>'; }).join('');
+    $('adm').hidden = $('mn-adm').hidden = !me.staff;
+    $('bar').hidden = false;
+  }
+
+  /* ---------- account menu ---------- */
+  function toggleMenu(){ $('menu').hidden ? openMenu() : closeMenu(); }
+  function openMenu(){ $('menu').hidden = false; $('scrim').hidden = false; $('mebtn').setAttribute('aria-expanded', 'true'); var m = $('metab'); if(m) m.setAttribute('aria-expanded', 'true'); }
+  function closeMenu(){ $('menu').hidden = true; $('scrim').hidden = true; $('mebtn').setAttribute('aria-expanded', 'false'); var m = $('metab'); if(m) m.setAttribute('aria-expanded', 'false'); }
+  $('mebtn').onclick = toggleMenu; $('scrim').onclick = closeMenu;
+  document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') closeMenu(); });
+  $('mn-reload').onclick = function(){ if(cur && frames[cur]){ frames[cur].dataset.loaded = ''; frames[cur].src = S(cur).page; } closeMenu(); };
+  $('mn-out').onclick = function(){
+    var a = ls('jag_agent');
+    if(a && a.t) fetch(BASE + '/auth/v1/logout?scope=local', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + a.t } }).catch(function(){});
+    ls('jag_agent', null); try{ sessionStorage.removeItem('jag_admin'); }catch(e){}
+    location.replace('signin?team=1');
+  };
+
+  /* ---------- sign-in check ---------- */
+  function toSignIn(){
+    ls('jag_agent', null);   // clear first so sign-in never bounces straight back here
+    location.replace('signin?team=1&next=' + encodeURIComponent('workspace.html' + location.hash));
+  }
+  // A tab signed out or its session died: everyone goes back to sign-in together.
+  window.addEventListener('storage', function(ev){ if(ev.key === 'jag_agent' && !ev.newValue && me) location.replace('signin?team=1'); });
+  window.addEventListener('hashchange', function(){ var r = parseHash(); if(r.id && (r.id !== cur || r.suf)) go(r.id, r.suf); });
+
+  function boot(){
+    $('boot').hidden = false; $('boot').innerHTML = '<div class="spin"></div><p>Opening your workspace…</p>';
+    if(!window.JagShare || !JagShare.me()){ toSignIn(); return; }
+    JagShare.token().then(function(t){
+      if(!t){ toSignIn(); return; }
+      return fetch(BASE + '/rest/v1/rpc/jag_agent_me', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: '{}' })
+        .then(function(r){ if(r.status === 401) return { ok: false, reason: 'sign_in' }; if(!r.ok) throw new Error('net'); return r.json(); })
+        .then(function(j){
+          if(!j || !j.ok || !j.agent){ toSignIn(); return; }
+          var ag = j.agent;
+          me = { code: ag.code, name: ag.name, first_name: ag.first_name, email: ag.email || (ls('jag_agent') || {}).e, photo_url: ag.photo_url, roles: ag.roles || [], staff: !!j.staff };
+          var s = ls('jag_agent') || {}; Object.assign(s, { code: ag.code, name: ag.name, first_name: ag.first_name, phone: ag.phone, photo_url: ag.photo_url, staff: !!j.staff }); ls('jag_agent', s);
+          allowed = SECS.filter(function(x){ return x.can(me); }).map(function(x){ return x.id; });
+          paint();
+          var r = parseHash(), last = ''; try{ last = localStorage.getItem('jag_team_tab') || ''; }catch(e){}
+          var id = r.id || (ok(last) ? last : 'hub');
+          if(r.id && !ok(r.id)){ toast(S(r.id).long + ' isn\'t turned on for you. Ask Jason to add the Screener job in Admin → Team.'); id = 'hub'; r.suf = ''; }
+          go(id, r.suf);
+          setTimeout(function(){ if(!$('boot').hidden) settle(); }, 9000);   // slow page: show it anyway
+        });
+    }).catch(function(){
+      $('boot').innerHTML = '<p>Could not reach JAG. Check your connection.</p><button class="btn" type="button" id="retry">Try again</button>';
+      $('retry').onclick = boot;
+    });
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

@@ -166,7 +166,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
   /* ---------- screens ---------- */
   function err(m, ok){ var e = $('err'); if(!e) return; e.textContent = m; e.className = ok ? 'ok' : 'err on'; }
   // Clients sign in with an emailed code. Team agents sign in with a password (and can still use a code).
-  var TEAMPAGE = /^(agent|matrix|screener|admin|tc|m|r)\.html/i;
+  var TEAMPAGE = /^(workspace|agent|matrix|screener|admin|tc|m|r)\.html/i;
   var tab = (function(){
     var v = ''; try{ v = localStorage.getItem('jag_signin_tab') || ''; }catch(e){}
     if(/[?&]team=1/.test(location.search) || TEAMPAGE.test(next)) return 'agent';
@@ -255,8 +255,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
         ls(AGENT, { t: j.access_token, r: j.refresh_token, x: Date.now() + (j.expires_in || 3600) * 1000, e: email,
           code: ag.code, name: ag.name, first_name: ag.first_name, phone: ag.phone, photo_url: ag.photo_url, staff: !!a.staff, how: how || 'code' });
         try{ localStorage.setItem('jag_last_team_email', email); localStorage.setItem('jag_signin_tab', 'agent'); }catch(e){}
-        if(TEAMPAGE.test(next)){ location.href = next; return; }
-        screenTeam();
+        location.href = TEAMPAGE.test(next) ? next : 'workspace.html';   // one workspace: Agent Hub, Matrix, Screener by job
         return;
       }
       ls(CLIENT, { access_token: j.access_token, refresh_token: j.refresh_token,
@@ -281,16 +280,6 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
   }
   function goClient(){ location.href = next || 'account'; }
 
-  function screenTeam(){
-    var a = ls(AGENT) || {};
-    card.innerHTML = '<div class="hello">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : '<span class="ph"></span>') +
-      '<div><h1 style="margin:0">' + t('team_hi') + esc(a.first_name || '') + '</h1></div></div>' +
-      '<p class="lead">' + t('team_p') + '</p><div class="stack">' +
-      tile('agent.html', 'hub', t('hub'), t('hub_s')) + tile('matrix.html', 'home', t('mx'), t('mx_s')) + tile('screener.html', 'scr', t('scr'), t('scr_s')) +
-      (a.staff ? tile('admin.html', 'adm', t('adm'), t('adm_s')) : '') +
-      '</div><div class="row" style="margin-top:14px"><span class="fine" style="margin:0">' + esc(a.e || '') + '</span><button type="button" class="link" id="out">' + t('out') + '</button></div>';
-    $('out').onclick = function(){ signOut(AGENT, a.t); };
-  }
   function screenClient(){
     var c = ls(CLIENT) || {};
     card.innerHTML = '<h1>' + t('client_hi') + '</h1><p class="lead">' + t('client_p') + '<b>' + esc((c.user || {}).email || '') + '</b></p><div class="stack">' +
@@ -305,7 +294,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
 
   function start(){
     var a = ls(AGENT), c = ls(CLIENT);
-    if(a && a.r){ if(TEAMPAGE.test(next)){ location.replace(next); return; } screenTeam(); }
+    if(a && a.r){ location.replace(TEAMPAGE.test(next) ? next : 'workspace.html'); return; }
     else if(c && c.refresh_token) screenClient();
     else screenEmail();
   }
