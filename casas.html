@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Las casas que le mando — JAG Real Estate</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Dígale a Lola qué casa busca y le mandamos solo lo que le sirve. Jason Aguirre Group · eXp Realty.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Lola's weekly home emails: the lead's own page (casas.html?t=<token>). They say what they want (price, beds, areas),
+   pause, or unsubscribe. No login: the token in the email link is the key. Their agent is notified when they say what
+   they want. Data: jag_lead_alert_get / jag_lead_alert_set (supabase-lola-listings.sql). Spanish first. */
+:root{ --ink:#17161c; --paper:#fff; --card:#f5f5f7; --line:#dddde3; --accent:#c8102e; --accent-d:#a30d26; --accent-t:#fdecef; --muted:#5f5e68; --ok:#1a5c31; --ok-bg:#e9f5ec; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--card);color:var(--ink);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{background:var(--paper);border-bottom:1px solid var(--line)}
+.hwrap{max-width:720px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+.lock{display:flex;flex-direction:column;line-height:1}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:25px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--accent);padding-top:3px}
+.brok{font-size:12px;font-weight:600;color:var(--muted);border-left:1px solid var(--line);padding-left:12px}
+.langs{display:flex;border:2px solid var(--ink);border-radius:99px;overflow:hidden;margin-left:auto}
+.langs button{border:0;background:transparent;font-size:13px;font-weight:800;padding:7px 13px}
+.langs button[aria-pressed=true]{background:var(--ink);color:#fff}
+main{flex:1;width:100%;max-width:720px;margin:0 auto;padding:20px 16px 40px}
+.card{background:var(--paper);border-radius:24px;padding:22px 20px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.ag{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.ag .av{width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px;flex:none;overflow:hidden}
+.ag .av img{width:100%;height:100%;object-fit:cover}
+.ag b{display:block;font-size:16px}.ag small{color:var(--muted);font-size:13.5px}.ag small a{font-weight:700;text-decoration:none;color:var(--accent)}
+h1{font-size:27px;line-height:1.2;letter-spacing:-.03em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 18px}
+fieldset{border:0;padding:0;margin:0 0 20px}
+legend{font-weight:800;font-size:15px;margin-bottom:8px;padding:0}
+legend small{font-weight:600;color:var(--muted);margin-left:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{border:2px solid var(--line);background:#fff;border-radius:99px;padding:9px 14px;font-weight:700;font-size:14.5px;min-height:44px}
+.chips button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.ck{display:flex;gap:10px;align-items:center;font-weight:700;margin:4px 0 18px}
+.ck input{width:22px;height:22px;accent-color:var(--accent)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;border:0;border-radius:16px;background:var(--accent);color:#fff;font-weight:800;font-size:16.5px;text-decoration:none}
+.btn:hover{background:var(--accent-d)}
+.btn.ghost{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+.btn.dark{background:var(--ink)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}@media(max-width:460px){.row2{grid-template-columns:1fr}}
+.small{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:18px}
+.small button{border:0;background:none;color:var(--muted);font-weight:700;font-size:13.5px;text-decoration:underline;padding:6px}
+.done{text-align:center}.done .big{font-size:52px;line-height:1}
+.msg{background:var(--accent-t);color:var(--accent-d);border-radius:12px;padding:10px 12px;font-weight:700;margin:0 0 14px}
+.spin{width:36px;height:36px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite;margin:40px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.foot{text-align:center;color:var(--muted);font-size:12.5px;margin:0 0 24px}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+  <a class="logo" href="index.html" aria-label="JAG Real Estate">
+    <span class="lock"><small>Est. 2018</small><b>JAG</b><i>Real Estate</i></span>
+    <span class="brok">eXp Realty</span>
+  </a>
+  <span class="langs" role="group" aria-label="Idioma / Language"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
+</div></header>
+<main><div class="card" id="card" aria-live="polite"><div class="spin" role="status" aria-label="Cargando"></div></div></main>
+<p class="foot">Jason Aguirre Group · eXp Realty · 5373 W Alabama St, Suite 448, Houston, TX 77056 · (832) 702-3574</p>
+
+<script>
+(function(){
+  var BASE = 'https://nyaxywghbpphjhwcmspd.supabase.co', KEY = 'sb_publishable_a3LN_l283LN8J-bJTEO8hQ_U40t09eh';
+  var $ = function(id){ return document.getElementById(id); }, card = $('card');
+  var qs = new URLSearchParams(location.search), token = String(qs.get('t') || '').replace(/[^0-9a-f]/gi, '').slice(0, 64);
+  var D = null, lng = '', sel = { max: 0, beds: 2, cities: {} };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmtPhone(p){ var d = String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); return d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : '(832) 702-3574'; }
+  function rpc(fn, args){ return fetch(BASE + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) })
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+  var es = function(){ return (lng || (D && D.lang) || 'es') !== 'en'; };
+  function T(a, b){ return es() ? a : b; }
+  var PRICES = [200000, 250000, 300000, 350000, 400000, 500000, 650000];
+  function k(n){ return '$' + Math.round(n / 1000) + 'K'; }
+
+  function agentBox(){
+    var a = (D && D.agent) || {}, ph = fmtPhone(a.phone), img = /^https:\/\//.test(a.photo_url || '') ? '<img src="' + esc(a.photo_url) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(String(a.name || 'J').charAt(0)) + '\'">' : esc(String(a.name || 'J').charAt(0));
+    return '<div class="ag"><span class="av">' + img + '</span><div><b>' + esc(a.name || 'Jason Aguirre') + '</b><small>' + T('Tu agente', 'Your agent') + ' · <a href="tel:+1' + ph.replace(/\D/g, '') + '">' + esc(ph) + '</a></small></div></div>';
+  }
+  function paintLang(){ document.documentElement.lang = es() ? 'es' : 'en'; document.querySelectorAll('.langs button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === (es() ? 'es' : 'en'))); }); }
+
+  function bad(){
+    card.innerHTML = '<h1>' + T('Este enlace ya no sirve', 'This link no longer works') + '</h1><p class="sub">' + T('Llámenos o escríbanos al (832) 702-3574 y con gusto le ayudamos.', 'Call or text us at (832) 702-3574 and we\'ll gladly help.') + '</p><a class="btn" href="homes">' + T('Buscar casas', 'Search homes') + '</a>';
+  }
+  function form(note){
+    var c = D.criteria || {}, all = D.cities || [];
+    card.innerHTML = agentBox() +
+      '<h1>' + T('¿Qué casa busca', 'What home are you looking for') + (D.first_name ? ', ' + esc(D.first_name) : '') + '?</h1>' +
+      '<p class="sub">' + T('Dígale a Lola y cada semana le mando solo casas que le sirven. Toma 30 segundos.', 'Tell Lola and each week I\'ll send only homes that fit. It takes 30 seconds.') + '</p>' +
+      (note ? '<p class="msg">' + note + '</p>' : '') +
+      '<fieldset><legend>' + T('Precio máximo', 'Max price') + '</legend><div class="chips" id="f-max">' + PRICES.map(function(p){
+        return '<button type="button" data-v="' + p + '" aria-pressed="' + (sel.max === p) + '">' + (p === 650000 ? T('$500K o más', '$500K+') : T('Hasta ', 'Up to ') + k(p)) + '</button>'; }).join('') + '</div></fieldset>' +
+      '<fieldset><legend>' + T('Recámaras', 'Bedrooms') + '</legend><div class="chips" id="f-beds">' + [2, 3, 4, 5].map(function(b){
+        return '<button type="button" data-v="' + b + '" aria-pressed="' + (sel.beds === b) + '">' + b + '+</button>'; }).join('') + '</div></fieldset>' +
+      '<fieldset><legend>' + T('Zonas', 'Areas') + '<small>' + T('ninguna = toda el área de Houston', 'none = the whole Houston area') + '</small></legend><div class="chips" id="f-cities">' + all.map(function(x){
+        return '<button type="button" data-v="' + esc(x) + '" aria-pressed="' + !!sel.cities[x] + '">' + esc(x) + '</button>'; }).join('') + '</div></fieldset>' +
+      '<label class="ck"><input type="checkbox" id="f-now" checked> ' + T('Mándenme las primeras casas hoy', 'Send me the first homes today') + '</label>' +
+      '<button type="button" class="btn" id="f-save">' + T('Guardar lo que busco', 'Save what I want') + '</button>' +
+      '<div class="small"><button type="button" id="f-pause">' + T('Pausar los correos', 'Pause these emails') + '</button><button type="button" id="f-unsub">' + T('Cancelar suscripción', 'Unsubscribe') + '</button></div>';
+    pick('f-max', function(v){ sel.max = +v; }, true); pick('f-beds', function(v){ sel.beds = +v; }, true); pick('f-cities', function(v, on){ sel.cities[v] = on; }, false);
+    $('f-save').onclick = save; $('f-pause').onclick = pause; $('f-unsub').onclick = function(){ askUnsub(); };
+  }
+  function pick(id, fn, single){
+    $(id).onclick = function(e){
+      var b = e.target.closest('[data-v]'); if(!b) return;
+      if(single){ this.querySelectorAll('[data-v]').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); }); fn(b.getAttribute('data-v'), true); }
+      else { var on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', String(on)); fn(b.getAttribute('data-v'), on); }
+    };
+  }
+  function save(){
+    var b = $('f-save'); b.disabled = true; b.textContent = T('Guardando…', 'Saving…');
+    var cities = Object.keys(sel.cities).filter(function(x){ return sel.cities[x]; });
+    rpc('jag_lead_alert_set', { p_token: token, p: { max: sel.max || (D.criteria || {}).max || 300000, beds: sel.beds, cities: cities, send_now: $('f-now').checked } }).then(function(j){
+      if(!j || !j.ok) throw 0;
+      D.status = 'active';
+      var a = (D.agent || {}), af = a.first_name || String(a.name || 'Jason').split(' ')[0];
+      card.innerHTML = agentBox() + '<div class="done"><div class="big">🏡</div><h1>' + T('¡Listo!', 'All set!') + '</h1><p class="sub">' +
+        T('Le mandaremos casas de hasta ' + k(j.criteria.max) + ' con ' + j.criteria.beds + '+ recámaras' + (cities.length ? ' en ' + esc(cities.join(', ')) : ' en el área de Houston') + '. ' + esc(af) + ' ya sabe lo que busca y le puede llamar.',
+          'We\'ll send homes up to ' + k(j.criteria.max) + ' with ' + j.criteria.beds + '+ bedrooms' + (cities.length ? ' in ' + esc(cities.join(', ')) : ' around Houston') + '. ' + esc(af) + ' knows what you want and may give you a call.') + '</p></div>' +
+        '<a class="btn dark" href="apply.html?src=lola">' + T('Ver cuánto puedo comprar (gratis)', 'See how much I can buy (free)') + '</a>' +
+        '<div class="row2"><a class="btn ghost" href="homes?src=lola">' + T('Buscar casas ahora', 'Search homes now') + '</a><button type="button" class="btn ghost" id="d-edit">' + T('Cambiar lo que busco', 'Change what I want') + '</button></div>';
+      $('d-edit').onclick = function(){ D.criteria = j.criteria; form(); };
+    }).catch(function(){ b.disabled = false; b.textContent = T('Guardar lo que busco', 'Save what I want'); form(T('No se pudo guardar. Intente otra vez.', 'Could not save. Try again.')); });
+  }
+  function pause(){
+    rpc('jag_lead_alert_set', { p_token: token, p: { pause: true } }).then(function(){
+      card.innerHTML = agentBox() + '<div class="done"><div class="big">⏸️</div><h1>' + T('Correos en pausa', 'Emails paused') + '</h1><p class="sub">' + T('No le mandaremos casas hasta que usted quiera. Para volver a recibirlas, diga qué busca.', 'We won\'t send homes until you want them again. To restart, tell us what you want.') + '</p></div>' +
+        '<button type="button" class="btn" id="d-back">' + T('Decir qué busco', 'Tell you what I want') + '</button>';
+      $('d-back').onclick = function(){ form(); };
+    }).catch(function(){ form(T('No se pudo pausar. Intente otra vez.', 'Could not pause. Try again.')); });
+  }
+  function askUnsub(){
+    card.innerHTML = agentBox() + '<h1>' + T('¿Ya no quiere recibir estas casas?', 'Stop getting these homes?') + '</h1><p class="sub">' + T('También puede decirnos qué busca y le mandamos solo lo que le sirve.', 'You can also tell us what you want and we\'ll only send what fits.') + '</p>' +
+      '<button type="button" class="btn dark" id="u-yes">' + T('Sí, cancelar mi suscripción', 'Yes, unsubscribe me') + '</button>' +
+      '<div class="row2"><button type="button" class="btn ghost" id="u-form">' + T('Mejor decir qué busco', 'Tell you what I want instead') + '</button><button type="button" class="btn ghost" id="u-pause">' + T('Solo pausar', 'Just pause') + '</button></div>';
+    $('u-yes').onclick = unsub; $('u-form').onclick = function(){ form(); }; $('u-pause').onclick = pause;
+  }
+  function unsub(){
+    rpc('jag_lead_alert_set', { p_token: token, p: { unsub: true } }).then(function(){ D.status = 'unsub'; unsubDone(); }).catch(function(){ form(T('No se pudo cancelar. Intente otra vez o llame al (832) 702-3574.', 'Could not unsubscribe. Try again or call (832) 702-3574.')); });
+  }
+  function unsubDone(){
+    card.innerHTML = agentBox() + '<div class="done"><div class="big">✅</div><h1>' + T('Listo, ya no le enviaremos estos correos', 'Done, you won\'t get these emails anymore') + '</h1><p class="sub">' +
+      T('Si cambia de opinión, aquí estamos. Su agente sigue disponible para cualquier pregunta.', 'If you change your mind, we\'re here. Your agent is still available for any questions.') + '</p></div>' +
+      '<button type="button" class="btn ghost" id="d-re">' + T('Fue un error, quiero recibirlas', 'That was a mistake, keep sending them') + '</button>';
+    $('d-re').onclick = function(){ D.status = 'active'; form(); };
+  }
+
+  document.querySelector('.langs').addEventListener('click', function(e){ var b = e.target.closest('[data-lang]'); if(!b) return; lng = b.getAttribute('data-lang'); paintLang(); if(D) route(true); });
+  function route(keep){
+    if(!keep && qs.get('done') === 'unsub') return unsubDone();
+    if(!keep && qs.get('u') === '1') return askUnsub();
+    if(D.status === 'unsub') return unsubDone();
+    form();
+  }
+  if(token.length < 24){ paintLang(); bad(); return; }
+  rpc('jag_lead_alert_get', { p_token: token }).then(function(j){
+    if(!j || !j.ok){ paintLang(); bad(); return; }
+    D = j; var c = j.criteria || {};
+    // start from what Lola already uses for them
+    var near = PRICES.filter(function(p){ return p >= (c.max || 0); })[0]; sel.max = near && c.max ? near : 0;
+    sel.beds = c.beds || 2;
+    if((c.cities || []).length && c.cities.length <= 8) c.cities.forEach(function(x){ sel.cities[x] = true; });
+    paintLang(); route(false);
+  }).catch(function(){ paintLang(); bad(); });
+})();
+</script>
+</body>
+</html>

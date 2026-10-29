@@ -439,6 +439,10 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
 #screensview .tablecard,#teamview .tablecard{overflow-x:auto}
 #screensview table,#teamview table{min-width:760px}
 #teamview table.hotable{min-width:0}.hoh{margin:28px 0 8px;font-size:17px}
+.lolabox{background:#fff;border:1px solid #e6e5ea;border-radius:16px;padding:16px;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.lolabox .n{display:flex;flex-direction:column}.lolabox .n b{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1}.lolabox .n span{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6a6972;margin-top:4px}
+.lolabtn{margin-left:auto;border:2px solid #c8102e;background:#fff;color:#c8102e;border-radius:99px;padding:10px 18px;font:inherit;font-weight:800;cursor:pointer}.lolabtn.on{background:#c8102e;color:#fff}
+.lolabox .st{flex-basis:100%;font-weight:700;font-size:14px}.lolabox .st.off{color:#c8102e}
 .hotable select{height:38px;border:1.5px solid #d6d5dd;border-radius:10px;padding:0 8px;font:inherit;font-weight:700;background:#fff;min-width:180px}
 .teamnote{background:var(--loan-t);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;margin:0 0 16px}
 .switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700}
@@ -572,6 +576,9 @@ tr.lead:hover .nm.lnk{text-decoration-color:var(--ink)}
     <h3 class="hoh">Hand-offs in Contacts</h3>
     <p class="jobhelp">When someone in the Agent Hub moves a contact to one of these stages, the contact is handed to this teammate (in Follow Up Boss too), and they get a notification and a text from Lola. "No hand-off" keeps the contact with whoever has it.</p>
     <div class="tablecard"><table class="hotable"><thead><tr><th>Stage</th><th>Goes to</th></tr></thead><tbody id="horows"><tr><td colspan="2" class="muted" style="padding:18px">Loading…</td></tr></tbody></table></div>
+    <h3 class="hoh">Lola's weekly home emails</h3>
+    <p class="jobhelp">Every week Lola emails Houston-area leads new HAR listings in their budget, from their assigned agent (replies go to that agent). It started with a pilot of the 100 newest leads; when fewer than 5% unsubscribe or bounce, 300 more are added each day until everyone is in. If 5% or more do, it pauses itself. Leads can say what they want, pause or unsubscribe from a link in every email; their agent gets a notification when they say what they want.</p>
+    <div class="lolabox" id="lolabox"><span class="muted">Loading…</span></div>
   </section>
 
   <section id="dealsview" hidden>
@@ -2960,8 +2967,22 @@ function loadHandoffs(){
     }); });
   }).catch(function(){ $('horows').innerHTML='<tr><td colspan="2" class="muted" style="padding:18px">Could not load the hand-offs.</td></tr>'; });
 }
+// Lola's weekly listing emails: numbers + pause (jag_lead_alerts, supabase-lola-listings.sql)
+function loadLola(){
+  rpcJ('jag_lead_alerts_stats').then(function(j){
+    var box=$('lolabox'); if(!box) return;
+    if(!j || !j.ok){ box.innerHTML='<span class="muted">Only admins and Leads see this.</span>'; return; }
+    var s=j.by_status||{}, cfg=j.cfg||{}, on=(s.pilot||0)+(s.active||0), paused=!!cfg.paused;
+    var n=function(v,l){ return '<div class="n"><b>'+(v||0).toLocaleString('en-US')+'</b><span>'+l+'</span></div>'; };
+    box.innerHTML='<div class="st'+(paused?' off':'')+'">'+(paused?'⏸ Paused'+(cfg.paused_why?' · '+esc(cfg.paused_why):''):'▶ Running'+(s.pilot?' · pilot':''))+'</div>'+
+      n(on,'Getting emails')+n(j.sent_7d,'Sent this week')+n(j.prefs,'Said what they want')+n(j.unsub_7d,'Unsubscribed (7 days)')+n((s.bounced||0),'Bounced')+n(j.errors_7d,'Errors this week')+
+      '<button type="button" class="lolabtn'+(paused?' on':'')+'" id="lola-tg">'+(paused?'Resume':'Pause all')+'</button>';
+    $('lola-tg').onclick=function(){ var b=this; b.disabled=true;
+      rpcJ('jag_lead_alerts_pause',{p_paused:!paused}).then(function(r){ toast(r&&r.ok?(paused?'Lola\'s home emails are running again.':'Lola\'s home emails are paused.'):'Could not change it.', !!(r&&r.ok)); loadLola(); }).catch(function(){ b.disabled=false; }); };
+  }).catch(function(){});
+}
 function loadTeam(){
-  loadHandoffs();
+  loadHandoffs(); loadLola();
   $('trows').innerHTML='<tr><td colspan="5" class="muted" style="padding:22px">Loading team…</td></tr>';
   api('/rest/v1/rpc/jag_team_access',{method:'POST',body:'{}'}).then(function(r){ return r.ok?r.json():null; })
   .then(function(j){ team.data=j; renderTeam(); }).catch(function(){ team.data=null; renderTeam(); });
