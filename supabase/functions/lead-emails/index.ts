@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { SITE, esc, money, phoneFmt, tel, row, button, agentStrip, homeCard, h1, lead, callout, shell, C } from "./jag-email.ts";
+import { buildQueries } from "./matrix-query.ts";
 
 // JAG home emails for screened leads (table jag_lead_drips). Runs hourly (pg_cron → this function with the vault token).
 // Pace (standard): a welcome right away, then up to 2 a week for the first 30 days, then weekly through day 90.
@@ -9,6 +10,11 @@ import { SITE, esc, money, phoneFmt, tel, row, button, agentStrip, homeCard, h1,
 // day 90, or the lead creating a website account — then status 'account', their account gets a saved search with the
 // same criteria, their agent is set, and the regular listing alerts take over.
 // POST {"preview":"<drip id>"} with the token returns the next email's HTML without sending or changing anything.
+//
+// Matrix campaigns (rows with params, started from the team's /matrix page): the agent's full HAR criteria,
+// pace asap (every ~3 h when something new matches) / daily (10 AM) / weekly (10 AM), until stopped, unsubscribed or ends_at
+// (180 days). After the welcome email only listings that are new since the last email are sent. They keep running when
+// the client has a website account (the agent chose this search on purpose).
 
 const SB = Deno.env.get("SUPABASE_URL")!;
 const SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -47,6 +53,15 @@ async function repliers(q: URLSearchParams): Promise<Row[]> {
 
 // Same search the homes page runs for a typed area: Texas + ZIP, or Texas + free text.
 function homesQuery(d: Row) {
+  if (d.params && typeof d.params === "object") {
+    // Matrix campaign: the agent's own criteria, on-market only (never sold/expired in a client email)
+    const st = (Array.isArray(d.params.st) ? d.params.st : ["active"]).filter((x: string) => x === "active" || x === "coming");
+    const q = buildQueries({ ...d.params, st: st.length ? st : ["active"], off: [] })[0].q;
+    if (d.sent_count && d.last_sent_at) q.set("minListDate", new Date(new Date(d.last_sent_at).getTime() - DAY).toISOString().slice(0, 10));
+    q.set("hasImages", "true"); q.set("sortBy", "createdOnDesc"); q.set("resultsPerPage", "24"); q.set("fields", FIELDS);
+    q.delete("boardId");
+    return q;
+  }
   const q = new URLSearchParams({ type: "sale", state: "TX", status: "A", hasImages: "true", sortBy: "createdOnDesc", resultsPerPage: "24", fields: FIELDS });
   q.append("class", "residential"); q.append("class", "condo"); q.append("propertyType", "Residential");
   const area = String(d.area || "").trim();
@@ -83,7 +98,12 @@ function atHoustonHour(d: Date, hour: number): Date {
   return new Date(`${p.year}-${p.month}-${p.day}T${String(hour - off).padStart(2, "0")}:00:00Z`);
 }
 // Standard pace: every 3 or 4 days (≈2 a week) for the first 30 days, then weekly; null after day 90.
-function nextAt(created: Date, sentCount: number): Date | null {
+function nextAt(created: Date, sentCount: number, mx?: Row): Date | null {
+  if (mx && mx.params) {
+    const n = mx.pace === "asap" ? new Date(Date.now() + 3 * 3600e3)
+      : atHoustonHour(new Date(Date.now() + (mx.pace === "weekly" ? 7 : 1) * DAY), 10);
+    return mx.ends_at && n.getTime() > new Date(mx.ends_at).getTime() ? null : n;
+  }
   const age = (Date.now() - created.getTime()) / DAY;
   const step = age < 30 ? (sentCount % 2 ? 3 : 4) : 7;
   const d = atHoustonHour(new Date(Date.now() + step * DAY), 10);
@@ -135,7 +155,17 @@ function links(d: Row) {
   };
 }
 
-function buildEmail(d: Row, agent: Row | null, homes: Row[], unsubUrl: string) {
+// Matrix campaigns: show the area / beds / budget from the criteria in the client's email
+function title(s: string) { return s.replace(/\b([a-zà-ÿ])([a-zà-ÿ']*)/gi, (_m, a, b) => a.toUpperCase() + b.toLowerCase()); }
+function view(d: Row): Row {
+  const p = d.params;
+  if (!p || typeof p !== "object") return d;
+  const first = (v: unknown) => (Array.isArray(v) ? v : []).map(String).filter(Boolean)[0] || "";
+  const area = first(p.sub) || first(p.city) || first(p.zip) || first(p.high) || first(p.county) || "";
+  return { ...d, area: area ? title(area) : null, beds: Number(p.beds) || null, maxp: Number(p.maxP) || null };
+}
+function buildEmail(d0: Row, agent: Row | null, homes: Row[], unsubUrl: string) {
+  const d = view(d0);
   const L = TXT[d.lang === "en" ? "en" : "es"], first = String(d.name || "").trim().split(/\s+/)[0];
   const aName = agent?.name || "Jason Aguirre", aFirst = agent?.first_name || aName.split(" ")[0], aPhone = agent?.phone ? fmtPhone(agent.phone) : TEAM_PHONE;
   const crit = L.crit(d), lk = links(d), welcome = !d.sent_count;
@@ -185,7 +215,7 @@ async function agentsMap() {
 }
 async function pick(d: Row) {
   const sent = new Set<string>(d.sent_mls || []);
-  return (await repliers(homesQuery(d))).map(snap).filter((s) => !sent.has(s.mls)).slice(0, 6);
+  return (await repliers(homesQuery(d))).map(snap).filter((s) => !sent.has(s.mls)).slice(0, d.params ? 8 : 6);
 }
 
 async function run() {
@@ -199,13 +229,16 @@ async function run() {
   for (const d of due) {
     try {
       const created = new Date(d.created_at);
-      if ((now.getTime() - created.getTime()) / DAY > 90) { await patch(d.id, { status: "done" }); stats.done++; continue; }
-      const acc: Row[] = await db(`jag_clients?select=user_id,agent_code&email=eq.${encodeURIComponent(String(d.email).toLowerCase())}&limit=1`);
-      if (acc && acc.length) { await handover(d, acc[0]); stats.account++; continue; }
+      const mx = !!d.params;
+      if (mx ? (d.ends_at && now.getTime() > new Date(d.ends_at).getTime()) : (now.getTime() - created.getTime()) / DAY > 90) { await patch(d.id, { status: "done" }); stats.done++; continue; }
+      if (!mx) {
+        const acc: Row[] = await db(`jag_clients?select=user_id,agent_code&email=eq.${encodeURIComponent(String(d.email).toLowerCase())}&limit=1`);
+        if (acc && acc.length) { await handover(d, acc[0]); stats.account++; continue; }
+      }
       const homes = await pick(d);
       if (!homes.length) {
-        if (!d.sent_count) { await patch(d.id, { status: "no_homes", last_error: "No HAR homes match this area and budget" }); stats.no_homes++; }
-        else { const n = nextAt(created, d.sent_count); await patch(d.id, n ? { next_at: n.toISOString() } : { status: "done" }); stats.skipped++; }
+        if (!d.sent_count && !mx) { await patch(d.id, { status: "no_homes", last_error: "No HAR homes match this area and budget" }); stats.no_homes++; }
+        else { const n = nextAt(created, d.sent_count, d); await patch(d.id, n ? { next_at: n.toISOString(), last_error: mx && !d.sent_count ? "Waiting: nothing matches right now" : null } : { status: "done" }); stats.skipped++; }
         continue;
       }
       const tok = await sig(d.id);
@@ -220,7 +253,7 @@ async function run() {
         await patch(d.id, { last_error: `email ${r.status}: ${(await r.text()).slice(0, 160)}`, next_at: new Date(now.getTime() + DAY).toISOString() });
         continue;
       }
-      const count = (d.sent_count || 0) + 1, n = nextAt(created, count);
+      const count = (d.sent_count || 0) + 1, n = nextAt(created, count, d);
       await patch(d.id, { sent_count: count, last_sent_at: now.toISOString(), last_error: null,
         sent_mls: [...(d.sent_mls || []), ...homes.map((h) => h.mls)].slice(-300), ...(n ? { next_at: n.toISOString() } : { status: "done" }) });
       stats.sent++;

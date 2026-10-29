@@ -1,0 +1,1291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>JAG Matrix — Team home search</title>
+<link rel="icon" href="favicon-32x32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --ink:#17161c; --paper:#fff; --card:#f5f5f7; --line:#e8e8ec; --line2:#d9d9df;
+  --red:#c8102e; --red-d:#a30d26; --red-t:#fdecef;
+  --blue:#2653d9; --blue-t:#eaf0ff; --green:#0f8a4d; --green-t:#e7f5ee;
+  --amber:#7a4b00; --amber-t:#fff4d6; --purple:#6b3fd1; --purple-t:#f1ebff;
+  --muted:#6a6972; --soft:#8a8992;
+  --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--card);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+.wrap{max-width:1480px;margin:0 auto;padding-inline:16px}
+
+/* top bar */
+.top{background:var(--ink);color:#fff;position:sticky;top:0;z-index:600}
+.top .wrap{display:flex;align-items:center;gap:14px;min-height:60px;flex-wrap:wrap;padding-block:8px}
+.lock{display:flex;flex-direction:column;line-height:1;text-decoration:none}
+.lock small{font-size:7px;letter-spacing:.32em;font-weight:700;color:#bdbcc4;text-transform:uppercase}
+.lock b{font-size:21px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:7.5px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--red);padding-top:3px}
+.ttl{font-weight:800;font-size:15px;letter-spacing:-.01em;padding-left:12px;border-left:1px solid #3a3942}
+.ttl span{display:block;font-size:11px;font-weight:600;color:#bdbcc4}
+.speed{flex:1;min-width:260px;display:flex;background:#fff;border-radius:12px;overflow:hidden}
+.speed input{flex:1;border:0;padding:0 14px;height:42px;font-weight:600;color:var(--ink);min-width:0}
+.speed input:focus{outline:none}
+.speed button{border:0;background:var(--red);color:#fff;font-weight:700;padding:0 16px}
+.who{display:flex;align-items:center;gap:10px;font-size:13px}
+.who img,.who .ph{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#3a3942}
+.toplinks{display:flex;gap:6px}
+.toplinks a{color:#fff;text-decoration:none;font-weight:600;font-size:12.5px;padding:7px 10px;border-radius:99px;background:#2a2930}
+.toplinks a:hover{background:#3a3942}
+
+/* tabs */
+.tabsbar{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:60px;z-index:500}
+.tabsbar .wrap{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:52px}
+.tab{border:0;background:none;font-weight:700;padding:14px 14px;border-bottom:3px solid transparent;color:var(--muted);display:flex;gap:7px;align-items:center}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+.tab .badge{background:var(--card);border-radius:99px;padding:1px 8px;font-size:12px;color:var(--ink)}
+.tab[aria-selected="true"] .badge{background:var(--red);color:#fff}
+.tabsbar .sp{flex:1}
+.clientpick{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:99px;padding:4px 4px 4px 14px;font-size:13px}
+.clientpick select{border:0;background:#fff;border-radius:99px;height:34px;padding:0 10px;font-weight:700;max-width:230px}
+.btn{border:0;border-radius:99px;background:var(--red);color:#fff;font-weight:700;padding:0 16px;height:38px;display:inline-flex;align-items:center;gap:7px;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--red-d)}
+.btn.dark{background:var(--ink)} .btn.dark:hover{background:#2a2930}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line2)} .btn.ghost:hover{border-color:var(--ink)}
+.btn.soft{background:var(--card);color:var(--ink)} .btn.soft:hover{background:var(--line)}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn.lola{background:linear-gradient(135deg,#c8102e,#6b3fd1)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.lnk{border:0;background:none;color:var(--blue);font-weight:700;padding:0;text-decoration:underline;text-underline-offset:2px}
+
+/* panels */
+main{padding-block:18px}
+.view{display:none}.view.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.box{background:var(--paper);border-radius:16px;border:1px solid var(--line);overflow:hidden}
+.box>h3{margin:0;padding:11px 16px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:#fff;display:flex;justify-content:space-between;align-items:center}
+.box>h3 small{text-transform:none;letter-spacing:0;font-weight:600;color:#bdbcc4;font-size:12px}
+.box .in{padding:14px 16px;display:grid;gap:12px}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+@media(max-width:1100px){.c3,.c4,.c5{grid-column:span 6}.c7,.c8{grid-column:span 12}}
+@media(max-width:700px){.c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 12}}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld>label,.lbl{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.fld input,.fld select,.fld textarea{height:40px;border:1.5px solid var(--line2);border-radius:10px;padding:0 11px;font-weight:600;background:#fff;width:100%}
+.fld textarea{height:auto;padding:10px 11px;resize:vertical}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--ink)}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.ck{display:flex;align-items:center;gap:8px;font-weight:600;padding:5px 0;cursor:pointer;user-select:none}
+.ck input{width:18px;height:18px;accent-color:var(--red);margin:0}
+.seg{display:inline-flex;background:var(--card);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:none;border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.hint{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1.5px solid var(--line2);border-radius:10px;padding:5px 6px;min-height:40px;background:#fff;cursor:text}
+.chips:focus-within{border-color:var(--ink)}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--ink);color:#fff;border-radius:99px;padding:3px 4px 3px 10px;font-size:12.5px;font-weight:700;text-transform:capitalize}
+.chip button{border:0;background:#3a3942;color:#fff;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:1;padding:0}
+.chips input{border:0;flex:1;min-width:90px;height:28px;padding:0 4px;font-weight:600}
+.chips input:focus{outline:none}
+.areanote{display:flex;gap:10px;align-items:center;background:var(--amber-t);color:var(--amber);border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px}
+.areanote .sp{flex:1}
+
+/* sticky action bar */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:700;pointer-events:none}
+.dock .wrap{display:flex;justify-content:center;padding-bottom:14px}
+.dockin{pointer-events:auto;display:flex;align-items:center;gap:6px;background:var(--ink);color:#fff;border-radius:99px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.25);flex-wrap:wrap;justify-content:center}
+.dockin .cnt{padding:0 12px;font-weight:700}
+.dockin .cnt b{font-size:17px}
+.dockin .btn.ghost{background:#2a2930;color:#fff;border:0}
+.dockin .btn.ghost:hover{background:#3a3942}
+.dockin select{border:0;border-radius:99px;height:38px;padding:0 10px;font-weight:700;max-width:190px}
+
+/* results */
+.resbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.resbar .sum{font-weight:800;font-size:16px}
+.resbar .sum small{display:block;font-weight:600;font-size:12.5px;color:var(--muted)}
+.resbar .sp{flex:1}
+.resbar select{height:36px;border:1.5px solid var(--line2);border-radius:10px;padding:0 8px;font-weight:600;background:#fff}
+.tablewrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:auto}
+table.res{border-collapse:collapse;width:100%;min-width:1180px}
+table.res th{position:sticky;top:0;background:#fbfbfc;text-align:left;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1}
+table.res th.s{cursor:pointer}
+table.res th.s:hover{color:var(--ink)}
+table.res th.s.on{color:var(--red)}
+table.res td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+table.res tr:hover td{background:#fafafb}
+table.res tr.chk td{background:var(--blue-t)}
+table.res td.r,table.res th.r{text-align:right}
+.thumb{width:62px;height:44px;border-radius:8px;object-fit:cover;background:var(--card);display:block}
+.addr{font-weight:700;color:var(--ink);text-decoration:none;cursor:pointer;border:0;background:none;padding:0;text-align:left}
+.addr:hover{color:var(--red);text-decoration:underline}
+.addr small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:2px 9px;font-size:11.5px;font-weight:700;background:var(--card);color:var(--ink);white-space:nowrap}
+.pill.A{background:var(--green-t);color:var(--green)}
+.pill.OP,.pill.PCS{background:var(--amber-t);color:var(--amber)}
+.pill.P{background:var(--purple-t);color:var(--purple)}
+.pill.S{background:var(--red-t);color:var(--red)}
+.pill.CS{background:var(--blue-t);color:var(--blue)}
+.pill.X{background:#eee;color:#555}
+.pill.new{background:var(--ink);color:#fff}
+.dn{color:var(--red);font-weight:800}
+.up{color:var(--green);font-weight:800}
+.pager{display:flex;gap:6px;justify-content:center;align-items:center;margin:16px 0 4px;flex-wrap:wrap}
+.pager button{min-width:36px;height:36px;border-radius:10px;border:1.5px solid var(--line2);background:#fff;font-weight:700}
+.pager button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.empty{background:#fff;border:1px dashed var(--line2);border-radius:16px;padding:40px 20px;text-align:center;color:var(--muted);font-weight:600}
+@media(max-width:760px){
+  table.res{min-width:0}
+  table.res thead{display:none}
+  table.res tr{display:grid;grid-template-columns:26px 92px 1fr;grid-template-areas:"ck ph st" "ck ph ad" "ck ph pr" "ck ph mo";gap:2px 10px;padding:10px;border-bottom:1px solid var(--line);align-items:center}
+  table.res td{border:0;padding:0;white-space:normal;text-align:left!important}
+  table.res td.hm{display:none}
+  table.res td.c-ck{grid-area:ck;align-self:start}
+  table.res td.c-ph{grid-area:ph;align-self:start}
+  table.res td.c-ph .thumb{width:92px;height:70px}
+  table.res td.c-st{grid-area:st}
+  table.res td.c-ad{grid-area:ad}
+  table.res td.c-pr{grid-area:pr;font-size:16px}
+  table.res td.mob{grid-area:mo;font-size:12.5px;color:var(--muted)}
+  .top{position:static}
+  .tabsbar{top:0}
+  .tabsbar .wrap{flex-wrap:nowrap;overflow-x:auto;gap:8px}
+  .tab{padding:12px 8px;white-space:nowrap}
+  .clientpick{flex:none}
+  .toplinks{display:none}
+}
+
+/* map */
+#map{height:calc(100vh - 230px);min-height:420px;border-radius:16px;border:1px solid var(--line);background:#e9e9ee}
+.maptools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.maptools .sp{flex:1}
+.mpop{width:220px;font-family:var(--font)}
+.mpop img{width:100%;height:120px;object-fit:cover;border-radius:8px;display:block;margin-bottom:6px;background:var(--card)}
+.mpop b{font-size:16px}
+
+/* drawer (360 view, cart, modals) */
+.scrim{position:fixed;inset:0;background:rgba(23,22,28,.42);z-index:800}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(940px,100%);background:#fff;z-index:810;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.18)}
+.drawer .dh{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.drawer .dh h2{margin:0;font-size:20px;letter-spacing:-.02em}
+.drawer .dh .sp{flex:1}
+.x{border:0;background:var(--card);border-radius:50%;width:36px;height:36px;font-size:20px;line-height:1}
+.dtabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--line);overflow-x:auto}
+.dtabs button{border:0;background:none;font-weight:700;padding:11px 12px;border-bottom:3px solid transparent;color:var(--muted);white-space:nowrap}
+.dtabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+.db{flex:1;overflow:auto;padding:18px 20px}
+.df{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:18px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.hero img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;background:var(--card)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:13.5px;align-content:start}
+.kv dt{color:var(--muted);font-weight:600}
+.kv dd{margin:0;font-weight:700}
+.sec{margin-top:22px}
+.sec h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:6px}
+.remark{background:var(--card);border-radius:12px;padding:12px 14px;white-space:pre-wrap}
+.remark.agent{background:var(--amber-t);border-left:4px solid var(--amber)}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;cursor:zoom-in;background:var(--card)}
+table.mini{border-collapse:collapse;width:100%;font-size:13px}
+table.mini th{text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+table.mini td{padding:7px 8px;border-bottom:1px solid var(--line)}
+.flags{display:flex;flex-wrap:wrap;gap:6px}
+
+/* Lola */
+.lolabox{background:linear-gradient(135deg,#fff5f7,#f6f1ff);border:1px solid #f0dbe2;border-radius:16px;padding:14px 16px}
+.lolahd{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.lolaav{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#c8102e,#6b3fd1);color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px;flex:none}
+.lolahd b{display:block}
+.lolahd small{color:var(--muted)}
+.tips{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tips li{background:#fff;border-radius:12px;padding:10px 12px;border:1px solid var(--line);font-size:13.5px}
+.tips li b{display:block;font-size:13.5px;margin-bottom:2px}
+.tips li.hot{border-color:#f3c1cb;background:#fff7f8}
+.tips li.good{border-color:#bfe3cf;background:#f6fbf8}
+.ask{display:flex;gap:8px;margin-top:10px}
+.ask input{flex:1;height:40px;border:1.5px solid var(--line2);border-radius:99px;padding:0 14px;font-weight:600;min-width:0}
+.answer{margin-top:10px;background:#fff;border-radius:12px;padding:12px 14px;border:1px solid var(--line);white-space:pre-wrap;font-size:13.5px}
+.lolaside{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:#fff;z-index:810;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.18)}
+
+/* carts */
+.carts{display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
+@media(max-width:900px){.carts{grid-template-columns:1fr}}
+.clist{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.clist .hd{padding:12px;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.clist .hd input{height:38px;border:1.5px solid var(--line2);border-radius:99px;padding:0 14px;font-weight:600}
+.citem{display:block;width:100%;text-align:left;border:0;background:#fff;padding:12px 14px;border-bottom:1px solid var(--line)}
+.citem:hover{background:#fafafb}
+.citem[aria-current="true"]{background:var(--red-t)}
+.citem b{display:block}
+.citem small{color:var(--muted);font-size:12px}
+.citem .meta{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap}
+.cpanel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.chead{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.chead h2{margin:0;font-size:22px;letter-spacing:-.02em}
+.chead .sp{flex:1}
+.stat3{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+@media(max-width:600px){.stat3{grid-template-columns:repeat(2,1fr)}}
+.st{background:var(--card);border-radius:12px;padding:10px 12px}
+.st b{font-size:20px;display:block}
+.st span{font-size:12px;color:var(--muted);font-weight:600}
+.homes{display:grid;gap:10px}
+.home{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px}
+.home img{width:110px;height:80px;object-fit:cover;border-radius:10px;background:var(--card)}
+.home .note{margin-top:4px;display:flex;gap:6px}
+.home .note input{flex:1;height:30px;border:1px solid var(--line2);border-radius:8px;padding:0 8px;font-size:12.5px;min-width:0}
+.react{font-size:12px;font-weight:800;border-radius:99px;padding:3px 9px}
+.react.love{background:var(--red-t);color:var(--red)}.react.tour{background:var(--ink);color:#fff}
+.react.maybe{background:var(--amber-t);color:var(--amber)}.react.no{background:#eee;color:#555}
+.camp{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin:14px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.camp.on{border-color:#bfe3cf;background:#f6fbf8}
+.camp .sp{flex:1}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:900;display:grid;place-items:center;padding:16px;background:rgba(23,22,28,.45)}
+.mbox{background:#fff;border-radius:20px;width:min(560px,100%);max-height:92vh;overflow:auto;padding:22px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.mbox h2{margin:0;font-size:20px}
+.mbox .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.sugg{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sugg button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:9px 12px}
+.sugg button:hover{background:var(--card)}
+.sugg small{color:var(--muted)}
+.sharegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:500px){.sharegrid{grid-template-columns:1fr 1fr}}
+.sharegrid button{height:64px;border-radius:14px;border:1.5px solid var(--line2);background:#fff;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px}
+.sharegrid button span{font-size:20px}
+.sharegrid button:hover{border-color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:99px;font-weight:700;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:90vw;text-align:center}
+.gate{max-width:440px;margin:12vh auto;background:#fff;border-radius:20px;padding:28px;text-align:center;display:grid;gap:12px;border:1px solid var(--line)}
+.spin{display:inline-block;width:18px;height:18px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.disc{font-size:11.5px;color:var(--soft);margin-top:14px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate" hidden>
+  <div style="display:flex;justify-content:center"><span class="lock" style="color:var(--ink)"><small>Jason Aguirre</small><b>JAG</b><i>Real Estate</i></span></div>
+  <h1 style="margin:0;font-size:22px">JAG Matrix</h1>
+  <p style="margin:0;color:var(--muted)" id="gate-msg">Sign in with your team login to search HAR like Matrix, build client lists and send home emails.</p>
+  <a class="btn" style="justify-content:center" href="agent.html?next=matrix.html">Sign in</a>
+</div>
+
+<div id="app" hidden>
+<header class="top">
+  <div class="wrap">
+    <a class="lock" href="agent.html" title="Agent Hub"><small>Jason Aguirre</small><b>JAG</b><i>Real Estate</i></a>
+    <div class="ttl">Matrix<span>HAR search · team only</span></div>
+    <form class="speed" id="speedf" role="search">
+      <input id="speed" autocomplete="off" placeholder="Speed bar: RES ACT $300- 3+ 2+ 1400+ sqft Magnolia  ·  or an MLS # or address" aria-label="Speed bar">
+      <button>Search</button>
+    </form>
+    <nav class="toplinks">
+      <a href="agent.html">Agent Hub</a>
+      <a href="screener.html" id="ln-scr" hidden>Screener</a>
+      <a href="admin.html" id="ln-adm" hidden>Admin</a>
+    </nav>
+    <div class="who"><span id="me-ph"></span><span id="me-name"></span></div>
+  </div>
+</header>
+
+<div class="tabsbar">
+  <div class="wrap">
+    <button class="tab" data-tab="criteria" aria-selected="true">⚙️ Criteria</button>
+    <button class="tab" data-tab="map" aria-selected="false">🗺️ Map</button>
+    <button class="tab" data-tab="results" aria-selected="false">▦ Results <span class="badge num" id="b-res">0</span></button>
+    <button class="tab" data-tab="carts" aria-selected="false">🛒 Client lists <span class="badge num" id="b-carts">0</span></button>
+    <span class="sp"></span>
+    <div class="clientpick" title="The client you're shopping for. Checked homes go to their list.">
+      For <select id="cartsel" aria-label="Client"></select>
+      <button class="btn sm dark" id="newcart-top" type="button">+ New client list</button>
+    </div>
+    <button class="btn sm lola" id="lola-open" type="button">💅 Lola</button>
+  </div>
+</div>
+
+<main class="wrap">
+
+<!-- ================= CRITERIA ================= -->
+<section class="view on" id="v-criteria">
+  <div class="resbar">
+    <div class="sum">Quick Single-Family search<small>Same fields as HAR Matrix. Counts update as you go.</small></div>
+    <span class="sp"></span>
+    <select id="saved" aria-label="Saved searches"><option value="">Saved & recent searches…</option></select>
+    <button class="btn sm ghost" id="savesearch" type="button">💾 Save search</button>
+  </div>
+  <div class="grid">
+    <div class="box c4"><h3>Status <small><span class="seg" id="type-seg"><button type="button" data-v="sale" aria-pressed="true">For sale</button><button type="button" data-v="lease" aria-pressed="false">Lease</button></span></small></h3>
+      <div class="in">
+        <div><div class="lbl" style="margin-bottom:4px">On the market</div>
+          <div class="checks">
+            <label class="ck"><input type="checkbox" name="st" value="active" checked> Active</label>
+            <label class="ck"><input type="checkbox" name="st" value="coming"> Coming Soon</label>
+            <label class="ck"><input type="checkbox" name="st" value="option"> Option Pending</label>
+            <label class="ck"><input type="checkbox" name="st" value="pcs"> Pend Cont to Show</label>
+            <label class="ck"><input type="checkbox" name="st" value="pending"> Pending</label>
+          </div></div>
+        <div><div class="lbl" style="margin-bottom:4px">Off the market (comps)</div>
+          <div class="checks">
+            <label class="ck"><input type="checkbox" name="off" value="sold"> Sold</label>
+            <label class="ck"><input type="checkbox" name="off" value="withdrawn"> Withdrawn</label>
+            <label class="ck"><input type="checkbox" name="off" value="expired"> Expired</label>
+            <label class="ck"><input type="checkbox" name="off" value="terminated"> Terminated</label>
+          </div>
+          <div class="fld" style="margin-top:6px"><label for="offDays">…in the last (days)</label><input id="offDays" inputmode="numeric" value="180"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="box c4"><h3>Price &amp; days on market</h3>
+      <div class="in">
+        <div class="row2">
+          <div class="fld"><label for="minP">Min price</label><input id="minP" inputmode="numeric" placeholder="e.g. 200 = $200K"></div>
+          <div class="fld"><label for="maxP">Max price</label><input id="maxP" inputmode="numeric" placeholder="e.g. 300 = $300K"></div>
+        </div>
+        <div class="hint">Type thousands like Matrix (300 = $300,000) or the full price.</div>
+        <div><div class="lbl" style="margin-bottom:4px">Hot sheet</div>
+          <div class="row2">
+            <div class="fld"><select id="hotk" aria-label="Hot sheet type"><option value="">Any time</option><option value="new">New listings</option><option value="price">Price drops</option></select></div>
+            <div class="fld"><input id="hotd" inputmode="numeric" value="7" aria-label="in the last N days" title="in the last N days"></div>
+          </div>
+          <div class="hint">“New listings in the last 7 days” = Matrix Hot Sheet.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="box c4"><h3>Property information</h3>
+      <div class="in">
+        <div class="fld"><label>Property type</label><div class="chips" data-k="pt" data-dl="HAR_PropertyType"></div></div>
+        <div class="row3">
+          <div class="fld"><label for="beds">Beds</label><input id="beds" inputmode="numeric" placeholder="3+"></div>
+          <div class="fld"><label for="baths">Baths</label><input id="baths" inputmode="numeric" placeholder="2+"></div>
+          <div class="fld"><label for="half">Half baths</label><input id="half" inputmode="numeric" placeholder="0+"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label for="minSf">Sq ft min</label><input id="minSf" inputmode="numeric" placeholder="1400"></div>
+          <div class="fld"><label for="maxSf">Sq ft max</label><input id="maxSf" inputmode="numeric"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label for="minYb">Year built from</label><input id="minYb" inputmode="numeric"></div>
+          <div class="fld"><label for="maxYb">Year built to</label><input id="maxYb" inputmode="numeric"></div>
+        </div>
+        <div class="row3">
+          <div class="fld"><label for="gar">Garages</label><input id="gar" inputmode="numeric" placeholder="2+"></div>
+          <div class="fld"><label for="maxSt">Stories (max)</label><select id="maxSt"><option value="">Any</option><option value="1">1 story</option><option value="2">Up to 2</option></select></div>
+          <div class="fld"><label for="maxBeds">Beds max</label><input id="maxBeds" inputmode="numeric"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label for="minAc">Lot acres min</label><input id="minAc" inputmode="decimal"></div>
+          <div class="fld"><label for="maxAc">Lot acres max</label><input id="maxAc" inputmode="decimal"></div>
+        </div>
+        <div class="row3">
+          <div class="fld"><label for="newc">New construction</label><select id="newc"><option value="">Any</option><option value="y">Yes</option><option value="n">No</option></select></div>
+          <div class="fld"><label for="pool">Private pool</label><select id="pool"><option value="">Any</option><option value="y">Yes</option><option value="n">No</option></select></div>
+          <div class="fld"><label for="hoa">HOA</label><select id="hoa"><option value="">Any</option><option value="n">No HOA</option><option value="y">Has HOA</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="box c8"><h3>Location information <small id="facet-note"></small></h3>
+      <div class="in">
+        <div class="areanote" id="areanote" hidden><span>📍</span><span id="areatext"></span><span class="sp"></span><button class="lnk" id="area-clear" type="button">Clear map area</button></div>
+        <div class="row3">
+          <div class="fld"><label>City</label><div class="chips" data-k="city" data-dl="city"></div></div>
+          <div class="fld"><label>ZIP code</label><div class="chips" data-k="zip"></div></div>
+          <div class="fld"><label>County</label><div class="chips" data-k="county" data-dl="CountyOrParish"></div></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>Subdivision</label><div class="chips" data-k="sub" data-dl="SubdivisionName"></div></div>
+          <div class="fld"><label>Geo market area</label><div class="chips" data-k="geo" data-dl="HAR_GeoMarketArea"></div></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>School district</label><div class="chips" data-k="dist" data-dl="HighSchoolDistrict"></div></div>
+          <div class="fld"><label>High school</label><div class="chips" data-k="high" data-dl="HighSchool"></div></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>Elementary</label><div class="chips" data-k="elem" data-dl="ElementarySchool"></div></div>
+          <div class="fld"><label>Middle / junior high</label><div class="chips" data-k="mid" data-dl="MiddleOrJuniorSchool"></div></div>
+        </div>
+        <div class="row3">
+          <div class="fld"><label for="street">Street name</label><input id="street" placeholder="Noble Wood Village"></div>
+          <div class="fld"><label for="radmi">Within (miles)</label><select id="radmi"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>5</option><option>10</option><option>15</option><option>25</option></select></div>
+          <div class="fld"><label for="radaddr">…of address</label><input id="radaddr" placeholder="Client's work or school"></div>
+        </div>
+        <div class="hint">Pick lists fill in from active HAR listings once you choose a city, ZIP or county. Draw a shape on the Map tab to search an exact area.</div>
+      </div>
+    </div>
+
+    <div class="box c4"><h3>Financing &amp; keywords</h3>
+      <div class="in">
+        <div class="fld"><label>Financing considered</label><div class="chips" data-k="fin" data-dl="ListingTerms"></div></div>
+        <div class="hint">FHA / VA / Assumable / Owner Finance — only listings where the seller says they'll consider it.</div>
+        <div class="fld"><label for="kw">Keyword (remarks)</label><input id="kw" placeholder="owner finance, assumable, rent to own…"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MAP ================= -->
+<section class="view" id="v-map">
+  <div class="maptools">
+    <button class="btn sm dark" id="draw" type="button">✏️ Draw search area</button>
+    <button class="btn sm" id="drawdone" type="button" hidden>✔ Use this area</button>
+    <button class="btn sm ghost" id="drawcancel" type="button" hidden>Cancel</button>
+    <button class="btn sm ghost" id="mapclear" type="button">Clear area</button>
+    <span class="hint" id="drawhint"></span>
+    <span class="sp"></span>
+    <span class="hint" id="mapcount"></span>
+  </div>
+  <div id="map"></div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section class="view" id="v-results">
+  <div class="resbar">
+    <div class="sum"><span class="num" id="r-count">0</span> homes<small id="r-sum"></small></div>
+    <span class="sp"></span>
+    <span class="hint">Checked <b class="num" id="r-checked">0</b> ·
+      <button class="lnk" id="ck-page" type="button">Page</button> ·
+      <button class="lnk" id="ck-none" type="button">None</button></span>
+    <select id="per" aria-label="Per page"><option>25</option><option>50</option><option>100</option></select>
+    <select id="sort" aria-label="Sort">
+      <option value="listPriceAsc">Price ↑</option><option value="listPriceDesc">Price ↓</option>
+      <option value="createdOnDesc">Newest</option><option value="listPricePerSqFtAsc">$/SF ↑</option>
+      <option value="sqftDesc">Sq ft ↓</option><option value="yearBuiltDesc">Year built ↓</option>
+      <option value="soldDateDesc">Sold date ↓ (comps)</option>
+    </select>
+  </div>
+  <div id="r-body"></div>
+  <div class="pager" id="pager"></div>
+  <p class="disc">HAR MLS data via Repliers for JAG team use. Agent remarks and showing info are for the team only — never paste them to clients.</p>
+</section>
+
+<!-- ================= CARTS ================= -->
+<section class="view" id="v-carts">
+  <div class="carts">
+    <div class="clist">
+      <div class="hd">
+        <input id="cartq" placeholder="Find a client list…" aria-label="Find a client list">
+        <label class="ck" id="allwrap" hidden><input type="checkbox" id="cart-all"> Show the whole team's lists</label>
+        <button class="btn sm dark" id="newcart" type="button">+ New client list</button>
+      </div>
+      <div id="clist"></div>
+    </div>
+    <div class="cpanel" id="cpanel"><div class="empty">Pick a client on the left, or make a new list.<br>Then check homes in Results and press <b>Add to list</b>.</div></div>
+  </div>
+</section>
+</main>
+
+<!-- bottom dock (like Matrix) -->
+<div class="dock" id="dock"><div class="wrap"><div class="dockin">
+  <button class="btn sm ghost" id="d-clear" type="button">Clear</button>
+  <span class="cnt"><b class="num" id="d-count">—</b> matches</span>
+  <button class="btn sm ghost" id="d-map" type="button">🗺️ Map</button>
+  <button class="btn sm" id="d-res" type="button">▦ Results</button>
+  <span id="d-cartbox" hidden style="display:contents">
+    <span class="cnt" style="font-weight:600">· <b class="num" id="d-chk">0</b> checked</span>
+    <button class="btn sm" id="d-add" type="button">➕ Add to list</button>
+  </span>
+</div></div></div>
+
+<div id="layer"></div>
+</div>
+
+<script src="jag-capture.js?v=3"></script>
+<script src="jag-share.js?v=4"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
+  var FN = BASE + '/functions/v1/', SITE = 'https://jasonaguirregroup.company', CDN = 'https://cdn.repliers.io/';
+  function $(id){ return document.getElementById(id); }
+  function $$(s, el){ return Array.prototype.slice.call((el || document).querySelectorAll(s)); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function ls(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
+  function money(n){ return n || n === 0 ? '$' + Math.round(n).toLocaleString('en-US') : '—'; }
+  function k$(n){ return n >= 1e6 ? '$' + (+(n / 1e6).toFixed(2)) + 'M' : '$' + Math.round(n / 1000) + 'K'; }
+  function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
+  function fmtPhone(p){ var d = digits(p); return d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : (p || ''); }
+  function title(s){ return String(s || '').replace(/\b([a-zà-ÿ])([a-zà-ÿ']*)/gi, function(m, a, b){ return a.toUpperCase() + b.toLowerCase(); }); }
+  function ago(iso){
+    if(!iso) return 'never'; var m = (Date.now() - new Date(iso).getTime()) / 60000;
+    if(m < 2) return 'just now'; if(m < 60) return Math.floor(m) + ' min ago'; if(m < 1440) return Math.floor(m / 60) + ' h ago';
+    var d = Math.floor(m / 1440); return d === 1 ? 'yesterday' : d < 30 ? d + ' days ago' : new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  function toast(t){ var el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(function(){ el.remove(); }, 2600); }
+  function img(p, size){ return p ? CDN + p + '?class=' + (size || 'small') : ''; }
+
+  /* ---------------- auth + calls ---------------- */
+  var me = null;
+  function token(){ return window.JagShare ? JagShare.token() : Promise.resolve(null); }
+  function api(body){
+    return token().then(function(t){
+      if(!t) throw new Error('signin');
+      return fetch(FN + 'matrix-search', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    }).then(function(r){ if(r.status === 401 || r.status === 403) throw new Error('signin'); return r.json(); });
+  }
+  function rpc(name, args){
+    return token().then(function(t){
+      if(!t) throw new Error('signin');
+      return fetch(BASE + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) });
+    }).then(function(r){ if(r.status === 401) throw new Error('signin'); return r.json(); });
+  }
+  function fail(e){
+    if(String(e && e.message) === 'signin'){ $('app').hidden = true; $('gate').hidden = false; $('gate-msg').textContent = 'Your sign-in expired. Sign in again to keep searching.'; return; }
+    toast('Something went wrong. Check your connection and try again.');
+  }
+
+  /* ---------------- criteria <-> form ---------------- */
+  var CHIPS = {}; // key -> array
+  var c = {};      // current criteria
+  var NUMS = ['minP', 'maxP', 'beds', 'baths', 'half', 'minSf', 'maxSf', 'minYb', 'maxYb', 'gar', 'maxBeds', 'minAc', 'maxAc', 'offDays'];
+  var SELS = ['maxSt', 'newc', 'pool', 'hoa'];
+  function price(v){ var n = Number(String(v || '').replace(/[$,\s]/g, '').replace(/k$/i, '000')); if(!n) return ''; return n < 10000 ? n * 1000 : n; }
+  function readForm(){
+    var o = { type: $('type-seg').querySelector('[aria-pressed="true"]').dataset.v };
+    o.st = $$('input[name=st]:checked').map(function(x){ return x.value; });
+    o.off = $$('input[name=off]:checked').map(function(x){ return x.value; });
+    NUMS.forEach(function(k){ var v = $(k).value.trim(); if(v) o[k] = (k === 'minP' || k === 'maxP') ? price(v) : v.replace(/[^\d.]/g, ''); });
+    SELS.forEach(function(k){ if($(k).value) o[k] = $(k).value; });
+    Object.keys(CHIPS).forEach(function(k){ if(CHIPS[k].length) o[k] = CHIPS[k].slice(); });
+    if($('street').value.trim()) o.street = $('street').value.trim();
+    if($('kw').value.trim()) o.kw = $('kw').value.trim();
+    if($('hotk').value) o.hot = { k: $('hotk').value, d: Number($('hotd').value) || 7 };
+    if(c.map) o.map = c.map;
+    else if(c.rad && $('radmi').value) o.rad = { lat: c.rad.lat, lng: c.rad.lng, mi: Number($('radmi').value), label: c.rad.label };
+    return o;
+  }
+  function fillForm(o){
+    o = o || {};
+    $$('#type-seg button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.v === (o.type === 'lease' ? 'lease' : 'sale'))); });
+    $$('input[name=st]').forEach(function(x){ x.checked = (o.st || (o.off && o.off.length ? [] : ['active'])).indexOf(x.value) >= 0; });
+    $$('input[name=off]').forEach(function(x){ x.checked = (o.off || []).indexOf(x.value) >= 0; });
+    NUMS.forEach(function(k){ $(k).value = o[k] != null ? ((k === 'minP' || k === 'maxP') ? Math.round(o[k] / 1000) : o[k]) : (k === 'offDays' ? '180' : ''); });
+    SELS.forEach(function(k){ $(k).value = o[k] || ''; });
+    Object.keys(CHIPS).forEach(function(k){ CHIPS[k] = (o[k] || []).slice(); paintChips(k); });
+    $('street').value = o.street || ''; $('kw').value = o.kw || '';
+    $('hotk').value = o.hot ? o.hot.k : ''; $('hotd').value = o.hot ? o.hot.d : 7;
+    $('radmi').value = o.rad ? String(o.rad.mi) : ''; $('radaddr').value = o.rad ? (o.rad.label || '') : '';
+    c = o; paintArea();
+  }
+
+  // chips inputs (city, zip, subdivision, schools...) with HAR pick lists
+  var FACETS = {};
+  function paintChips(k){
+    var box = document.querySelector('.chips[data-k="' + k + '"]'); if(!box) return;
+    var inp = box.querySelector('input');
+    box.querySelectorAll('.chip').forEach(function(x){ x.remove(); });
+    CHIPS[k].forEach(function(v, i){
+      var s = document.createElement('span'); s.className = 'chip'; s.innerHTML = esc(k === 'zip' ? v : title(v)) + '<button type="button" aria-label="Remove ' + esc(v) + '">×</button>';
+      s.querySelector('button').onclick = function(e){ e.stopPropagation(); CHIPS[k].splice(i, 1); paintChips(k); changed(k); };
+      box.insertBefore(s, inp);
+    });
+  }
+  $$('.chips').forEach(function(box){
+    var k = box.dataset.k; CHIPS[k] = [];
+    var inp = document.createElement('input'); inp.setAttribute('aria-label', k);
+    if(box.dataset.dl){ inp.setAttribute('list', 'dl-' + box.dataset.dl); var dl = document.getElementById('dl-' + box.dataset.dl); if(!dl){ dl = document.createElement('datalist'); dl.id = 'dl-' + box.dataset.dl; document.body.appendChild(dl); } }
+    box.appendChild(inp);
+    box.onclick = function(){ inp.focus(); };
+    function add(){
+      var vals = inp.value.split(/[,;]/).map(function(x){ return x.trim(); }).filter(Boolean);
+      vals.forEach(function(v){
+        if(k === 'zip' && !/^\d{5}$/.test(v)) return;
+        // use HAR's exact spelling when it's on the pick list
+        var f = (FACETS[box.dataset.dl] || []).find(function(p){ return p[0].toLowerCase() === v.toLowerCase(); });
+        if(f) v = f[0];
+        if(CHIPS[k].map(function(x){ return x.toLowerCase(); }).indexOf(v.toLowerCase()) < 0) CHIPS[k].push(v);
+      });
+      inp.value = ''; paintChips(k); if(vals.length) changed(k);
+    }
+    inp.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ','){ e.preventDefault(); add(); }
+      else if(e.key === 'Backspace' && !inp.value && CHIPS[k].length){ CHIPS[k].pop(); paintChips(k); changed(k); }
+    });
+    inp.addEventListener('change', add);
+    inp.addEventListener('blur', function(){ if(inp.value.trim()) add(); });
+  });
+  function loadFacets(){
+    var scope = { type: c.type, city: c.city, zip: c.zip, county: c.county, map: c.map, rad: c.rad };
+    if(!(scope.city || scope.zip || scope.county || scope.map || scope.rad)){ $('facet-note').textContent = ''; return; }
+    $('facet-note').textContent = 'loading pick lists…';
+    api({ action: 'facets', c: scope }).then(function(j){
+      if(!j || !j.ok){ $('facet-note').textContent = ''; return; }
+      FACETS = j.facets || {};
+      Object.keys(FACETS).forEach(function(k){
+        var dl = document.getElementById('dl-' + k); if(!dl) return;
+        dl.innerHTML = FACETS[k].map(function(p){ return '<option value="' + esc(k === 'city' || k === 'HAR_PropertyType' || k === 'ListingTerms' || k === 'HighSchool' || k === 'HAR_GeoMarketArea' ? p[0] : title(p[0])) + '">' + p[1] + ' active</option>'; }).join('');
+      });
+      $('facet-note').textContent = (j.count || 0).toLocaleString() + ' active in this area · pick lists ready';
+    }).catch(function(){ $('facet-note').textContent = ''; });
+  }
+  // property type & financing pick lists work everywhere
+  (function(){
+    var pt = document.getElementById('dl-HAR_PropertyType'), fin = document.getElementById('dl-ListingTerms');
+    pt.innerHTML = ['Single-Family', 'Townhouse/Condo', 'Multi-Family', 'Mid/Hi-Rise Condo', 'Country Homes/Acreage', 'Lots'].map(function(v){ return '<option value="' + v + '">'; }).join('');
+    fin.innerHTML = ['FHA', 'VA Loan', 'Conventional', 'Cash', 'USDA Loan', 'Assumable 1st Lien', 'Owner Financing', 'Investor', 'Texas Veterans Land Board'].map(function(v){ return '<option value="' + v + '">'; }).join('');
+  })();
+
+  /* ---------------- live count + search ---------------- */
+  var S = { page: 1, per: 25, sort: 'listPriceAsc', rows: [], count: 0, sum: '', checked: {}, byMls: {} };
+  var countT = null, countSeq = 0;
+  function changed(k){
+    c = readForm();
+    if(k === 'city' || k === 'zip' || k === 'county') loadFacets();
+    clearTimeout(countT); countT = setTimeout(liveCount, 450);
+    paintTips();
+  }
+  function liveCount(){
+    var seq = ++countSeq; $('d-count').innerHTML = '<span class="spin"></span>';
+    api({ c: c, per: 5, page: 1 }).then(function(j){
+      if(seq !== countSeq) return;
+      $('d-count').textContent = j && j.ok ? (j.count || 0).toLocaleString() : '—';
+      S.liveCount = j && j.ok ? j.count : null; paintTips();
+    }).catch(function(e){ if(seq === countSeq) $('d-count').textContent = '—'; if(String(e.message) === 'signin') fail(e); });
+  }
+  $('v-criteria').addEventListener('input', function(e){ if(e.target.closest('.chips')) return; changed(e.target.id); });
+  $('v-criteria').addEventListener('change', function(e){ if(e.target.closest('.chips')) return; changed(e.target.id); });
+  $$('#type-seg button').forEach(function(b){ b.onclick = function(){ $$('#type-seg button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); }); changed('type'); }; });
+
+  function runSearch(page){
+    c = readForm(); S.page = page || 1;
+    $('r-body').innerHTML = '<div class="empty"><span class="spin"></span> Searching HAR…</div>'; $('pager').innerHTML = '';
+    showTab('results');
+    remember(c);
+    return api({ c: c, page: S.page, per: S.per, sort: S.sort }).then(function(j){
+      if(!j || !j.ok){ $('r-body').innerHTML = '<div class="empty">The HAR feed didn\'t answer' + (j && j.error ? ' (' + esc(j.error) + ')' : '') + '. Try again in a moment.</div>'; return; }
+      S.rows = j.rows || []; S.count = j.count || 0; S.sum = j.summary || ''; S.numPages = j.numPages || 1; S.groups = j.groups || [];
+      S.rows.forEach(function(r){ S.byMls[r.mls] = r; });
+      $('d-count').textContent = S.count.toLocaleString(); $('b-res').textContent = S.count > 999 ? '999+' : S.count;
+      $('speed').value = S.sum;
+      paintResults(); paintMapMarkers(); paintTips();
+    }).catch(fail);
+  }
+
+  /* ---------------- results grid ---------------- */
+  var STC = { 'Active': ['A', 'Active'], 'Option Pending': ['OP', 'Option Pend'], 'Pending Continue to Show': ['PCS', 'PCS'], 'Pending': ['P', 'Pending'],
+    'Coming Soon': ['CS', 'Coming Soon'], 'Sold': ['S', 'Sold'], 'Closed': ['S', 'Sold'], 'Withdrawn': ['X', 'Withdrawn'], 'Expired': ['X', 'Expired'], 'Terminated': ['X', 'Terminated'], 'Canceled': ['X', 'Terminated'], 'Leased': ['S', 'Leased'] };
+  function stPill(r){ var s = STC[r.st] || STC[r.std] || ['X', r.st || r.std || '']; return '<span class="pill ' + s[0] + '">' + esc(s[1]) + '</span>'; }
+  function ppsf(r){ var p = r.sold || r.price; return p && r.sqft ? '$' + (p / r.sqft).toFixed(2) : '—'; }
+  function sortCol(k){ return { price: 'listPriceAsc', sqft: 'sqftDesc', yb: 'yearBuiltDesc', ppsf: 'listPricePerSqFtAsc', dom: 'createdOnDesc' }[k]; }
+  function paintResults(){
+    $('r-count').textContent = S.count.toLocaleString();
+    var g = S.groups && S.groups.length > 1 ? ' · ' + S.groups.map(function(x){ return x.count.toLocaleString() + (x.group === 'on' ? ' on market' : ' off market'); }).join(', ') : '';
+    $('r-sum').textContent = S.sum + g;
+    paintChecked();
+    if(!S.rows.length){ $('r-body').innerHTML = '<div class="empty">No homes match. Lola has ideas — open 💅 Lola.</div>'; $('pager').innerHTML = ''; return; }
+    var hd = '<thead><tr><th><input type="checkbox" id="ck-all" aria-label="Check all on page"></th><th>Photo</th><th>MLS #</th><th>Status</th><th>Address</th><th>Subdivision</th>' +
+      '<th class="r s' + (S.sort.indexOf('sqft') === 0 ? ' on' : '') + '" data-s="sqft">SqFt</th><th class="r s' + (S.sort.indexOf('listPrice') === 0 ? ' on' : '') + '" data-s="price">Price</th>' +
+      '<th class="r s' + (S.sort.indexOf('listPricePerSqFt') === 0 ? ' on' : '') + '" data-s="ppsf">$/SF</th><th class="r s' + (S.sort.indexOf('yearBuilt') === 0 ? ' on' : '') + '" data-s="yb">YB</th>' +
+      '<th class="r">BR</th><th class="r">Bth F/H</th><th class="r s' + (S.sort === 'createdOnDesc' ? ' on' : '') + '" data-s="dom" title="Days on market / cumulative">DOM/CDOM</th><th>Office</th></tr></thead>';
+    var bd = S.rows.map(function(r){
+      var ck = !!S.checked[r.mls];
+      var drop = r.drop === 'decrease' ? ' <span class="dn" title="Price drop' + (r.orig && r.price < r.orig ? ' · was ' + money(r.orig) : '') + '">↓</span>' : r.drop === 'increase' ? ' <span class="up">↑</span>' : '';
+      var badges = (r.newc ? ' <span class="pill new" title="' + esc(r.builder || 'New construction') + '">New</span>' : '') + (r.oh ? ' <span class="pill CS" title="' + esc(r.oh) + '">OH</span>' : '') + (r.pool ? ' <span class="pill" title="Private pool">🏊</span>' : '');
+      var priceCell = r.sold ? '<span title="List ' + money(r.price) + '">' + money(r.sold) + '</span><small style="display:block;color:var(--muted);font-size:11.5px">sold ' + esc(r.soldDate || '') + '</small>' : money(r.price) + drop;
+      return '<tr data-mls="' + esc(r.mls) + '"' + (ck ? ' class="chk"' : '') + '><td class="c-ck"><input type="checkbox" class="rck" aria-label="Check ' + esc(r.addr) + '"' + (ck ? ' checked' : '') + '></td>' +
+        '<td class="c-ph"><img class="thumb" loading="lazy" alt="" src="' + esc(img(r.photo)) + '"></td>' +
+        '<td class="hm num">' + esc(r.mls) + '</td><td class="c-st">' + stPill(r) + badges + '</td>' +
+        '<td class="c-ad"><button class="addr" type="button" data-open="' + esc(r.mls) + '">' + esc(r.addr || 'MLS ' + r.mls) + (r.unit ? ' #' + esc(r.unit) : '') + '<small>' + esc([r.city, r.zip].filter(Boolean).join(' ')) + '</small></button></td>' +
+        '<td class="hm">' + esc(r.sub ? title(r.sub) : '') + '</td><td class="r num hm">' + (r.sqft ? r.sqft.toLocaleString() : '—') + '</td>' +
+        '<td class="r num c-pr" style="font-weight:800">' + priceCell + '</td><td class="r num hm">' + ppsf(r) + '</td><td class="r num hm">' + (r.yb || '—') + '</td>' +
+        '<td class="r num hm">' + (r.beds != null ? r.beds : '—') + '</td><td class="r num hm">' + (r.bf != null ? r.bf + '/' + (r.bh || 0) : (r.baths != null ? r.baths : '—')) + '</td>' +
+        '<td class="r num hm">' + (r.dom != null ? r.dom : '—') + (r.cdom != null && r.cdom !== r.dom ? '/' + r.cdom : '') + '</td><td class="hm" title="' + esc(r.officeName || '') + '">' + esc(r.office || '') + '</td>' +
+        '<td class="mob" hidden>' + [r.beds != null ? r.beds + ' bd' : '', r.baths != null ? r.baths + ' ba' : '', r.sqft ? r.sqft.toLocaleString() + ' sqft' : '', r.dom != null ? r.dom + ' DOM' : '', r.sub ? title(r.sub) : ''].filter(Boolean).join(' · ') + '</td></tr>';
+    }).join('');
+    $('r-body').innerHTML = '<div class="tablewrap"><table class="res">' + hd + '<tbody>' + bd + '</tbody></table></div>';
+    if(window.matchMedia('(max-width:760px)').matches) $$('td.mob').forEach(function(x){ x.hidden = false; });
+    $('ck-all').checked = S.rows.every(function(r){ return S.checked[r.mls]; });
+    $('ck-all').onchange = function(){ var on = this.checked; S.rows.forEach(function(r){ if(on) S.checked[r.mls] = r; else delete S.checked[r.mls]; }); paintResults(); };
+    $$('#r-body th.s').forEach(function(th){ th.onclick = function(){ var s = sortCol(th.dataset.s); if(s === S.sort && s === 'listPriceAsc') s = 'listPriceDesc'; S.sort = s; $('sort').value = s; runSearch(1); }; });
+    // pager
+    var n = Math.min(S.numPages || 1, 200), p = S.page, out = [];
+    if(n > 1){
+      out.push('<button type="button" data-p="' + Math.max(1, p - 1) + '"' + (p === 1 ? ' disabled' : '') + '>‹</button>');
+      var from = Math.max(1, p - 3), to = Math.min(n, from + 6);
+      for(var i = from; i <= to; i++) out.push('<button type="button" data-p="' + i + '"' + (i === p ? ' aria-current="true"' : '') + '>' + i + '</button>');
+      if(to < n) out.push('<span>…</span><button type="button" data-p="' + n + '">' + n + '</button>');
+      out.push('<button type="button" data-p="' + Math.min(n, p + 1) + '"' + (p === n ? ' disabled' : '') + '>›</button>');
+    }
+    $('pager').innerHTML = out.join('');
+  }
+  $('r-body').addEventListener('click', function(e){
+    var o = e.target.closest('[data-open]'); if(o){ openListing(o.dataset.open); return; }
+    var ck = e.target.closest('.rck'); if(ck){
+      var tr = ck.closest('tr'), mls = tr.dataset.mls;
+      if(ck.checked) S.checked[mls] = S.byMls[mls]; else delete S.checked[mls];
+      tr.classList.toggle('chk', ck.checked); paintChecked();
+    }
+  });
+  $('pager').addEventListener('click', function(e){ var b = e.target.closest('[data-p]'); if(b && !b.disabled){ runSearch(Number(b.dataset.p)); window.scrollTo(0, 0); } });
+  $('per').onchange = function(){ S.per = Number(this.value); runSearch(1); };
+  $('sort').onchange = function(){ S.sort = this.value; runSearch(1); };
+  $('ck-page').onclick = function(){ S.rows.forEach(function(r){ S.checked[r.mls] = r; }); paintResults(); };
+  $('ck-none').onclick = function(){ S.checked = {}; paintResults(); };
+  function paintChecked(){
+    var n = Object.keys(S.checked).length;
+    $('r-checked').textContent = n; $('d-chk').textContent = n; $('d-cartbox').hidden = !n;
+  }
+
+  /* ---------------- speed bar ---------------- */
+  // "RES ACT $300- 3+ 2+ 1400+ sqft Magnolia", "77354 $250-350 4+", an MLS number, or an address
+  function parseSpeed(t){
+    var o = { st: [], off: [] }, words = [], nPlus = 0, s = ' ' + t.trim() + ' ';
+    if(/^\s*\d{6,9}\s*$/.test(t)) return { mls: t.trim() };
+    s = s.replace(/\s(RES|SFR)\s/ig, ' ').replace(/\sLEASE\s/ig, function(){ o.type = 'lease'; return ' '; });
+    var ST = { ACT: 'active', OP: 'option', PCS: 'pcs', PEND: 'pending', PND: 'pending', CS: 'coming' }, OF = { SLD: 'sold', SOLD: 'sold', WITH: 'withdrawn', EXP: 'expired', TERM: 'terminated' };
+    s.trim().split(/\s+/).forEach(function(w){
+      var u = w.toUpperCase(), m;
+      if(u.split('/').every(function(x){ return ST[x] || OF[x]; })){ u.split('/').forEach(function(x){ if(ST[x]) o.st.push(ST[x]); else o.off.push(OF[x]); }); return; }
+      if((m = w.match(/^\$(\d*\.?\d*)k?-(\d*\.?\d*)k?$/i))){ if(m[1]) o.minP = price(m[1]); if(m[2]) o.maxP = price(m[2]); return; }
+      if((m = w.match(/^\$?(\d+\.?\d*)k?$/i)) && /^\$/.test(w)){ o.maxP = price(m[1]); return; }
+      if(/^\d{5}$/.test(w)){ (o.zip = o.zip || []).push(w); return; }
+      if((m = w.match(/^(\d{3,5})\+$/)) && Number(m[1]) >= 300){ o.minSf = m[1]; return; }
+      if((m = w.match(/^(\d)\+$/))){ if(nPlus++ === 0) o.beds = m[1]; else o.baths = m[1]; return; }
+      if(/^(sqft|sf|ft|bd|ba)$/i.test(w)) return;
+      words.push(w);
+    });
+    if(!o.st.length && !o.off.length) o.st = ['active'];
+    if(words.length){
+      var place = words.join(' ');
+      if(/\d/.test(place)) o.kw = place; else o.city = [title(place)];
+    }
+    return o;
+  }
+  $('speedf').onsubmit = function(e){
+    e.preventDefault();
+    var t = $('speed').value.trim(); if(!t) return runSearch(1);
+    var o = parseSpeed(t);
+    if(o.mls){ openListing(o.mls); return; }
+    var keep = readForm(); ['pt', 'newc', 'pool', 'hoa', 'map', 'rad', 'sub', 'high', 'dist'].forEach(function(k){ if(keep[k] && o[k] == null) o[k] = keep[k]; });
+    fillForm(o); if(o.city || o.zip) loadFacets(); runSearch(1);
+  };
+
+  /* ---------------- tabs ---------------- */
+  var curTab = 'criteria';
+  function showTab(t){
+    curTab = t;
+    $$('.tab').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === t)); });
+    $$('.view').forEach(function(v){ v.classList.toggle('on', v.id === 'v-' + t); });
+    $('dock').hidden = t === 'carts';
+    if(t === 'map') initMap();
+    if(t === 'carts') paintCartList();
+  }
+  $$('.tab').forEach(function(b){ b.onclick = function(){ if(b.dataset.tab === 'results' && !S.rows.length) runSearch(1); else showTab(b.dataset.tab); }; });
+  $('d-res').onclick = function(){ runSearch(1); };
+  $('d-map').onclick = function(){ if(!S.rows.length) runSearch(1).then(function(){ showTab('map'); }); else showTab('map'); };
+  $('d-clear').onclick = function(){ fillForm({ st: ['active'] }); FACETS = {}; S.rows = []; S.checked = {}; paintChecked(); liveCount(); showTab('criteria'); };
+
+  /* ---------------- map ---------------- */
+  var map = null, markers = null, areaLayer = null, drawing = null;
+  function initMap(){
+    if(map){ setTimeout(function(){ map.invalidateSize(); fitMarkers(); }, 50); return; }
+    map = L.map('map', { zoomControl: true }).setView([29.76, -95.37], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+    markers = L.layerGroup().addTo(map);
+    map.on('click', function(e){ if(!drawing) return; drawing.pts.push(e.latlng); drawing.line.setLatLngs(drawing.pts); $('drawdone').disabled = drawing.pts.length < 3; $('drawhint').textContent = drawing.pts.length + ' points — keep clicking around the area, then “Use this area”.'; });
+    paintArea(); paintMapMarkers();
+  }
+  var COLORS = { A: '#0f8a4d', OP: '#7a4b00', PCS: '#7a4b00', P: '#6b3fd1', S: '#c8102e', CS: '#2653d9', X: '#6a6972' };
+  function paintMapMarkers(){
+    if(!map) return;
+    markers.clearLayers();
+    S.rows.forEach(function(r){
+      if(r.lat == null || r.lng == null) return;
+      var s = (STC[r.st] || STC[r.std] || ['X'])[0];
+      var m = L.circleMarker([r.lat, r.lng], { radius: 8, color: '#fff', weight: 2, fillColor: COLORS[s] || '#17161c', fillOpacity: .95 });
+      m.bindPopup('<div class="mpop">' + (r.photo ? '<img src="' + esc(img(r.photo, 'medium')) + '" alt="">' : '') + '<b>' + money(r.sold || r.price) + '</b> ' + stPill(r) +
+        '<div>' + esc(r.addr) + '</div><div style="color:#6a6972">' + [r.beds != null ? r.beds + ' bd' : '', r.baths != null ? r.baths + ' ba' : '', r.sqft ? r.sqft.toLocaleString() + ' sqft' : ''].filter(Boolean).join(' · ') + '</div>' +
+        '<div style="display:flex;gap:6px;margin-top:8px"><button class="btn sm" data-open="' + esc(r.mls) + '" type="button">Open 360</button><button class="btn sm ghost" data-ckm="' + esc(r.mls) + '" type="button">' + (S.checked[r.mls] ? '✓ Checked' : 'Check') + '</button></div></div>');
+      markers.addLayer(m);
+    });
+    $('mapcount').textContent = S.rows.length ? 'Showing ' + S.rows.filter(function(r){ return r.lat != null; }).length + ' of ' + S.count.toLocaleString() + ' (this results page)' : 'Run a search to see homes';
+    fitMarkers();
+  }
+  function fitMarkers(){
+    if(!map) return;
+    var pts = S.rows.filter(function(r){ return r.lat != null; }).map(function(r){ return [r.lat, r.lng]; });
+    if(areaLayer) map.fitBounds(areaLayer.getBounds(), { padding: [30, 30] });
+    else if(pts.length) map.fitBounds(pts, { padding: [40, 40], maxZoom: 15 });
+  }
+  $('map').addEventListener('click', function(e){
+    var o = e.target.closest('[data-open]'); if(o){ openListing(o.dataset.open); return; }
+    var k = e.target.closest('[data-ckm]'); if(k){ var mls = k.dataset.ckm; if(S.checked[mls]) delete S.checked[mls]; else S.checked[mls] = S.byMls[mls]; k.textContent = S.checked[mls] ? '✓ Checked' : 'Check'; paintChecked(); }
+  });
+  function paintArea(){
+    var note = '';
+    if(c.map) note = 'Searching inside a drawn map area (' + c.map.length + ' points).';
+    else if(c.rad) note = 'Within ' + c.rad.mi + ' mi of ' + (c.rad.label || 'a point') + '.';
+    $('areanote').hidden = !note; $('areatext').textContent = note;
+    if(!map) return;
+    if(areaLayer){ map.removeLayer(areaLayer); areaLayer = null; }
+    if(c.map) areaLayer = L.polygon(c.map.map(function(p){ return [p[1], p[0]]; }), { color: '#2653d9', weight: 2, fillOpacity: .08 }).addTo(map);
+    else if(c.rad) areaLayer = L.circle([c.rad.lat, c.rad.lng], { radius: c.rad.mi * 1609.34, color: '#2653d9', weight: 2, fillOpacity: .08 }).addTo(map);
+  }
+  $('draw').onclick = function(){
+    initMap();
+    drawing = { pts: [], line: L.polyline([], { color: '#c8102e', weight: 3, dashArray: '6 6' }).addTo(map) };
+    $('draw').hidden = true; $('drawdone').hidden = false; $('drawcancel').hidden = false; $('drawdone').disabled = true;
+    $('drawhint').textContent = 'Click on the map around the area your client wants.'; map.getContainer().style.cursor = 'crosshair';
+  };
+  function endDraw(){ if(drawing){ map.removeLayer(drawing.line); drawing = null; } $('draw').hidden = false; $('drawdone').hidden = true; $('drawcancel').hidden = true; $('drawhint').textContent = ''; map.getContainer().style.cursor = ''; }
+  $('drawdone').onclick = function(){
+    var pts = drawing.pts.map(function(p){ return [+p.lng.toFixed(6), +p.lat.toFixed(6)]; });
+    endDraw(); c.map = pts; delete c.rad; $('radmi').value = ''; $('radaddr').value = '';
+    paintArea(); changed('map'); loadFacets(); runSearch(1).then(function(){ showTab('map'); });
+  };
+  $('drawcancel').onclick = endDraw;
+  function clearArea(){ delete c.map; delete c.rad; $('radmi').value = ''; $('radaddr').value = ''; paintArea(); changed('map'); }
+  $('mapclear').onclick = clearArea; $('area-clear').onclick = clearArea;
+  // "within X miles of <address>" — look up the address (OpenStreetMap)
+  var geoT = null;
+  function geo(){
+    var mi = Number($('radmi').value), q = $('radaddr').value.trim();
+    if(!mi || q.length < 4){ if(!mi && c.rad){ delete c.rad; paintArea(); changed('rad'); } return; }
+    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=' + encodeURIComponent(q + (/tx|texas/i.test(q) ? '' : ', TX')))
+      .then(function(r){ return r.json(); }).then(function(a){
+        if(!a || !a[0]){ toast('Couldn\'t find that address. Try street + city.'); return; }
+        delete c.map; c.rad = { lat: +(+a[0].lat).toFixed(6), lng: +(+a[0].lon).toFixed(6), mi: mi, label: q };
+        paintArea(); changed('rad'); loadFacets();
+      }).catch(function(){ toast('Address lookup is busy. Try again.'); });
+  }
+  $('radmi').addEventListener('change', function(){ clearTimeout(geoT); geoT = setTimeout(geo, 100); });
+  $('radaddr').addEventListener('change', function(){ clearTimeout(geoT); geoT = setTimeout(geo, 100); });
+
+  /* ---------------- 360 view ---------------- */
+  var cur = null; // current listing detail
+  function openListing(mls){
+    layer('<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="Listing"><div class="dh"><div><h2><span class="spin"></span> MLS ' + esc(mls) + '</h2></div><span class="sp"></span><button class="x" data-close aria-label="Close">×</button></div><div class="db"></div></aside>');
+    api({ action: 'detail', mls: mls }).then(function(d){
+      if(!d || !d.ok){ $('layer').querySelector('.db').innerHTML = '<div class="empty">Couldn\'t load MLS ' + esc(mls) + '.</div>'; return; }
+      cur = d; S.byMls[d.row.mls] = Object.assign({}, S.byMls[d.row.mls] || {}, d.row);
+      paint360('listing');
+    }).catch(fail);
+  }
+  function fact(k, v){ return v == null || v === '' || (Array.isArray(v) && !v.length) ? '' : '<dt>' + esc(k) + '</dt><dd>' + esc(Array.isArray(v) ? v.join(', ') : v) + '</dd>'; }
+  function paint360(tab){
+    var d = cur, r = d.row, x = d.raw, de = d.details || {};
+    var addr = (r.addr || 'MLS ' + r.mls) + (r.unit ? ' #' + r.unit : '');
+    var tabs = [['listing', 'Listing'], ['photos', 'Photos (' + d.images.length + ')'], ['agent', '🔒 Agent info'], ['history', 'Price history'], ['comps', 'Comps (' + d.comps.length + ')'], ['lola', '💅 Lola']];
+    var body = '';
+    if(tab === 'listing'){
+      var hoa = x.AssociationFee ? money(x.AssociationFee) + ' ' + (x.AssociationFeeFrequency || '').toLowerCase() : (x.AssociationYN === false ? 'None' : '');
+      var taxMo = r.tax && (r.price || r.sold) ? money((r.price || r.sold) * r.tax / 100 / 12) + '/mo est.' : '';
+      body = '<div class="hero"><img src="' + esc(img(d.images[0], 'large')) + '" alt=""><dl class="kv">' +
+        fact('Status', r.st) + fact('List price', money(r.price)) + (r.orig && r.orig !== r.price ? fact('Original price', money(r.orig)) : '') + (r.sold ? fact('Sold', money(r.sold) + ' on ' + r.soldDate) : '') +
+        fact('$/SF', ppsf(r)) + fact('DOM / CDOM', [r.dom, r.cdom].filter(function(v){ return v != null; }).join(' / ')) + fact('Beds', r.beds) +
+        fact('Baths F/H', r.bf != null ? r.bf + '/' + (r.bh || 0) : r.baths) + fact('SqFt', r.sqft ? r.sqft.toLocaleString() + (x.YearBuiltSource ? '' : '') : '') +
+        fact('Year built', r.yb ? r.yb + (x.YearBuiltSource ? ' / ' + x.YearBuiltSource : '') : '') + fact('Lot', x.LotSizeAcres ? (+x.LotSizeAcres).toFixed(3) + ' ac' + (x.LotSizeSquareFeet ? ' · ' + Math.round(x.LotSizeSquareFeet).toLocaleString() + ' sf' : '') : (x.LotFeatures || '')) +
+        fact('Stories', x.Stories) + fact('Garage', x.GarageSpaces ? x.GarageSpaces + (x.ParkingFeatures ? ' · ' + x.ParkingFeatures.join(', ') : '') : '') + fact('Pool', x.PoolPrivateYN ? 'Private' + (x.PoolFeatures ? ' · ' + x.PoolFeatures.join(', ') : '') : (x.HAR_PoolArea ? 'Area pool' : '')) +
+        fact('Subdivision', x.SubdivisionName ? title(x.SubdivisionName) : '') + fact('Legal sub', x.HAR_LegalSubdivision) + fact('County', x.CountyOrParish) + fact('Market area', x.HAR_GeoMarketArea) +
+        fact('HOA', hoa + (x.HAR_AnnualMaintDesc ? ' (' + x.HAR_AnnualMaintDesc + ')' : '')) + fact('Tax rate', r.tax ? r.tax + '% · ' + taxMo : '') + fact('Utility district (MUD)', x.HAR_UtilityDistrict ? 'Yes' : '') +
+        fact('Builder', x.BuilderName ? x.BuilderName + (x.HAR_CompletionDate ? ' · done ' + x.HAR_CompletionDate : '') : '') +
+        fact('Financing considered', x.ListingTerms) + fact('Tax account', x.ParcelNumber) + '</dl></div>' +
+        (x.PublicRemarks ? '<div class="sec"><h4>Public remarks</h4><div class="remark">' + esc(x.PublicRemarks) + '</div></div>' : '') +
+        '<div class="sec"><h4>Schools</h4><dl class="kv">' + fact('District', x.HighSchoolDistrict) + fact('Elementary', x.ElementarySchool) + fact('Middle', x.MiddleOrJuniorSchool) + fact('High', x.HighSchool) + '</dl><div class="hint" style="margin-top:6px">Computer-generated by HAR — the buyer must verify enrollment.</div></div>' +
+        (d.rooms.length ? '<div class="sec"><h4>Rooms</h4><table class="mini"><thead><tr><th>Room</th><th>Size</th><th>Level</th></tr></thead><tbody>' + d.rooms.map(function(m){ return '<tr><td>' + esc(m.description) + '</td><td>' + esc(m.length && m.width ? m.length + ' × ' + m.width : '') + '</td><td>' + esc(m.level || '') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '') +
+        '<div class="sec"><h4>Interior, exterior &amp; utilities</h4><dl class="kv">' + fact('Bedrooms', x.InteriorFeatures) + fact('Kitchen', x.RoomKitchenFeatures) + fact('Primary bath', x.RoomMasterBathroomFeatures) + fact('Rooms', x.HAR_RoomDescription) +
+        fact('Countertops', x.HAR_Countertops) + fact('Flooring', x.Flooring) + fact('Appliances', x.Appliances) + fact('Laundry', x.LaundryFeatures) + fact('Heat', x.Heating) + fact('Cool', x.Cooling) +
+        fact('Roof', x.Roof) + fact('Foundation', x.FoundationDetails) + fact('Exterior', x.ConstructionMaterials) + fact('Fence', x.Fencing) + fact('Water / sewer', [].concat(x.WaterSource || [], x.Sewer || [])) +
+        fact('Restrictions', x.HAR_Restrictions) + fact('Disclosures', x.Disclosures) + fact('HOA amenities', x.AssociationAmenities) + fact('HOA', [x.AssociationName, x.AssociationPhone].filter(Boolean).join(' · ')) + '</dl></div>' +
+        '<div class="sec"><h4>Flood</h4><div class="hint">Flood zone isn\'t in the HAR feed — check FEMA before writing: <a href="https://msc.fema.gov/portal/search?AddressQuery=' + encodeURIComponent(addr + ' ' + (r.city || '') + ' TX ' + (r.zip || '')) + '" target="_blank" rel="noopener">FEMA flood map for this address ↗</a></div></div>';
+    } else if(tab === 'photos'){
+      body = d.images.length ? '<div class="photos">' + d.images.map(function(p, i){ return '<a href="' + esc(img(p, 'large')) + '" target="_blank" rel="noopener"><img loading="lazy" src="' + esc(img(p, 'medium')) + '" alt="Photo ' + (i + 1) + '"></a>'; }).join('') + '</div>' : '<div class="empty">No photos.</div>';
+      if(x.VirtualTourURLUnbranded || x.VirtualTourURLBranded) body = '<p><a class="btn sm ghost" target="_blank" rel="noopener" href="' + esc(x.VirtualTourURLUnbranded || x.VirtualTourURLBranded) + '">🎥 Virtual tour ↗</a></p>' + body;
+    } else if(tab === 'agent'){
+      var appt = x.HAR_PhoneApptDesk ? '<a href="tel:' + esc(digits(x.HAR_PhoneApptDesk)) + '">' + esc(x.HAR_PhoneApptDesk) + '</a>' + (x.HAR_PhoneApptDesc ? ' · ' + esc(x.HAR_PhoneApptDesc) : '') : '';
+      body = '<div class="hint" style="margin-bottom:10px">🔒 Team only. Never send agent remarks or showing instructions to clients.</div>' +
+        '<div class="sec" style="margin-top:0"><h4>Showing</h4><dl class="kv"><dt>Instructions</dt><dd>' + esc(x.ShowingInstructions || '—') + '</dd>' + (appt ? '<dt>Appointment</dt><dd>' + appt + '</dd>' : '') +
+        (x.HAR_PhoneAlt ? '<dt>' + esc(x.HAR_PhoneAltDesc || 'Alt phone') + '</dt><dd><a href="tel:' + esc(digits(x.HAR_PhoneAlt)) + '">' + esc(x.HAR_PhoneAlt) + '</a></dd>' : '') + '</dl></div>' +
+        (x.PrivateRemarks ? '<div class="sec"><h4>Agent remarks</h4><div class="remark agent">' + esc(x.PrivateRemarks) + '</div></div>' : '') +
+        (x.Directions ? '<div class="sec"><h4>Directions</h4><div class="remark">' + esc(x.Directions) + '</div></div>' : '') +
+        '<div class="sec"><h4>Listing office</h4><dl class="kv">' + fact('List agent', x.ListAgentFullName ? x.ListAgentFullName + (x.ListAgentMlsId ? ' (' + x.ListAgentMlsId + ')' : '') : '') + fact('TREC #', x.ListAgentStateLicense) +
+        (x.ListAgentPreferredPhone ? '<dt>Agent phone</dt><dd><a href="tel:' + esc(digits(x.ListAgentPreferredPhone)) + '">' + esc(fmtPhone(x.ListAgentPreferredPhone)) + '</a></dd>' : '') +
+        (x.ListAgentEmail ? '<dt>Agent email</dt><dd><a href="mailto:' + esc(x.ListAgentEmail) + '?subject=' + encodeURIComponent(addr + ' (MLS ' + r.mls + ')') + '">' + esc(x.ListAgentEmail) + '</a></dd>' : '') +
+        fact('Team', x.HAR_ListTeamName) + fact('Office', x.ListOfficeName ? x.ListOfficeName + ' (' + (x.ListOfficeMlsId || '') + ')' : '') +
+        (x.ListOfficePhone ? '<dt>Office phone</dt><dd><a href="tel:' + esc(digits(x.ListOfficePhone)) + '">' + esc(x.ListOfficePhone) + '</a></dd>' : '') +
+        fact('Agreement', x.ListingAgreement) + fact('List date', x.ListingContractDate) + '</dl></div>';
+    } else if(tab === 'history'){
+      var log = d.priceLog.slice().reverse();
+      body = '<dl class="kv" style="margin-bottom:14px">' + fact('Listed', x.ListingContractDate || r.listDate) + fact('Original price', money(r.orig)) + fact('Now', money(r.price)) +
+        (r.orig && r.price && r.orig !== r.price ? fact('Change', (r.price < r.orig ? '−' : '+') + money(Math.abs(r.orig - r.price)) + ' (' + ((r.price - r.orig) / r.orig * 100).toFixed(1) + '%)') : '') +
+        fact('DOM / CDOM', [r.dom, r.cdom].filter(function(v){ return v != null; }).join(' / ')) + fact('Status changed', x.StatusChangeTimestamp ? new Date(x.StatusChangeTimestamp).toLocaleString() : '') + '</dl>' +
+        (log.length ? '<table class="mini"><thead><tr><th>Date</th><th>Change</th><th class="r">From</th><th class="r">To</th></tr></thead><tbody>' + log.map(function(p){
+          return '<tr><td>' + esc(new Date(p.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) + '</td><td class="' + (p.type === 'decrease' ? 'dn' : 'up') + '">' + (p.type === 'decrease' ? '↓ Price decrease' : '↑ Price increase') + '</td><td class="num">' + money(p.from) + '</td><td class="num">' + money(p.to) + '</td></tr>';
+        }).join('') + '</tbody></table>' : '<div class="empty">No price changes.</div>') +
+        (d.history && d.history.length ? '<div class="sec"><h4>Past listings at this address</h4><table class="mini"><tbody>' + d.history.map(function(h){ return '<tr><td>' + esc(h.mlsNumber || '') + '</td><td>' + esc(h.lastStatus || '') + '</td><td>' + money(h.listPrice) + '</td><td>' + money(h.soldPrice) + '</td><td>' + esc((h.listDate || '').slice(0, 10)) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '');
+    } else if(tab === 'comps'){
+      body = d.comps.length ? '<div class="hint" style="margin-bottom:8px">Nearby sales and listings HAR picked as comparable. For a real CMA, search Sold in the last 90–180 days, same subdivision, ±15% sq ft.</div><table class="mini"><thead><tr><th>Address</th><th>Status</th><th class="r">List</th><th class="r">Sold</th><th>Date</th><th class="r">Bd/Ba</th><th class="r">SqFt</th><th class="r">$/SF</th></tr></thead><tbody>' + d.comps.map(function(p){
+        var pr = p.sold || p.list;
+        return '<tr><td><button class="addr" type="button" data-open="' + esc(p.mls) + '">' + esc(p.addr) + '<small>' + esc([p.city, p.zip].filter(Boolean).join(' ')) + '</small></button></td><td>' + esc(p.status || '') + '</td><td class="num">' + money(p.list) + '</td><td class="num">' + (p.sold ? money(p.sold) : '—') + '</td><td>' + esc(p.soldDate || p.listDate || '') + '</td><td class="num">' + [p.beds, p.baths].filter(function(v){ return v != null; }).join('/') + '</td><td class="num">' + (p.sqft ? p.sqft.toLocaleString() : '—') + '</td><td class="num">' + (pr && p.sqft ? '$' + (pr / p.sqft).toFixed(0) : '—') + '</td></tr>';
+      }).join('') + '</tbody></table>' : '<div class="empty">HAR didn\'t send comps for this one. Search Sold on the Criteria tab.</div>';
+    } else if(tab === 'lola'){
+      body = lolaBox(listingTips(d), 'listing');
+    }
+    var inCart = curCart() && (cartHomes[curCart().id] || {})[r.mls];
+    $('layer').querySelector('.drawer').innerHTML =
+      '<div class="dh"><div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' + stPill(r) + (r.newc ? '<span class="pill new">New build</span>' : '') + '<span class="hint">MLS ' + esc(r.mls) + '</span></div>' +
+      '<h2>' + esc(addr) + '</h2><div class="hint">' + esc([r.city, 'TX', r.zip].filter(Boolean).join(' ')) + ' · <b style="color:var(--ink)">' + money(r.sold || r.price) + '</b> · ' +
+      [r.beds != null ? r.beds + ' bd' : '', r.baths != null ? r.baths + ' ba' : '', r.sqft ? r.sqft.toLocaleString() + ' sqft' : ''].filter(Boolean).join(' · ') + '</div></div><span class="sp"></span><button class="x" data-close aria-label="Close">×</button></div>' +
+      '<div class="dtabs" role="tablist">' + tabs.map(function(t){ return '<button type="button" role="tab" data-t360="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="db">' + body + '</div>' +
+      '<div class="df"><button class="btn" type="button" data-addone="' + esc(r.mls) + '">' + (inCart ? '✓ In ' + esc(curCart().name) + '\'s list' : '➕ Add to ' + (curCart() ? esc(curCart().name) + '\'s list' : 'a client list')) + '</button>' +
+      '<a class="btn ghost" target="_blank" rel="noopener" href="homes.html#' + encodeURIComponent(r.mls) + '">Client view ↗</a>' +
+      '<button class="btn ghost" type="button" data-copy="' + esc(r.mls) + '">Copy MLS #</button><span class="sp" style="flex:1"></span>' +
+      '<button class="btn lola sm" type="button" data-t360="lola">💅 Ask Lola</button></div>';
+    wireLola();
+  }
+  $('layer').addEventListener('click', function(e){
+    if(e.target.closest('[data-close]')){ closeLayer(); return; }
+    var t = e.target.closest('[data-t360]'); if(t && cur){ paint360(t.dataset.t360); return; }
+    var o = e.target.closest('[data-open]'); if(o){ openListing(o.dataset.open); return; }
+    var a = e.target.closest('[data-addone]'); if(a){ addToCart([S.byMls[a.dataset.addone]]).then(function(){ if(cur) paint360('listing'); }); return; }
+    var cp = e.target.closest('[data-copy]'); if(cp){ copy(cp.dataset.copy); return; }
+  });
+  function layer(html){ $('layer').innerHTML = html; document.body.style.overflow = 'hidden'; }
+  function closeLayer(){ $('layer').innerHTML = ''; document.body.style.overflow = ''; cur = null; }
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && $('layer').innerHTML) closeLayer(); });
+  function copy(t){ (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ toast('Copied'); }).catch(function(){ window.prompt('Copy:', t); }); }
+
+  /* ---------------- Lola: best-practice tips ---------------- */
+  function T(kind, h, p){ return { kind: kind, h: h, p: p }; }
+  function searchTips(){
+    var t = [], n = S.liveCount != null ? S.liveCount : S.count, st = c.st || [], off = c.off || [];
+    var where = (c.city || []).length + (c.zip || []).length + (c.sub || []).length + (c.county || []).length + (c.high || []).length + (c.map ? 1 : 0) + (c.rad ? 1 : 0);
+    if(!where) t.push(T('hot', 'Pick an area first, babe', 'No city, ZIP, subdivision or map area — that\'s all of HAR. Ask where they work and where the kids go to school, then draw it on the Map tab.'));
+    if(n > 100) t.push(T('hot', n.toLocaleString() + ' homes? Too many', 'Clients freeze past ~30 homes. Add a subdivision, a school, a 1-story filter or draw the map. Send 5–10 favorites, not 100.'));
+    else if(n === 0) t.push(T('hot', 'Zero matches', 'Loosen one thing at a time: price +5%, beds −1, or widen the area. Sq ft and year built are usually the sneaky ones.'));
+    else if(n && n <= 30) t.push(T('good', n + ' homes — perfect size', 'Check the best 5–10 and add them to the client\'s list. They tap ❤️ on the ones they like and I text you.'));
+    if(c.maxP) t.push(T('', 'Price cap = their pre-approval', 'Search at or under the pre-approval amount (' + k$(c.maxP) + '). If they need the seller to pay closing costs, look a little lower so the offer can be at list with concessions.'));
+    else if(!off.length) t.push(T('', 'Add a max price', 'Use the pre-approval amount. No pre-approval yet? Send them the JAG Home Loan App before you send 40 homes.'));
+    if(st.length === 1 && st[0] === 'active' && !off.length) t.push(T('', 'Add Coming Soon + Option Pending', 'Coming Soon = see it before the weekend crowd. Option Pending = backup offers when an option period falls through.'));
+    if(off.indexOf('sold') >= 0) t.push(T('', 'Comps the right way', 'Sold in the last 90–180 days, same subdivision, ±15% sq ft, similar year. Use solds for value, actives for competition.'));
+    var nc = S.rows.filter(function(r){ return r.newc; }).length;
+    if(c.newc === 'y' || (S.rows.length && nc / S.rows.length > .3)) t.push(T('hot', 'New builds: register the client FIRST', 'Builders only pay us if we\'re on their first visit or registered before it. Call the sales office before your client walks in. Ask about builder incentives with their preferred lender vs. ours.'));
+    var drops = S.rows.filter(function(r){ return r.drop === 'decrease'; }).length;
+    if(drops >= 3) t.push(T('good', drops + ' price drops on this page', 'Motivated sellers. Run a Hot Sheet → Price drops (7 days) for your buyer and lead with those.'));
+    if(c.fin && c.fin.length) t.push(T('', 'Financing filter is the seller\'s word', '“Financing considered” is what the listing agent typed. FHA/VA buyers: still confirm the home will pass the FHA/VA appraisal (roof, paint, foundation).'));
+    t.push(T('', 'Auto emails: Daily, in their language', 'Start an email campaign from the client\'s list. Daily at 10 AM works best — new listings get offers in the first week. Spanish-first for Spanish speakers.'));
+    return t;
+  }
+  function listingTips(d){
+    var t = [], r = d.row, x = d.raw, log = d.priceLog || [];
+    var drops = log.filter(function(p){ return p.type === 'decrease'; }).length;
+    if(r.orig && r.price && r.price < r.orig){
+      var pct = ((r.orig - r.price) / r.orig * 100).toFixed(1);
+      t.push(T('good', 'Down ' + money(r.orig - r.price) + ' (' + pct + '%)' + (drops > 1 ? ' in ' + drops + ' drops' : ''), 'Seller is feeling it. Offer under list and ask for closing costs — show them the price history.'));
+    }
+    if(r.dom != null && r.dom >= 60) t.push(T('good', r.dom + ' days on market', 'Leverage. Ask the listing agent what it would take; stale listings often take concessions or a repair credit.'));
+    if(r.dom != null && r.dom <= 5 && /Active/.test(r.st || '')) t.push(T('hot', 'Brand new (' + r.dom + ' DOM)', 'Good ones go in a weekend. Book the showing today and have the pre-approval letter ready.'));
+    if(r.newc || x.BuilderName) t.push(T('hot', 'Builder listing — register your client', 'Call the builder (' + (x.HAR_PhoneApptDesk || 'sales office') + ') and register before the first visit, or you can lose the commission. Ask about incentives and the completion date' + (x.HAR_CompletionDate ? ' (' + x.HAR_CompletionDate + ')' : '') + '.'));
+    if(r.tax && r.tax >= 2.8) t.push(T('', 'High tax rate: ' + r.tax + '%', 'About ' + money((r.price || 0) * r.tax / 100 / 12) + '/mo in taxes on top of the loan' + (x.HAR_UtilityDistrict ? ' (MUD/utility district)' : '') + '. Run the full payment before they fall in love.'));
+    if(x.AssociationFee) t.push(T('', 'HOA ' + money(x.AssociationFee) + ' ' + String(x.AssociationFeeFrequency || '').toLowerCase(), 'Include it in the monthly payment. Check for transfer/other fees' + (x.HAR_OtherMandatoryFee ? ' (' + x.HAR_OtherMandatoryFee + ')' : '') + '.'));
+    var pr = String(x.PrivateRemarks || '') + ' ' + String(x.PublicRemarks || '');
+    [[/cash only|cash buyers? only|no (fha|va|financing)/i, 'hot', 'Cash/financing limits in the remarks', 'Read the agent remarks — this may not work for FHA/VA or ITIN buyers.'],
+     [/assum/i, 'good', 'Assumable loan mentioned', 'Could mean a lower rate for your buyer. Ask the listing agent for the rate, balance and lender.'],
+     [/owner financ|seller financ|owner will carry|rent to own|lease purchase/i, 'good', 'Creative financing mentioned', 'Owner finance / rent-to-own may fit ITIN or credit-path clients. Get the terms in writing.'],
+     [/as[- ]is|investor special|needs work|tlc/i, 'hot', 'As-is / needs work', 'FHA appraisal may flag repairs. Conventional or cash fits better; budget an inspection.'],
+     [/closing cost|concession|buyer incentive|rate buy ?down/i, 'good', 'Seller is offering incentives', 'Remarks mention closing costs or incentives — write the offer to use them.'],
+     [/flood|fema/i, 'hot', 'Flood mentioned', 'Pull the FEMA map and ask for the seller\'s disclosure + flood history.'],
+     [/multiple offers|highest and best/i, 'hot', 'Multiple offers', 'Ask for the deadline. Write clean: pre-approval, short option, strong earnest money.']]
+      .forEach(function(k){ if(k[0].test(pr)) t.push(T(k[1], k[2], k[3])); });
+    if(Array.isArray(x.ListingTerms) && x.ListingTerms.length && x.ListingTerms.indexOf('FHA') < 0 && /Active/.test(r.st || '')) t.push(T('', 'FHA not listed as considered', 'Financing considered: ' + x.ListingTerms.join(', ') + '. For FHA buyers, call the listing agent before showing.'));
+    if(/vacant|lockbox|supra|go show/i.test(String(x.ShowingInstructions || ''))) t.push(T('good', 'Easy to show', x.ShowingInstructions));
+    if(!t.length) t.push(T('', 'Nothing jumps out', 'Clean listing. Compare with the comps tab and send it if it fits.'));
+    return t;
+  }
+  function lolaBox(tips, where){
+    return '<div class="lolabox"><div class="lolahd"><span class="lolaav">L</span><div><b>Lola\'s take</b><small>Best practices from the JAG playbook</small></div></div>' +
+      '<ul class="tips">' + tips.map(function(x){ return '<li class="' + x.kind + '"><b>' + esc(x.h) + '</b>' + esc(x.p) + '</li>'; }).join('') + '</ul>' +
+      '<div class="ask"><input id="lola-q" placeholder="Ask Lola… e.g. what should I offer?" data-where="' + where + '"><button class="btn sm lola" id="lola-go" type="button">Ask</button></div><div id="lola-a"></div></div>';
+  }
+  function wireLola(){
+    var b = $('lola-go'); if(!b) return;
+    var go = function(){
+      var q = $('lola-q').value.trim(); if(q.length < 2) return;
+      var where = $('lola-q').dataset.where, ctx = { search: S.sum || '', results: S.count || S.liveCount || 0 };
+      if(where === 'listing' && cur){ var r = cur.row, x = cur.raw; Object.assign(ctx, { listing_status: r.st, list_price: r.price, original_price: r.orig, dom: r.dom, cdom: r.cdom, beds: r.beds, baths: r.baths, sqft: r.sqft, year_built: r.yb, subdivision: r.sub, new_construction: r.newc, builder: x.BuilderName, tax_rate: r.tax, hoa: x.AssociationFee, hoa_freq: x.AssociationFeeFrequency, financing_considered: x.ListingTerms, agent_remarks: String(x.PrivateRemarks || '').slice(0, 600), showing: x.ShowingInstructions, price_changes: (cur.priceLog || []).length }); }
+      $('lola-a').innerHTML = '<div class="answer"><span class="spin"></span> Lola is thinking…</div>';
+      token().then(function(t){
+        return fetch(FN + 'jag-lola', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, lang: 'en', step: 'Matrix home search' + (where === 'listing' ? ' — reviewing one listing for a buyer' : ' — building a search for a buyer'), context: { answers: ctx } }) });
+      }).then(function(r){ return r.json(); }).then(function(j){
+        $('lola-a').innerHTML = '<div class="answer">' + esc(j && j.answer ? j.answer : 'Lola is busy right now. Try again in a minute.') + '</div>';
+      }).catch(function(){ $('lola-a').innerHTML = '<div class="answer">Lola is busy right now. Try again in a minute.</div>'; });
+    };
+    b.onclick = go; $('lola-q').onkeydown = function(e){ if(e.key === 'Enter') go(); };
+  }
+  function paintTips(){ var p = document.getElementById('lola-side-tips'); if(p) p.innerHTML = lolaBox(searchTips(), 'search'), wireLola(); }
+  $('lola-open').onclick = function(){
+    if(cur){ paint360('lola'); return; }
+    layer('<div class="scrim" data-close></div><aside class="lolaside" role="dialog" aria-label="Lola"><div class="dh" style="padding:16px 20px;border-bottom:1px solid var(--line);display:flex"><h2 style="margin:0;font-size:20px">💅 Lola</h2><span style="flex:1"></span><button class="x" data-close aria-label="Close">×</button></div><div class="db" id="lola-side-tips" style="flex:1;overflow:auto;padding:16px"></div></aside>');
+    paintTips();
+  };
+
+  /* ---------------- saved + recent searches ---------------- */
+  var saved = [];
+  function remember(o){
+    var r = ls('jag_mx_recent') || [], s = JSON.stringify(o);
+    r = r.filter(function(x){ return JSON.stringify(x.c) !== s; }); r.unshift({ c: o, at: Date.now(), sum: '' }); ls('jag_mx_recent', r.slice(0, 8)); paintSaved();
+  }
+  function paintSaved(){
+    var r = ls('jag_mx_recent') || [];
+    $('saved').innerHTML = '<option value="">Saved &amp; recent searches…</option>' +
+      (saved.length ? '<optgroup label="Saved">' + saved.map(function(s, i){ return '<option value="s' + i + '">' + esc(s.name) + '</option>'; }).join('') + '</optgroup>' : '') +
+      (r.length ? '<optgroup label="Recent (this device)">' + r.map(function(s, i){ return '<option value="r' + i + '">' + esc(quickSum(s.c)) + '</option>'; }).join('') + '</optgroup>' : '');
+  }
+  function quickSum(o){
+    var p = [o.type === 'lease' ? 'LEASE' : 'RES', (o.st || []).concat(o.off || []).join('/').toUpperCase() || 'ACTIVE'];
+    if(o.minP || o.maxP) p.push((o.minP ? k$(o.minP) : '') + '-' + (o.maxP ? k$(o.maxP) : ''));
+    if(o.beds) p.push(o.beds + '+bd'); if(o.baths) p.push(o.baths + '+ba'); if(o.minSf) p.push(o.minSf + '+sf');
+    p.push([].concat(o.city || [], o.zip || [], o.sub || []).slice(0, 2).join(', ') || (o.map ? 'map area' : o.rad ? o.rad.mi + 'mi radius' : ''));
+    return p.filter(Boolean).join(' ');
+  }
+  $('saved').onchange = function(){
+    var v = this.value; if(!v) return;
+    var o = v[0] === 's' ? saved[+v.slice(1)].criteria : (ls('jag_mx_recent') || [])[+v.slice(1)].c;
+    fillForm(o); loadFacets(); liveCount(); this.value = '';
+    toast('Search loaded');
+  };
+  function loadSaved(){ rpc('jag_tsearch_list').then(function(j){ saved = j && j.ok ? j.searches : []; paintSaved(); }).catch(function(){}); }
+  $('savesearch').onclick = function(){
+    c = readForm();
+    modal('<h2>Save this search</h2><div class="fld"><label for="ss-n">Name</label><input id="ss-n" value="' + esc(quickSum(c)) + '"></div><div class="hint">Saved to your team login — open it from any computer.</div>' +
+      '<div class="acts"><button class="btn ghost" data-close type="button">Cancel</button><button class="btn" id="ss-go" type="button">Save</button></div>');
+    $('ss-go').onclick = function(){ rpc('jag_tsearch_save', { p_name: $('ss-n').value || 'My search', p_criteria: c }).then(function(j){ if(j && j.ok){ closeLayer(); toast('Saved'); loadSaved(); } else toast('Could not save'); }).catch(fail); };
+  };
+
+  /* ---------------- client lists (carts) ---------------- */
+  var carts = [], cartHomes = {}, seeAll = false, openCartId = null;
+  function curCart(){ var id = $('cartsel').value; return carts.find(function(x){ return x.id === id; }) || null; }
+  function loadCarts(){
+    return rpc('jag_cart_list', { p_all: seeAll }).then(function(j){
+      if(!j || !j.ok) return;
+      carts = j.carts || []; $('allwrap').hidden = !j.see_all;
+      $('b-carts').textContent = carts.length;
+      var keep = $('cartsel').value || ls('jag_mx_cart');
+      $('cartsel').innerHTML = '<option value="">— pick a client —</option>' + carts.map(function(x){ return '<option value="' + esc(x.id) + '">' + esc(x.name) + ' (' + x.homes + ')' + (seeAll && x.agent_code !== j.me ? ' · ' + esc(x.agent_code || '') : '') + '</option>'; }).join('');
+      if(keep && carts.some(function(x){ return x.id === keep; })) $('cartsel').value = keep;
+      paintCartList();
+    }).catch(fail);
+  }
+  $('cartsel').onchange = function(){ ls('jag_mx_cart', this.value || null); if(this.value) loadCartHomes(this.value); };
+  $('cart-all').onchange = function(){ seeAll = this.checked; loadCarts(); };
+  $('cartq').oninput = paintCartList;
+  function paintCartList(){
+    var q = $('cartq').value.toLowerCase();
+    var list = carts.filter(function(x){ return !q || [x.name, x.email, x.phone].join(' ').toLowerCase().indexOf(q) >= 0; });
+    $('clist').innerHTML = list.length ? list.map(function(x){
+      return '<button class="citem" type="button" data-cart="' + esc(x.id) + '"' + (x.id === openCartId ? ' aria-current="true"' : '') + '><b>' + esc(x.name) + '</b><small>' + esc([x.phone ? fmtPhone(x.phone) : '', x.email].filter(Boolean).join(' · ') || 'no contact yet') + '</small>' +
+        '<div class="meta"><span class="pill">' + x.homes + ' homes</span>' + (x.loved ? '<span class="pill S">❤️ ' + x.loved + '</span>' : '') + (x.opens ? '<span class="pill A">👀 opened ' + esc(ago(x.last_open_at)) + '</span>' : (x.last_sent_at ? '<span class="pill">sent, not opened</span>' : '')) +
+        (x.campaign && x.campaign.status === 'active' ? '<span class="pill CS">✉️ ' + esc(x.campaign.pace) + '</span>' : '') + (seeAll && x.agent_name ? '<span class="pill">' + esc(x.agent_name) + '</span>' : '') + '</div></button>';
+    }).join('') : '<div class="empty" style="border:0">No client lists yet.</div>';
+  }
+  $('clist').addEventListener('click', function(e){ var b = e.target.closest('[data-cart]'); if(b) openCart(b.dataset.cart); });
+  function loadCartHomes(id){
+    return rpc('jag_cart_get', { p_cart: id }).then(function(j){
+      if(!j || !j.ok) return null;
+      cartHomes[id] = {}; (j.homes || []).forEach(function(h){ cartHomes[id][h.mls] = h; });
+      return j;
+    });
+  }
+  function openCart(id){
+    openCartId = id; paintCartList(); showTab('carts');
+    $('cpanel').innerHTML = '<div class="empty"><span class="spin"></span></div>';
+    loadCartHomes(id).then(function(j){ if(!j){ $('cpanel').innerHTML = '<div class="empty">That list isn\'t yours or was removed.</div>'; return; } paintCart(j); }).catch(fail);
+  }
+  var CAMP_PACE = { asap: 'As soon as they hit (checks every ~3 h)', daily: 'Daily at 10 AM', weekly: 'Weekly' };
+  function paintCart(j){
+    var x = j.cart, homes = j.homes || [], cp = j.campaign;
+    var loved = homes.filter(function(h){ return h.reaction === 'love' || h.reaction === 'tour'; }).length;
+    var REACT = { love: '❤️ Loves it', tour: '🏃 Wants to see it', maybe: '🤔 Maybe', no: '👎 Not for me' };
+    var campOn = cp && cp.status === 'active';
+    $('cpanel').innerHTML =
+      '<div class="chead"><div><h2>' + esc(x.name) + '</h2><div class="hint">' + esc([x.phone ? fmtPhone(x.phone) : '', x.email, x.lang === 'en' ? 'English' : 'Español'].filter(Boolean).join(' · ')) + (x.note ? ' · ' + esc(x.note) : '') + '</div></div><span class="sp"></span>' +
+      '<button class="btn sm ghost" type="button" id="c-edit">Edit</button><button class="btn sm ghost" type="button" id="c-crit">Load their search</button><button class="btn sm" type="button" id="c-send"' + (homes.length ? '' : ' disabled') + '>📤 Send list</button></div>' +
+      '<div class="stat3"><div class="st"><b class="num">' + homes.length + '</b><span>homes in the list</span></div><div class="st"><b class="num">' + (x.opens || 0) + '</b><span>times opened' + (x.last_open_at ? ' · ' + esc(ago(x.last_open_at)) : '') + '</span></div>' +
+      '<div class="st"><b class="num">' + loved + '</b><span>loved / want to see</span></div><div class="st"><b>' + esc(x.last_sent_at ? ago(x.last_sent_at) : '—') + '</b><span>last sent</span></div></div>' +
+      '<div class="camp' + (campOn ? ' on' : '') + '"><div><b>' + (campOn ? '✉️ Email campaign is on' : '✉️ Auto email (like Matrix)') + '</b><div class="hint">' +
+      (campOn ? esc(CAMP_PACE[cp.pace] || cp.pace) + ' to ' + esc(cp.email) + ' · ' + (cp.sent_count || 0) + ' sent' + (cp.last_sent_at ? ' · last ' + esc(ago(cp.last_sent_at)) : '') + (cp.next_at ? ' · next ' + esc(new Date(cp.next_at).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })) : '') + (cp.last_error ? ' · ' + esc(cp.last_error) : '')
+        : cp && cp.status === 'unsubscribed' ? 'They unsubscribed — don\'t restart without asking them.' : 'New HAR listings that match go to their inbox in ' + (x.lang === 'en' ? 'English' : 'Spanish') + ', from you, with your phone.') + '</div></div><span class="sp"></span>' +
+      (campOn ? '<button class="btn sm ghost" type="button" id="c-camp">Change</button><button class="btn sm ghost" type="button" id="c-stop">Stop</button>' : '<button class="btn sm dark" type="button" id="c-camp">Start campaign</button>') + '</div>' +
+      (homes.length ? '<div class="homes">' + homes.map(function(h){
+        var s = h.snap || {};
+        return '<div class="home" data-mls="' + esc(h.mls) + '"><img src="' + esc(img(s.photo)) + '" alt=""><div><button class="addr" type="button" data-open="' + esc(h.mls) + '">' + money(s.price) + ' · ' + esc(s.addr || 'MLS ' + h.mls) + '<small>' + esc([s.city, s.zip].filter(Boolean).join(' ') + ' · ' + [s.beds != null ? s.beds + ' bd' : '', s.baths != null ? s.baths + ' ba' : '', s.sqft ? Number(s.sqft).toLocaleString() + ' sqft' : ''].filter(Boolean).join(' · ')) + '</small></button>' +
+          (h.reaction ? ' <span class="react ' + esc(h.reaction) + '">' + REACT[h.reaction] + '</span>' : '') + (h.client_note ? '<div class="hint">💬 “' + esc(h.client_note) + '”</div>' : '') +
+          (s.pub === 'N' ? '<div class="hint" style="color:var(--red)">Hidden from the client: the seller opted out of internet display.</div>' : '') +
+          '<div class="note"><input placeholder="Note the client will see (optional)" value="' + esc(h.agent_note || '') + '" data-note="' + esc(h.mls) + '" maxlength="300"></div></div>' +
+          '<button class="x" type="button" data-rm="' + esc(h.mls) + '" title="Remove">×</button></div>';
+      }).join('') + '</div>' : '<div class="empty">No homes yet. Search, check homes in Results, then press <b>➕ Add to list</b>.</div>');
+    $('c-edit').onclick = function(){ cartModal(x); };
+    $('c-crit').onclick = function(){ if(x.criteria){ fillForm(x.criteria); loadFacets(); liveCount(); showTab('criteria'); toast('Loaded ' + x.name + '\'s search'); } else toast('No saved search for this client yet — it saves when you start a campaign.'); };
+    $('c-send').onclick = function(){ sendModal(x, homes); };
+    $('c-camp').onclick = function(){ campaignModal(x, cp); };
+    if($('c-stop')) $('c-stop').onclick = function(){ if(!confirm('Stop the email campaign for ' + x.name + '?')) return; rpc('jag_cart_campaign_stop', { p_cart: x.id }).then(function(){ toast('Campaign stopped'); openCart(x.id); loadCarts(); }).catch(fail); };
+    $('cpanel').onclick = function(e){
+      var o = e.target.closest('[data-open]'); if(o){ openListing(o.dataset.open); return; }
+      var rm = e.target.closest('[data-rm]'); if(rm){ rpc('jag_cart_remove', { p_cart: x.id, p_mls: [rm.dataset.rm] }).then(function(){ openCart(x.id); loadCarts(); }).catch(fail); }
+    };
+    $('cpanel').onchange = function(e){ var n = e.target.closest('[data-note]'); if(n) rpc('jag_cart_note', { p_cart: x.id, p_mls: n.dataset.note, p_note: n.value }).then(function(){ toast('Note saved'); }).catch(fail); };
+  }
+
+  // public facts only — this is what the client's page shows (never agent remarks)
+  function snapOf(r){
+    return { price: r.price, beds: r.beds, baths: r.baths, sqft: r.sqft, yb: r.yb, addr: r.noaddr ? '' : (r.addr + (r.unit ? ' #' + r.unit : '')), city: r.city, zip: r.zip,
+      photo: r.photo, st: r.st, sub: r.sub ? title(r.sub) : null, newc: !!r.newc, pub: r.pub || 'Y', lat: r.noaddr ? null : r.lat, lng: r.noaddr ? null : r.lng, drop: r.drop === 'decrease' && r.orig > r.price ? r.orig : null };
+  }
+  function addToCart(rows){
+    rows = rows.filter(Boolean);
+    var x = curCart();
+    if(!x){ return new Promise(function(res){ cartModal(null, function(nx){ addToCart(rows).then(res); }); }); }
+    var off = rows.filter(function(r){ return /Sold|Closed|Withdrawn|Expired|Terminated|Canceled/.test(r.st || r.std || ''); });
+    if(off.length && !confirm(off.length + ' of these are off the market (comps). Add them to ' + x.name + '\'s list anyway?')) return Promise.resolve();
+    return rpc('jag_cart_add', { p_cart: x.id, p_homes: rows.map(function(r){ return { mls: r.mls, snap: snapOf(r) }; }) }).then(function(j){
+      if(!j || !j.ok){ toast('Could not add'); return; }
+      toast('Added to ' + x.name + '\'s list · ' + j.total + ' homes');
+      rows.forEach(function(r){ (cartHomes[x.id] = cartHomes[x.id] || {})[r.mls] = { mls: r.mls }; });
+      S.checked = {}; paintChecked(); if(curTab === 'results') paintResults();
+      loadCarts(); if(openCartId === x.id) openCart(x.id);
+    }).catch(fail);
+  }
+  $('d-add').onclick = function(){ addToCart(Object.keys(S.checked).map(function(m){ return S.checked[m]; })); };
+  $('newcart').onclick = $('newcart-top').onclick = function(){ cartModal(null); };
+
+  function modal(html){ layer('<div class="modal" data-closebg><div class="mbox" role="dialog">' + html + '</div></div>'); }
+  $('layer').addEventListener('mousedown', function(e){ if(e.target.hasAttribute && e.target.hasAttribute('data-closebg')) closeLayer(); });
+
+  // new / edit client list
+  function cartModal(x, after){
+    var isNew = !x; x = x || { lang: 'es' };
+    modal('<h2>' + (isNew ? 'New client list' : 'Edit ' + esc(x.name)) + '</h2>' +
+      (isNew ? '<div class="fld"><label for="cm-find">Find the client</label><input id="cm-find" placeholder="Name, phone or email (website accounts + JAG Home Loan Apps)"></div><div id="cm-sugg"></div>' : '') +
+      '<div class="fld"><label for="cm-name">Client name</label><input id="cm-name" value="' + esc(x.name || '') + '" placeholder="Hilda Martinez"></div>' +
+      '<div class="row2"><div class="fld"><label for="cm-phone">Mobile</label><input id="cm-phone" inputmode="tel" value="' + esc(x.phone || '') + '"></div>' +
+      '<div class="fld"><label for="cm-email">Email</label><input id="cm-email" inputmode="email" value="' + esc(x.email || '') + '"></div></div>' +
+      '<div class="row2"><div class="fld"><label for="cm-lang">Language</label><select id="cm-lang"><option value="es"' + (x.lang !== 'en' ? ' selected' : '') + '>Español</option><option value="en"' + (x.lang === 'en' ? ' selected' : '') + '>English</option></select></div>' +
+      '<div class="fld"><label for="cm-note">Note (team only)</label><input id="cm-note" value="' + esc(x.note || '') + '" placeholder="Pre-approved $285K FHA, works in Tomball"></div></div>' +
+      '<input type="hidden" id="cm-uid" value="' + esc(x.user_id || '') + '"><input type="hidden" id="cm-lead" value="' + esc(x.lead_id || '') + '">' +
+      '<div class="acts">' + (!isNew ? '<button class="btn ghost" id="cm-arch" type="button" style="margin-right:auto">Archive list</button>' : '') + '<button class="btn ghost" data-close type="button">Cancel</button><button class="btn" id="cm-go" type="button">' + (isNew ? 'Create list' : 'Save') + '</button></div>');
+    if(isNew){
+      var t = null;
+      $('cm-find').oninput = function(){
+        clearTimeout(t); var q = this.value.trim(); if(q.length < 2){ $('cm-sugg').innerHTML = ''; return; }
+        t = setTimeout(function(){ rpc('jag_cart_people', { p_q: q }).then(function(j){
+          var p = j && j.ok ? j.people : [];
+          $('cm-sugg').innerHTML = p.length ? '<div class="sugg">' + p.map(function(y, i){ return '<button type="button" data-p="' + i + '"><b>' + esc(y.name || y.email) + '</b> <small>' + (y.kind === 'account' ? 'Website account' : 'Home Loan App') + ' · ' + esc([fmtPhone(y.phone), y.email].filter(Boolean).join(' · ')) + '</small></button>'; }).join('') + '</div>' : '<div class="hint">Not found — just type their info below.</div>';
+          $$('#cm-sugg [data-p]').forEach(function(b){ b.onclick = function(){ var y = p[+b.dataset.p]; $('cm-name').value = y.name || ''; $('cm-phone').value = y.phone || ''; $('cm-email').value = y.email || ''; $('cm-lang').value = y.lang === 'en' ? 'en' : 'es'; if(y.kind === 'account') $('cm-uid').value = y.id; else $('cm-lead').value = y.id; $('cm-sugg').innerHTML = '<div class="hint">✓ Linked to their ' + (y.kind === 'account' ? 'website account' : 'Home Loan App') + '.</div>'; }; });
+        }).catch(function(){}); }, 300);
+      };
+    }
+    $('cm-go').onclick = function(){
+      var name = $('cm-name').value.trim(); if(!name){ $('cm-name').focus(); return; }
+      var p = { name: name, phone: $('cm-phone').value.trim(), email: $('cm-email').value.trim(), lang: $('cm-lang').value, note: $('cm-note').value.trim() };
+      if(!isNew) p.id = x.id; if($('cm-uid').value) p.user_id = $('cm-uid').value; if($('cm-lead').value) p.lead_id = $('cm-lead').value;
+      if(isNew) p.criteria = readForm();
+      this.disabled = true;
+      rpc('jag_cart_save', { p: p }).then(function(j){
+        if(!j || !j.ok){ toast(j && j.reason === 'email' ? 'Check the email address' : 'Could not save'); $('cm-go').disabled = false; return; }
+        closeLayer(); ls('jag_mx_cart', j.id);
+        return loadCarts().then(function(){ $('cartsel').value = j.id; loadCartHomes(j.id); toast(isNew ? 'List ready — now check homes and Add' : 'Saved'); if(after) after(); else if(!isNew || curTab === 'carts') openCart(j.id); });
+      }).catch(fail);
+    };
+    if($('cm-arch')) $('cm-arch').onclick = function(){ if(!confirm('Archive ' + x.name + '\'s list? The client link stops working.')) return; rpc('jag_cart_save', { p: { id: x.id, archived: true } }).then(function(){ closeLayer(); openCartId = null; $('cpanel').innerHTML = '<div class="empty">List archived.</div>'; loadCarts(); }).catch(fail); };
+  }
+
+  // send the list: text / WhatsApp / email / copy — from the agent's own phone, with their number
+  function sendModal(x, homes){
+    var a = (JagShare.me && JagShare.me()) || {}, first = a.first_name || (a.name || 'Jason').split(' ')[0];
+    var url = SITE + '/lista?a=' + encodeURIComponent(a.code && a.code !== 'pending' ? a.code : 'jason') + '#' + x.token;
+    var cfirst = String(x.name || '').split(' ')[0], n = homes.length, es = x.lang !== 'en';
+    var msg = es ? 'Hola ' + cfirst + ', soy ' + first + ' del Jason Aguirre Group. Le preparé ' + n + (n === 1 ? ' casa' : ' casas') + ' que van con lo que busca 🏡\nMírelas aquí y marque con ❤️ las que le gusten: ' + url + '\n' + first + (a.phone ? ' · ' + fmtPhone(a.phone) : '')
+      : 'Hi ' + cfirst + ', this is ' + first + ' with the Jason Aguirre Group. I picked ' + n + (n === 1 ? ' home' : ' homes') + ' that match what you\'re looking for 🏡\nTake a look and tap ❤️ on the ones you like: ' + url + '\n' + first + (a.phone ? ' · ' + fmtPhone(a.phone) : '');
+    var ph = digits(x.phone);
+    modal('<h2>Send ' + esc(cfirst) + ' their list</h2><div class="fld"><label for="sm-msg">Message</label><textarea id="sm-msg" rows="6">' + esc(msg) + '</textarea></div>' +
+      '<div class="hint">It goes from your phone, so they see your number. When they open it and tap ❤️, Lola texts you.</div>' +
+      '<div class="sharegrid"><button type="button" data-ch="sms"' + (ph ? '' : ' disabled title="No mobile on this list"') + '><span>💬</span>Text</button><button type="button" data-ch="whatsapp"' + (ph ? '' : ' disabled') + '><span>🟢</span>WhatsApp</button>' +
+      '<button type="button" data-ch="email"' + (x.email ? '' : ' disabled title="No email on this list"') + '><span>✉️</span>Email</button><button type="button" data-ch="copy"><span>🔗</span>Copy</button></div>' +
+      '<div class="acts"><a class="btn ghost" target="_blank" rel="noopener" href="' + esc(url) + '">Preview what they see ↗</a><button class="btn ghost" data-close type="button">Done</button></div>');
+    $$('[data-ch]').forEach(function(b){ b.onclick = function(){
+      var ch = b.dataset.ch, body = $('sm-msg').value;
+      if(ch === 'sms') location.href = 'sms:+1' + ph + '?&body=' + encodeURIComponent(body);
+      else if(ch === 'whatsapp') window.open('https://wa.me/1' + ph + '?text=' + encodeURIComponent(body), '_blank', 'noopener');
+      else if(ch === 'email') location.href = 'mailto:' + encodeURIComponent(x.email) + '?subject=' + encodeURIComponent(es ? 'Casas para usted, ' + cfirst : 'Homes for you, ' + cfirst) + '&body=' + encodeURIComponent(body);
+      else copy(body);
+      rpc('jag_cart_sent', { p_cart: x.id, p_channel: ch }).then(function(){ loadCarts(); }).catch(function(){});
+    }; });
+  }
+
+  // auto email campaign (Matrix "New Auto Email")
+  function campaignModal(x, cp){
+    var crit = readForm(), useCart = x.criteria && (!cp || cp.status !== 'active');
+    var on = cp && cp.status === 'active';
+    var src = on ? cp.params : crit;
+    modal('<h2>' + (on ? 'Change' : 'Start') + ' ' + esc(String(x.name).split(' ')[0]) + '\'s home emails</h2>' +
+      '<div class="lolabox" style="padding:12px 14px"><div class="lolahd" style="margin:0"><span class="lolaav">L</span><div><b>Lola says</b><small>Daily at 10 AM, their language, max 8 homes per email. Only homes that are new since the last email. Stops on unsubscribe or after 6 months.</small></div></div></div>' +
+      '<div class="fld"><label>Search they\'ll get</label><div class="remark" id="cp-sum" style="font-weight:700">' + esc(quickSum(src)) + '</div>' +
+      '<div class="hint">Uses ' + (on ? 'the campaign\'s current search' : 'the search on your Criteria tab right now') + '. <button class="lnk" type="button" id="cp-use">Use my Criteria tab instead</button>' + (useCart ? ' · <button class="lnk" type="button" id="cp-cart">Use their saved search</button>' : '') + '</div></div>' +
+      '<div class="row2"><div class="fld"><label for="cp-pace">How often</label><select id="cp-pace"><option value="daily">Daily · 10 AM (recommended)</option><option value="asap">As soon as they hit</option><option value="weekly">Weekly</option></select></div>' +
+      '<div class="fld"><label for="cp-lang">Language</label><select id="cp-lang"><option value="es">Español</option><option value="en">English</option></select></div></div>' +
+      '<div class="fld"><label for="cp-email">Client email</label><input id="cp-email" inputmode="email" value="' + esc((cp && cp.email) || x.email || '') + '"></div>' +
+      '<label class="ck" style="align-items:flex-start"><input type="checkbox" id="cp-ok"> <span>The client agreed to get homes by email (on a call, text, or in person). Required — the email says so and has an unsubscribe link.</span></label>' +
+      '<div class="acts"><button class="btn ghost" data-close type="button">Cancel</button><button class="btn" id="cp-go" type="button">' + (on ? 'Update campaign' : 'Start campaign') + '</button></div>');
+    $('cp-pace').value = (cp && cp.pace && cp.pace !== 'standard') ? cp.pace : 'daily'; $('cp-lang').value = x.lang === 'en' ? 'en' : 'es';
+    $('cp-use').onclick = function(){ src = readForm(); $('cp-sum').textContent = quickSum(src); };
+    if($('cp-cart')) $('cp-cart').onclick = function(){ src = x.criteria; $('cp-sum').textContent = quickSum(src); };
+    $('cp-go').onclick = function(){
+      if(!$('cp-ok').checked){ toast('Confirm the client agreed to emails'); return; }
+      var em = $('cp-email').value.trim(); if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $('cp-email').focus(); toast('Add the client\'s email'); return; }
+      var hasArea = src && ((src.city || []).length || (src.zip || []).length || (src.sub || []).length || (src.county || []).length || (src.high || []).length || src.map || src.rad);
+      if(!hasArea){ toast('Pick an area first (city, ZIP, subdivision or map)'); return; }
+      var p = Object.assign({}, src); delete p.off; delete p.offDays;
+      this.disabled = true;
+      rpc('jag_cart_campaign', { p: { cart: x.id, params: p, label: quickSum(p), pace: $('cp-pace').value, email: em, lang: $('cp-lang').value, consent: true } }).then(function(j){
+        if(!j || !j.ok){ $('cp-go').disabled = false; toast(j && j.reason === 'unsubscribed' ? 'This client unsubscribed — ask them before restarting' : j && j.reason === 'email' ? 'Check the email' : 'Could not start the campaign'); return; }
+        closeLayer(); toast(on ? 'Campaign updated' : 'Campaign on — the first email goes out shortly (8 AM–8 PM)'); openCart(x.id); loadCarts();
+      }).catch(fail);
+    };
+  }
+
+  /* ---------------- start ---------------- */
+  function routeHash(){
+    var m = location.hash.match(/cart=([0-9a-f-]{36})/); if(m){ openCart(m[1]); return; }
+    var l = location.hash.match(/mls=([0-9A-Za-z-]{3,20})/); if(l) openListing(l[1]);
+  }
+  window.addEventListener('hashchange', routeHash);
+  function start(){
+    var a = window.JagShare && JagShare.me ? JagShare.me() : null;
+    if(!a){ $('gate').hidden = false; return; }
+    rpc('jag_agent_me').then(function(j){
+      if(!j || !j.ok){ $('gate').hidden = false; $('gate-msg').textContent = j && j.reason === 'not_agent' ? 'This login isn\'t on the JAG team. Ask Jason to add you.' : 'Sign in with your team login.'; return; }
+      me = j.agent; var roles = me.roles || [];
+      $('app').hidden = false;
+      $('me-name').textContent = me.first_name || me.name;
+      $('me-ph').innerHTML = me.photo_url ? '<img src="' + esc(me.photo_url) + '" alt="">' : '<span class="ph"></span>';
+      $('ln-scr').hidden = !(j.staff || roles.indexOf('screener') >= 0 || roles.indexOf('lead') >= 0);
+      $('ln-adm').hidden = !j.staff;
+      var last = ls('jag_mx_last'); fillForm(last || { st: ['active'], pt: ['Single-Family'] });
+      if(c.city || c.zip || c.county || c.map || c.rad) loadFacets();
+      liveCount(); loadCarts().then(routeHash); loadSaved(); paintSaved();
+    }).catch(fail);
+  }
+  // keep the last criteria on this device
+  setInterval(function(){ if(!$('app').hidden) ls('jag_mx_last', readForm()); }, 5000);
+  start();
+})();
+</script>
+</body>
+</html>

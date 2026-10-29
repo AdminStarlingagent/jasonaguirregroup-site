@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Sus casas — JAG Real Estate</title>
+<meta name="description" content="Casas seleccionadas para usted por su agente del Jason Aguirre Group · eXp Realty.">
+<meta property="og:title" content="Casas seleccionadas para usted — JAG Real Estate">
+<meta property="og:description" content="Su agente le preparó una lista de casas. Marque con ❤️ las que le gusten.">
+<meta property="og:image" content="https://jasonaguirregroup.company/og-image.png">
+<link rel="icon" href="favicon-32x32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#17161c;--paper:#fff;--card:#f5f5f7;--line:#e8e8ec;--red:#c8102e;--red-d:#a30d26;--red-t:#fdecef;--green:#0f8a4d;--green-t:#e7f5ee;--amber:#7a4b00;--amber-t:#fff4d6;--muted:#6a6972;
+  --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--card);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;color:inherit}
+a{color:inherit}
+:focus-visible{outline:3px solid #2653d9;outline-offset:2px}
+[hidden]{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px}
+header{background:#fff;border-bottom:3px solid var(--red)}
+header .wrap{display:flex;align-items:center;gap:12px;min-height:64px}
+.lock{display:flex;flex-direction:column;line-height:1;text-decoration:none}
+.lock small{font-size:7.5px;letter-spacing:.32em;font-weight:700;color:var(--muted);text-transform:uppercase}
+.lock b{font-size:24px;font-weight:800;letter-spacing:-.045em;margin:1px 0}
+.lock i{font-style:normal;font-size:8px;letter-spacing:.4em;font-weight:700;text-transform:uppercase;border-top:2px solid var(--red);padding-top:3px}
+header .sp{flex:1}
+.lang{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-weight:700;font-size:13px}
+.hello{padding:22px 0 8px}
+.hello h1{margin:0;font-size:clamp(24px,6vw,32px);line-height:1.15;letter-spacing:-.03em}
+.hello p{margin:8px 0 0;color:var(--muted)}
+.agent{display:flex;gap:12px;align-items:center;background:#fff;border-radius:18px;padding:14px;margin:16px 0;border:1px solid var(--line)}
+.agent img,.agent .ini{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px}
+.agent b{display:block;font-size:16px}
+.agent small{color:var(--muted)}
+.agent .acts{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.pbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:99px;font-weight:700;text-decoration:none;padding:10px 16px;font-size:14.5px;border:0;background:var(--ink);color:#fff;min-height:44px}
+.pbtn.soft{background:var(--card);color:var(--ink)}
+.pbtn.red{background:var(--red)}
+.how{display:flex;gap:10px;align-items:center;background:var(--amber-t);color:var(--amber);border-radius:14px;padding:11px 14px;font-weight:600;font-size:14.5px;margin-bottom:14px}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.filters button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;font-weight:700;font-size:14px;white-space:nowrap}
+.filters button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.homes{display:grid;gap:16px;padding-bottom:20px}
+.home{background:#fff;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 2px 10px rgba(23,22,28,.04)}
+.home .ph{position:relative;display:block;aspect-ratio:16/10;background:var(--card)}
+.home .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.badge{position:absolute;left:12px;top:12px;background:#fff;color:var(--ink);border-radius:99px;padding:5px 11px;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.badge.red{background:var(--red);color:#fff}
+.badge.r2{left:auto;right:12px}
+.home .bd{padding:14px 16px 16px}
+.price{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.price s{font-size:15px;color:var(--muted);font-weight:600;margin-left:6px}
+.specs{font-weight:700;margin-top:2px}
+.addr{color:var(--muted);font-size:14.5px}
+.note{margin-top:10px;background:var(--card);border-left:4px solid var(--red);border-radius:0 12px 12px 0;padding:10px 12px;font-size:14.5px}
+.note small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.react{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.react button{border:1.5px solid var(--line);background:#fff;border-radius:14px;min-height:48px;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:6px}
+.react button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
+.react button.love[aria-pressed="true"]{background:var(--red);border-color:var(--red)}
+.see{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.see .pbtn{width:100%}
+.see .pbtn[aria-pressed="true"]{background:var(--green)}
+.ask{margin-top:10px;display:grid;gap:8px}
+.ask textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;min-height:64px;resize:vertical}
+.ok{margin-top:10px;background:var(--green-t);color:var(--green);border-radius:12px;padding:10px 12px;font-weight:700;font-size:14.5px}
+.empty{background:#fff;border-radius:20px;padding:40px 20px;text-align:center;color:var(--muted);font-weight:600;border:1px solid var(--line)}
+.cta{background:var(--ink);color:#fff;border-radius:20px;padding:20px;margin:6px 0 20px;display:grid;gap:10px}
+.cta b{font-size:18px}
+.cta p{margin:0;color:#c9c8d0}
+.cta .row{display:flex;gap:8px;flex-wrap:wrap}
+.foot{font-size:12.5px;color:var(--muted);padding:20px 0 40px;border-top:1px solid var(--line)}
+.foot nav{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:99px;font-weight:700;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw;text-align:center}
+.spin{display:inline-block;width:18px;height:18px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="lock" href="index.html" aria-label="JAG Real Estate"><small>Jason Aguirre</small><b>JAG</b><i>Real Estate</i></a>
+  <span class="sp"></span>
+  <button class="lang" id="lang" type="button">English</button>
+</div></header>
+
+<main class="wrap">
+  <div id="body"><div class="empty" style="margin-top:24px"><span class="spin"></span></div></div>
+  <footer class="foot">
+    <b>Jason Aguirre Group &middot; eXp Realty</b><br>
+    5373 W Alabama St, Suite 448 &middot; Houston, TX 77056 &middot; <a href="tel:+18327023574">(832) 702-3574</a>
+    <nav>
+      <a href="iabs.html">TREC Information About Brokerage Services</a>
+      <a href="https://www.trec.texas.gov/forms/consumer-protection-notice" target="_blank" rel="noopener">TREC Consumer Protection Notice</a>
+      <a href="privacy-terms.html" data-t="priv"></a>
+    </nav>
+    <p data-t="use"></p>
+    <p data-t="idx"></p>
+  </footer>
+</main>
+
+<script src="jag-capture.js?v=3"></script>
+<script src="jag-share.js?v=4"></script>
+<script>
+(function(){
+  'use strict';
+  var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey, CDN = 'https://cdn.repliers.io/';
+  var tok = (location.hash || '').replace(/^#/, '').split(/[?&]/)[0];
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function money(n){ return n ? '$' + Math.round(n).toLocaleString('en-US') : ''; }
+  function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
+  function fmtPhone(p){ var d = digits(p); return d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : (p || ''); }
+  function rpc(name, args){
+    return fetch(BASE + '/rest/v1/rpc/' + name, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) })
+      .then(function(r){ return r.status === 204 ? null : r.json(); });
+  }
+  function toast(t){ var el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(function(){ el.remove(); }, 2800); }
+
+  var TX = {
+    es: { lang: 'English', hi: function(f, a, n){ return (f ? 'Hola ' + f + ', ' : '') + (a ? a + ' le preparó ' : 'Le preparamos ') + n + (n === 1 ? ' casa' : ' casas'); },
+      sub: 'Toque ❤️ en las que le gusten. Su agente recibe un aviso al instante.',
+      how: '💡 Toque “Quiero verla” y le agendamos la cita.', all: 'Todas', loved: '❤️ Me encantan', maybe: '🤔 Tal vez', no: '👎 No', none: 'Sin marcar',
+      love: 'Me encanta', mb: 'Tal vez', nope: 'No', see: '🏠 Quiero verla', details: 'Ver fotos y detalles', bd: 'rec', ba: 'baños', sf: 'pies²',
+      call: 'Llamar', text: 'Texto', agentSub: 'Su agente · JAG Real Estate · eXp Realty', was: 'antes',
+      askTour: '¿Qué días y horas le quedan mejor? (opcional)', sendTour: 'Pedir la cita', noteLbl: 'Nota de su agente',
+      sentTour: '✓ Listo. Su agente le contactará para agendar.', thanks: '¡Gracias! Le avisamos a su agente.',
+      st: { 'Option Pending': 'Opción pendiente', 'Pending Continue to Show': 'Pendiente (se sigue mostrando)', 'Pending': 'Bajo contrato', 'Sold': 'Vendida', 'Coming Soon': 'Muy pronto', 'Withdrawn': 'Retirada', 'Expired': 'Ya no disponible', 'Terminated': 'Ya no disponible' },
+      newc: 'Construcción nueva', drop: 'Bajó de precio', gone: 'Esta lista ya no está disponible. Llámenos al (832) 702-3574.',
+      cta: '¿Quiere más casas como estas?', ctaP: 'Cree su cuenta gratis: guarde favoritas y reciba avisos de casas nuevas al instante.', ctaB: 'Crear mi cuenta gratis', app: 'Ver cuánto califico',
+      empty: 'No hay casas en esta vista.', priv: 'Privacidad y Términos',
+      use: 'La información de los listados es para uso personal y no comercial de los consumidores, y no puede usarse para ningún otro fin que no sea identificar propiedades que les interese comprar o rentar.',
+      idx: 'Datos de listados proporcionados por Houston Association of REALTORS® (HAR) a través de Repliers. Información considerada confiable pero no garantizada; verifique todos los datos de forma independiente. Jason Aguirre Group · eXp Realty.' },
+    en: { lang: 'Español', hi: function(f, a, n){ return (f ? 'Hi ' + f + ', ' : '') + (a ? a + ' picked ' : 'We picked ') + n + (n === 1 ? ' home' : ' homes') + ' for you'; },
+      sub: 'Tap ❤️ on the ones you like. Your agent gets a heads-up right away.',
+      how: '💡 Tap “I want to see it” and we\'ll book the showing.', all: 'All', loved: '❤️ Loved', maybe: '🤔 Maybe', no: '👎 No', none: 'Not rated',
+      love: 'Love it', mb: 'Maybe', nope: 'No', see: '🏠 I want to see it', details: 'Photos & details', bd: 'bd', ba: 'ba', sf: 'sqft',
+      call: 'Call', text: 'Text', agentSub: 'Your agent · JAG Real Estate · eXp Realty', was: 'was',
+      askTour: 'What days and times work best? (optional)', sendTour: 'Request a showing', noteLbl: 'Note from your agent',
+      sentTour: '✓ Done. Your agent will reach out to schedule.', thanks: 'Thanks! We let your agent know.',
+      st: { 'Option Pending': 'Option pending', 'Pending Continue to Show': 'Pending (still showing)', 'Pending': 'Under contract', 'Sold': 'Sold', 'Coming Soon': 'Coming soon', 'Withdrawn': 'Withdrawn', 'Expired': 'No longer available', 'Terminated': 'No longer available' },
+      newc: 'New construction', drop: 'Price drop', gone: 'This list is no longer available. Call us at (832) 702-3574.',
+      cta: 'Want more homes like these?', ctaP: 'Create your free account to save favorites and get new homes the moment they hit the market.', ctaB: 'Create my free account', app: 'See what I qualify for',
+      empty: 'No homes in this view.', priv: 'Privacy & Terms',
+      use: 'Listing information is provided for consumers\' personal, non-commercial use and may not be used for any purpose other than to identify prospective properties they may be interested in purchasing or renting.',
+      idx: 'Listing data provided by the Houston Association of REALTORS® (HAR) through Repliers. Information deemed reliable but not guaranteed; verify all information independently. Jason Aguirre Group · eXp Realty.' }
+  };
+  var lang = 'es', D = null, view = 'all', asking = {};
+  function L(){ return TX[lang]; }
+  function setLang(l){
+    lang = l === 'en' ? 'en' : 'es'; document.documentElement.lang = lang;
+    try{ localStorage.setItem('jag_lang', lang); }catch(e){}
+    $('lang').textContent = L().lang;
+    document.querySelectorAll('[data-t]').forEach(function(el){ el.textContent = L()[el.dataset.t] || ''; });
+    paint();
+  }
+  $('lang').onclick = function(){ setLang(lang === 'es' ? 'en' : 'es'); };
+
+  function agentQ(){ return D && D.agent ? 'a=' + encodeURIComponent(D.agent.code) + '&' : ''; }
+  function paint(){
+    if(!D) return;
+    if(!D.ok){ $('body').innerHTML = '<div class="empty" style="margin-top:24px">' + esc(L().gone) + '</div>'; return; }
+    var a = D.agent, homes = D.homes || [], t = L();
+    var counts = { love: 0, maybe: 0, no: 0, none: 0 };
+    homes.forEach(function(h){ var r = h.reaction === 'tour' ? 'love' : h.reaction; counts[r || 'none']++; });
+    var list = homes.filter(function(h){ var r = h.reaction === 'tour' ? 'love' : h.reaction; return view === 'all' || (view === 'none' ? !r : r === view); });
+    var aFirst = a ? (a.first_name || String(a.name || '').split(' ')[0]) : '';
+    var h = '<section class="hello"><h1>' + esc(t.hi(D.first, aFirst, homes.length)) + '</h1><p>' + esc(t.sub) + '</p></section>';
+    if(a) h += '<div class="agent">' + (a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="">' : '<span class="ini">' + esc(aFirst.charAt(0)) + '</span>') +
+      '<div><b>' + esc(a.name) + '</b><small>' + esc(t.agentSub) + '</small>' + (a.phone ? '<div class="num" style="font-weight:700">' + esc(fmtPhone(a.phone)) + '</div>' : '') + '</div>' +
+      (a.phone ? '<div class="acts"><a class="pbtn" href="tel:+1' + digits(a.phone) + '">' + esc(t.call) + '</a><a class="pbtn soft" href="sms:+1' + digits(a.phone) + '">' + esc(t.text) + '</a></div>' : '') + '</div>';
+    h += '<div class="how">' + esc(t.how) + '</div>';
+    if(homes.length > 3) h += '<div class="filters" role="group">' + [['all', t.all + ' (' + homes.length + ')'], ['love', t.loved + ' (' + counts.love + ')'], ['maybe', t.maybe + ' (' + counts.maybe + ')'], ['no', t.no + ' (' + counts.no + ')'], ['none', t.none + ' (' + counts.none + ')']]
+      .map(function(f){ return '<button type="button" data-view="' + f[0] + '" aria-pressed="' + (view === f[0]) + '">' + esc(f[1]) + '</button>'; }).join('') + '</div>';
+    h += list.length ? '<div class="homes">' + list.map(card).join('') + '</div>' : '<div class="empty">' + esc(t.empty) + '</div>';
+    h += '<div class="cta"><b>' + esc(t.cta) + '</b><p>' + esc(t.ctaP) + '</p><div class="row"><a class="pbtn red" href="account.html?' + agentQ() + 'src=lista">' + esc(t.ctaB) + '</a><a class="pbtn soft" href="apply.html?' + agentQ() + 'src=lista">' + esc(t.app) + '</a></div></div>';
+    $('body').innerHTML = h;
+  }
+  function card(h){
+    var s = h.snap || {}, t = L(), r = h.reaction;
+    var url = 'homes.html?' + agentQ() + 'src=lista#' + encodeURIComponent(h.mls);
+    var stx = s.st && s.st !== 'Active' ? (t.st[s.st] || s.st) : '';
+    var addr = [s.addr, s.city].filter(Boolean).join(', ') + (s.zip ? ' ' + s.zip : '');
+    var specs = [s.beds != null ? s.beds + ' ' + t.bd : '', s.baths != null ? s.baths + ' ' + t.ba : '', s.sqft ? Number(s.sqft).toLocaleString('en-US') + ' ' + t.sf : ''].filter(Boolean).join(' · ');
+    var b = '<article class="home" data-mls="' + esc(h.mls) + '"><a class="ph" href="' + esc(url) + '">' + (s.photo ? '<img loading="lazy" src="' + CDN + esc(s.photo) + '?class=medium" alt="" onerror="this.remove()">' : '') +
+      (stx ? '<span class="badge red">' + esc(stx) + '</span>' : s.drop ? '<span class="badge red">' + esc(t.drop) + '</span>' : s.newc ? '<span class="badge">' + esc(t.newc) + '</span>' : '') +
+      (r === 'love' || r === 'tour' ? '<span class="badge r2">❤️</span>' : '') + '</a><div class="bd">' +
+      '<div class="price num">' + money(s.price) + (s.drop ? '<s>' + money(s.drop) + '</s>' : '') + '</div><div class="specs">' + esc(specs) + '</div><div class="addr">' + esc(addr) + (s.sub ? ' · ' + esc(s.sub) : '') + '</div>' +
+      (h.note ? '<div class="note">“' + esc(h.note) + '”<small>' + esc(t.noteLbl) + '</small></div>' : '') +
+      '<div class="react" role="group"><button type="button" class="love" data-r="love" aria-pressed="' + (r === 'love' || r === 'tour') + '">❤️ ' + esc(t.love) + '</button>' +
+      '<button type="button" data-r="maybe" aria-pressed="' + (r === 'maybe') + '">🤔 ' + esc(t.mb) + '</button><button type="button" data-r="no" aria-pressed="' + (r === 'no') + '">👎 ' + esc(t.nope) + '</button></div>' +
+      '<div class="see"><a class="pbtn soft" href="' + esc(url) + '">' + esc(t.details) + '</a><button class="pbtn" type="button" data-tour aria-pressed="' + (r === 'tour') + '">' + esc(r === 'tour' ? '✓ ' + t.see.replace(/^🏠\s*/, '') : t.see) + '</button></div>' +
+      (asking[h.mls] ? '<div class="ask"><textarea data-q placeholder="' + esc(t.askTour) + '" maxlength="300"></textarea><button class="pbtn red" type="button" data-send>' + esc(t.sendTour) + '</button></div>' : '') +
+      (r === 'tour' && !asking[h.mls] ? '<div class="ok">' + esc(t.sentTour) + '</div>' : '') + '</div></article>';
+    return b;
+  }
+  function react(mls, r, note){
+    var h = (D.homes || []).find(function(x){ return x.mls === mls; }); if(!h) return;
+    var prev = h.reaction; h.reaction = r; if(note) h.client_note = note;
+    paint();
+    rpc('jag_cart_react', { p_token: tok, p_mls: mls, p_reaction: r, p_note: note || null }).then(function(j){
+      if(!j || !j.ok){ h.reaction = prev; paint(); toast(lang === 'es' ? 'No se pudo guardar. Intente de nuevo.' : 'Couldn\'t save. Try again.'); return; }
+      if(r === 'love' || r === 'tour') toast(L().thanks);
+    }).catch(function(){ h.reaction = prev; paint(); });
+  }
+  $('body').addEventListener('click', function(e){
+    var v = e.target.closest('[data-view]'); if(v){ view = v.dataset.view; paint(); return; }
+    var art = e.target.closest('.home'); if(!art) return;
+    var mls = art.dataset.mls, h = (D.homes || []).find(function(x){ return x.mls === mls; });
+    var b = e.target.closest('[data-r]');
+    if(b){ var r = b.dataset.r; react(mls, (h.reaction === r || (r === 'love' && h.reaction === 'tour')) ? null : r); return; }
+    if(e.target.closest('[data-tour]')){ if(h.reaction === 'tour') return; asking[mls] = true; paint(); var q = document.querySelector('.home[data-mls="' + mls + '"] [data-q]'); if(q) q.focus(); return; }
+    if(e.target.closest('[data-send]')){ var ta = art.querySelector('[data-q]'); delete asking[mls]; react(mls, 'tour', ta ? ta.value.trim() : ''); }
+  });
+
+  function start(){
+    var saved = null; try{ saved = localStorage.getItem('jag_lang'); }catch(e){}
+    if(!/^[0-9a-f]{16}$/.test(tok)){ D = { ok: false }; setLang(saved || 'es'); return; }
+    rpc('jag_cart_public', { p_token: tok }).then(function(j){
+      D = j || { ok: false };
+      setLang(saved || (D.lang === 'en' ? 'en' : 'es'));
+      // one open per visit
+      var k = 'jag_lista_' + tok, seen = false; try{ seen = !!sessionStorage.getItem(k); sessionStorage.setItem(k, '1'); }catch(e){}
+      var agentHere = false; try{ agentHere = !!JSON.parse(localStorage.getItem('jag_agent') || 'null'); }catch(e){}   // team previews don't count
+      if(D.ok && !seen && !agentHere) rpc('jag_cart_opened', { p_token: tok }).catch(function(){});
+    }).catch(function(){ D = { ok: false }; setLang(saved || 'es'); });
+  }
+  window.addEventListener('hashchange', function(){ location.reload(); });
+  start();
+})();
+</script>
+</body>
+</html>

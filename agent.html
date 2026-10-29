@@ -290,6 +290,7 @@ body{background:var(--paper)}
     <span id="hd-ph"></span>
     <div><b id="hd-name"></b><small id="hd-sub"></small></div>
     <button class="out scr" type="button" data-lola-offer title="Tell Lola about an offer">&#128221; New offer</button>
+    <a class="out scr" href="matrix.html" title="HAR Matrix-style search, client lists and email campaigns">&#128269; Matrix search</a>
     <a class="out scr" id="scr-link" href="screener.html" title="Call screener with Lola" hidden>&#128222; Call screener</a>
     <button class="out" type="button" id="stbtn" style="margin-left:0">Settings</button>
     <button class="out" type="button" id="pwbtn" style="margin-left:0">Password</button>
@@ -588,6 +589,8 @@ body{background:var(--paper)}
         '. It comes from your Follow Up Boss profile (updated every morning); change it there.';
       var off = false, hasPw = false; try{ off = !!sessionStorage.getItem('jag_pwbar_off'); hasPw = !!localStorage.getItem('jag_pw_' + (s.e || '')); }catch(x){}
       $('pwbar').hidden = off || hasPw || s.how === 'pw';
+      var nx = ''; try{ nx = new URLSearchParams(location.search).get('next') || ''; }catch(x){}
+      if(/^[a-z0-9-]+\.html([?#][\w=&#.-]*)?$/i.test(nx)){ location.replace(nx); return; }
       load(); routeHash();
     }).catch(function(e){
       if(String(e && e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); }
