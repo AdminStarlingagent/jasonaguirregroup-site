@@ -103,6 +103,8 @@ main{padding-block:16px 60px}
 .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .bar select{height:44px;max-width:100%;border:1px solid #d9d6d1;border-radius:14px;padding:0 10px;font-weight:700;font-size:14px;background:#f6f5f3;color:var(--ink)}
 .bar select:focus{outline:3px solid var(--red-t);border-color:var(--red)}
+#lchip .lc{display:flex;align-items:center;gap:10px;background:var(--ink);color:#fff;border-radius:16px;padding:10px 12px 10px 16px;margin:0 0 12px;font-weight:700;font-size:14.5px}
+#lchip .lc span{flex:1;min-width:0}#lchip .lc button{border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:99px;padding:7px 12px;font-weight:800;font-size:13px}
 #more-box .cnt{text-align:center;color:var(--muted);font-size:13px;font-weight:700;margin:12px 0 6px}
 #more-box .more{display:block;width:100%;min-height:48px;border:2px solid var(--red);background:#fff;color:var(--red);border-radius:99px;font-weight:800;font-size:15px}
 #more-box .more:disabled{opacity:.6}
@@ -304,7 +306,8 @@ body{background:var(--paper)}
     <button class="out" type="button" id="out" style="margin-left:0">Sign out</button>
   </div></header>
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
-    <button type="button" data-tab="clients" class="on">Contacts</button>
+    <button type="button" data-tab="today" class="on">Today <span class="tc" id="tc-today"></span></button>
+    <button type="button" data-tab="clients">Contacts</button>
     <button type="button" data-tab="messages">Messages <span class="tc" id="tc-msgs"></span></button>
     <button type="button" data-tab="showings" id="tab-showings" hidden>Showings <span class="tc" id="tc-shows"></span></button>
     <button type="button" data-tab="offers">Offers <span class="tc" id="tc-offers"></span></button>
@@ -312,7 +315,9 @@ body{background:var(--paper)}
     <button type="button" data-tab="links">My links</button>
   </div></nav>
   <main class="wrap">
-    <section id="t-clients">
+    <section id="t-today"></section>
+
+    <section id="t-clients" hidden>
       <div class="pwbar" id="pwbar" hidden><b>Tired of email codes? Set a password and sign in with it next time.</b><button type="button" id="pwbar-go">Set a password</button><button type="button" class="x" id="pwbar-x">Not now</button></div>
       <div class="stats" id="stats"></div>
       <div class="bar">
@@ -328,6 +333,7 @@ body{background:var(--paper)}
         <button type="button" class="chip" data-f="week">Active this week</button>
         <button type="button" class="chip" data-f="hot">Score 70+</button>
       </div>
+      <div id="lchip"></div>
       <div class="list" id="list"><div class="empty">Loading contacts…</div></div>
       <div id="more-box"></div>
       <p class="note">Contacts = everyone in Follow Up Boss who's being worked (every stage except Lead and Trash, plus leads from the last 6 months) and everyone with an app account. Stage changes, notes, calls, texts and emails you make here go to Follow Up Boss within a minute; changes made in Follow Up Boss show up here within 5 minutes. Moving someone to <b>Applied, Loan Approved, Showing homes, Submitting offers</b> or <b>Under contract</b> hands them to that stage's teammate, who gets a notification and a text. Most recent activity first. Score (0-100) = how actively an app client is shopping on our website, updated hourly.</p>
@@ -406,8 +412,9 @@ body{background:var(--paper)}
 <script src="jag-offer-edit.js?v=1"></script>
 <script src="jag-lola-offer.js?v=2"></script>
 <script src="jag-showings.js?v=1"></script>
-<script src="jag-crm.js?v=3"></script>
+<script src="jag-crm.js?v=4"></script>
 <script src="jag-profile.js?v=2"></script>
+<script src="jag-today.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -617,14 +624,18 @@ body{background:var(--paper)}
       var nx = ''; try{ nx = new URLSearchParams(location.search).get('next') || ''; }catch(x){}
       if(/^[a-z0-9-]+\.html([?#][\w=&#.-]*)?$/i.test(nx)){ location.replace(nx); return; }
       if(window.JagCRM) JagCRM.init({ rpc: rpc, me: me, isLead: me.isLead, canScreen: me.isLead || roles.indexOf('screener') >= 0, seeAll: me.isLead,
-        reload: load, findRow: findC, focusClient: focusClient });
+        reload: load, findRow: findC, focusClient: focusClient, openToday: function(){ if(window.JagProfile && JagProfile.isOpen()) JagProfile.close(); showTab('today'); } });
+      if(window.JagToday) JagToday.init({ rpc: rpc, me: me,
+        openProfile: function(id){ if(window.JagProfile) JagProfile.open(id); },
+        openList: openList, stages: function(){ return cstages.map(function(x){ return x.name; }); },
+        onCount: function(n){ $('tc-today').textContent = n ? n : ''; }, toast: function(m){ if(window.JagCRM) JagCRM.toast(m); } });
       rpc('jag_stage_owners_get').then(function(j){ if(j && j.ok){ team = j.team || []; paintFilters(); if(contacts.length) paint(); } }).catch(function(){});
       if(window.JagProfile) JagProfile.init({ rpc: rpc, me: me, isLead: me.isLead,
         listIds: function(){ return contacts.map(function(x){ return x.id; }); },
         findRow: findC,
         handoff: function(c, cb){ if(window.JagShowings) JagShowings.handoff(c, function(code){ c.showing_agent_code = code; paint(); if(cb) cb(code); }); },
-        openThread: function(u){ showTab('messages'); openThread(u); }, reload: load, onClose: function(){ load(); } });
-      load(); routeHash();
+        openThread: function(u){ showTab('messages'); openThread(u); }, reload: load, onClose: function(){ load(); if(curTab === 'today' && window.JagToday) JagToday.load(); } });
+      load(); if(window.JagToday) JagToday.load(); routeHash();
     }).catch(function(e){
       if(String(e && e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); }
       else { showSignIn('Could not reach JAG. Check your connection and try again.'); }
@@ -641,17 +652,30 @@ body{background:var(--paper)}
   }
 
   /* ---------------- Contacts: everyone (Follow Up Boss leads + app accounts), paged on the server ---------------- */
-  var contacts = [], ctot = 0, ccounts = {}, cstages = [], cstage = '', cowner = '', cbusy = false, cseq = 0, CPAGE = 40, team = [];
+  var contacts = [], ctot = 0, ccounts = {}, cstages = [], cstage = '', cowner = '', cbusy = false, cseq = 0, CPAGE = 40, team = [], clist = null;
+  // a saved list opened from Today: shown as a dark bar above the results, × clears it
+  function paintListChip(){
+    var b = $('lchip'); if(!b) return;
+    b.innerHTML = clist ? '<div class="lc"><span>📋 ' + esc(clist.name) + (cowner && cowner !== 'none' ? ' · ' + esc(agentNm(cowner)) : '') + '</span><button type="button" id="lchip-x" aria-label="Clear the list">✕ Clear</button></div>' : '';
+    if($('lchip-x')) $('lchip-x').onclick = function(){ clist = null; cowner = ''; paintListChip(); loadContacts(true); };
+  }
+  function setChip(v){ filter = v; document.querySelectorAll('#chips .chip').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-f') === v); }); }
+  function openList(l, view, agent){
+    clist = l; q = ''; cstage = ''; cowner = agent || ''; if($('q')) $('q').value = '';
+    setChip(agent ? 'all' : view || 'mine'); contacts = []; paintListChip();
+    showTab('clients'); try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  }
   function loadContacts(mode){
     var seq = ++cseq, more = mode === false, off = more ? contacts.length : 0;
     var lim = mode === 'refresh' ? Math.min(100, Math.max(CPAGE, contacts.length)) : CPAGE;
     if(!more && mode !== 'refresh') $('list').innerHTML = '<div class="empty">Loading contacts…</div>';
     cbusy = true; paintMore();
-    rpc('jag_contacts_list', { p: { q: q, view: filter, stage: cstage, owner: cowner, limit: lim, offset: off } }).then(function(j){
+    rpc('jag_contacts_list', { p: { q: q, view: filter, stage: cstage, owner: cowner, list: clist ? clist.id : null, limit: lim, offset: off } }).then(function(j){
       if(seq !== cseq) return; cbusy = false;
       if(!j || !j.ok){ $('list').innerHTML = '<div class="empty">Could not load contacts.</div>'; paintMore(); return; }
       contacts = more ? contacts.concat(j.contacts || []) : (j.contacts || []);
       ctot = j.total || 0; ccounts = j.counts || {}; cstages = j.stages || [];
+      if(clist && !j.list) clist = null;   // the list was deleted
       paintFilters(); paint();
     }).catch(function(e){
       if(seq !== cseq) return; cbusy = false;
@@ -676,6 +700,7 @@ body{background:var(--paper)}
   function focusClient(uid){ if(uid && window.JagProfile){ JagProfile.open(uid); return; } showTab('clients'); }
   function stat(n, label){ return '<div class="stat"><b class="num">' + (n || 0).toLocaleString('en-US') + '</b><span>' + label + '</span></div>'; }
   function paint(){
+    paintListChip();
     $('stats').innerHTML = stat(ccounts.all, 'Contacts') + stat(ccounts.prio, 'In a hot stage') + stat(ccounts.week, 'Active this week') + stat(ccounts.mine, 'Yours');
     if(!contacts.length){
       $('list').innerHTML = '<div class="empty">' + (q || cstage || cowner || filter !== 'all' ? 'No contacts match.' : 'No contacts yet. Tap ＋ Invite a client to add your first one.') + '</div>';
@@ -871,12 +896,13 @@ body{background:var(--paper)}
   };
   $('sh-site-go').onclick = function(){ JagShare.open({ kind: 'site', title: 'Invite to our home search', label: 'Home search invite' }); };
 
-  var curTab = 'clients';
+  var curTab = 'today';
   function showTab(t){
     curTab = t;
     document.querySelectorAll('.tabs [data-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tab') === t); });
-    ['clients', 'messages', 'showings', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
-    if(t === 'messages'){ if(!thUser) loadInbox(); } else if(t === 'showings'){ if(window.JagShowings) JagShowings.load(); } else if(t !== 'share') load();
+    ['today', 'clients', 'messages', 'showings', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
+    if(t === 'today'){ if(window.JagToday) JagToday.load(); }
+    else if(t === 'messages'){ if(!thUser) loadInbox(); } else if(t === 'showings'){ if(window.JagShowings) JagShowings.load(); } else if(t !== 'share') load();
   }
   document.querySelector('.tabs').addEventListener('click', function(e){
     var b = e.target.closest('[data-tab]'); if(!b) return;
@@ -885,9 +911,10 @@ body{background:var(--paper)}
     showTab(t);
     if(t === 'messages' && location.hash.indexOf('#mensajes') !== 0) history.replaceState(null, '', '#mensajes');
     else if(t === 'showings') history.replaceState(null, '', '#showings');
+    else if(t === 'today') history.replaceState(null, '', location.pathname + location.search);
     else if(t !== 'messages' && location.hash) history.replaceState(null, '', location.pathname + location.search);
   });
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else if(curTab === 'showings') JagShowings.load(); else load(); } });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else if(curTab === 'showings') JagShowings.load(); else if(curTab === 'today'){ if(window.JagToday) JagToday.load(); } else load(); } });
 
   /* ---------------- messages (Mensajes from website clients) ---------------- */
   var threads = [], mfilter = 'mine', thUser = null, th = null, thPending = [], thSig = '', thBusy = false;
@@ -986,12 +1013,20 @@ body{background:var(--paper)}
     var cp = location.hash.match(/^#c\/([\w-]{2,40})/);
     if(cp && me && window.JagProfile){ JagProfile.open(cp[1]); return; }
     if(/^#(showings|tours)/i.test(location.hash) && me){ if(me.canShow) showTab('showings'); return; }
+    if(/^#today/i.test(location.hash) && me){ showTab('today'); return; }
+    if(/^#contacts/i.test(location.hash) && me){ showTab('clients'); return; }
     var m = location.hash.match(/^#(?:mensajes|messages)(?:\/([0-9a-f-]{36}))?/i); if(!m || !me) return;
     showTab('messages'); if(m[1]) openThread(m[1]);
   }
 
   // the workspace hands links like #c/<id> to this tab without reloading it
-  window.jagTeamRoute = function(suf){ var m = String(suf || '').match(/#c\/([\w-]{2,40})/); if(m && me && window.JagProfile){ JagProfile.open(m[1]); return true; } return false; };
+  window.jagTeamRoute = function(suf){
+    suf = String(suf || '');
+    var m = suf.match(/#c\/([\w-]{2,40})/); if(m && me && window.JagProfile){ JagProfile.open(m[1]); return true; }
+    if(/^#today/i.test(suf) && me){ if(window.JagProfile && JagProfile.isOpen()) JagProfile.close(); showTab('today'); return true; }
+    if(/^#contacts/i.test(suf) && me){ showTab('clients'); return true; }
+    return false;
+  };
   start();
 })();
 </script>

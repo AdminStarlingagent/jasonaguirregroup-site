@@ -21,7 +21,7 @@ const OFFICE = "8327023574";
 const DAYS = 180;
 const FIELDS = [
   "id", "name", "firstName", "lastName", "emails", "phones", "stage", "stageId", "source", "tags", "background", "price",
-  "assignedUserId", "assignedPondId", "created", "updated", "lastActivity", "lastCommunication", "contacted", "collaborators",
+  "assignedUserId", "assignedPondId", "created", "updated", "lastActivity", "lastCommunication", "lastCall", "contacted", "collaborators",
 ].join(",");
 
 type Row = Record<string, unknown>;
@@ -82,6 +82,9 @@ async function upsert(raw: Person[]) {
     if (error) throw new Error("upsert: " + error.message);
     inserted += Number((data as Row)?.inserted || 0); updated += Number((data as Row)?.updated || 0);
   }
+  // when they were last called (the Today list and "no call in N days" lists use it)
+  const calls = raw.map((p) => ({ id: p.id, at: when(p.lastCall) })).filter((x) => x.at);
+  if (calls.length) await db.rpc("jag_fub_calls", { p: calls });
   return { inserted, updated };
 }
 

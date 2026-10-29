@@ -14,7 +14,7 @@
 (function(){
   var C = window.JAG_CRM || {}, BASE = String(C.url || '').replace(/\/+$/, ''), KEY = C.anonKey;
   var SITE = 'https://jasonaguirregroup.company';
-  var o = null, me = null, invites = [], notifs = [], unread = 0, showAllInv = false, seenJoin = {}, booted = false;
+  var o = null, me = null, invites = [], notifs = [], unread = 0, overdue = 0, dueToday = 0, showAllInv = false, seenJoin = {}, booted = false;
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
@@ -367,7 +367,7 @@
   function loadNotifs(){
     return rpc('jag_notifs', { p_limit: 30 }).then(function(j){
       if(!j || !j.ok) return;
-      var had = unread; notifs = j.items || []; unread = j.unread || 0; paintBell();
+      var had = unread; notifs = j.items || []; unread = j.unread || 0; overdue = j.overdue || 0; dueToday = j.due_today || 0; paintBell();
       if(unread > had && had >= 0 && $('nf-pan')) paintPanel();
       var fresh = notifs.filter(function(n){ return n.kind === 'joined' && !seenJoin[n.id]; });
       fresh.forEach(function(n){ seenJoin[n.id] = 1; });
@@ -375,10 +375,13 @@
       booted = true;
     }).catch(function(){});
   }
-  function paintBell(){ var n = $('nf-n'); if(n) n.textContent = unread ? (unread > 99 ? '99+' : unread) : ''; var b = $('nf-btn'); if(b) b.setAttribute('aria-label', 'Notifications' + (unread ? ', ' + unread + ' new' : '')); }
+  // the badge = new notifications + late tasks (late tasks stay counted until they're done)
+  function paintBell(){ var t = unread + overdue, n = $('nf-n'); if(n) n.textContent = t ? (t > 99 ? '99+' : t) : '';
+    var b = $('nf-btn'); if(b) b.setAttribute('aria-label', 'Notifications' + (unread ? ', ' + unread + ' new' : '') + (overdue ? ', ' + overdue + ' late task' + (overdue === 1 ? '' : 's') : '')); }
   function paintPanel(){
     var p = $('nf-pan'); if(!p) return;
-    p.innerHTML = '<h3>Notifications</h3>' + (notifs.length ? notifs.map(function(n){
+    var due = overdue + dueToday;
+    p.innerHTML = '<h3>Notifications</h3>' + (due ? '<button type="button" class="nf' + (overdue ? ' un' : '') + '" data-today="1"><i></i><span><b>⏰ ' + (overdue ? overdue + ' late task' + (overdue === 1 ? '' : 's') : '') + (overdue && dueToday ? ' · ' : '') + (dueToday ? dueToday + ' due today' : '') + '</b><small>Open Today to work them</small></span></button>' : '') + (notifs.length ? notifs.map(function(n){
       return '<button type="button" class="nf' + (n.read_at ? '' : ' un') + '" data-nu="' + esc(n.user_id || '') + '" data-ni="' + esc(n.invite_id || '') + '"><i></i><span><b>' + esc(n.title) + '</b><small>' + esc(n.body || '') + ' · ' + esc(ago(n.created_at)) + '</small></span></button>';
     }).join('') : '<div class="nf-empty">Nothing yet. Invite a client and you\'ll see here when they open it and join.</div>');
   }
@@ -390,6 +393,7 @@
     document.body.appendChild(p); paintPanel();
     p.addEventListener('click', function(e){
       var b = e.target.closest('.nf'); if(!b) return;
+      if(b.hasAttribute('data-today')){ p.remove(); if(o.openToday) o.openToday(); return; }
       var u = b.getAttribute('data-nu'); p.remove();
       if(u) o.focusClient(u); else if(b.getAttribute('data-ni')) o.focusClient(null);
     });
@@ -418,7 +422,7 @@
 
   var timer = null;
   window.JagCRM = {
-    // opts: { rpc, me, isLead, canScreen, seeAll, reload(), findRow(uid), focusClient(uid) }
+    // opts: { rpc, me, isLead, canScreen, seeAll, reload(), findRow(uid), focusClient(uid), openToday() }
     init: function(opts){
       o = opts; me = opts.me;
       // header: notifications bell
