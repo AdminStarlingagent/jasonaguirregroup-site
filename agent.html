@@ -169,6 +169,7 @@ body{background:var(--paper)}
 .cl.hot,.cl.warm{border-left-color:#ebe9e5}
 .cl.hot{border-color:var(--ink)}
 .cl-top b{font-size:20px;letter-spacing:-.02em}
+.cl-nm{color:inherit;text-decoration:none}.cl-nm:hover{text-decoration:underline}
 .score{background:#f6f5f3;border-radius:16px;min-width:64px}
 .score b{font-size:30px;letter-spacing:-.04em}
 .score span{font-size:9px;letter-spacing:.14em}
@@ -396,7 +397,8 @@ body{background:var(--paper)}
 <script src="jag-offer-edit.js?v=1"></script>
 <script src="jag-lola-offer.js?v=2"></script>
 <script src="jag-showings.js?v=1"></script>
-<script src="jag-crm.js?v=1"></script>
+<script src="jag-crm.js?v=2"></script>
+<script src="jag-profile.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -607,6 +609,11 @@ body{background:var(--paper)}
       if(/^[a-z0-9-]+\.html([?#][\w=&#.-]*)?$/i.test(nx)){ location.replace(nx); return; }
       if(window.JagCRM) JagCRM.init({ rpc: rpc, me: me, isLead: me.isLead, canScreen: me.isLead || roles.indexOf('screener') >= 0, seeAll: me.isLead,
         reload: load, findRow: function(u){ return rows.filter(function(x){ return x.user_id === u; })[0] || null; }, focusClient: focusClient });
+      if(window.JagProfile) JagProfile.init({ rpc: rpc, me: me, isLead: me.isLead,
+        listIds: function(){ return filtered().map(function(x){ return x.user_id; }); },
+        findRow: function(u){ return rows.filter(function(x){ return x.user_id === u; })[0] || null; },
+        handoff: function(c, cb){ if(window.JagShowings) JagShowings.handoff(c, function(code){ c.showing_agent_code = code; paint(); if(cb) cb(code); }); },
+        openThread: function(u){ showTab('messages'); openThread(u); }, reload: load, onClose: function(){ load(); } });
       load(); routeHash();
     }).catch(function(e){
       if(String(e && e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); }
@@ -623,7 +630,7 @@ body{background:var(--paper)}
 
   // a notification was tapped: open Contacts and show that client
   var pendingFocus = null;
-  function focusClient(uid){ pendingFocus = uid || null; filter = 'all'; q = ''; if($('q')) $('q').value = ''; document.querySelectorAll('#chips .chip').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-f') === 'all'); }); showTab('clients'); }
+  function focusClient(uid){ if(uid && window.JagProfile){ JagProfile.open(uid); return; } pendingFocus = uid || null; filter = 'all'; q = ''; if($('q')) $('q').value = ''; document.querySelectorAll('#chips .chip').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-f') === 'all'); }); showTab('clients'); }
   function filtered(){
     var s = q.toLowerCase(), wk = Date.now() - 7 * 864e5;
     return rows.filter(function(c){
@@ -659,7 +666,7 @@ body{background:var(--paper)}
     var owner = shw + (c.agent_code ? (c.agent_code === me.code ? '<span class="pill b">Your client</span>' : '<span class="pill">via ' + esc(c.agent_code) + '</span>') : '');
     var h = '<article class="cl ' + cls + '" data-u="' + esc(c.user_id) + '">' +
       (prio ? '<div>' + prio + '</div>' : '') +
-      '<div class="cl-top"><div class="who"><b>' + esc(c.name || c.email) + '</b><small>' + esc(c.lang === 'en' ? 'English' : 'Español') + ' · last on the site ' + esc(ago(c.last_seen_at)) + '</small>' + prefLine(c) + '</div>' +
+      '<div class="cl-top"><div class="who"><b><a class="cl-nm" href="#c/' + esc(c.user_id) + '" data-prof="' + esc(c.user_id) + '">' + esc(c.name || c.email) + '</a></b><small>' + esc(c.lang === 'en' ? 'English' : 'Español') + ' · last on the site ' + esc(ago(c.last_seen_at)) + '</small>' + prefLine(c) + '</div>' +
       '<div class="score ' + cls + '"><b class="num">' + sc + '</b><span>score</span></div></div>' +
       '<div class="facts"><span class="pill g num">' + (c.days_7 || 0) + ' day' + (c.days_7 === 1 ? '' : 's') + ' this week</span><span class="pill num">' + (c.days_30 || 0) + ' day' + (c.days_30 === 1 ? '' : 's') + ' this month</span>' +
       '<span class="pill num">' + (c.views_30 || 0) + ' home' + (c.views_30 === 1 ? '' : 's') + ' viewed</span><span class="pill num">' + (c.favorites || 0) + ' saved</span>' +
@@ -672,7 +679,7 @@ body{background:var(--paper)}
       '<button type="button" data-msg="' + esc(c.user_id) + '">Message</button>' +
       (window.JagLolaOffer ? '<button type="button" data-lofr="' + esc(c.user_id) + '">📝 Offer</button>' : '') +
       (me.isLead && window.JagShowings ? '<button type="button" data-shw="' + esc(c.user_id) + '">👟 ' + (c.showing_agent_code ? 'Showing agent' : 'Send for showings') + '</button>' : '') +
-      '<button type="button" data-more="' + esc(c.user_id) + '">' + (open[c.user_id] ? 'Hide profile' : 'Profile & activity') + '</button></div>' +
+      '<button type="button" data-prof="' + esc(c.user_id) + '">👤 Profile</button></div>' +
       (open[c.user_id] ? '<div class="det" id="d-' + esc(c.user_id) + '">' + (open[c.user_id] === true ? 'Loading…' : open[c.user_id]) + '</div>' : '') +
       '</article>';
     return h;
@@ -701,6 +708,8 @@ body{background:var(--paper)}
   }
   var favs = {};
   $('list').addEventListener('click', function(e){
+    var pf = e.target.closest('[data-prof]');
+    if(pf && window.JagProfile){ e.preventDefault(); JagProfile.open(pf.getAttribute('data-prof')); return; }
     if(offerClick(e)) return;
     var lo = e.target.closest('[data-lofr]');
     if(lo){ var u0 = lo.getAttribute('data-lofr'), c0 = rows.filter(function(x){ return x.user_id === u0; })[0] || {};
@@ -928,11 +937,15 @@ body{background:var(--paper)}
   setInterval(function(){ if(!me || document.hidden) return; if(curTab === 'messages') msgTickNow(); else loadInbox(); }, 20000);
   window.addEventListener('hashchange', function(){ routeHash(); });
   function routeHash(){
+    var cp = location.hash.match(/^#c\/([\w-]{2,40})/);
+    if(cp && me && window.JagProfile){ JagProfile.open(cp[1]); return; }
     if(/^#(showings|tours)/i.test(location.hash) && me){ if(me.canShow) showTab('showings'); return; }
     var m = location.hash.match(/^#(?:mensajes|messages)(?:\/([0-9a-f-]{36}))?/i); if(!m || !me) return;
     showTab('messages'); if(m[1]) openThread(m[1]);
   }
 
+  // the workspace hands links like #c/<id> to this tab without reloading it
+  window.jagTeamRoute = function(suf){ var m = String(suf || '').match(/#c\/([\w-]{2,40})/); if(m && me && window.JagProfile){ JagProfile.open(m[1]); return true; } return false; };
   start();
 })();
 </script>

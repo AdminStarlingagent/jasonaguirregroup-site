@@ -9,6 +9,9 @@
 //        The hourly listing-alerts job sends new matches from then on; every email has a one-click unsubscribe.
 //  { action: 'email_homes', email, name, lang, mls[], note, label } → a JAG-branded email with those homes, reply-to the agent.
 //  { action: 'invite', invite_id } → the client's personal app invite (jag_invites, made by jag_invite_create) by email, from the agent.
+//  { action: 'email', user_id, subject, body } → an email to the client from their profile (agent's name, replies to the agent),
+//      logged on the profile timeline (jag_contact_notes kind 'email').
+//  { action: 'fub_history', user_id } → the client's Follow Up Boss notes and calls (read-only), for the profile timeline while both run.
 // Every send is logged in jag_homes_sent (the profile's "Homes sent" list).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SITE, esc, money, row, button, homeCard, h1, lead, shell, C, OFFICE, OFFICE_TEL, phoneFmt, tel, agentStrip, steps, quote } from "./jag-email.ts";
@@ -99,7 +102,7 @@ Deno.serve(async (req) => {
   const db = createClient(SB_URL, SRK);
   const { data: u } = await db.auth.getUser(auth.replace(/^Bearer\s+/i, ""));
   const me = u && u.user ? u.user : null;
-  const { data: agentRow } = me ? await db.from("jag_agents").select("code,name,first_name,phone,phone_override,email").eq("user_id", me.id).eq("active", true).maybeSingle() : { data: null };
+  const { data: agentRow } = me ? await db.from("jag_agents").select("code,name,first_name,phone,phone_override,email,photo_url").eq("user_id", me.id).eq("active", true).maybeSingle() : { data: null };
   const agent: Row = agentRow ? { ...agentRow, phone: agentRow.phone_override || agentRow.phone } : { code: "jason", name: "Jason Aguirre", phone: OFFICE, email: "jason.aguirre@jasonhoustonrealty.com" };
   let b: Row = {}; try { b = await req.json(); } catch { /* empty */ }
   const email = cleanEmail(b.email), phone = digits10(b.phone), name = String(b.name || "").trim().slice(0, 120);
@@ -150,7 +153,7 @@ Deno.serve(async (req) => {
     const q = new URLSearchParams({ fields: FIELDS, resultsPerPage: "24" }); q.append("status", "A"); q.append("status", "U");
     mls.forEach((m: string) => q.append("mlsNumber", m));
     const ls = await repliers(q);
-    const homes = mls.map((m: string) => ls.find((l) => String(l.mlsNumber) === m)).filter(Boolean).map((l: Row) => ({ mls: String(l.mlsNumber), snap: snap(l) }));
+    const homes = mls.map((m: string) => ls.find((l) => String(l.mlsNumber) === m)).filter((x): x is Row => !!x).map((l) => ({ mls: String(l.mlsNumber), snap: snap(l) }));
     if (!homes.length) return json({ ok: false, error: "Those homes are no longer on HAR." }, 404);
     const { data: acct } = await db.from("jag_clients").select("user_id,lang").ilike("email", email).maybeSingle();
     const es = (acct && acct.lang ? acct.lang : lang) !== "en";
@@ -267,6 +270,57 @@ Deno.serve(async (req) => {
     if (!r.ok) return json({ ok: false, error: "Email failed: " + (await r.text()).slice(0, 160) }, 502);
     await db.from("jag_invites").update({ sent_count: (inv.sent_count || 0) + 1, sent_at: new Date().toISOString(), channel: "email", updated_at: new Date().toISOString() }).eq("id", inv.id);
     return json({ ok: true, to });
+  }
+
+  // ---------- email the client from their profile ----------
+  if (b.action === "email") {
+    const { data: cl } = await db.from("jag_clients").select("user_id,email,name,lang").eq("user_id", String(b.user_id || "")).maybeSingle();
+    const to = cleanEmail(cl?.email);
+    if (!cl || !to) return json({ ok: false, error: "This client has no valid email." }, 400);
+    const subject = String(b.subject || "").trim().slice(0, 200), text = String(b.body || "").trim().slice(0, 8000);
+    if (!subject || !text) return json({ ok: false, error: "Add a subject and a message." }, 400);
+    if (!RESEND) return json({ ok: false, error: "Email is not set up (RESEND_API_KEY)." }, 503);
+    const es = (cl.lang || lang) !== "en";
+    const linkify = (t: string) => esc(t).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" style="color:${C.red};font-weight:700">${u}</a>`);
+    const html = shell({ es, title: subject, preheader: text.slice(0, 90),
+      body: row(agentStrip(agent.name || "Jason Aguirre", (es ? "Tu agente · " : "Your agent · ") + (phoneFmt(agent.phone) || OFFICE) + " · eXp Realty", agent.photo_url)
+        + `<div style="font-size:16px;line-height:1.6;color:${C.ink};white-space:pre-wrap">${linkify(text)}</div>`
+        + `<div style="border-top:1px solid ${C.line};margin-top:22px;padding-top:14px;font-size:14px;color:${C.muted}">${esc(agent.name || "Jason Aguirre")} · Jason Aguirre Group · eXp Realty<br><a href="tel:${esc(tel(agent.phone) || OFFICE_TEL)}" style="color:${C.ink};font-weight:700;text-decoration:none">${esc(phoneFmt(agent.phone) || OFFICE)}</a></div>`),
+      footerNote: es ? "Recibiste este correo de tu agente de Jason Aguirre Group. Responde directamente a este correo." : "You got this email from your Jason Aguirre Group agent. Just reply to this email." });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM.replace(/^[^<]*</, `${agent.name || "Jason Aguirre"} · JAG <`), to: [to], reply_to: agent.email || undefined, subject, html }) });
+    if (!r.ok) return json({ ok: false, error: "Email failed: " + (await r.text()).slice(0, 160) }, 502);
+    const sent = await r.json().catch(() => ({}));
+    await db.from("jag_contact_notes").insert({ user_id: cl.user_id, agent_code: agent.code, author_name: agent.name || null, kind: "email", subject, body: text,
+      meta: { to, resend_id: (sent as Row).id || null, lola: !!b.lola } });
+    return json({ ok: true, to });
+  }
+
+  // ---------- Follow Up Boss history (notes + calls), read-only ----------
+  if (b.action === "fub_history") {
+    const { data: cl } = await db.from("jag_clients").select("user_id,email,phone").eq("user_id", String(b.user_id || "")).maybeSingle();
+    if (!cl) return json({ ok: false, error: "not found" }, 404);
+    const clean = (k: string) => String(k || "").trim().replace(/^basic\s+/i, "").replace(/:$/, "").trim();
+    let key = clean(Deno.env.get("FUB_API_KEY") || "");
+    if (!key) { const { data } = await db.rpc("jag_fub_key"); key = clean((data as string) || ""); }
+    if (!key) return json({ ok: false, error: "FUB key not set" }, 500);
+    const FH = { Authorization: "Basic " + btoa(key + ":"), "Content-Type": "application/json", "X-System": "JAG-Admin" };
+    const ph = digits10(cl.phone), em = cleanEmail(cl.email);
+    let person: Row | null = null;
+    for (const q of [ph ? `phone=${ph}` : "", em ? `email=${encodeURIComponent(em)}` : ""].filter(Boolean)) {
+      const r = await fetch(`${FUB}/people?${q}&limit=1&fields=id,firstName,lastName,stage,assignedTo,source`, { headers: FH });
+      if (r.ok) { const j = await r.json(); const p = (j.people || [])[0]; if (p) { person = p; break; } }
+    }
+    if (!person) return json({ ok: true, found: false });
+    const strip = (h: unknown) => String(h || "").replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
+    const [nr, cr] = await Promise.all([
+      fetch(`${FUB}/notes?personId=${person.id}&limit=30&sort=-created`, { headers: FH }).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+      fetch(`${FUB}/calls?personId=${person.id}&limit=30`, { headers: FH }).then((r) => r.ok ? r.json() : {}).catch(() => ({})),
+    ]);
+    const notes = ((nr as Row).notes || []).map((n: Row) => ({ at: n.created || n.updated, by: n.createdBy || n.userName || null, subject: n.subject || null, body: strip(n.body).slice(0, 4000) }));
+    const calls = ((cr as Row).calls || []).map((c: Row) => ({ at: c.created || c.dateCreated, by: c.userName || c.createdBy || null, duration: c.duration ?? null,
+      outcome: c.outcome || null, note: strip(c.note).slice(0, 2000), incoming: !!c.isIncoming, recording: c.recordingUrl || null }));
+    return json({ ok: true, found: true, url: FUB_APP + person.id, stage: person.stage || null, assigned: person.assignedTo || null, source: person.source || null, notes, calls });
   }
   return json({ ok: false, error: "unknown action" }, 400);
 });

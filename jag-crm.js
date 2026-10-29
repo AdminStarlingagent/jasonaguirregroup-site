@@ -435,6 +435,6 @@
       timer = setInterval(function(){ if(!document.hidden) loadNotifs(); }, 30000);
       document.addEventListener('visibilitychange', function(){ if(!document.hidden){ loadNotifs(); loadInvites(); } });
     },
-    journey: journey, timeline: timeline, invite: openInvite, reloadInvites: loadInvites
+    journey: journey, timeline: timeline, invite: openInvite, reloadInvites: loadInvites, next: nextStep, state: state, toast: toast, copy: copy
   };
 })();
