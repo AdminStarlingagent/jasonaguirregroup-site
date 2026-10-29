@@ -134,6 +134,7 @@ h2.q{font-size:clamp(21px,3.6vw,26px);font-weight:600;letter-spacing:-.01em;line
 .next:hover{background:#000}
 .next:active{transform:scale(.98)}
 .next.red{background:var(--accent)} .next.red:hover{background:#a30d26}
+.next.green{background:#0f8a4d} .next.green:hover{background:#0b6e3d}
 .next[disabled]{opacity:.6;cursor:default}
 .ghost{background:none;border:0;color:var(--mut);font-weight:700;font-size:14px;cursor:pointer;text-decoration:underline;padding:10px 4px}
 .ghost:hover{color:var(--ink)}
@@ -354,7 +355,9 @@ body.fab #stage{margin-bottom:110px}
 <script>
 (function () {
   // ===== Team thresholds (edit here if Jason or a lender changes them) =====
-  const RULES = { creditReady: 600, creditFloor: 580, itinCredit: 640, itinFundsPct: 0.11, minFundsPct: 0.035, lowIncome: 4500, debtShare: 0.20 };
+  const RULES = { creditReady: 600, creditFloor: 580, itinCredit: 640, itinFundsPct: 0.11, minFundsPct: 0.035, lowIncome: 4500, debtShare: 0.20,
+    // Hot lead (Jason, Oct 29 2026): household income of $50K+/yr AND total debt-to-income, with the new house payment, of 45% or less.
+    qualIncome: 50000, qualDti: 0.45, minPrice: 150000 };
 
   // ===== Language =====
   let LANG = 'es';
@@ -603,7 +606,7 @@ body.fab #stage{margin-bottom:110px}
   const CALC = {
     asOf: ['20 oct 2026', 'Oct 20, 2026'],
     taxPct: 2.4, insPct: 1.2, closePct: 3,
-    dti: { comfy: 0.43, max: 0.50 },
+    dti: { comfy: 0.45, max: 0.50 },
     prog: {
       fha:  { name: ['FHA (3.5% de enganche)', 'FHA (3.5% down)'], down: 3.5, rate: 7.24, ufmip: 1.75, mi: 0.55 },
       conv: { name: ['Convencional (5% de enganche)', 'Conventional (5% down)'], down: 5, rate: 7.47, ufmip: 0, mi: 0.6 },
@@ -642,7 +645,7 @@ body.fab #stage{margin-bottom:110px}
       <div class="cprog">${Object.keys(P).map(k => `<button type="button" class="chip${c.prog === k ? ' on' : ''}" data-prog="${k}">${esc(tx(P[k].name))}</button>`).join('')}</div>
       <div class="grid2">${inp('income', t('Ingreso mensual del hogar (antes de taxes)', 'Household monthly income (before taxes)'), '$')}${inp('debts', t('Deudas al mes', 'Monthly debts'), '$')}${inp('savings', t('Ahorro', 'Savings'), '$')}${inp('rate', t('Tasa de interés (ejemplo)', 'Interest rate (example)'), '%', '0.01')}</div>
       <div class="recap">
-        ${row(t('Rango cómodo (43% de deudas/ingreso)', 'Comfortable range (43% debt-to-income)'), lo ? t('hasta ', 'up to ') + money(lo) : '—')}
+        ${row(t('Rango del equipo (45% de deudas/ingreso)', 'Team range (45% debt-to-income)'), lo ? t('hasta ', 'up to ') + money(lo) : '—')}
         ${row(t('Máximo aproximado (50%)', 'Rough maximum (50%)'), hi ? t('hasta ', 'up to ') + money(hi) : '—')}
       </div>
       <p class="helper" style="margin:8px 0 14px">${lo ? '' : t('Pon el ingreso mensual para ver el rango. Si las deudas son muy altas comparadas con el ingreso, el rango sale en cero.', 'Enter monthly income to see the range. If debts are too high for the income, the range shows zero.')}</p>
@@ -658,7 +661,7 @@ body.fab #stage{margin-bottom:110px}
       </div>` : ''}
       ${short ? `<p class="helper" style="margin:10px 0 0">${t(`Le faltarían unos ${money(short)}. Ayuda para el enganche, un regalo de un familiar o que el vendedor pague gastos de cierre pueden cubrir parte. Eso lo ve el especialista.`, `They'd be about ${money(short)} short. Down payment assistance, a gift from a relative, or seller-paid closing costs can cover part of it. The loan specialist works that out.`)}</p>` : ''}
       <details class="coach" style="margin-top:14px"><summary>${t('Cómo se calcula', 'How this is calculated')}</summary><div class="cbody">
-        <p>${t('El banco compara todos los pagos del mes (casa + deudas) con el ingreso antes de taxes. 43% es un rango cómodo; algunos programas como FHA pueden aprobar más alto, hasta alrededor de 50% o más, según el crédito y el ahorro.', 'Lenders compare all monthly payments (house + debts) to income before taxes. 43% is a comfortable range; some programs like FHA can approve higher, around 50% or more, depending on credit and savings.')}</p>
+        <p>${t('El banco compara todos los pagos del mes (casa + deudas) con el ingreso antes de taxes. El equipo usa 45% como límite; algunos programas como FHA pueden aprobar más alto, hasta alrededor de 50% o más, según el crédito y el ahorro.', 'Lenders compare all monthly payments (house + debts) to income before taxes. The team uses 45% as the limit; some programs like FHA can approve higher, around 50% or more, depending on credit and savings.')}</p>
         <p>${t(`Tasas de ejemplo: FHA ${P.fha.rate}% y convencional ${P.conv.rate}% (promedios nacionales del ${CALC.asOf[0]}, The Mortgage Reports). ITIN ${P.itin.rate}% es solo una referencia: suelen ser más altas. Impuestos ${c.taxPct}% del precio al año (estimado de Harris County; cambia por distrito escolar y MUD). Seguro ${c.insPct}% del precio al año. FHA suma 1.75% de seguro inicial al préstamo y 0.55% al año.`, `Example rates: FHA ${P.fha.rate}% and conventional ${P.conv.rate}% (national averages for ${CALC.asOf[1]}, The Mortgage Reports). ITIN ${P.itin.rate}% is only a reference; they usually run higher. Taxes ${c.taxPct}% of price a year (Harris County estimate; varies by school district and MUD). Insurance ${c.insPct}% of price a year. FHA adds a 1.75% upfront premium to the loan and 0.55% a year.`)}</p>
         <div class="grid2">${inp('taxPct', t('Impuestos (% al año)', 'Taxes (% a year)'), '%', '0.1')}${inp('insPct', t('Seguro (% al año)', 'Insurance (% a year)'), '%', '0.1')}</div>
       </div></details>
@@ -720,8 +723,8 @@ body.fab #stage{margin-bottom:110px}
       add('coll', 'ask', ['issues', 'debts'], ['Las colecciones no siempre son un problema; depende de cuánto y de qué son.', 'Collections aren\'t always a problem; it depends on the amount and the type.'], ['¿Más o menos de cuánto es y de qué es? Por ejemplo, médica o de celular.', 'Roughly how much is it, and what is it for? For example, medical or a phone bill.']);
     if (r.monthly > 0 && r.debts / r.monthly > RULES.debtShare)
       add('debt', 'ask', ['debts', 'money'], [`Las deudas son ${Math.round(r.debts / r.monthly * 100)}% del ingreso. Eso baja cuánta casa puede comprar.`, `Debts are ${Math.round(r.debts / r.monthly * 100)}% of income. That lowers how much house they can buy.`], ['¿Alguna de esas deudas se termina pronto? ¿Algún carro lo paga otra persona?', 'Do any of those debts end soon? Does someone else pay any of the cars?']);
-    if (!two && r.monthly > 0 && r.monthly < RULES.lowIncome)
-      add('lowinc', 'ask', ['debts', 'money', 'pay', 'credit'], [`Ingreso de ${money(r.monthly)} al mes. Sumar a alguien de la casa que trabaje y declare puede ayudar mucho.`, `Income of ${money(r.monthly)} a month. Adding someone at home who works and files taxes can help a lot.`], ['¿Alguien más en su casa trabaja y declara taxes, como un hijo, hija o su pareja?', 'Does anyone else in your home work and file taxes, like a son, daughter or partner?']);
+    if (r.monthly > 0 && r.monthly * 12 < RULES.qualIncome)
+      add('lowinc', 'ask', ['debts', 'money', 'pay', 'credit'], [`Ingreso de ${money(r.monthly * 12)} al año${two ? ' entre los dos' : ''}: el equipo busca ${money(RULES.qualIncome)} o más. Sumar a alguien de la casa que trabaje y declare puede ayudar mucho.`, `Income of ${money(r.monthly * 12)} a year${two ? ' combined' : ''}: the team looks for ${money(RULES.qualIncome)}+. Adding someone at home who works and files taxes can help a lot.`], ['¿Alguien más en su casa trabaja y declara taxes, como un hijo, hija o su pareja?', 'Does anyone else in your home work and file taxes, like a son, daughter or partner?']);
     if (st.savings != null && st.savings !== '') {
       const price = r.price || 250000, need = price * (st.p1_id === 'ITIN' && !two ? 0.10 : 0.035) + price * 0.03;
       if ((r.savings || 0) < need)
@@ -788,11 +791,18 @@ body.fab #stage{margin-bottom:110px}
     const add = (k, label, pts, max, known) => parts.push({ k, label, pts: known ? pts : 0, max, known });
     // --- Income vs. the income NEEDED to qualify for the price they want (same payment model as the estimate) ---
     const cd = calcDefaults(st, r);
-    const est = r.monthly > 0 ? round5k(maxPrice(cd, CALC.dti.comfy)) : 0;   // unchanged "up to ~$X" (comfortable range)
+    const est = r.monthly > 0 ? round5k(maxPrice(cd, RULES.qualDti)) : 0;   // "up to ~$X" at the team's 45% DTI
     const target = r.price || 0;                                             // the price they said they want
-    const incNeed = target > 0 ? Math.round((payFor(target, cd).total + (+cd.debts || 0)) / CALC.dti.max) : 0; // $/mo to qualify (max DTI) for target
+    const incNeed = target > 0 ? Math.round((payFor(target, cd).total + (+cd.debts || 0)) / RULES.qualDti) : 0; // $/mo to qualify at 45% DTI for target
     const fit = (r.monthly > 0 && incNeed > 0) ? r.monthly / incNeed : null; // 1.0 = income meets the qualifying minimum
-    const affFactor = fit == null ? 1 : (AFF.band.find(b => fit >= b[0]) || [0, 0.30])[1];
+    // $50K/yr household minimum: under it the income slice shrinks a lot and the client can never read Hot
+    const annual = Math.round((r.monthly || 0) * 12);
+    const lowInc = r.monthly > 0 && annual < RULES.qualIncome;
+    const affFactor = (fit == null ? 1 : (AFF.band.find(b => fit >= b[0]) || [0, 0.30])[1]) * (lowInc ? Math.max(0.1, annual / RULES.qualIncome * 0.6) : 1);
+    // total debt-to-income WITH the house payment (price they want, or a $150K starter home when they didn't say)
+    const dtiPrice = target || RULES.minPrice;
+    const backDti = r.monthly > 0 ? ((+cd.debts || 0) + payFor(dtiPrice, cd).total) / r.monthly : null;
+    const dtiOK = backDti != null && backDti <= RULES.qualDti;
     const ids = ppl.map(n => st[`p${n}_id`]).filter(Boolean);
     add('id', [t('Seguro social o ITIN', 'SSN or ITIN')], best(n => ({ 'Seguro social': 20, 'ITIN': 12 })[st[`p${n}_id`]] || 0), 20, ids.length > 0);
     const incPts = n => {
@@ -822,26 +832,32 @@ body.fab #stage{margin-bottom:110px}
     };
     add('issues', [t('Nada reciente en el crédito', 'Nothing recent on credit')], best(issPts), 10, ppl.some(n => st[`p${n}_issues`] || st[`p${n}_issues__done`]));
     const dtiKnown = r.monthly > 0 && (st.__debtsSeen || ['d_car', 'd_cards', 'd_loans', 'd_other', 'savings'].some(k => st[k] !== undefined && st[k] !== ''));
-    const dti = r.monthly > 0 ? r.debts / r.monthly : 1;
-    add('dti', [t('Deudas vs. ingreso', 'Debts vs. income')], dti <= 0.10 ? 10 : dti <= 0.20 ? 8 : dti <= 0.35 ? 5 : 2, 10, dtiKnown);
+    const bd = backDti == null ? 9 : backDti;
+    add('dti', [t('Deudas + casa vs. ingreso (máx. 45%)', 'Debts + house vs. income (45% max)')], bd <= 0.36 ? 10 : bd <= 0.43 ? 8 : bd <= 0.45 ? 6 : bd <= 0.50 ? 2 : 0, 10, dtiKnown);
     const price = target || est || 250000, need = price * (CALC.prog[cd.prog].down + CALC.closePct) / 100, sav = r.savings || 0;
     add('save', [t('Ahorro para enganche', 'Savings for down payment')], sav >= need ? 10 : sav >= need * 0.5 ? 6 : sav > 0 ? 3 : 0, 10, st.savings != null && st.savings !== '');
-    const score = Math.min(100, parts.reduce((a, p) => a + p.pts, 0));
+    let score = Math.min(100, parts.reduce((a, p) => a + p.pts, 0));
+    // under $50K/yr or over 45% total DTI: the bar can't look close to hot (warnings on the meter say why)
+    if (lowInc || (dtiKnown && backDti != null && !dtiOK)) score = Math.min(score, 50);
     const buying = st.intent !== 'Solo información' && (!st.when || HOT.when.includes(st.when));   // timing/intent are no longer asked (Oct 2026); older screenings keep their answers
     const issuesKnown = parts.find(p => p.k === 'issues').known;   // never call it hot before we know about repos, evictions or bankruptcies
     const affShort = fit != null && fit < AFF.hotMin;             // income falls short of qualifying for the price they want
-    const hot = score >= HOT.score && buying && issuesKnown && r.lane !== 'prep' && !affShort;
-    return { score, parts, est, target, fit, incNeed, affShort, hot, buying, lane: r.lane, known: parts.filter(p => p.known).length };
+    // Hot only with documented income of $50K+/yr and total DTI (debts + house) at 45% or less — never on missing income
+    const hot = score >= HOT.score && buying && issuesKnown && r.lane !== 'prep' && !affShort && r.monthly > 0 && !lowInc && dtiOK;
+    return { score, parts, est, target, fit, incNeed, affShort, hot, buying, lane: r.lane, known: parts.filter(p => p.known).length,
+      annual, lowInc, backDti, dtiOK, dtiPrice };
   }
   const k$ = v => v >= 1000 ? '$' + Math.round(v / 1000) + 'K' : money(v);
   function meterHtml() {
     const R = readiness(s), cls = R.score >= 70 ? 'hi' : R.score >= 40 ? 'mid' : 'lo';
+    const lowMsg = R.lowInc ? t(`Ingreso de ${money(R.annual)} al año: el mínimo del equipo es ${money(RULES.qualIncome)}. ¿Alguien más en casa que trabaje y declare?`, `Income of ${money(R.annual)} a year: the team minimum is ${money(RULES.qualIncome)}. Anyone else at home who works and files taxes?`) : '';
+    const dtiMsg = !R.lowInc && R.backDti != null && !R.dtiOK ? t(`Con deudas + casa de ${money(R.dtiPrice)}, la deuda total sería ${Math.round(R.backDti * 100)}% del ingreso (máx. 45%).`, `With debts + a ${money(R.dtiPrice)} home, total debt would be ${Math.round(R.backDti * 100)}% of income (45% max).`) : '';
     const affMsg = R.affShort ? t(`Ingreso corto para ${money(R.target)}: ~${money(R.incNeed)}/mes para calificar. ¿Co-firmante o un precio más cómodo?`, `Income short for ${money(R.target)}: about ${money(R.incNeed)}/mo needed to qualify. Co-borrower or a lower price?`) : '';
     return `<div class="meter ${cls}" title="${t('Guía del equipo con lo que sabemos hasta ahora. No es una aprobación.', 'Team guide based on what we know so far. Not an approval.')}">
       <div class="mrow"><span class="mk">${t('Qué tan listo', 'Readiness')}</span><b class="mv">${R.score}%</b>
         ${R.est ? `<span class="mest">${t('hasta ~', 'up to ~')}${k$(R.est)} <small>${t('(ejemplo)', '(example)')}</small></span>` : `<span class="mest muted">${t('falta el ingreso', 'needs income')}</span>`}
         ${R.hot ? `<span class="mhot">🔥 ${t('Cliente caliente', 'Hot lead')}</span>` : ''}</div>
-      ${affMsg ? `<div class="mwarn">⚠️ ${affMsg}</div>` : ''}
+      ${[lowMsg, dtiMsg, affMsg].filter(Boolean).map(m => `<div class="mwarn">⚠️ ${m}</div>`).join('')}
       <div class="mtrack"><div class="mfill" style="width:${Math.max(2, R.score)}%"></div><i style="left:${HOT.score}%"></i></div></div>`;
   }
   // Who we're talking to, always at the top of the questions: client, phone, co-borrower, and key answers so far.
@@ -1202,7 +1218,7 @@ body.fab #stage{margin-bottom:110px}
     if (hasSSN && savings === 0) sig.push({ lvl: 'rev', t: t('Sin ahorro. El especialista revisa programas de bajo o cero enganche y ayuda con el enganche.', 'No savings. The specialist checks low or zero down programs and down payment assistance.') });
     const debts = ['d_car', 'd_cards', 'd_loans', 'd_other'].map(k => num(st[k]) || 0).reduce((a, b) => a + b, 0);
     if (anyCounted && monthly > 0) {
-      if (monthly < RULES.lowIncome) sig.push({ lvl: 'rev', t: t(`Ingreso declarado de ${money(monthly)} al mes. Preguntar si alguien más en casa trabaja y declara.`, `Reported income of ${money(monthly)} a month. Ask if anyone else at home works and files taxes.`) });
+      if (monthly * 12 < RULES.qualIncome) sig.push({ lvl: 'rev', t: t(`Ingreso declarado de ${money(monthly * 12)} al año (${money(monthly)} al mes), bajo el mínimo del equipo de ${money(RULES.qualIncome)}. Preguntar si alguien más en casa trabaja y declara.`, `Reported income of ${money(monthly * 12)} a year (${money(monthly)} a month), under the team minimum of ${money(RULES.qualIncome)}. Ask if anyone else at home works and files taxes.`) });
       if (debts / monthly > RULES.debtShare) sig.push({ lvl: 'rev', t: t(`Deudas de ${money(debts)} al mes, ${Math.round(debts / monthly * 100)}% del ingreso. Reducen lo que puede comprar.`, `Debts of ${money(debts)} a month, ${Math.round(debts / monthly * 100)}% of income. They lower the buying budget.`) });
     }
     if (st.other_home === 'Sí') sig.push({ lvl: 'rev', t: t('Tiene otra casa a su nombre. El especialista revisa cómo la cuenta el banco y qué programas aplican.', 'Owns another home. The specialist checks how the bank counts it and which programs apply.') });
@@ -1233,7 +1249,7 @@ body.fab #stage{margin-bottom:110px}
     out += `${t('Deudas', 'Debts')} ${money(r.debts)}${t('/mes', '/mo')}//${t('Ahorro', 'Savings')} ${money(r.savings)}` + (r.price ? `//${t('Precio en mente', 'Price in mind')} ${money(r.price)}` : '') + (st.area ? `//${t('Área', 'Area')}: ${st.area}` : '') + (st.when ? `//${t('Compra', 'Buying')}: ${o(st.when)}` : '') + '\n';
     const flags = r.sig.filter(x => x.lvl === 'prep' || x.lvl === 'rev').map(x => x.t);
     if (flags.length) out += t('Revisar: ', 'Review: ') + flags.join(' | ') + '\n';
-    { const R = readiness(st); out += t('Qué tan listo: ', 'Readiness: ') + R.score + '%' + (R.est ? t(' · podría comprar hasta ~', ' · could buy up to ~') + money(R.est) + t(' (ejemplo, 43% DTI)', ' (example, 43% DTI)') : '') + (R.hot ? t(' · 🔥 CLIENTE CALIENTE', ' · 🔥 HOT LEAD') : '') + (R.affShort ? t(` · ⚠️ Ingreso corto para ${money(R.target)} (~${money(R.incNeed)}/mes) — ¿co-firmante o menos precio?`, ` · ⚠️ Income short for ${money(R.target)} (~${money(R.incNeed)}/mo) — co-borrower or lower price?`) : '') + '\n'; }
+    { const R = readiness(st); out += t('Qué tan listo: ', 'Readiness: ') + R.score + '%' + (R.est ? t(' · podría comprar hasta ~', ' · could buy up to ~') + money(R.est) + t(' (ejemplo, 45% DTI)', ' (example, 45% DTI)') : '') + (R.hot ? t(' · 🔥 CLIENTE CALIENTE', ' · 🔥 HOT LEAD') : '') + (R.lowInc ? t(` · ⚠️ Ingreso ${money(R.annual)}/año, bajo el mínimo de ${money(RULES.qualIncome)}`, ` · ⚠️ Income ${money(R.annual)}/yr, under the ${money(RULES.qualIncome)} minimum`) : '') + (!R.lowInc && R.backDti != null && !R.dtiOK ? t(` · ⚠️ Deuda total ${Math.round(R.backDti * 100)}% (máx. 45%)`, ` · ⚠️ Total DTI ${Math.round(R.backDti * 100)}% (45% max)`) : '') + (R.affShort ? t(` · ⚠️ Ingreso corto para ${money(R.target)} (~${money(R.incNeed)}/mes) — ¿co-firmante o menos precio?`, ` · ⚠️ Income short for ${money(R.target)} (~${money(R.incNeed)}/mo) — co-borrower or lower price?`) : '') + '\n'; }
     out += t('Enlace: ', 'Link: ') + (o(st.link) || t('sin dato', 'unknown')) + (st.follow ? ` · ${t('Seguimiento', 'Follow-up')}: ${fmtDT(st.follow)}` : '') + '\n@Katherine Fernandez';
     return out;
   }
@@ -1395,10 +1411,10 @@ body.fab #stage{margin-bottom:110px}
       ${nextHtml(readiness(s))}
       <div class="box"><h3>${t('Nota para Follow Up Boss', 'Follow Up Boss note')}</h3><p class="note" id="fub">${esc(fubNote(s, r))}</p><button class="chip" type="button" id="copy">${t('Copiar nota', 'Copy note')}</button></div>
       <div id="fubbox"></div>
-      <div class="btnrow"><button class="next" type="button" id="pdf">${t('Guardar PDF', 'Save PDF')}</button>${current || mode === 'example' || mode === 'practice' ? '' : `<button class="next red" type="button" id="submit">${t('Enviar a revisión y a Follow Up Boss', 'Send for review and to Follow Up Boss')}</button>`}</div>
+      <div class="btnrow"><button class="next" type="button" id="pdf">${t('Guardar PDF', 'Save PDF')}</button>${current || mode === 'example' || mode === 'practice' ? '' : `<button class="next red" type="button" id="submit">${t('Enviar a revisión y a Follow Up Boss', 'Send for review and to Follow Up Boss')}</button>`}<button class="next green" type="button" id="newcall">＋ ${t('Nueva llamada', 'New call')}</button></div>
       <p class="msg" id="msg"></p>
       <div class="box" style="margin-top:22px"><h3>${t('Corregir una respuesta', 'Fix an answer')}</h3><div class="edits">${sections.map(([label], i) => `<button class="chip" type="button" data-si="${i}">${esc(label)}</button>`).join('')}</div></div>
-      <div class="btnrow"><button class="ghost" type="button" id="newcall">${t('Nueva llamada', 'New call')}</button></div></div>`;
+      </div>`;
     $('#copy').onclick = copyNote; $('#pdf').onclick = savePdf; if ($('#submit')) $('#submit').onclick = submit; if ($('#submit-top')) $('#submit-top').onclick = submit; $('#newcall').onclick = newCall; placeAside(); checkHot(); paintFub(); bindCalc(); bindLola(); bindNext();
     stage.querySelectorAll('[data-si]').forEach(b => b.onclick = () => { if (mode === 'example') mode = 'live'; if (mode === 'view') { mode = 'live'; current = null; } const lab = sections[+b.dataset.si][0]; idx = active().findIndex(x => tx(x.sect) === lab); renderStep(); });
     saveDraft();
