@@ -11,6 +11,7 @@
    ============================================================ */
 (function(){
   if (window.__jagPixels) return; window.__jagPixels = 1;
+   if (window.top !== window) return;   // inside the JAG app (the site runs in a frame there): no call widget, no ad pixels
   var TIKTOK = '', FUB = 'WT-GNOQKSCV';   // TikTok paused: waiting for a proper Web pixel (old ID CNC4GV3C77UBR2I96NL0 was a hidden Lead Ad pixel, not in Data sources)
   var PUBLIC = /^\/(index|homes|h|buscar|calculadora|value|reels|team|offer-listing-intake)?(\.html)?\/?$/i;
   if (!/(^|\.)jasonaguirregroup\.company$/i.test(location.hostname)) return;
