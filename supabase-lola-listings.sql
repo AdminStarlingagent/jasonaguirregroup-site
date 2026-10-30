@@ -130,12 +130,13 @@ end $function$;
 
 -- the sender claims a batch that's due (never emailed, or 7 days since the last one)
 create or replace function public.jag_lead_alerts_claim(p_limit int default 50) returns json language plpgsql security definer set search_path = '' as $function$
-declare v json;
+declare v_out json;
 begin
-  if coalesce((select (v->>'paused')::boolean from public.jag_kv where k = 'lola_listings'), false) then return '[]'::json; end if;
+  if coalesce((select (kv.v->>'paused')::boolean from public.jag_kv kv where kv.k = 'lola_listings'), false) then return '[]'::json; end if;
   with due as (
     select a.contact_id from public.jag_lead_alerts a join public.jag_contacts c on c.id = a.contact_id
      where a.status in ('pilot', 'active') and not c.deleted and c.email is not null
+       and not exists (select 1 from public.jag_email_suppress s where s.email = lower(btrim(c.email)))
        and coalesce(c.stage, '') not in ('Under contract', 'Pending', 'Closed', 'Past Client', 'Trash')
        and (a.last_sent_at is null or a.last_sent_at < now() - interval '6 days 20 hours')
        and (a.claimed_at is null or a.claimed_at < now() - interval '20 minutes')
@@ -150,8 +151,8 @@ begin
            'agent', (select json_build_object('code', g.code, 'name', g.name, 'first_name', g.first_name, 'email', g.email,
                        'phone', coalesce(g.phone_override, g.phone), 'photo_url', g.photo_url)
                        from public.jag_agents g where g.code = coalesce((select x.code from public.jag_agents x where x.code = c.assigned_code and x.active), 'jason')))), '[]'::json)
-    into v from cl join public.jag_contacts c on c.id = cl.contact_id;
-  return v;
+    into v_out from cl join public.jag_contacts c on c.id = cl.contact_id;
+  return v_out;
 end $function$;
 
 -- the sender reports back
