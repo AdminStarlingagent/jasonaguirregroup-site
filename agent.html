@@ -314,6 +314,7 @@ body{background:var(--paper)}
     <button type="button" data-tab="offers">Offers <span class="tc" id="tc-offers"></span></button>
     <button type="button" data-tab="share">Share</button>
     <button type="button" data-tab="links">My links</button>
+    <button type="button" data-tab="profile">My profile <span class="tc" id="tc-prof"></span></button>
   </div></nav>
   <main class="wrap">
     <section id="t-today"></section>
@@ -401,6 +402,8 @@ body{background:var(--paper)}
       <div class="me" id="me-card"></div>
     </section>
 
+    <section id="t-profile" hidden></section>
+
     <section id="t-links" hidden>
       <div class="list links" id="links"></div>
       <p class="note">Each time a client opens one of your links it counts here (your own opens don't count).</p>
@@ -419,6 +422,7 @@ body{background:var(--paper)}
 <script src="jag-profile.js?v=5"></script>
 <script src="jag-today.js?v=1"></script>
 <script src="jag-appts.js?v=1"></script>
+<script src="jag-agent-me.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -637,6 +641,8 @@ body{background:var(--paper)}
       if(window.JagAppts) JagAppts.init({ rpc: rpc, me: me, openProfile: function(id){ if(window.JagProfile) JagProfile.open(id); },
         onCount: function(n){ $('tc-appts').textContent = n ? n : ''; }, toast: function(m){ if(window.JagCRM) JagCRM.toast(m); } });
       if(window.JagAppts) JagAppts.load();
+      if(window.JagAgentMe){ JagAgentMe.init({ rpc: rpc, me: me, token: function(){ return JagShare.token(); }, toast: function(m){ if(window.JagCRM) JagCRM.toast(m); },
+        onCount: function(n){ $('tc-prof').textContent = n ? n : ''; } }); if(me.isLead) JagAgentMe.load(); }
       if(window.JagProfile) JagProfile.init({ rpc: rpc, me: me, isLead: me.isLead,
         listIds: function(){ return contacts.map(function(x){ return x.id; }); },
         findRow: findC,
@@ -907,9 +913,10 @@ body{background:var(--paper)}
   function showTab(t){
     curTab = t;
     document.querySelectorAll('.tabs [data-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tab') === t); });
-    ['today', 'clients', 'appts', 'messages', 'showings', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
+    ['today', 'clients', 'appts', 'messages', 'showings', 'offers', 'share', 'links', 'profile'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
     if(t === 'today'){ if(window.JagToday) JagToday.load(); }
     else if(t === 'appts'){ if(window.JagAppts) JagAppts.load(); }
+    else if(t === 'profile'){ if(window.JagAgentMe) JagAgentMe.load(); }
     else if(t === 'messages'){ if(!thUser) loadInbox(); } else if(t === 'showings'){ if(window.JagShowings) JagShowings.load(); } else if(t !== 'share') load();
   }
   document.querySelector('.tabs').addEventListener('click', function(e){
@@ -922,6 +929,7 @@ body{background:var(--paper)}
     else if(t === 'today') history.replaceState(null, '', location.pathname + location.search);
     else if(t === 'clients') history.replaceState(null, '', '#contacts');
     else if(t === 'appts') history.replaceState(null, '', '#appts');
+    else if(t === 'profile') history.replaceState(null, '', '#profile');
     else if(t !== 'messages' && location.hash) history.replaceState(null, '', location.pathname + location.search);
   });
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else if(curTab === 'showings') JagShowings.load(); else if(curTab === 'today'){ if(window.JagToday) JagToday.load(); } else if(curTab === 'appts'){ if(window.JagAppts) JagAppts.load(); } else load(); } });
@@ -1026,6 +1034,7 @@ body{background:var(--paper)}
     if(/^#today/i.test(location.hash) && me){ showTab('today'); return; }
     if(/^#contacts/i.test(location.hash) && me){ showTab('clients'); return; }
     if(/^#appts/i.test(location.hash) && me){ showTab('appts'); return; }
+    if(/^#profile/i.test(location.hash) && me){ showTab('profile'); return; }
     var m = location.hash.match(/^#(?:mensajes|messages)(?:\/([0-9a-f-]{36}))?/i); if(!m || !me) return;
     showTab('messages'); if(m[1]) openThread(m[1]);
   }
@@ -1037,6 +1046,7 @@ body{background:var(--paper)}
     if(/^#today/i.test(suf) && me){ if(window.JagProfile && JagProfile.isOpen()) JagProfile.close(); showTab('today'); return true; }
     if(/^#contacts/i.test(suf) && me){ showTab('clients'); return true; }
     if(/^#appts/i.test(suf) && me){ if(window.JagProfile && JagProfile.isOpen()) JagProfile.close(); showTab('appts'); return true; }
+    if(/^#profile/i.test(suf) && me){ if(window.JagProfile && JagProfile.isOpen()) JagProfile.close(); showTab('profile'); return true; }
     return false;
   };
   start();

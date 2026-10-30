@@ -161,6 +161,17 @@ svg{display:block}
 .toast{position:absolute;z-index:60;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 62px);background:#fff;color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;display:none;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .toast.on{display:flex}
 .toast a{margin-left:auto;color:var(--buy);font-weight:800;white-space:nowrap}
+/* team videos mixed into the feed: they lead to the agent's profile, not a house */
+.reel.agent .info{right:76px}
+.agrow{display:flex;align-items:center;gap:10px;margin-bottom:10px;text-decoration:none}
+.agav{width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:#2c2b33 center/cover no-repeat;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+.agrow b{display:block;font-size:16px;font-weight:800;line-height:1.15}
+.agrow small{display:block;font-size:12.5px;color:var(--wt);font-weight:600}
+.tag.team{background:#fff;color:var(--ink)}
+.agti{font-size:15.5px;font-weight:600;line-height:1.4}
+.reel.agent .verr{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;font-weight:700;z-index:3}
+.reel.agent.err .verr{display:flex}
+.rb .agav{width:48px;height:48px}
 .legal{font-size:10.5px;line-height:1.45;color:rgba(255,255,255,.6);max-width:420px}
 @media (prefers-reduced-motion:reduce){ .reel.act .fr.on{animation:none} .hint.on{animation:none} }
 </style>
@@ -209,6 +220,7 @@ svg{display:block}
    to the photos themselves). Listing credit stays on every reel.
    ============================================================ */
 var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
+var TEAM_EVERY=5, TV=[], tvAt=0, tvLoaded=false;
 var STATE='TX', PER=24, RATE=6.75, TAXRATE=2.1, INSRATE=1.0, MIRATE=0.55, PHOTO_MS=4200, MAXPH=8, EVERY=8;
 var HEART='<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg>';
 var IC={
@@ -232,7 +244,7 @@ var T={
   loading:'Cargando casas…',none:'No encontramos casas con esos filtros.',change:'Cambiar búsqueda',fail:'No pudimos cargar las casas.',retry:'Intentar de nuevo',
   end:'Ya vio todas las casas de esta búsqueda.',all:'Ver la búsqueda completa',area_all:'Houston',
   legal:'Datos de listados proporcionados por Houston Association of REALTORS® (HAR) a través de Repliers. Información considerada confiable pero no garantizada. Videos y tours son del agente del listado. Jason Aguirre Group · eXp Realty · (832) 702-3574.',
-  shtxt:'Mira esta casa'},
+  shtxt:'Mira esta casa',team:'Equipo JAG',see_prof:'Ver perfil',msg_ag:'Escribirle',profile:'Perfil',vbad:'Este video no se puede ver en este teléfono.',sh_ag:'Conozca a {n} del Jason Aguirre Group'},
  en:{hint:'Swipe up for more homes',f_h:'Where do you want to live?',f_where:'City or ZIP code',f_where_ph:'Houston, Katy, 77083…',f_type:'Looking to',t_sale:'Buy',t_lease:'Rent',
   f_max:'Max price',f_beds:'Bedrooms',any:'Any',nomax:'No max',f_go:'Show homes',
   bd:'bd',ba:'ba',sqft:'sqft',est:'Est. ',mo:'/mo',new_:'New',nc:'New construction',vid:'▶ Video',tour3d:'Open virtual tour',
@@ -243,7 +255,7 @@ var T={
   loading:'Loading homes…',none:'No homes match those filters.',change:'Change search',fail:'We could not load the homes.',retry:'Try again',
   end:'You have seen every home in this search.',all:'See the full search',area_all:'Houston',
   legal:'Listing data provided by Houston Association of REALTORS® (HAR) through Repliers. Deemed reliable but not guaranteed. Videos and tours belong to the listing agent. Jason Aguirre Group · eXp Realty · (832) 702-3574.',
-  shtxt:'Check out this home'}
+  shtxt:'Check out this home',team:'JAG team',see_prof:'See profile',msg_ag:'Message',profile:'Profile',vbad:'This video can’t play on this phone.',sh_ag:'Meet {n} from the Jason Aguirre Group'}
 };
 var lang='es', favs={};
 try{ var sv=localStorage.getItem('jag_lang'); if(sv==='en'||sv==='es') lang=sv; favs=JSON.parse(localStorage.getItem('jag_favs')||'{}')||{}; }catch(e){}
@@ -407,6 +419,35 @@ function reelHtml(l,i){
         (v.kind==='youtube'?'<button type="button" class="rb" data-a="snd"><span class="ic">'+IC.mute+'</span><span class="lb">'+t('muted')+'</span></button>':''):'')+
     '</div>';
 }
+/* ---------- team videos (approved in the Agent Hub) ---------- */
+function loadTeamVideos(){
+  if(tvLoaded) return Promise.resolve(); tvLoaded=true;
+  var c=window.JAG_CRM||{}; if(!c.url||!c.anonKey) return Promise.resolve();
+  return fetch(c.url.replace(/\/+$/,'')+'/rest/v1/rpc/jag_reel_videos',{method:'POST',headers:{apikey:c.anonKey,Authorization:'Bearer '+c.anonKey,'Content-Type':'application/json'},
+    body:JSON.stringify({p_area:F.b?null:(F.q||null),p_limit:30})}).then(function(r){ return r.ok?r.json():[]; })
+    .then(function(a){ TV=(a||[]).filter(function(x){ return x&&x.video&&x.video.url&&x.agent; }); }).catch(function(){});
+}
+function agTitle(a){ return lang==='en'?(a.title_en||a.title_es||''):(a.title_es||a.title_en||''); }
+function agAvatar(a){ var ok=/^https:\/\//.test(a.photo_url||''); return '<span class="agav"'+(ok?' style="background-image:url(\''+esc(a.photo_url)+'\')"':'')+'>'+(ok?'':esc(String(a.first_name||a.name||'J').charAt(0)))+'</span>'; }
+function agentHtml(x){
+  var v=x.video, a=x.agent, prof='agente/'+encodeURIComponent(a.code)+(lang==='en'?'?lang=en':''), join='join?a='+encodeURIComponent(a.code)+(lang==='en'?'&lang=en':'');
+  return '<div class="media"><div class="vid"><video playsinline loop muted preload="none" data-src="'+esc(v.url)+'"'+(v.poster?' poster="'+esc(v.poster)+'"':'')+'></video></div></div>'+
+    '<div class="shade"></div><div class="pausei">'+IC.pause+'</div><div class="verr">'+esc(t('vbad'))+'</div>'+
+    '<div class="info"><div class="tags"><span class="tag team">'+esc(t('team'))+'</span>'+(v.area?'<span class="tag">📍 '+esc(v.area)+'</span>':'')+'</div>'+
+      '<a class="agrow" href="'+prof+'" data-k="agent_profile">'+agAvatar(a)+'<span><b>'+esc(a.name)+'</b><small>'+esc(agTitle(a))+'</small></span></a>'+
+      (v.title?'<div class="agti">'+esc(v.title)+'</div>':'')+
+      '<div class="cta"><a class="go" href="'+prof+'" data-k="agent_profile">'+esc(t('see_prof'))+'</a><a class="de" href="'+join+'" data-k="agent_join">'+esc(t('msg_ag'))+' '+esc(a.first_name||'')+'</a></div></div>'+
+    '<div class="rail"><a class="rb" href="'+prof+'" data-k="agent_profile">'+agAvatar(a)+'<span>'+esc(t('profile'))+'</span></a>'+
+      '<button type="button" class="rb" data-a="ashare"><span class="ic">'+IC.share+'</span><span>'+t('share')+'</span></button>'+
+      '<button type="button" class="rb" data-a="asnd"><span class="ic">'+(muted?IC.mute:IC.snd)+'</span><span class="lb">'+t(muted?'muted':'sound')+'</span></button></div>';
+}
+function addAgentReel(){
+  if(!TV.length||tvAt>=TV.length) return;
+  var k=tvAt++, x=TV[k], e=document.createElement('section'); e.className='reel agent vmode'; e.setAttribute('data-tv',k);
+  e.setAttribute('aria-label',x.agent.name+(x.video.title?' — '+x.video.title:''));
+  e.innerHTML=agentHtml(x); feed.appendChild(e); io.observe(e);
+  var vd=e.querySelector('video'); vd.addEventListener('error',function(){ e.classList.add('err'); });
+}
 function evHtml(){
   return '<div class="evb"><div class="big">'+t('ev_big')+'</div><p>'+t('ev_p')+'</p>'+
     '<a href="apply.html?'+(lang==='es'?'lang=es&':'')+'src=reels" data-k="eval">'+t('ev_btn')+'</a><small>'+t('ev_fine')+'</small>'+
@@ -419,6 +460,7 @@ function appendReels(from){
     el.className='reel'+(playable(l)?' vmode':''); el.setAttribute('data-i',i);
     el.setAttribute('aria-label',money(l.listPrice)+' — '+addr(l.address||{}));
     el.innerHTML=reelHtml(l,i); feed.appendChild(el); io.observe(el);
+    if((i+1)%TEAM_EVERY===0&&i>1) addAgentReel();
     if((i+1)%EVERY===0&&i>2&&!PA()){ var e=document.createElement('section'); e.className='reel ev'; e.innerHTML=evHtml(); feed.appendChild(e); io.observe(e); }
   }
   if(!S.items.length){ showMsg('none'); return; }
@@ -459,12 +501,21 @@ function startVideo(el,l){
   box.innerHTML='<iframe src="'+videoSrc(l.video)+'" title="Video" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
   if(!muted&&l.video.kind==='youtube'){ var f=box.firstChild; f.addEventListener('load',function(){ setTimeout(function(){ ytCmd(el,'unMute'); },400); }); }
 }
-function stopVideo(el){ var box=el.querySelector('.vid'); if(box) box.innerHTML=''; }
+function stopVideo(el){ if(el.classList.contains('agent')){ var av=el.querySelector('video'); if(av) av.pause(); return; } var box=el.querySelector('.vid'); if(box) box.innerHTML=''; }
 function activate(el){
   if(active===el) return;
   if(active){ active.classList.remove('act','paused'); stopVideo(active); clearTimeout(active._vt); }
   active=el; el.classList.add('act');
   if(el.classList.contains('ev')){ track('reel_eval_card'); maybeMore(); return; }
+  if(el.classList.contains('agent')){
+    var x=TV[+el.getAttribute('data-tv')], vd=el.querySelector('video'); if(!x||!vd) return;
+    if(!vd.getAttribute('src')){ vd.src=vd.getAttribute('data-src'); }
+    vd.muted=muted; var pr=vd.play(); if(pr&&pr.catch) pr.catch(function(){ el.classList.add('paused'); });
+    /* preload the next team video a little */
+    el._vt=setTimeout(function(){ if(active===el&&!x._seen){ x._seen=1; track('reel_agent_view',{code:x.agent.code,id:x.video.id});
+      var c=window.JAG_CRM||{}; if(c.url) fetch(c.url.replace(/\/+$/,'')+'/rest/v1/rpc/jag_video_view',{method:'POST',keepalive:true,headers:{apikey:c.anonKey,Authorization:'Bearer '+c.anonKey,'Content-Type':'application/json'},body:JSON.stringify({p_id:x.video.id})}).catch(function(){}); } },3000);
+    maybeMore(); return;
+  }
   var i=+el.getAttribute('data-i'), l=S.items[i]; if(!l) return;
   frames(el,l); warm(i+1);
   if(el.classList.contains('vmode')) startVideo(el,l); else showPhoto(el,el._n||0);
@@ -474,7 +525,7 @@ function activate(el){
   maybeMore();
 }
 function withStart(m){ var u=new URLSearchParams(location.search); u.set('start',m); return u.toString(); }
-function maybeMore(){ var i=+(active&&active.getAttribute('data-i')); if(!isNaN(i)&&i>=S.items.length-4) loadMore(); else if(active&&active.classList.contains('ev')&&S.items.length) loadMore(); }
+function maybeMore(){ var i=+(active&&active.getAttribute('data-i')); if(!isNaN(i)&&i>=S.items.length-4) loadMore(); else if(active&&(active.classList.contains('ev')||active.classList.contains('agent'))&&S.items.length) loadMore(); }
 
 /* photos advance when their progress bar fills */
 feed.addEventListener('animationend',function(e){
@@ -495,6 +546,17 @@ feed.addEventListener('click',function(e){
   if(e.target.closest('[data-open="filters"]')){ openSheet(); return; }
   var lk=e.target.closest('a[data-k]'); if(lk&&el){ var l0=S.items[+el.getAttribute('data-i')]; if(l0&&lk.getAttribute('data-k')==='tour') act('form_open',l0); track('reel_'+lk.getAttribute('data-k'),{mls:l0&&l0.mlsNumber}); return; }
   if(!el||el.classList.contains('ev')) return;
+  if(el.classList.contains('agent')){
+    if(e.target.closest('a')) return;
+    var x=TV[+el.getAttribute('data-tv')], ab=e.target.closest('[data-a]'), vd=el.querySelector('video'); if(!x) return;
+    if(ab&&ab.getAttribute('data-a')==='asnd'){ muted=!muted; feed.querySelectorAll('.reel.agent video').forEach(function(v){ v.muted=muted; });
+      if(!muted&&vd) vd.play().catch(function(){});
+      feed.querySelectorAll('[data-a="snd"],[data-a="asnd"]').forEach(function(sb){ sb.querySelector('.ic').innerHTML=muted?IC.mute:IC.snd; sb.querySelector('.lb').textContent=t(muted?'muted':'sound'); });
+      if(active&&!active.classList.contains('agent')) ytCmd(active,muted?'mute':'unMute'); return; }
+    if(ab&&ab.getAttribute('data-a')==='ashare'){ shareAgent(x.agent); return; }
+    if(vd){ if(vd.paused){ vd.play().catch(function(){}); el.classList.remove('paused'); } else { vd.pause(); el.classList.add('paused'); } }
+    return;
+  }
   var l=S.items[+el.getAttribute('data-i')]; if(!l) return;
   var z=e.target.closest('.tap');
   if(z){
@@ -573,6 +635,12 @@ function share(l){
   if(navigator.share){ navigator.share({title:'JAG Real Estate',text:text,url:url}).catch(function(){}); return; }
   (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(function(){ toast(t('copied')); }).catch(function(){ prompt(t('copied'),url); });
 }
+function shareAgent(a){
+  var url=location.origin+'/agente/'+encodeURIComponent(a.code)+(lang==='en'?'?lang=en':''), text=t('sh_ag').replace('{n}',a.name);
+  track('reel_agent_share',{code:a.code});
+  if(navigator.share){ navigator.share({title:a.name,text:text,url:url}).catch(function(){}); return; }
+  (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(function(){ toast(t('copied')); }).catch(function(){ prompt(t('copied'),url); });
+}
 var toastT;
 function toast(msg,link,href){
   $('toastmsg').textContent=msg; var a=$('toastlink'); a.textContent=link||''; a.style.display=link?'':'none'; if(href) a.href=href;
@@ -623,7 +691,7 @@ $('sheet').addEventListener('submit',function(e){
 function restart(){
   S={page:0,pages:1,items:[],busy:false,done:false,asSearch:false,req:S.req+1};
   if(active){ stopVideo(active); active=null; }
-  showMsg('loading'); feed.scrollTop=0; paintTop(); loadStart();
+  showMsg('loading'); feed.scrollTop=0; paintTop(); tvLoaded=false; tvAt=0; loadTeamVideos().then(loadStart);
 }
 
 /* ---------- language ---------- */
@@ -639,6 +707,8 @@ function applyLang(rerender){
     el.innerHTML=reelHtml(l,i); if(isAct){ active=null; el.classList.remove('act'); activate(el); if(!wasV) showPhoto(el,n); }
   });
   feed.querySelectorAll('.reel.ev').forEach(function(el){ el.innerHTML=evHtml(); });
+  if(rerender) feed.querySelectorAll('.reel.agent').forEach(function(el){ var x=TV[+el.getAttribute('data-tv')], vd=el.querySelector('video'), src=vd&&vd.getAttribute('src'), tm=vd?vd.currentTime:0, playing=vd&&!vd.paused;
+    el.innerHTML=agentHtml(x); var nv=el.querySelector('video'); nv.addEventListener('error',function(){ el.classList.add('err'); }); if(src){ nv.src=src; nv.currentTime=tm; nv.muted=muted; if(playing) nv.play().catch(function(){}); } });
 }
 document.querySelectorAll('.langs button').forEach(function(b){
   b.addEventListener('click',function(){ lang=b.getAttribute('data-lang'); try{ localStorage.setItem('jag_lang',lang); }catch(e){} applyLang(true); });
@@ -653,10 +723,10 @@ function firstHint(){
 
 /* ---------- go ---------- */
 io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting&&e.intersectionRatio>=.6) activate(e.target); }); },{root:feed,threshold:[.6]});
-document.addEventListener('visibilitychange',function(){ if(!active) return; if(document.hidden){ active.classList.add('paused'); ytCmd(active,'pauseVideo'); } else { active.classList.remove('paused'); ytCmd(active,'playVideo'); } });
+document.addEventListener('visibilitychange',function(){ if(!active) return; var av=active.classList.contains('agent')?active.querySelector('video'):null; if(document.hidden){ active.classList.add('paused'); ytCmd(active,'pauseVideo'); if(av) av.pause(); } else { active.classList.remove('paused'); ytCmd(active,'playVideo'); if(av) av.play().catch(function(){}); } });
 if(window.JagAccount){ if(JagAccount.onChange) JagAccount.onChange(syncFavs); if(JagAccount.user()) syncFavs();
   var paChk=function(){ if(JagAccount.user()&&JagAccount.loanStatus) JagAccount.loanStatus(); }; paChk(); if(JagAccount.onChange) JagAccount.onChange(paChk); }
-applyLang(false); showMsg('loading'); loadStart(); track('reels_open');
+applyLang(false); showMsg('loading'); loadTeamVideos().then(loadStart); track('reels_open');
 </script>
 </body>
 </html>
