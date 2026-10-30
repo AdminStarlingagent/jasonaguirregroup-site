@@ -300,6 +300,10 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   .main:not(.mapview) .mapwrap{display:none}
   .list{box-shadow:none;padding:12px 12px 86px}
   .viewtog{display:block;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:550;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:12px 24px;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+  /* phones: a clean bottom row — Reels left, Map centered, chat as a round icon on the right (no text, no extra phone button) */
+  .jc-b{width:52px;height:52px;padding:0!important;justify-content:center;border-radius:50%!important;bottom:calc(14px + env(safe-area-inset-bottom,0px))!important}
+  .jc-b span{display:none}.jc-b svg{width:24px;height:24px}
+  .jc-b.up{bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}
   .c .nav{opacity:1}
   .mos{grid-template-columns:minmax(0,1fr);grid-template-rows:1fr;height:auto;aspect-ratio:4/3;padding:0}
   .mos button:not(:first-child):not(.all){display:none}

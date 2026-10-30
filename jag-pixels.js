@@ -35,7 +35,10 @@
     ttq.page();
   }(window, document, 'ttq');
 
-  /* ---- Follow Up Boss pixel (FUB's widget tracker code) ---- */
+  /* ---- Follow Up Boss pixel (FUB's widget tracker code) ----
+     The same code also draws FUB's floating "call or text us" phone button + popup (an iframe pinned bottom-right).
+     We keep the tracking (page views still reach FUB) and hide that button: homes already have "Call your agent". */
+  try{ var hs = document.createElement('style'); hs.textContent = 'body>iframe[style*="2147483647"]{display:none!important;visibility:hidden!important}'; document.head.appendChild(hs); }catch(e){}
   (function(w, i, d, g, e, t){ w['WidgetTrackerObject'] = g; (w[g] = w[g] || function(){ (w[g].q = w[g].q || []).push(arguments); }), (w[g].ds = 1 * new Date());
     (e = 'script'), (t = d.createElement(e)), (e = d.getElementsByTagName(e)[0]); t.async = 1; t.src = i; e.parentNode.insertBefore(t, e);
   })(window, 'https://widgetbe.com/agent', document, 'widgetTracker');
