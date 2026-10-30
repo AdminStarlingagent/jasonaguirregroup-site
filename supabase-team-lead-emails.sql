@@ -4,10 +4,25 @@
 -- Recipients: ops.settings 'lead_emails' = {default:[…], <lead type>:[…]} (JAG domains only; the function drops anything else).
 -- Types: loan applications, home value, listing intake, intake buyer offers, home inquiries. /offer offers have their own email.
 -- ============================================================
-insert into ops.settings (key, value) values ('lead_emails', jsonb_build_object(
-  'default', jsonb_build_array('jason.aguirre@jasonhoustonrealty.com'),
-  'Mortgage Application', jsonb_build_array('jason.aguirre@jasonhoustonrealty.com', 'kat@jasonhoustonrealty.com')))
-on conflict (key) do nothing;
+-- Jason's list (Oct 30 2026): every website lead and offer goes to these four.
+insert into ops.settings (key, value) values ('lead_emails', jsonb_build_object('default', jsonb_build_array(
+  'jason.aguirre@jasonhoustonrealty.com', 'closings@jasonhoustonrealty.com', 'kat@jasonhoustonrealty.com', 'veronica@jasonhoustonrealty.com')))
+on conflict (key) do update set value = excluded.value;
+
+-- offers (/offer): the same list + the client's agent if they have a JAG address
+create or replace function ops.kick_offer_email(p_id uuid)
+returns bigint language plpgsql security definer set search_path to '' as $$
+declare v_tok text; v_req bigint; v_cfg jsonb; v_to jsonb;
+begin
+  select value into v_cfg from ops.settings where key = 'lead_emails';
+  v_to := coalesce(v_cfg->'Buyer Offer', v_cfg->'default', '["jason.aguirre@jasonhoustonrealty.com"]'::jsonb);
+  select decrypted_secret into v_tok from vault.decrypted_secrets where name = 'jag_alerts_token';
+  select net.http_post(url := 'https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/jag-client-email',
+    body := jsonb_build_object('kind', 'buyer_offer', 'id', p_id::text, 'to', v_to),
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-jag-token', v_tok), timeout_milliseconds := 8000) into v_req;
+  return v_req;
+end $$;
+revoke all on function ops.kick_offer_email(uuid) from public, anon, authenticated;
 
 create or replace function ops.kick_lead_email(p_id uuid, p_type text)
 returns bigint language plpgsql security definer set search_path to '' as $$
@@ -33,5 +48,4 @@ begin
   return new;
 exception when others then return new;
 end $$;
-drop trigger if exists jag_leads_email on public.jag_leads;
-create trigger jag_leads_email after insert on public.jag_leads for each row execute function public.jag_leads_email_trg();
+create or replace trigger jag_leads_email after insert on public.jag_leads for each row execute function public.jag_leads_email_trg();
