@@ -1217,7 +1217,7 @@ function topGo(u){ try{ window.top.location.href = u; }catch(e){ location.href =
       : 'Hi ' + cfirst + ', this is ' + first + ' with the Jason Aguirre Group. I picked ' + n + (n === 1 ? ' home' : ' homes') + ' that match what you\'re looking for 🏡\nTake a look and tap ❤️ on the ones you like: ' + url + '\n' + first + (a.phone ? ' · ' + fmtPhone(a.phone) : '');
     var ph = digits(x.phone);
     modal('<h2>Send ' + esc(cfirst) + ' their list</h2><div class="fld"><label for="sm-msg">Message</label><textarea id="sm-msg" rows="6">' + esc(msg) + '</textarea></div>' +
-      '<div class="hint">It goes from your phone, so they see your number. When they open it and tap ❤️, Lola texts you.</div>' +
+      '<div class="hint">Text and WhatsApp go from your phone, so they see your number. Email goes as a JAG-branded email with the home photos, from you (replies come to you). When they open it and tap ❤️, Lola texts you.</div>' +
       '<div class="sharegrid"><button type="button" data-ch="sms"' + (ph ? '' : ' disabled title="No mobile on this list"') + '><span>💬</span>Text</button><button type="button" data-ch="whatsapp"' + (ph ? '' : ' disabled') + '><span>🟢</span>WhatsApp</button>' +
       '<button type="button" data-ch="email"' + (x.email ? '' : ' disabled title="No email on this list"') + '><span>✉️</span>Email</button><button type="button" data-ch="copy"><span>🔗</span>Copy</button></div>' +
       '<div class="acts"><a class="btn ghost" target="_blank" rel="noopener" href="' + esc(url) + '">Preview what they see ↗</a><button class="btn ghost" data-close type="button">Done</button></div>');
@@ -1225,7 +1225,16 @@ function topGo(u){ try{ window.top.location.href = u; }catch(e){ location.href =
       var ch = b.dataset.ch, body = $('sm-msg').value;
       if(ch === 'sms') topGo('sms:+1' + ph + '?&body=' + encodeURIComponent(body));
       else if(ch === 'whatsapp') window.open('https://wa.me/1' + ph + '?text=' + encodeURIComponent(body), '_blank', 'noopener');
-      else if(ch === 'email') topGo('mailto:' + encodeURIComponent(x.email) + '?subject=' + encodeURIComponent(es ? 'Casas para usted, ' + cfirst : 'Homes for you, ' + cfirst) + '&body=' + encodeURIComponent(body));
+      else if(ch === 'email'){
+        b.disabled = true; var lbl = b.innerHTML; b.innerHTML = '<span>⏳</span>Sending…';
+        JagShare.token().then(function(tk){ return fetch(FN + 'jag-client-hub', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'email_list', cart_id: x.id, note: body }) }); })
+          .then(function(r){ return r.json(); }).then(function(j){
+            b.disabled = false; b.innerHTML = lbl;
+            if(!j || !j.ok){ toast((j && j.error) || 'Could not send the email'); return; }
+            b.innerHTML = '<span>✅</span>Sent'; toast('Branded email sent to ' + j.to);
+            rpc('jag_cart_sent', { p_cart: x.id, p_channel: 'email' }).then(function(){ loadCarts(); }).catch(function(){});
+          }).catch(function(){ b.disabled = false; b.innerHTML = lbl; toast('Could not send the email'); });
+        return; }
       else copy(body);
       rpc('jag_cart_sent', { p_cart: x.id, p_channel: ch }).then(function(){ loadCarts(); }).catch(function(){});
     }; });

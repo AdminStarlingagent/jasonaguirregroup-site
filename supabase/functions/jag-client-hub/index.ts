@@ -8,6 +8,8 @@
 //        send_now: emails today's best matches right away with the agent's note ("homes picked for you").
 //        The hourly listing-alerts job sends new matches from then on; every email has a one-click unsubscribe.
 //  { action: 'email_homes', email, name, lang, mls[], note, label } → a JAG-branded email with those homes, reply-to the agent.
+//  { action: 'email_list', cart_id, note } → a Matrix client list as a JAG-branded email (photos, prices, one button to the list where
+//      they tap ❤️), from the agent, reply-to the agent. Only the agent's own lists (jag_cart_get as them). Logged on the contact timeline.
 //  { action: 'invite', invite_id } → the client's personal app invite (jag_invites, made by jag_invite_create) by email, from the agent.
 //  { action: 'email', contact_id (or user_id), subject, body } → an email to the contact from their profile (agent's name, replies
 //      to the agent), logged on the profile timeline (jag_contact_notes kind 'email') and copied to Follow Up Boss as a note.
@@ -167,6 +169,58 @@ Deno.serve(async (req) => {
     await db.from("jag_homes_sent").insert({ agent_code: agent.code, sent_by: me?.email || null, email, phone: phone || null, user_id: acct ? acct.user_id : null, channel: "email",
       mls: homes.map((h: Row) => h.mls), label: String(b.label || "").slice(0, 200) || null, note: String(b.note || "").slice(0, 1000) || null });
     return json({ ok: true, sent: homes.length });
+  }
+
+  // ---------- a Matrix client list, branded ----------
+  if (b.action === "email_list") {
+    if (!RESEND) return json({ ok: false, error: "Email is not set up (RESEND_API_KEY)." }, 503);
+    const { data: cj } = await userDb.rpc("jag_cart_get", { p_cart: b.cart_id });
+    const cart: Row | null = cj && (cj as Row).ok ? (cj as Row).cart : null;
+    if (!cart || !cart.token) return json({ ok: false, error: "That list isn't yours or was removed." }, 404);
+    const to = cleanEmail(cart.email);
+    if (!to) return json({ ok: false, error: "This list has no valid email." }, 400);
+    const es = cart.lang !== "en", L = T[es ? "es" : "en"];
+    const homes: Row[] = (((cj as Row).homes || []) as Row[]).filter((h) => h && h.snap && h.snap.pub !== "N");
+    if (!homes.length) return json({ ok: false, error: "Add homes to the list first." }, 400);
+    const code = agent.code && agent.code !== "pending" ? agent.code : "jason";
+    const url = `${SITE}/lista?a=${encodeURIComponent(code)}&src=email#${cart.token}`;
+    const first = String(cart.name || "").trim().split(/\s+/)[0] || "";
+    const n = homes.length;
+    const subject = es ? `${first ? first + ", l" : "L"}e preparé ${n} ${n === 1 ? "casa" : "casas"}` : `${first ? first + ", I" : "I"} picked ${n} ${n === 1 ? "home" : "homes"} for you`;
+    // their message without the link (the button is the link)
+    const note = String(b.note || "").replace(/https?:\/\/\S+/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 1200);
+    const cards = homes.slice(0, 8).map((h) => {
+      const s2 = h.snap || {};
+      const specs = [s2.beds != null ? `${s2.beds} ${L.bd}` : "", s2.baths != null ? `${s2.baths} ${L.ba}` : "", s2.sqft ? `${Number(s2.sqft).toLocaleString("en-US")} ${L.sqft}` : ""].filter(Boolean).join("  ·  ");
+      const nt = h.agent_note ? `<div style="font-size:14px;color:${C.ink};background:${C.redTint};border-radius:10px;padding:8px 12px;margin:-10px 0 18px">💬 ${esc(h.agent_note)}</div>` : "";
+      return homeCard({ url, photo: s2.photo, price: s2.price, specs, addr: [[s2.addr, s2.city].filter(Boolean).join(", "), s2.zip].filter(Boolean).join(" "), btn: es ? "Ver y marcar ❤️" : "See it · tap ❤️" }) + nt;
+    }).join("");
+    const more = n > 8 ? `<p style="margin:0 0 12px;text-align:center;font-size:14px;color:${C.muted}">${es ? `y ${n - 8} más en su lista` : `and ${n - 8} more in your list`}</p>` : "";
+    const html = shell({ es, title: subject, preheader: note ? note.slice(0, 90) : subject,
+      body: row(agentStrip(agent.name || "Jason Aguirre", (es ? "Tu agente · " : "Your agent · ") + (phoneFmt(agent.phone) || OFFICE) + " · eXp Realty", agent.photo_url)
+        + h1(es ? `${first ? first + ", su" : "Su"} lista de casas` : `${first ? first + ", your" : "Your"} home list`)
+        + (note ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px"><tr><td style="background:${C.card};border-left:4px solid ${C.red};border-radius:0 12px 12px 0;padding:14px 18px;font-size:16px;line-height:1.55;color:${C.ink};white-space:pre-wrap">${esc(note)}</td></tr></table>` : "")
+        + `<div style="text-align:center;margin:0 0 20px">${button(url, es ? `Ver mis ${n} casas` : `See my ${n} homes`, { kind: "primary" })}</div>`
+        + `<p style="margin:0 0 16px;font-size:14px;color:${C.muted};text-align:center">${es ? "Toque ❤️ en las que le gusten y le aviso para verlas." : "Tap ❤️ on the ones you like and I'll set up the tours."}</p>`
+        + cards + more
+        + `<div style="text-align:center;margin:4px 0 20px">${button(url, es ? "Abrir mi lista" : "Open my list", { kind: "outline" })}</div>`
+        + `<div style="border-top:1px solid ${C.line};padding-top:16px;text-align:center;font-size:14px;color:${C.muted}">${esc(L.call)} <a href="tel:${esc(tel(agent.phone) || OFFICE_TEL)}" style="color:${C.ink};font-weight:700;text-decoration:none">${esc(phoneFmt(agent.phone) || OFFICE)}</a>.</div>`, "0 32px"),
+      footerNote: L.why + " " + L.disc });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM.replace(/^[^<]*</, `${agent.name || "Jason Aguirre"} · JAG <`), to: [to], reply_to: agent.email || undefined, subject, html }) });
+    if (!r.ok) return json({ ok: false, error: "Email failed: " + (await r.text()).slice(0, 160) }, 502);
+    const sent = await r.json().catch(() => ({}));
+    await db.from("jag_homes_sent").insert({ agent_code: agent.code, sent_by: me?.email || null, email: to, phone: digits10(cart.phone) || null, user_id: cart.user_id || null, channel: "email",
+      mls: homes.map((h) => String(h.mls)), label: String(cart.name || "").slice(0, 200) || null, note: note || null });
+    // the contact's timeline (an app account, or an email match)
+    const { data: ct } = cart.user_id ? await db.from("jag_contacts").select("id,user_id,fub_id").eq("user_id", cart.user_id).maybeSingle()
+      : await db.from("jag_contacts").select("id,user_id,fub_id").ilike("email", to).eq("deleted", false).limit(1).maybeSingle();
+    if (ct) {
+      await db.from("jag_contact_notes").insert({ contact_id: ct.id, user_id: ct.user_id, agent_code: agent.code, author_name: agent.name || null, kind: "email", subject,
+        body: (note ? note + "\n\n" : "") + url, meta: { to, resend_id: (sent as Row).id || null, cart: cart.id, homes: n } });
+      await db.from("jag_contacts").update({ last_comm_at: new Date().toISOString() }).eq("id", ct.id);
+    }
+    return json({ ok: true, to, homes: n });
   }
 
   // ---------- automatic alerts: account + saved search ----------

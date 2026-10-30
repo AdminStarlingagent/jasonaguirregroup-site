@@ -16,7 +16,7 @@
 (function(){
   var C = window.JAG_CRM || {}, BASE = String(C.url || '').replace(/\/+$/, ''), KEY = C.anonKey;
   var SITE = 'https://jasonaguirregroup.company';
-  var o = null, me = null, P = null, uid = null, fub = {}, FILES = {}, upl = 0, tab = 'note', filt = 'all', col = 'c', busy = false, lolaAns = '', open = {};
+  var o = null, me = null, P = null, uid = null, fub = {}, FILES = {}, OFF = {}, LOANX = {}, upl = 0, tab = 'note', filt = 'all', col = 'c', busy = false, lolaAns = '', open = {};
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
@@ -49,6 +49,12 @@
   var STAGES = ['Lead', 'Attempted contact', 'Spoke with customer', 'Appointment set', 'Met with customer', 'Hot Prospect', 'Applied', 'Loan Approved', 'Showing homes',
     'Submitting offers', 'Under contract', 'Pending', 'Closed', 'Past Client', 'Active Client', 'Listing agreement', 'Active listing', 'Nurture', '2027 Follow-up', 'Sphere',
     'Credit Lead', 'Credit Repair', 'Investor', 'Out Of Town', 'Unresponsive'];
+  // line icons (emoji render tiny and off-center on Windows)
+  function ico(n){ var P0 = { call: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+      text: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', email: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+      app: '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>' };
+    return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P0[n] + '</svg>'; }
+  var CT_EN = { 'Inspección': 'Inspection', 'Avalúo': 'Appraisal', 'Financiamiento': 'Financing', 'Venta de mi casa actual': 'Sale of current home' };
   var LOAN = { received: 'App received', review: 'In review', docs: 'Needs documents', credit: 'Working on credit', paused: 'Paused', done: 'Pre-approved' };
   var LANE = { ready: 'Ready', fha: 'FHA', itin: 'ITIN', prep: 'Prep', credit: 'Credit path', cash: 'Cash' };
 
@@ -84,6 +90,7 @@
     '.pf-qa a,.pf-qa button{border:2px solid var(--red);background:#fff;color:var(--red);border-radius:14px;padding:8px 4px;font-weight:800;font-size:12.5px;text-align:center;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:54px;justify-content:center}',
     '.pf-qa a:first-child{background:var(--red);color:#fff}',
     '.pf-qa .x{opacity:.4;pointer-events:none}',
+    '.pf-qa svg{display:block;flex:none;margin:0 auto 2px}.pf-qa span{display:block;line-height:1.15}',
     '.kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 10px;font-size:14px;align-items:center}',
     '.kv dt{color:var(--muted);font-weight:700;font-size:12.5px}.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}',
     '.kv a{color:var(--red);font-weight:700;text-decoration:none}',
@@ -165,6 +172,23 @@
     '.fdrop.on{border-color:var(--red);background:#fff5f5;color:var(--red)}',
     '.li .fo{border:0;background:#f6f5f3;border-radius:99px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--ink);min-height:32px;white-space:nowrap}',
     '.fmsg{font-size:13px;font-weight:700;color:var(--muted);margin-top:6px}',
+    '.lkph{width:64px;height:48px;border-radius:10px;object-fit:cover;flex:none;background:#f6f5f3}',
+    '.lka{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.lka .pbtn{text-decoration:none}',
+    '.ofx{border-top:1px solid #efece7}.ofx:first-of-type{border-top:0}',
+    '.ofh{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:10px 0;text-align:left;font:inherit;color:var(--ink)}',
+    '.ofh .m{flex:1;min-width:0}.ofh b{display:block;font-size:14px;overflow-wrap:anywhere}.ofh small{color:var(--muted);font-size:12.5px}',
+    '.ofh .chev{flex:none;width:28px;height:28px;border-radius:50%;background:#f6f5f3;display:grid;place-items:center;font-weight:800;font-size:16px;line-height:1}',
+    '.ofb{padding:0 0 12px}.ofdl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:13.5px}',
+    '.ofdl dt{color:var(--muted)}.ofdl dd{margin:0;font-weight:700;text-align:right;overflow-wrap:anywhere;white-space:pre-wrap}',
+    '.ofwarn{background:#fff4e5;color:#5c3700;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;margin:0 0 10px}',
+    '.ofl{display:inline-block;margin-top:8px;font-size:13px;font-weight:800;color:var(--red)}',
+    '.ofst{display:flex;flex-wrap:wrap;gap:6px}.ofst button{border:1.5px solid #d9d6d1;background:#fff;border-radius:99px;padding:6px 11px;font:inherit;font-size:12.5px;font-weight:700;min-height:32px}',
+    '.ofst button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}',
+    '.ofnote{margin-top:8px;min-height:60px!important}',
+    '.lnow{background:#f6f5f3;border-radius:14px;padding:12px 14px;margin-bottom:6px}.lnow b{display:block;font-size:15px}.lnow small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}',
+    '.lnow.ok{background:#e9f5ec}.lnow.ok b{color:#1a5c31}',
+    '.lform label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin:8px 0 0}.lform label input,.lform label select{margin-top:4px}',
+    '.pc h3 .add{display:grid;place-items:center}',
     '.pf-load{display:grid;place-items:center;min-height:60vh;color:var(--muted);font-weight:700}'
   ].join('\n');
   document.head.appendChild(css);
@@ -199,8 +223,82 @@
       if(j.contact && j.contact.id && j.contact.id !== uid){ uid = u = j.contact.id; try{ history.replaceState(null, '', '#c/' + u); }catch(e){} }
       P = j; render();
       if(first && !fub[u]) loadFub(u);
-      loadFiles(u);
+      loadFiles(u); loadExtra(u);
     }).catch(function(){ if(u === uid) $('pf').innerHTML = '<div class="pf-top"><div class="in"><button type="button" class="pf-back" data-a="close">← Contacts</button></div></div><div class="pf-load">Could not load this profile. Check your connection.</div>'; });
+  }
+  function loadExtra(u){
+    return Promise.all([
+      rpc('jag_contact_offers', { p_contact: u }).then(function(j){ if(j && j.ok) OFF[u] = j; }).catch(function(){}),
+      rpc('jag_contact_loan_get', { p_contact: u }).then(function(j){ if(j && j.ok) LOANX[u] = j; }).catch(function(){})
+    ]).then(function(){ if(u === uid && P) render(); });
+  }
+  var OST = [['submitted', 'Submitted'], ['reviewing', 'Team reviewing'], ['sent', 'Sent to seller'], ['countered', 'Countered'], ['accepted', 'Accepted'], ['declined', 'Not accepted'], ['withdrawn', 'Withdrawn']];
+  var LSTAGE = { received: 'Application received', review: 'In review', docs: 'Needs documents', preapproved: 'Pre-approved', credit: 'Working on credit', paused: 'Paused', none: 'Hidden from client', done: 'Pre-approved' };
+  var LTYPE = { fha: 'FHA', conventional: 'Conventional', va: 'VA', usda: 'USDA', itin: 'ITIN', cash: 'Cash', other: 'Other' };
+  function offerFull(x, pa, first){
+    var lp = +x.list_price || 0, op = +x.offer_price || 0, pct = lp && op ? ' (' + (op / lp * 100).toFixed(1) + '% of list)' : '';
+    var amt = pa && !pa.expired && +pa.amount > 0 ? +pa.amount : 0, over = amt && op > amt;
+    var cont = (x.contingencies || []).map(function(k){ return CT_EN[k] || k; }).join(', ');
+    var rows = [
+      ['Offer', money(op) + pct], ['List price', money(lp)], ['Earnest money', money(x.earnest)],
+      ['Paying', x.financing === 'cash' ? 'Cash' : x.financing ? 'Loan' + (x.loan_type ? ' · ' + x.loan_type : '') : ''],
+      ['Down payment', x.down_payment || ''], ['Lender', x.lender || ''],
+      ['Pre-approval / funds', { yes: 'Yes, has it', working: 'Working on it', no: 'Not yet' }[x.proof] || x.proof || ''],
+      ['Conditions', cont], ['Option period', x.option_days ? x.option_days + ' days' : ''], ['Target closing', x.close_date ? day(x.close_date) : ''],
+      ['Offer expires', x.expires ? day(x.expires) : ''], ['Co-buyer', x.co_buyer || ''], ['Client notes', x.notes || '']
+    ].filter(function(r){ return r[1]; });
+    var oid = esc(x.id), isOpen = open['of' + x.id] != null ? open['of' + x.id] : first;
+    var st = (OST.filter(function(o){ return o[0] === x.status; })[0] || [0, cap(x.status || '')])[1];
+    return '<div class="ofx" data-oid="' + oid + '"><button type="button" class="ofh" data-a="oftog" data-v="' + oid + '" aria-expanded="' + !!isOpen + '">' +
+        '<span class="m"><b>' + esc(x.address || 'MLS ' + x.mls) + '</b><small>' + money(op) + ' · ' + esc(st) + ' · ' + esc(ago(x.created_at)) + '</small></span><span class="chev" aria-hidden="true">' + (isOpen ? '−' : '+') + '</span></button>' +
+      (isOpen ? '<div class="ofb">' +
+        (over ? '<div class="ofwarn">⚠️ Above their pre-approval (' + money(amt) + ' · ' + esc(LTYPE[pa.loan_type] || '') + '). Talk to them or the lender before sending.</div>' : '') +
+        '<dl class="ofdl">' + rows.map(function(r){ return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' +
+        (x.mls ? '<a class="ofl" href="homes#' + encodeURIComponent(x.mls) + '" target="_blank" rel="noopener">See the home (MLS ' + esc(x.mls) + ') ↗</a>' : '') +
+        '<div class="crm-lbl" style="margin:12px 0 6px">Status</div><div class="ofst">' + OST.map(function(o){ return '<button type="button" data-a="ofst" data-v="' + o[0] + '" aria-pressed="' + (x.status === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+        '<textarea class="ofnote" placeholder="Note for the client (shows in their portal)">' + esc(x.status_note || '') + '</textarea>' +
+        '<div class="cmp-row" style="margin-top:8px;flex-wrap:wrap"><button type="button" class="pbtn s" data-a="ofsave">Update offer</button>' +
+          (x.can_edit && window.JagOfferEdit ? '<button type="button" class="pbtn g s" data-a="ofedit">Edit details</button>' : '') +
+          (x.can_edit && window.JagTeamOffer ? '<button type="button" class="pbtn g s" data-a="ofprep">Prepare contract</button>' : '') + '</div>' +
+        (x.status_at ? '<small class="none" style="display:block;margin-top:6px">Last update ' + esc(ago(x.status_at)) + (x.status_by ? ' by ' + esc(x.status_by) : '') + '</small>' : '') +
+      '</div>' : '') + '</div>';
+  }
+  function loanCardHtml(apps){
+    var L = LOANX[uid], c = P.contact;
+    var appRows = apps.map(function(a){ return '<div class="li"><span class="av2">📄</span><div class="m"><b>JAG Home Loan app</b><small>' + esc(when(a.created_at).split(' · ')[0]) + ' · ' + esc(a.status || 'New') + (a.est_amount ? ' · est. ' + money(a.est_amount) : '') + '</small></div><a href="admin.html" target="_blank" rel="noopener">Open ↗</a></div>'; }).join('');
+    if(!L || !L.account) return '<div class="pc"><h3>Loan</h3>' + (appRows || '<div class="none">No loan application yet.</div>') +
+      (L && !L.account ? '<div class="none" style="margin-top:8px">Invite them to the app to track their pre-approval here.</div>' : '') + '</div>';
+    var sh = L.shows || {}, d = L.detail || {}, pa = L.preapproved, stage = sh.stage ? (LSTAGE[sh.stage] || cap(sh.stage)) : 'Nothing yet';
+    var sum = pa ? [pa.amount ? 'Up to ' + money(pa.amount) : '', LTYPE[pa.loan_type] || '', pa.lender || '', pa.down_payment ? pa.down_payment + ' down' : '', pa.expires ? (pa.expired ? 'EXPIRED ' : 'expires ') + day(pa.expires) : ''].filter(Boolean).join(' · ') : '';
+    var f = open.__loan;
+    var form = f ? '<div class="tadd lform">' +
+      '<label>Status<select id="ln-stage">' + [['preapproved', 'Pre-approved'], ['docs', 'Needs documents'], ['review', 'In review'], ['received', 'Application received'], ['credit', 'Working on credit'], ['paused', 'Paused'], ['auto', 'Automatic (from their loan app)']].map(function(o){
+        return '<option value="' + o[0] + '"' + ((L.stage || 'preapproved') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>' +
+      '<div class="lpa"' + ((L.stage || 'preapproved') === 'preapproved' ? '' : ' hidden') + '><div class="r2"><label>Pre-approved amount<input type="text" id="ln-amt" inputmode="numeric" value="' + esc(d.amount ? Number(d.amount).toLocaleString('en-US') : '') + '" placeholder="250,000"></label>' +
+        '<label>Loan type<select id="ln-type"><option value="">—</option>' + Object.keys(LTYPE).map(function(k){ return '<option value="' + k + '"' + (d.loan_type === k ? ' selected' : '') + '>' + LTYPE[k] + '</option>'; }).join('') + '</select></label></div>' +
+        '<div class="r2"><label>Lender<input type="text" id="ln-lender" value="' + esc(d.lender || '') + '" placeholder="Lock It Lending"></label>' +
+        '<label>Down payment<input type="text" id="ln-down" value="' + esc(d.down_payment || '') + '" placeholder="3.5% or $10,000"></label></div>' +
+        '<label>Letter expires<input type="date" id="ln-exp" value="' + esc(d.expires || '') + '"></label></div>' +
+      '<label>Note the client sees (optional)<input type="text" id="ln-note" value="' + esc(d.note || '') + '"></label>' +
+      '<div class="cmp-row"><span class="none">Their offer form fills in from this, and the site stops asking them to apply.</span><span class="sp"></span><button type="button" class="pbtn s" data-a="lnsave">Save</button></div></div>' : '';
+    return '<div class="pc"><h3>Loan <button type="button" class="add" data-a="lnedit" aria-label="Update loan progress">' + (f ? '×' : '✎') + '</button></h3>' +
+      '<div class="lnow' + (pa && !pa.expired ? ' ok' : '') + '"><b>' + esc(stage) + (pa && !pa.expired ? ' ✓' : '') + '</b>' + (sum ? '<small>' + esc(sum) + '</small>' : '') +
+        (L.set_by && L.set_at ? '<small>Set by ' + esc(L.set_by) + ' · ' + esc(ago(L.set_at)) + '</small>' : '') +
+        (L.app && L.app.estimate ? '<small>App estimate: ' + esc(L.app.estimate) + '</small>' : '') + '</div>' + form + appRows + '</div>';
+  }
+  // a text about one home they liked, nudging an offer (their language; mentions the pre-approval when there is one)
+  function nudgeText(f){
+    var c = P.contact, es = c.lang !== 'en', sn = f.snap || {}, fn = first(c.name), ag = (me && (me.first_name || first(me.name))) || 'Jason';
+    var price = +(f.last_price || sn.price) || 0, home = (sn.addr || 'MLS ' + f.mls) + (price ? ' (' + money(price) + ')' : '');
+    var L = LOANX[uid], pa = L && L.preapproved && !L.preapproved.expired ? L.preapproved : null, amt = pa && +pa.amount > 0 ? +pa.amount : 0;
+    var q = new URLSearchParams({ mls: f.mls, a: (me && me.code) || 'jason' }); if(es) q.set('lang', 'es'); else q.set('lang', 'en');
+    if(price) q.set('price', Math.round(price)); if(sn.addr) q.set('addr', [sn.addr, sn.city].filter(Boolean).join(', ')); if(sn.photo) q.set('ph', sn.photo);
+    if(sn.beds != null) q.set('bd', sn.beds); if(sn.baths != null) q.set('ba', sn.baths); if(sn.sqft) q.set('sf', sn.sqft);
+    var url = SITE + '/offer.html?' + q.toString();
+    var fits = amt && price && price <= amt;
+    return es
+      ? '¡Hola ' + fn + '! Soy ' + ag + '. Vi que te gustó ' + home + ' 🏡 ' + (fits ? 'Con tu pre-aprobación hasta ' + money(amt) + ' te alcanza. ' : '') + '¿Quieres que la veamos o le hacemos una oferta antes de que alguien más la tome? Puedes preparar tu oferta aquí en 3 minutos: ' + url
+      : 'Hi ' + fn + '! It\'s ' + ag + '. I saw you liked ' + home + ' 🏡 ' + (fits ? 'It fits your pre-approval up to ' + money(amt) + '. ' : '') + 'Want to see it, or should we make an offer before someone else grabs it? You can put your offer together here in 3 minutes: ' + url;
   }
   function loadFiles(u){
     return rpc('jag_contact_files', { p_contact: u }).then(function(j){ if(j && j.ok){ FILES[u] = j; if(u === uid && P) render(); } }).catch(function(){});
@@ -275,9 +373,9 @@
     var opt = function(v, sel, label){ return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(label) + '</option>'; };
     return '<div class="pc"><div class="pf-who"><div class="pf-av" aria-hidden="true">' + esc(initials(c.name || c.email)) + '</div><div><h2>' + esc(c.name || c.email) + '</h2><small>' + esc(last) + (app ? ' · on the site ' + esc(ago(c.last_seen_at) || 'never') : '') + '</small></div></div>' +
         '<div class="pf-badges">' + badges + '</div>' +
-        '<div class="pf-qa">' + (ph ? '<a href="tel:+1' + ph + '" data-a="callnow">📞<span>Call</span></a><a href="#" data-a="tab" data-t="text">💬<span>Text</span></a>' : '<a class="x">📞<span>Call</span></a><a class="x">💬<span>Text</span></a>') +
-          (c.email ? '<a href="#" data-a="tab" data-t="email">✉️<span>Email</span></a>' : '<a class="x">✉️<span>Email</span></a>') +
-          (app ? '<button type="button" data-a="msg">🗨️<span>App msg</span></button>' : '<button type="button" data-a="invite">📱<span>Invite to app</span></button>') + '</div></div>' +
+        '<div class="pf-qa">' + (ph ? '<a href="tel:+1' + ph + '" data-a="callnow">' + ico('call') + '<span>Call</span></a><a href="#" data-a="tab" data-t="text">' + ico('text') + '<span>Text</span></a>' : '<a class="x">' + ico('call') + '<span>Call</span></a><a class="x">' + ico('text') + '<span>Text</span></a>') +
+          (c.email ? '<a href="#" data-a="tab" data-t="email">' + ico('email') + '<span>Email</span></a>' : '<a class="x">' + ico('email') + '<span>Email</span></a>') +
+          (app ? '<button type="button" data-a="msg">' + ico('app') + '<span>App msg</span></button>' : '<button type="button" data-a="invite">' + ico('app') + '<span>Invite</span></button>') + '</div></div>' +
       '<div class="pc"><h3>Journey</h3>' + (window.JagCRM ? JagCRM.journey(cObj()) : '') + '</div>' +
       '<div class="pc"><h3>Contact</h3><dl class="kv">' +
         '<dt>Cell</dt><dd>' + (ph ? '<a href="tel:+1' + ph + '">' + esc(fmtPhone(c.phone)) + '</a>' : '<span class="none">No phone</span>') + '</dd>' +
@@ -463,12 +561,20 @@
     var tours = (P.tours || []), offers = (P.offers || []), apps = (P.apps || []), lists = (P.lists || []), favs = (P.favorites || []);
     var showBtn = o.isLead ? '<button type="button" class="add" data-a="shw" aria-label="Set up showings">+</button>' : '';
     var tourCard = '<div class="pc"><h3>Tours & showings ' + showBtn + '</h3>' + (tours.length ? tours.map(function(t){ return '<div class="li"><div class="m"><b>' + esc(day(t.tour_date)) + ' · ' + esc(t.time_window || '') + '</b><small>' + esc(cap(t.status)) + ' · ' + t.homes + ' home' + (t.homes === 1 ? '' : 's') + (t.showing_agent ? ' · ' + esc(agentFirst(t.showing_agent)) : '') + '</small></div></div>'; }).join('') : '<div class="none">No tours yet.' + (c.showing_agent_code ? ' Showing agent: ' + esc(agentFirst(c.showing_agent_code)) + '.' : '') + '</div>') + '</div>';
-    var offerCard = '<div class="pc"><h3>Offers <button type="button" class="add" data-a="offer" aria-label="Write an offer">+</button></h3>' + (offers.length ? offers.map(function(x){ return '<div class="li"><div class="m"><b>' + esc(x.address || 'MLS ' + x.mls) + '</b><small>' + money(x.offer_price) + ' · ' + esc(window.JagOffer ? JagOffer.statusText(x.status) : x.status) + ' · ' + esc(ago(x.created_at)) + '</small></div></div>'; }).join('') : '<div class="none">No offers yet.</div>') + '</div>';
-    var loanCard = '<div class="pc"><h3>Loan</h3>' + (apps.length ? apps.map(function(a){ return '<div class="li"><span class="av2">📄</span><div class="m"><b>JAG Home Loan app</b><small>' + esc(when(a.created_at).split(' · ')[0]) + ' · ' + esc(a.status || 'New') + (a.est_amount ? ' · est. ' + money(a.est_amount) : '') + '</small></div><a href="admin.html" target="_blank" rel="noopener">Open ↗</a></div>'; }).join('') : '<div class="none">No loan application yet.</div>') +
-      '</div>';
+    var OX = OFF[uid], fullOffers = OX ? OX.offers || [] : null;
+    var offerCard = '<div class="pc" id="pf-offers"><h3>Offers' + ((fullOffers || offers).length ? ' (' + (fullOffers || offers).length + ')' : '') + ' <button type="button" class="add" data-a="offer" aria-label="Write an offer">+</button></h3>' +
+      (fullOffers ? (fullOffers.length ? fullOffers.map(function(x, i){ return offerFull(x, OX.preapproved, i === 0); }).join('') : '<div class="none">No offers yet.</div>')
+        : (offers.length ? offers.map(function(x){ return '<div class="li"><div class="m"><b>' + esc(x.address || 'MLS ' + x.mls) + '</b><small>' + money(x.offer_price) + ' · ' + esc(window.JagOffer ? JagOffer.statusText(x.status) : x.status) + ' · ' + esc(ago(x.created_at)) + '</small></div></div>'; }).join('') : '<div class="none">No offers yet.</div>')) + '</div>';
+    var loanCard = loanCardHtml(apps);
     var listCard = lists.length ? '<div class="pc"><h3>Client lists (Matrix)</h3>' + lists.map(function(l){ return '<div class="li"><div class="m"><b>' + esc(l.name) + '</b><small>' + l.homes + ' homes · ❤️ ' + l.loved + ' · opened ' + l.opens + '×</small></div><a href="matrix.html#cart=' + esc(l.id) + '">Open</a></div>'; }).join('') + '</div>' : '';
-    var favCard = '<div class="pc"><h3>Saved homes (' + favs.length + ')</h3>' + (favs.length ? favs.slice(0, 6).map(function(f){ var s = f.snap || {}; return '<div class="li"><div class="m"><b>' + esc(s.addr || 'MLS ' + f.mls) + '</b><small>' + esc([s.city, money(f.last_price || s.price), f.last_status && f.last_status !== 'Active' ? f.last_status : ''].filter(Boolean).join(' · ')) + '</small></div><a href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">View ↗</a></div>'; }).join('') : '<div class="none">Nothing saved yet.</div>') + '</div>';
-    return lola + tasks + files + collab + tourCard + offerCard + loanCard + listCard + favCard;
+    var favCard = '<div class="pc" id="pf-likes"><h3>Liked homes (' + favs.length + ')</h3>' + (favs.length ? favs.slice(0, open.__favall ? 12 : 6).map(function(f, i){ var sn = f.snap || {};
+        return '<div class="li lk">' + (sn.photo ? '<img class="lkph" src="https://cdn.repliers.io/' + esc(sn.photo) + '?class=small" alt="" loading="lazy">' : '<span class="av2">🏠</span>') +
+          '<div class="m"><b>' + esc(sn.addr || 'MLS ' + f.mls) + '</b><small>' + esc([money(f.last_price || sn.price), sn.city, f.last_status && f.last_status !== 'Active' ? f.last_status : '', sn.via === 'list' ? '❤️ on your list' : 'saved in app', ago(f.saved_at)].filter(Boolean).join(' · ')) + '</small>' +
+          '<div class="lka"><button type="button" class="pbtn s" data-a="nudge" data-i="' + i + '">💬 Text an offer nudge</button><a class="pbtn g s" href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">View ↗</a></div></div></div>'; }).join('') +
+        (favs.length > 6 && !open.__favall ? '<button type="button" class="pbtn g s" data-a="favall">Show all ' + favs.length + '</button>' : '')
+      : '<div class="none">Nothing liked yet. Homes they save in the app or ❤️ on a list you send show up here.</div>') + '</div>';
+    var hot = (fullOffers || offers).some(function(x){ return /^(submitted|reviewing|sent|countered)$/.test(x.status); });
+    return hot ? lola + offerCard + loanCard + favCard + tasks + files + collab + tourCard + listCard : lola + (favs.length ? favCard : '') + tasks + files + collab + tourCard + offerCard + loanCard + listCard + (favs.length ? '' : favCard);
   }
 
   /* ---------- Lola's ready-to-send messages (Spanish first, by where the client is) ---------- */
@@ -564,11 +670,38 @@
     if(a === 'crm'){ var cc = b.getAttribute('data-code'); if(!confirm('Remove ' + agentName(cc) + ' as a collaborator?')) return; rpc('jag_contact_collab', { p_user: uid, p_code: cc, p_add: false }).then(function(){ load(); }); return; }
     if(a === 'shw') return showings();
     if(a === 'offer') return offer();
+    if(a === 'favall'){ open.__favall = true; render(); return; }
+    if(a === 'nudge'){ var fv = (P.favorites || [])[+b.getAttribute('data-i')]; if(!fv) return;
+      tab = 'text'; cmpDraft.text = { body: nudgeText(fv) }; if(window.innerWidth <= 900) col = 'c'; render();
+      var tb2 = $('cm-body'); if(tb2){ tb2.focus(); tb2.scrollIntoView({ block: 'center' }); } toast('Check the text, then send it from your phone'); return; }
+    if(a === 'oftog'){ var ov = b.getAttribute('data-v'), cur0 = b.getAttribute('aria-expanded') === 'true'; open['of' + ov] = !cur0; render(); return; }
+    if(a === 'ofst'){ b.parentNode.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); }); return; }
+    if(a === 'ofsave' || a === 'ofedit' || a === 'ofprep'){
+      var box = b.closest('.ofx'), oid = box.getAttribute('data-oid'), ox = ((OFF[uid] || {}).offers || []).filter(function(x){ return String(x.id) === oid; })[0]; if(!ox) return;
+      if(a === 'ofedit'){ JagOfferEdit.open(ox, { call: rpc, onSaved: function(){ loadExtra(uid); } }); return; }
+      if(a === 'ofprep'){ JagTeamOffer.open({ mlsNumber: ox.mls || '', listPrice: ox.list_price || 0 }, ox, 'en'); return; }
+      var on = box.querySelector('.ofst [aria-pressed="true"]'); b.disabled = true; b.textContent = 'Saving…';
+      rpc('jag_offer_set_status', { p_id: oid, p_status: on ? on.getAttribute('data-v') : ox.status, p_note: box.querySelector('.ofnote').value })
+        .then(function(j){ b.disabled = false; b.textContent = 'Update offer'; if(j && j.ok){ toast('Offer updated · the client sees it in their portal'); load(); } else toast('Could not save'); })
+        .catch(function(){ b.disabled = false; b.textContent = 'Update offer'; });
+      return; }
+    if(a === 'lnedit'){ open.__loan = !open.__loan; render(); return; }
+    if(a === 'lnsave'){
+      var stg = $('ln-stage').value, pl = { stage: stg, amount: ($('ln-amt') || {}).value, loan_type: ($('ln-type') || {}).value, lender: ($('ln-lender') || {}).value,
+        down_payment: ($('ln-down') || {}).value, expires: ($('ln-exp') || {}).value, note: $('ln-note').value };
+      if(stg === 'preapproved' && !String(pl.amount || '').replace(/\D/g, '')){ toast('Add the pre-approved amount'); $('ln-amt').focus(); return; }
+      b.disabled = true; b.textContent = 'Saving…';
+      rpc('jag_contact_loan_set', { p_contact: uid, p: pl }).then(function(j){
+        if(!j || !j.ok){ b.disabled = false; b.textContent = 'Save'; toast(j && j.reason === 'no_account' ? 'They need an app account first' : 'Could not save'); return; }
+        LOANX[uid] = j; open.__loan = false; toast(stg === 'preapproved' ? 'Pre-approval saved · their offers fill in from it' : 'Loan progress saved'); load();
+      }).catch(function(){ b.disabled = false; b.textContent = 'Save'; });
+      return; }
     if(a === 'fopen'){ openFile(b.getAttribute('data-b'), b.getAttribute('data-p')); return; }
     if(a === 'fdel'){ if(!confirm('Remove ' + b.getAttribute('data-n') + ' from this contact?')) return; rpc('jag_contact_file_remove', { p_id: +b.getAttribute('data-id') }).then(function(j){ if(j && j.ok) toast('File removed'); loadFiles(uid); }); return; }
   }
   function onChange(e){
     var t = e.target;
+    if(t.id === 'ln-stage'){ var lp0 = document.querySelector('.lpa'); if(lp0) lp0.hidden = t.value !== 'preapproved'; return; }
     if(t.matches('[data-a="fup"]')){ upload(t.files); t.value = ''; return; }
     if(t.matches('[data-a="tdone"]')){ rpc('jag_contact_task', { p: { id: +t.getAttribute('data-id'), op: t.checked ? 'done' : 'reopen' } }).then(function(){ load(); }); return; }
     var f = t.getAttribute('data-f'); if(!f) return;

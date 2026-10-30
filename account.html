@@ -1014,7 +1014,7 @@ document.addEventListener('click',function(e){
   var g=e.target.closest('[data-guide]'); if(g){ openGuide(g.getAttribute('data-guide')); return; }
   var sp=e.target.closest('#steps [data-step]'); if(sp){ planStep=sp.getAttribute('data-step'); paintPlan(); }
 });
-function loadPlan(){ return A.rpc('jag_my_plan').then(function(j){ D.plan=(j&&j.ok)?j:{app:null}; }).catch(function(){ D.plan={app:null}; }).then(paintPlan); }
+function loadPlan(){ return A.rpc('jag_my_plan').then(function(j){ D.plan=(j&&j.ok)?j:{app:null}; }).catch(function(){ D.plan={app:null}; }).then(function(){ paintPlan(); if(D.offers) paintOffers(); }); }
 
 /* ---------- tabs ---------- */
 /* hashes from before the redesign (#searches, #alerts, #settings, #offers…) still land in the right place */
@@ -1181,7 +1181,8 @@ function money(n){ return '$'+Math.round(Number(n)||0).toLocaleString('en-US'); 
 function loadOffers(){
   return A.rpc('jag_my_offers').then(function(j){ D.offers=(j&&j.offers)||[]; D.proof=(j&&j.proof)||[]; }).catch(function(){ D.offers=D.offers||[]; D.proof=D.proof||[]; }).then(paintOffers);
 }
-function verifiedKind(){ var v=(D.proof||[]).filter(function(p){ return p.status==='verified'; }); return v.length?v[0].kind:null; }
+function verifiedKind(){ var v=(D.proof||[]).filter(function(p){ return p.status==='verified'; }); if(v.length) return v[0].kind;
+  var pa=D.plan&&D.plan.preapproved; return pa&&!pa.expired?(pa.loan_type==='cash'?'pof':'preapproval'):null; }   // the team marked them pre-approved
 function paintOffers(){
   var box=$('offers'), pb=$('proof'); if(!box) return;
   var ct=$('ct_offers'); if(ct) ct.textContent=D.offers&&D.offers.length?D.offers.length:'';

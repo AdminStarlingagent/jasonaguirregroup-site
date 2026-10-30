@@ -39,13 +39,23 @@
         user:{ id:(j.user||{}).id, email:(j.user||{}).email } };
     save();
   }
+  // keep every open tab on the same session (a refresh in one tab spends the old token for all)
+  window.addEventListener('storage',function(e){ if(e.key!==STORE) return; var was=!!S, n=null; try{ n=JSON.parse(e.newValue||'null'); }catch(x){} S=n; if(was!==!!S){ if(!S) profile=null; emit(); } });
   function emit(){ listeners.forEach(function(f){ try{ f(api.user()); }catch(e){} }); paintButtons(); }
   function refresh(){
     if(refreshing) return refreshing;
+    // another tab (or the installed app) may have refreshed already: the old refresh token is spent, so take the newer one
+    var disk=null; try{ disk=JSON.parse(localStorage.getItem(STORE)||'null'); }catch(e){}
+    if(disk&&disk.refresh_token&&S&&disk.refresh_token!==S.refresh_token){ S=disk; if(S.expires_at-Date.now()>60000) return Promise.resolve(true); }
     if(!S||!S.refresh_token) return Promise.resolve(false);
+    var used=S.refresh_token;
     refreshing=fetch(URL_+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.refresh_token})})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
-      .then(function(x){ refreshing=null; if(x.ok&&x.j.access_token){ setSession(x.j); return true; } if(x.j&&(x.j.error_code==='refresh_token_not_found'||x.j.error_code==='session_not_found'||x.j.code===400)){ S=null; profile=null; save(); emit(); } return false; })
+      .then(function(x){ refreshing=null; if(x.ok&&x.j.access_token){ setSession(x.j); return true; } if(x.j&&(x.j.error_code==='refresh_token_not_found'||x.j.error_code==='session_not_found'||x.j.error_code==='refresh_token_already_used'||x.j.code===400)){
+          // only sign out if no other tab saved a newer session meanwhile
+          var d2=null; try{ d2=JSON.parse(localStorage.getItem(STORE)||'null'); }catch(e){}
+          if(d2&&d2.refresh_token&&d2.refresh_token!==used){ S=d2; return true; }
+          S=null; profile=null; save(); emit(); } return false; })
       .catch(function(){ refreshing=null; return false; });
     return refreshing;
   }
@@ -278,7 +288,25 @@
     if(!el) return; ensureModal(); el.classList.add('ja-acct'); mounts.push(el); paintButtons();
   }
 
+  // Pre-approved? (team-set pre-approval or loan app marked approved). Cached per account for 10 minutes, so pages can
+  // stop asking pre-approved clients to apply / get an evaluation. preApproved() is the cached answer (null = not known yet).
+  var loanP=null;
+  function loanKey(){ return S&&S.user?'jag_pa_'+S.user.id:''; }
+  function preApproved(){ var k=loanKey(); if(!k) return false; try{ var v=JSON.parse(sessionStorage.getItem(k)||'null'); return v&&Date.now()-v.at<6e5?v.pa:null; }catch(e){ return null; } }
+  function loanStatus(){
+    var k=loanKey(); if(!k) return Promise.resolve(null);
+    var c=preApproved(); if(c!==null) return Promise.resolve(c);
+    if(loanP) return loanP;
+    loanP=rpc('jag_my_plan').then(function(j){
+      var pa=j&&j.ok&&j.preapproved&&!j.preapproved.expired?j.preapproved:false;
+      try{ sessionStorage.setItem(k,JSON.stringify({at:Date.now(),pa:pa})); }catch(e){}
+      loanP=null; if(pa) document.documentElement.classList.add('jag-pa'); return pa;
+    }).catch(function(){ loanP=null; return null; });
+    return loanP;
+  }
+  if(S&&S.user&&preApproved()) document.documentElement.classList.add('jag-pa');
   var api={
+    preApproved:preApproved, loanStatus:loanStatus,
     user:function(){ return S?{id:S.user.id,email:S.user.email}:null; },
     profile:function(){ return profile; },
     onChange:function(f){ listeners.push(f); },

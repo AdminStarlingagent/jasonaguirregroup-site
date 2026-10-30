@@ -40,13 +40,13 @@ h1{font-size:clamp(30px,6vw,44px);line-height:1.02;letter-spacing:-.045em;margin
 .lead{font-size:15px;color:#45444c;margin:0 0 22px;max-width:560px}
 /* the property card: big price behind, photo, floating details */
 .home{position:relative;margin:0 0 26px}
-.home .bg{font-size:clamp(64px,15vw,128px);font-weight:800;letter-spacing:-.065em;line-height:.85;color:#efedea;white-space:nowrap;overflow:hidden;user-select:none}
-.home .ph{margin:-28px 0 0 22%;height:210px;border-radius:24px;background:var(--soft) center/cover no-repeat;position:relative;z-index:1}
+.home .bg{display:none}
+.home .ph{margin:0 0 0 22%;height:210px;border-radius:24px;background:var(--soft) center/cover no-repeat;position:relative;z-index:1}
 .home .cd{position:relative;z-index:2;margin:-70px 0 0;width:min(360px,92%);background:#fff;border-radius:20px;padding:16px 18px;box-shadow:0 18px 44px rgba(23,22,28,.16)}
 .home .cd b{display:block;font-size:30px;letter-spacing:-.04em;line-height:1}
 .home .cd span{display:block;font-size:13px;color:#45444c;margin-top:6px}
 .home .cd small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-top:8px}
-.home.noimg .ph{display:none}.home.noimg .cd{margin-top:-24px}
+.home.noimg .ph{display:none}.home.noimg .cd{margin-top:0}
 /* fields */
 .f{margin:0 0 18px}
 .f label,.lbl{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
@@ -58,6 +58,13 @@ h1{font-size:clamp(30px,6vw,44px);line-height:1.02;letter-spacing:-.045em;margin
 .f .err{display:none;color:var(--red);font-size:12.5px;font-weight:700;margin-top:6px}
 .f.bad .err{display:block}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.two>*{min-width:0}
+.f input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left;line-height:50px}
+.f input[type=date]::-webkit-date-and-time-value{text-align:left}
+.pa{display:flex;gap:12px;align-items:flex-start;background:#e9f5ec;color:#1a5c31;border-radius:16px;padding:14px 16px;margin:0 0 18px;font-size:14px;line-height:1.45}
+.pa b{display:block;font-size:15px;color:#123f22}
+.pa .ic{flex:none;width:26px;height:26px;border-radius:50%;background:#1a5c31;color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+.pa.warn{background:#fff4e5;color:#7a4a00}.pa.warn b{color:#5c3700}.pa.warn .ic{background:#b86e00}
 .money{position:relative}
 .money::before{content:"$";position:absolute;left:16px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted)}
 .money input{padding-left:30px}
@@ -77,6 +84,7 @@ h1{font-size:clamp(30px,6vw,44px);line-height:1.02;letter-spacing:-.045em;margin
 .opt[aria-pressed="true"] i{background:var(--red);box-shadow:inset 0 0 0 4px #fff}
 .ack{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--soft);font-size:14px;cursor:pointer}
 .ack input{width:22px;height:22px;flex:none;accent-color:var(--red);margin-top:1px}
+.f label.ack{display:flex;margin:0;font-size:14px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink);line-height:1.45}
 .panel{background:var(--soft);border-radius:22px;padding:20px;margin:0 0 18px}
 .tip{border:2px dashed #d9d6d1;border-radius:18px;padding:16px;margin:14px 0 0;font-size:14px;color:#2c2b31}
 .tip b{display:block;margin-bottom:6px}
@@ -102,7 +110,7 @@ h1{font-size:clamp(30px,6vw,44px);line-height:1.02;letter-spacing:-.045em;margin
 .actions .l{border:0;background:none;color:var(--red);min-height:44px}
 footer{max-width:760px;margin:0 auto;padding:18px 18px 130px;font-size:11.5px;color:var(--muted);line-height:1.7;border-top:1px solid var(--line)}
 footer a{color:var(--muted)}
-@media(max-width:560px){.two{grid-template-columns:minmax(0,1fr)}.home .ph{margin-left:0;height:180px}.home .cd{margin:-56px auto 0}}
+@media(max-width:560px){.two{grid-template-columns:minmax(0,1fr)}.home .ph{margin-left:0;height:180px}.home .cd{margin:-56px auto 0}.home.noimg .cd{margin-top:0}}
 </style>
 <script src="jag-track.js?v=1"></script>
 </head>
@@ -162,7 +170,11 @@ var T={
   pv_ok:'Su pre-aprobación ya está verificada ✓',pof_ok:'Su comprobante de fondos ya está verificado ✓',pf_wait:'Su documento está en revisión.',
   facts:'Lo básico de esta casa',f_list:'Precio de lista',f_cut:'bajó ',f_dom:'Días en el mercado',f_year:'Año de construcción',f_hoa:'HOA (cuota)',f_hoa_no:'No tiene HOA',
   f_tax:'Impuestos de propiedad',f_mud:'Distrito MUD / PID',f_mud_y:'Sí: hay un impuesto extra del distrito',f_lot:'Terreno',f_sub:'Subdivisión',f_yr:' al año',f_mo:' al mes',f_q:' por trimestre',f_acres:' acres',
-  dom_tip:function(d,c){ return 'En el mercado '+d+' días'+(c?' · ya bajó '+c:'')+'.'; }},
+  dom_tip:function(d,c){ return 'En el mercado '+d+' días'+(c?' · ya bajó '+c:'')+'.'; },
+  pa_h:function(a){ return 'Ya está pre-aprobado'+(a?' hasta '+a:''); },pa_p:function(x){ return 'Llenamos esto con su pre-aprobación'+(x?' ('+x+')':'')+'. Cámbielo solo si algo cambió.'; },
+  pa_cap:function(a){ return 'Su pre-aprobación es hasta '+a+'.'; },
+  pa_over_h:'Esta oferta es más alta que su pre-aprobación',pa_over:function(a){ return 'Está pre-aprobado hasta '+a+'. Hable con su agente o su prestamista antes de enviarla, o baje el precio.'; },
+  pa_exp:'Su pre-aprobación ya venció. Pídale a su prestamista una carta nueva.'},
  en:{back:'Back',next:'Continue',send:'Send my offer',sending:'Sending…',step:'Step ',of:' of ',
   s0k:'Your offer',s0h:"Let's write your offer.",s0p:'It takes about 3 minutes. You choose the price and terms; the JAG team will finish your offer to send.',
   addr:'Home address',addr_ph:'Street, city, ZIP',list:'List price',need:'Enter the home address.',
@@ -192,7 +204,11 @@ var T={
   pv_ok:'Your pre-approval is already verified ✓',pof_ok:'Your proof of funds is already verified ✓',pf_wait:'Your document is being reviewed.',
   facts:'The basics of this home',f_list:'List price',f_cut:'down ',f_dom:'Days on market',f_year:'Year built',f_hoa:'HOA dues',f_hoa_no:'No HOA',
   f_tax:'Property taxes',f_mud:'MUD / PID district',f_mud_y:'Yes: there is an extra district tax',f_lot:'Lot',f_sub:'Subdivision',f_yr:' a year',f_mo:' a month',f_q:' a quarter',f_acres:' acres',
-  dom_tip:function(d,c){ return 'On the market '+d+' days'+(c?' · already cut '+c:'')+'.'; }}
+  dom_tip:function(d,c){ return 'On the market '+d+' days'+(c?' · already cut '+c:'')+'.'; },
+  pa_h:function(a){ return "You're pre-approved"+(a?' up to '+a:''); },pa_p:function(x){ return 'We filled this in from your pre-approval'+(x?' ('+x+')':'')+'. Change it only if something changed.'; },
+  pa_cap:function(a){ return 'Your pre-approval is up to '+a+'.'; },
+  pa_over_h:'This offer is above your pre-approval',pa_over:function(a){ return 'You are pre-approved up to '+a+'. Talk to your agent or lender before sending it, or lower the price.'; },
+  pa_exp:'Your pre-approval has expired. Ask your lender for a new letter.'}
 };
 function t(k){ return T[lang][k]; }
 function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
@@ -246,6 +262,15 @@ function factsHtml(){
   if(!rows.length) return '';
   return '<div class="lbl" style="margin-top:4px">'+t('facts')+'</div><div class="rev" id="facts">'+rows.map(function(r){ return '<div><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>'; }).join('')+'</div>';
 }
+function paAmt(){ var pa=P&&P.preapproved; return pa&&num(pa.amount)>0?num(pa.amount):0; }
+function paOver(){ var a=paAmt(); return a&&num(D.offer_price)>a; }
+function paBox(){
+  var pa=P&&P.preapproved; if(!pa) return '';
+  var LN={fha:'FHA',conventional:lang==='es'?'Convencional':'Conventional',va:'VA',usda:'USDA',itin:'ITIN'};
+  var x=[LN[pa.loan_type]||'',pa.lender||''].filter(Boolean).join(' · ');
+  return '<div class="pa"><span class="ic" aria-hidden="true">✓</span><div><b>'+esc(t('pa_h')(paAmt()?money(paAmt()):''))+'</b>'+esc(t('pa_p')(x))+'</div></div>';
+}
+function overBox(){ return paOver()?'<div class="pa warn" id="paover"><span class="ic" aria-hidden="true">!</span><div><b>'+esc(t('pa_over_h'))+'</b>'+esc(t('pa_over')(money(paAmt())))+'</div></div>':''; }
 function note(txt){ return '<p class="hint" style="font-size:13px;color:var(--muted);margin:-8px 0 18px">'+esc(txt)+'</p>'; }
 function opt(name,val,label,sub){ return '<button type="button" class="opt" data-o="'+name+'" data-v="'+val+'" aria-pressed="'+(D[name]===val)+'"><i></i><span>'+label+(sub?'<small>'+sub+'</small>':'')+'</span></button>'; }
 function field(id,label,html,hint,err){ return '<div class="f" id="f_'+id+'"><label for="'+id+'">'+label+'</label>'+html+(hint?'<div class="hint">'+hint+'</div>':'')+(err?'<div class="err">'+err+'</div>':'')+'</div>'; }
@@ -265,11 +290,12 @@ function render(){
         (H&&H.daysOnMarket!=null?'<div class="ratio">'+esc(t('dom_tip')(H.daysOnMarket,num(H.originalPrice)>num(H.listPrice)&&num(H.listPrice)?money(num(H.originalPrice)-num(H.listPrice)):''))+'</div>':''),'',t('bad_price'))+
       (D.list_price?'<div class="chips sm" style="margin:-6px 0 22px">'+[[1,t('c_list')],[0.98,'−2%'],[0.95,'−5%'],[1.01,'+1%']].map(function(c){
         var v=Math.round(num(D.list_price)*c[0]/500)*500; return '<button type="button" class="chip" data-price="'+v+'" aria-pressed="'+(num(D.offer_price)===v)+'">'+c[1]+'</button>'; }).join('')+'</div>':'')+
+      (paAmt()?'<div id="pawrap">'+(paOver()?overBox():'<p class="ratio" style="margin:-8px 0 18px">'+esc(t('pa_cap')(money(paAmt())))+'</p>')+'</div>':'')+
       field('earnest',t('earnest'),'<div class="money"><input id="earnest" inputmode="numeric" value="'+esc(D.earnest?Number(num(D.earnest)).toLocaleString('en-US'):'')+'"></div>',t('earnest_h'));
   }else if(step===2){
     var cash=D.financing==='cash';
-    h=prog()+'<h1>'+t('s2h')+'</h1>'+(filled.fin?note(t('from_acct2')):'')+
-      (P&&P.proof_verified?'<p class="tip" style="margin:0 0 18px"><b style="display:inline">'+(P.proof_verified==='pof'?t('pof_ok'):t('pv_ok'))+'</b></p>':P&&P.proof_pending?note(t('pf_wait')):'')+
+    h=prog()+'<h1>'+t('s2h')+'</h1>'+(P&&P.preapproved?paBox():(filled.fin?note(t('from_acct2')):''))+
+      (P&&P.preapproved?'':P&&P.proof_verified?'<p class="tip" style="margin:0 0 18px"><b style="display:inline">'+(P.proof_verified==='pof'?t('pof_ok'):t('pv_ok'))+'</b></p>':P&&P.proof_pending?note(t('pf_wait')):'')+
       '<div class="f" id="f_financing"><div class="opts">'+opt('financing','financed',t('fin'),t('fin_s'))+opt('financing','cash',t('cash'),t('cash_s'))+'</div><div class="err">'+t('pick')+'</div></div>';
     if(D.financing==='financed') h+='<div class="f"><span class="lbl">'+t('loan')+'</span><div class="chips">'+['fha','conv','va','itin','dk'].map(function(k){
         return '<button type="button" class="chip" data-loan="'+k+'" aria-pressed="'+(D.loan_type===k)+'">'+T[lang].ln[k]+'</button>'; }).join('')+'</div></div>'+
@@ -287,7 +313,7 @@ function render(){
   }else if(step===4){
     var so=strengthObj(), st=JagOffer.strength(so), cmp=JagOffer.compare(so), L=JagOffer.text();
     var proofTxt={yes:t('p_yes'),working:t('p_work'),no:t('p_no')}[D.proof]||'—';
-    h=prog()+'<h1>'+t('s4h')+'</h1>'+homeCard()+
+    h=prog()+'<h1>'+t('s4h')+'</h1>'+overBox()+homeCard()+
       '<div class="panel">'+JagOffer.meter(st.level,{big:true})+
       (D.proof!=='yes'&&cmp.better?'<div class="tip"><b>'+t('tip_h')+'</b>'+(D.financing==='cash'?t('tip_f')(L.lv[cmp.with.level]):t('tip_p')(L.lv[cmp.with.level]))+
         '<div style="margin-top:10px">'+JagOffer.meter(cmp.with.level,{title:cmp.label})+'</div></div>':'')+
@@ -332,7 +358,8 @@ function wire(){
       D[k]=el.value; var fg=el.closest('.f'); if(fg) fg.classList.remove('bad');
       if(k==='offer_price'||k==='earnest'||k==='list_price'){ var v=num(el.value); if(k!=='list_price'){ el.value=v?v.toLocaleString('en-US'):''; } D[k]=v||''; }
       if(k==='offer_price'&&$('ratio')){ var r=num(D.list_price)?num(D.offer_price)/num(D.list_price):0; $('ratio').innerHTML=r?'<b>'+(r*100).toFixed(1)+'%</b>'+t('of_list'):'';
-        m.querySelectorAll('[data-price]').forEach(function(b){ b.setAttribute('aria-pressed',String(+b.dataset.price===num(D.offer_price))); }); }
+        m.querySelectorAll('[data-price]').forEach(function(b){ b.setAttribute('aria-pressed',String(+b.dataset.price===num(D.offer_price))); });
+        if($('pawrap')) $('pawrap').innerHTML=paOver()?overBox():'<p class="ratio" style="margin:-8px 0 18px">'+esc(t('pa_cap')(money(paAmt())))+'</p>'; }
     });
   });
   var ack=$('ack'); if(ack) ack.onchange=function(){ D.ack=ack.checked; $('f_ack').classList.remove('bad'); };
@@ -411,6 +438,9 @@ function applyPrefill(p){
   if(!D.email&&p.email){ D.email=String(p.email).toLowerCase(); c=true; }
   if(!D.phone&&p.phone){ var d=String(p.phone).replace(/\D/g,'').replace(/^1(?=\d{10}$)/,''); D.phone=d.length===10?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):p.phone; c=true; }
   if(!D.co_buyer&&p.co_buyer){ D.co_buyer=p.co_buyer; c=true; }
+  if(p.preapproved&&step<2){ D.financing=p.financing||'financed'; D.loan_type=''; D.down_payment=''; D.lender=''; D.proof=''; f=true;
+    D.contingencies=D.contingencies.filter(function(c){ return D.financing==='cash'?c!=='fin':true; });
+    if(D.financing==='financed'&&D.contingencies.indexOf('fin')<0) D.contingencies.push('fin'); }
   if(!D.financing){
     var fin=p.financing||(p.proof_verified==='pof'?'cash':p.proof_verified==='preapproval'?'financed':'');
     if(fin){ D.financing=fin; f=true;
@@ -426,7 +456,7 @@ function applyPrefill(p){
     if(ok){ D.proof='yes'; f=true; } else if(p.proof_pending){ D.proof='working'; f=true; } else if(p.proof_last){ D.proof=p.proof_last; f=true; }
   }
   if(c) filled.contact=true; if(f) filled.fin=true;
-  if(step===2||step===5) rerender();
+  if(step===1||step===2||step===4||step===5) rerender();
 }
 if(window.JagAccount){
   JagAccount.mountButton($('acct'));

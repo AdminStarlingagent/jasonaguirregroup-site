@@ -219,7 +219,7 @@ var T={
   bd:'rec',ba:'ba',sqft:'pies²',est:'Pago est. ',mo:'/mes',new_:'Nueva',nc:'Construcción nueva',vid:'▶ Video',tour3d:'Ver tour virtual',
   listed:'Listado por: ',save:'Guardar',saved:'Guardada',share:'Compartir',details:'Detalles',sound:'Sonido',muted:'Silencio',photos:'Fotos',video:'Video',
   go_tour:'Agendar visita',go_det:'Ver casa',go_rent:'Pedir info',copied:'Enlace copiado',
-  ev_saved:'Casa guardada. ¿Quiere saber si puede comprarla?',ev_go:'Evaluación gratis',
+  ev_saved:'Casa guardada. ¿Quiere saber si puede comprarla?',ev_go:'Evaluación gratis',pa_saved:'Casa guardada ✓ Ya está pre-aprobado.',pa_go:'Hacer oferta',
   ev_big:'¿Le gustó alguna casa?',ev_p:'Vea si califica para comprar una como estas. Evaluación gratis de 3 minutos, sin revisar su crédito.',ev_btn:'Ver si califico',ev_fine:'Compradores con ITIN bienvenidos.',ev_skip:'Desliza para seguir viendo casas',
   loading:'Cargando casas…',none:'No encontramos casas con esos filtros.',change:'Cambiar búsqueda',fail:'No pudimos cargar las casas.',retry:'Intentar de nuevo',
   end:'Ya vio todas las casas de esta búsqueda.',all:'Ver la búsqueda completa',area_all:'Houston',
@@ -230,7 +230,7 @@ var T={
   bd:'bd',ba:'ba',sqft:'sqft',est:'Est. ',mo:'/mo',new_:'New',nc:'New construction',vid:'▶ Video',tour3d:'Open virtual tour',
   listed:'Listed by: ',save:'Save',saved:'Saved',share:'Share',details:'Details',sound:'Sound',muted:'Muted',photos:'Photos',video:'Video',
   go_tour:'Schedule a tour',go_det:'See home',go_rent:'Ask about it',copied:'Link copied',
-  ev_saved:'Home saved. Want to know if you can buy it?',ev_go:'Free evaluation',
+  ev_saved:'Home saved. Want to know if you can buy it?',ev_go:'Free evaluation',pa_saved:"Home saved ✓ You're pre-approved.",pa_go:'Make an offer',
   ev_big:'See a home you like?',ev_p:'Find out if you qualify to buy one like these. Free 3-minute evaluation, no credit check.',ev_btn:'See if I qualify',ev_fine:'ITIN buyers welcome.',ev_skip:'Swipe to keep watching homes',
   loading:'Loading homes…',none:'No homes match those filters.',change:'Change search',fail:'We could not load the homes.',retry:'Try again',
   end:'You have seen every home in this search.',all:'See the full search',area_all:'Houston',
@@ -363,7 +363,7 @@ function appendReels(from){
     el.className='reel'+(playable(l)?' vmode':''); el.setAttribute('data-i',i);
     el.setAttribute('aria-label',money(l.listPrice)+' — '+addr(l.address||{}));
     el.innerHTML=reelHtml(l,i); feed.appendChild(el); io.observe(el);
-    if((i+1)%EVERY===0&&i>2){ var e=document.createElement('section'); e.className='reel ev'; e.innerHTML=evHtml(); feed.appendChild(e); io.observe(e); }
+    if((i+1)%EVERY===0&&i>2&&!PA()){ var e=document.createElement('section'); e.className='reel ev'; e.innerHTML=evHtml(); feed.appendChild(e); io.observe(e); }
   }
   if(!S.items.length){ showMsg('none'); return; }
   if(S.done&&!feed.querySelector('.msg.end')){
@@ -482,7 +482,7 @@ function addFav(el,l,burst){
   favs[l.mlsNumber]=1; storeFavs(); paintFav(l.mlsNumber); logEvent(l.mlsNumber,'save'); track('reel_save',{mls:l.mlsNumber});
   var b=el.querySelector('.fav'); if(b){ b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
   if(burst){ var h=document.createElement('div'); h.className='burst'; h.innerHTML=HEART; el.appendChild(h); setTimeout(function(){ h.remove(); },900); }
-  toast(t('ev_saved'),t('ev_go'),evalUrl(l));
+  if(PA()) toast(t('pa_saved'),t('pa_go'),offerUrl(l)); else toast(t('ev_saved'),t('ev_go'),evalUrl(l));
   var A=window.JagAccount; if(A&&A.user()) A.addFavorite(l).catch(function(){});
 }
 /* saving needs an account (like the big portals) so we can alert on price and status changes */
@@ -496,6 +496,14 @@ function syncFavs(){
   var A=window.JagAccount; if(!A) return;
   if(!A.user()){ favs={}; storeFavs(); paintFav(); return; }
   A.favorites().then(function(rows){ var s={}; (rows||[]).forEach(function(r){ s[r.mls]=1; }); Object.keys(favs).forEach(function(k){ s[k]=1; }); favs=s; storeFavs(); paintFav(); }).catch(function(){});
+}
+// pre-approved clients get "make an offer" instead of the free evaluation
+function PA(){ return window.JagAccount&&JagAccount.preApproved?JagAccount.preApproved():false; }
+function offerUrl(l){
+  var a=l.address||{}, d=l.details||{}, u=new URLSearchParams(); if(lang==='es') u.set('lang','es');
+  u.set('mls',l.mlsNumber); u.set('price',Math.round(l.listPrice||0)); u.set('addr',addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip);
+  if(l.images&&l.images[0]) u.set('ph',l.images[0]); if(d.numBedrooms!=null) u.set('bd',d.numBedrooms); if(d.numBathrooms!=null) u.set('ba',d.numBathrooms); if(d.sqft) u.set('sf',d.sqft);
+  return 'offer.html?'+u.toString();
 }
 function evalUrl(l){
   var u=new URLSearchParams(); if(lang==='es') u.set('lang','es'); u.set('src','reels');
@@ -590,7 +598,8 @@ function firstHint(){
 /* ---------- go ---------- */
 io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting&&e.intersectionRatio>=.6) activate(e.target); }); },{root:feed,threshold:[.6]});
 document.addEventListener('visibilitychange',function(){ if(!active) return; if(document.hidden){ active.classList.add('paused'); ytCmd(active,'pauseVideo'); } else { active.classList.remove('paused'); ytCmd(active,'playVideo'); } });
-if(window.JagAccount){ if(JagAccount.onChange) JagAccount.onChange(syncFavs); if(JagAccount.user()) syncFavs(); }
+if(window.JagAccount){ if(JagAccount.onChange) JagAccount.onChange(syncFavs); if(JagAccount.user()) syncFavs();
+  var paChk=function(){ if(JagAccount.user()&&JagAccount.loanStatus) JagAccount.loanStatus(); }; paChk(); if(JagAccount.onChange) JagAccount.onChange(paChk); }
 applyLang(false); showMsg('loading'); loadStart(); track('reels_open');
 </script>
 </body>
