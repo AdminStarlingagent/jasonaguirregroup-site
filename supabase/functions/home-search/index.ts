@@ -38,6 +38,8 @@ const FIELDS = [
   "details.virtualTourUrl", "details.alternateURLVideoLink",
   // upcoming open houses ("Casa abierta: vie 12–5pm" on the card)
   "openHouse",
+  // status: for sale / coming soon / under contract (HAR "pending", "option pending", "pending continue to show") / sold
+  "status", "lastStatus", "soldPrice", "soldDate", "raw.MlsStatus",
 ].join(",");
 
 // Extra facts for a single listing page (?detail=1 with one mlsNumber).
@@ -50,10 +52,16 @@ const FIELDS_DETAIL = [
   "raw.AssociationYN", "raw.AssociationName", "raw.AssociationPhone", "raw.AssociationFee", "raw.AssociationFeeFrequency",
   "raw.ListAgentFullName", "raw.ListAgentEmail", "raw.ListAgentPreferredPhone", "raw.ListAgentStateLicense",
   "raw.ListOfficeName", "raw.ListOfficePhone", "raw.Disclosures", "raw.CountyOrParish", "raw.SubdivisionName",
-  "openHouse",
+  "openHouse", "soldPrice", "soldDate", "raw.MlsStatus",
 ].join(",");
 
 const MAX_PER_PAGE = 24;
+
+// Sold prices: Texas is a non-disclosure state. Off until Jason confirms HAR's IDX rules allow showing them;
+// sold homes still show "Vendida" + the date + the list price. Flip to true to show the sold price.
+const SHOW_SOLD_PRICE = false;
+// listing status choices from the page (?st=): for sale (default), for sale + under contract, under contract only, sold
+const ST = new Set(["active", "all", "pending", "sold"]);
 
 function cors(origin: string | null): Record<string, string> {
   const h: Record<string, string> = { "Vary": "Origin" };
@@ -111,8 +119,18 @@ function clean(l: any, detail = false) {
   delete l.permissions;
   l.video = videoOf(l.details);
   if (!detail && l.details) { delete l.details.virtualTourUrl; delete l.details.alternateURLVideoLink; }
-  // only the two raw MLS facts we show: new construction + builder
+  // only the raw MLS facts we show: new construction, builder, and the kind of pending
   const r = l.raw || {};
+  // status: canceled / expired / withdrawn listings are never shown
+  const ls = l.lastStatus;
+  if (l.status === "U" && ls !== "Sc" && ls !== "Sld") return null;
+  l.state = l.status === "A" ? (ls === "Cs" ? "soon" : "active") : ls === "Sld" ? "sold" : "pending";
+  if (l.state === "pending") {
+    const ms = String(r.MlsStatus || "").toLowerCase();
+    l.pendingKind = ms.includes("option") ? "option" : ms.includes("continue") ? "show" : "pending";
+  }
+  if (l.state !== "sold") { delete l.soldPrice; delete l.soldDate; }   // pending rows carry a contract date there
+  else if (!SHOW_SOLD_PRICE) delete l.soldPrice;
   l.newConstruction = r.NewConstructionYN === true;
   l.builder = typeof r.BuilderName === "string" && r.BuilderName.trim() ? r.BuilderName.trim().slice(0, 80) : null;
   if ("ListAgentFullName" in r || "AssociationYN" in r || "CountyOrParish" in r) {
@@ -163,9 +181,21 @@ Deno.serve(async (req: Request) => {
   }
   // newc=1: only homes the listing agent marked as new construction on HAR (built or being built by a builder)
   if (inP.get("newc") === "1") out.set("raw.NewConstructionYN", "true");
-  // Fixed server-side: HAR only, active residential/condo listings with photos, capped page size.
+  // Fixed server-side: HAR only, residential/condo listings with photos, capped page size.
   out.set("boardId", BOARD_ID);
-  out.set("status", "A");
+  // listing status (active unless the page asks): never canceled / expired / withdrawn
+  out.delete("status"); out.delete("lastStatus");
+  const st = ST.has(inP.get("st") || "") ? inP.get("st")! : "active";
+  const isSale = (inP.get("type") || "sale") === "sale";
+  if (inP.getAll("mlsNumber").length) { out.append("status", "A"); out.append("status", "U"); }   // a shared link opens sold / pending homes too
+  else if (!isSale || st === "active") out.set("status", "A");
+  else if (st === "all") { out.append("status", "A"); out.append("status", "U"); for (const v of ["New", "Cs", "Sc"]) out.append("lastStatus", v); }
+  else if (st === "pending") { out.set("status", "U"); out.set("lastStatus", "Sc"); }
+  else {   // sold in the last 30 / 90 / 180 / 365 days
+    const days = [30, 90, 180, 365].includes(+(inP.get("soldDays") || "")) ? +(inP.get("soldDays") || "") : 180;
+    out.set("status", "U"); out.set("lastStatus", "Sld");
+    out.set("minSoldDate", new Date(Date.now() - days * 864e5).toISOString().slice(0, 10));
+  }
   out.delete("class");
   for (const c of CLASSES) out.append("class", c);
   out.set("hasImages", "true");

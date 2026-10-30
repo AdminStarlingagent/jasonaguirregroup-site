@@ -467,6 +467,18 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 .c .sp em{display:inline!important;font-style:normal;color:var(--ink)!important}
 .c .ad{font-size:14.5px!important;margin-top:2px!important}
 .c .br{font-size:12.5px!important;margin-top:4px!important}
+/* listing status on cards, pins and the home page */
+.c .tag.sold{background:var(--buy)!important;color:#fff!important}
+.c .tag.pend{background:#f0a400!important;color:#1b1400!important}
+.c .tag.soon{background:var(--loan)!important;color:#fff!important}
+.pin.sold{background:#fff;color:#6b6873;border-color:#9a98a0}
+.pin.pend{background:#fff;color:#a36d00;border-color:#f0a400}
+.stban{border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;font-size:13.5px;line-height:1.4}
+.stban b{font-size:15px}
+.stban.sold{background:var(--buy-t);color:var(--buy-d)}
+.stban.pend{background:#fff4d6;color:#7a5200}
+.stban a{color:inherit;font-weight:800;margin-top:2px}
+.sheet.sold [data-f="tour"],.sheet.sold [data-f="offer"],.sheet.sold #sec-tour,.sheet.sold .stg-est,.sheet.sold .stg-ev{display:none!important}
 /* filter page */
 .fs{position:fixed;inset:0;z-index:9995;background:rgba(23,22,28,0);visibility:hidden;transition:background .28s ease,visibility 0s linear .34s}
 .fs.on{background:rgba(23,22,28,.45);visibility:visible;transition:background .28s ease}
@@ -673,6 +685,10 @@ var T={
   fs_more:'Más opciones',c_open_l:'Solo casas abiertas',c_open_h:'Con casa abierta (open house) en los próximos días',c_newc_h:'Recién construidas o en construcción',
   fs_sqft:'Tamaño (pies²)',fs_lot:'Terreno',fs_year:'Año de construcción',fs_gar:'Garaje',fs_kw:'Palabras clave',fs_kw_ph:'Alberca, patio grande, MLS #…',fs_kw_h:'Buscamos estas palabras en la descripción de la casa.',
   fs_see:function(n){ return n===0?'Sin casas: cambie los filtros':'Ver '+num(n)+(n===1?' casa':' casas'); },fs_busy:'Buscando…',fs_any:'Cualquiera',fs_min:'Mínimo',fs_max:'Máximo',fs_all:'Todas',
+  t_sold:'Vendidas',fs_status:'Estado del listado',st_active:'Solo en venta',st_all:'En venta y bajo contrato',st_pending:'Solo bajo contrato',st_active_h:'Casas disponibles hoy',st_all_h:'Incluye casas con oferta aceptada (pendientes)',st_pending_h:'Con oferta aceptada: pendiente u opción pendiente',
+  fs_sold:'Vendidas en los últimos',sd_90:'3 meses',sd_180:'6 meses',sd_365:'12 meses',c_all:'+ bajo contrato',c_pend:'Solo bajo contrato',c_sold:'Vendidas',
+  tag_sold:'Vendida ',tag_pend:'Bajo contrato',tag_opt:'Opción pendiente',tag_show:'Pendiente · se sigue mostrando',tag_soon:'Próximamente',lp:'Precio de lista',soldp:'Vendida',ttl_sold:'Casas vendidas',ttl_pend:'Casas bajo contrato',ttl_all:'Casas en venta y bajo contrato',
+  sold_h:'Esta casa ya se vendió',sold_p:'Vendida el {d}. ¿Busca una parecida? Le mandamos casas similares en esta zona.',sold_btn:'Ver casas en venta cerca',pend_h:'Esta casa tiene una oferta aceptada',pend_p:'Aún puede caerse. Pregúntenos si se puede ver o hacer una oferta de respaldo.',
   k_all:'Todas',k_house:'Casas',k_town:'Townhomes',k_condo:'Condos',c_open:'Casa abierta',c_built:'Construida',c_gar:'garaje',c_clear:'Borrar todo',oh:'Casa abierta: ',ac:' acre',acs:' acres',
   kind:'Tipo de casa',h_kind:'Tipo de propiedad',newc:'Construcción nueva',nc_tag:'Construcción nueva',f_builder:'Constructora',ss_newc:'construcción nueva',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
   apply:'Aplicar',save:'Guardar búsqueda',ss_saved:'Búsqueda guardada. Le avisaremos cuando salgan casas nuevas.',ss_go:'Ver mis búsquedas',ss_err:'No pudimos guardar la búsqueda. Intente de nuevo.',ss_map:'Área del mapa',ss_upto:'hasta ',ss_from:'desde ',ss_bd:'+ rec',ss_ba:'+ ba',mapnote:'Mostrando casas en esta zona del mapa',
@@ -723,6 +739,10 @@ var T={
   fs_more:'More options',c_open_l:'Open houses only',c_open_h:'Has an open house in the next few days',c_newc_h:'Newly built or being built',
   fs_sqft:'Size (sqft)',fs_lot:'Lot size',fs_year:'Year built',fs_gar:'Garage',fs_kw:'Keywords',fs_kw_ph:'Pool, big yard, MLS #…',fs_kw_h:'We look for these words in the home\'s description.',
   fs_see:function(n){ return n===0?'No homes: change the filters':'See '+num(n)+(n===1?' home':' homes'); },fs_busy:'Searching…',fs_any:'Any',fs_min:'Min',fs_max:'Max',fs_all:'All',
+  t_sold:'Sold',fs_status:'Listing status',st_active:'For sale only',st_all:'For sale + under contract',st_pending:'Under contract only',st_active_h:'Homes available today',st_all_h:'Includes homes with an accepted offer (pending)',st_pending_h:'Accepted offer: pending or option pending',
+  fs_sold:'Sold in the last',sd_90:'3 months',sd_180:'6 months',sd_365:'12 months',c_all:'+ under contract',c_pend:'Under contract only',c_sold:'Sold',
+  tag_sold:'Sold ',tag_pend:'Under contract',tag_opt:'Option pending',tag_show:'Pending · still showing',tag_soon:'Coming soon',lp:'List price',soldp:'Sold',ttl_sold:'Sold homes',ttl_pend:'Homes under contract',ttl_all:'Homes for sale + under contract',
+  sold_h:'This home has sold',sold_p:'Sold {d}. Looking for one like it? We can send you similar homes in this area.',sold_btn:'See homes for sale nearby',pend_h:'This home has an accepted offer',pend_p:'It can still fall through. Ask us about a showing or a backup offer.',
   k_all:'All',k_house:'Houses',k_town:'Townhomes',k_condo:'Condos',c_open:'Open house',c_built:'Built',c_gar:'garage',c_clear:'Clear all',oh:'Open: ',ac:' acre',acs:' acres',
   kind:'Home type',h_kind:'Home type',newc:'New construction',nc_tag:'New construction',f_builder:'Builder',ss_newc:'new construction',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
   apply:'Apply',save:'Save search',ss_saved:'Search saved. We will email you when new homes hit the market.',ss_go:'See my searches',ss_err:'We could not save the search. Please try again.',ss_map:'Map area',ss_upto:'up to ',ss_from:'from ',ss_bd:'+ bd',ss_ba:'+ ba',mapnote:'Showing homes in this map area',
@@ -806,7 +826,7 @@ function updated(l){
 }
 function img(p,cls){ return CDN+p+'?class='+cls; }
 
-var F={type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:[],newc:false,open:false,sqmin:'',sqmax:'',lotmin:'',lotmax:'',ymin:'',ymax:'',gar:'',kw:''};
+var F={type:'sale',st:'active',sd:'180',minp:'',maxp:'',beds:'',baths:'',kinds:[],newc:false,open:false,sqmin:'',sqmax:'',lotmin:'',lotmax:'',ymin:'',ymax:'',gar:'',kw:''};
 var state={page:1,pages:1,items:[],bounds:null,seen:{},qkind:{}}, map, layer, quiet=0;
 
 /* ---------- filters: one Filters button → a full filter page; active filters show as removable chips ---------- */
@@ -834,7 +854,9 @@ function addFilters(p,f){
   if(f.lotmin) p.set('minLotSizeSqft',Math.round(+f.lotmin*43560)); if(f.lotmax) p.set('maxLotSizeSqft',Math.round(+f.lotmax*43560));
   if(f.ymin) p.set('minYearBuilt',f.ymin); if(f.ymax) p.set('maxYearBuilt',f.ymax);
   if(f.gar) p.set('minGarageSpaces',f.gar);
-  if(f.open) p.set('minOpenHouseDate',todayCT());
+  var sold=sale&&f.st==='sold';
+  if(f.open&&!sold) p.set('minOpenHouseDate',todayCT());
+  if(sale&&f.st&&f.st!=='active'){ p.set('st',f.st); if(sold) p.set('soldDays',f.sd||'180'); }
   if(sale){
     var ks=f.kinds||[], res=ks.filter(function(k){ return STY[k]; }), oth=ks.filter(function(k){ return !STY[k]; });
     if(!ks.length||res.length) p.append('propertyType','Residential');
@@ -850,12 +872,15 @@ function rangeTxt(a,b,fmt){ return a&&b?fmt(a)+' – '+fmt(b):a?fmt(a)+'+':'≤ 
 function chipList(){
   var c=[], sale=F.type==='sale', sp=sale?short:money;
   if(!sale) c.push(['type',t('t_lease')]);
+  if(sale&&F.st==='sold') c.push(['st',t('c_sold')+' · '+t('sd_'+(F.sd||'180'))]);
+  else if(sale&&F.st==='all') c.push(['st',t('c_all')]);
+  else if(sale&&F.st==='pending') c.push(['st',t('c_pend')]);
   if(F.minp||F.maxp) c.push(['price',F.minp&&F.maxp?sp(+F.minp)+' – '+sp(+F.maxp):F.minp?sp(+F.minp)+'+':t('upto')+sp(+F.maxp)]);
   if(F.beds) c.push(['beds',F.beds+'+ '+t('bd')]);
   if(F.baths) c.push(['baths',F.baths+'+ '+t('ba')]);
   if(sale) F.kinds.forEach(function(k){ var x=TILES.filter(function(y){ return y[0]===k; })[0]; if(x) c.push(['kind:'+k,t(x[1])]); });
   if(F.newc&&sale) c.push(['newc',t('newc')]);
-  if(F.open) c.push(['open',t('c_open')]);
+  if(F.open&&F.st!=='sold') c.push(['open',t('c_open')]);
   if(F.sqmin||F.sqmax) c.push(['sq',rangeTxt(F.sqmin,F.sqmax,function(v){ return num(v); })+' '+t('sqft')]);
   if(F.lotmin||F.lotmax) c.push(['lot',rangeTxt(F.lotmin,F.lotmax,acres)]);
   if(F.ymin||F.ymax) c.push(['year',t('c_built')+' '+rangeTxt(F.ymin,F.ymax,String)]);
@@ -865,6 +890,7 @@ function chipList(){
 }
 function clearChip(k){
   if(k==='type'){ F.type='sale'; F.minp=F.maxp=''; }
+  else if(k==='st'){ F.st='active'; }
   else if(k==='price'){ F.minp=F.maxp=''; }
   else if(k.indexOf('kind:')===0){ var v=k.slice(5); F.kinds=F.kinds.filter(function(x){ return x!==v; }); }
   else if(RANGE[k]){ F[RANGE[k][0]]=F[RANGE[k][1]]=''; }
@@ -872,7 +898,7 @@ function clearChip(k){
   else if(k==='all'){ var q=F.type; F=blankF(); F.type='sale'; }
   else F[k]='';
 }
-function blankF(){ return {type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:[],newc:false,open:false,sqmin:'',sqmax:'',lotmin:'',lotmax:'',ymin:'',ymax:'',gar:'',kw:''}; }
+function blankF(){ return {type:'sale',st:'active',sd:'180',minp:'',maxp:'',beds:'',baths:'',kinds:[],newc:false,open:false,sqmin:'',sqmax:'',lotmin:'',lotmax:'',ymin:'',ymax:'',gar:'',kw:''}; }
 function paintBar(){
   var c=chipList(), n=c.length;
   $('fct').textContent=n||''; $('fbtn').classList.toggle('set',!!n);
@@ -901,13 +927,15 @@ function fsHtml(){
   return '<div class="fs-top"><button type="button" class="fs-back" id="fsBack" aria-label="'+t('back').replace(/^‹\s*/,'')+'"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h2 id="fsH">'+t('filters')+'</h2><button type="button" class="fs-reset" id="fsReset">'+t('reset')+'</button></div>'+
     '<div class="fs-body" id="fsBody">'+
       '<div class="fs-save"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span>'+t('fs_save_p')+'</span><button type="button" id="fsSave">'+t('save')+'</button></div>'+
-      '<div class="fs-seg" role="radiogroup"><button type="button" role="radio" data-type="sale" class="'+(sale?'on':'')+'" aria-checked="'+sale+'">'+t('t_sale')+'</button><button type="button" role="radio" data-type="lease" class="'+(sale?'':'on')+'" aria-checked="'+!sale+'">'+t('t_lease')+'</button></div>'+
+      '<div class="fs-seg" role="radiogroup">'+[['sale',sale&&D.st!=='sold','t_sale'],['lease',!sale,'t_lease'],['sold',sale&&D.st==='sold','t_sold']].map(function(x){ return '<button type="button" role="radio" data-type="'+x[0]+'" class="'+(x[1]?'on':'')+'" aria-checked="'+x[1]+'">'+t(x[2])+'</button>'; }).join('')+'</div>'+
+      (sale&&D.st!=='sold'?sec(t('fs_status'),['active','all','pending'].map(function(v){ return '<label class="fs-chk"><input type="radio" name="fs_st" value="'+v+'"'+(D.st===v?' checked':'')+'><span>'+t('st_'+v)+'<small>'+t('st_'+v+'_h')+'</small></span></label>'; }).join('')):'')+
+      (sale&&D.st==='sold'?sec(t('fs_sold'),'<div class="fs-cs" data-cs="sd">'+['90','180','365'].map(function(v){ return '<button type="button" data-v="'+v+'" class="'+(String(D.sd||'180')===v?'on':'')+'">'+t('sd_'+v)+'</button>'; }).join('')+'</div>'):'')+
       sec(t('h_price'),paLine+two('price','minp','maxp',priceList(D),function(v){ return sp(v); }))+
       sec(t('h_beds'),cs('beds',['',1,2,3,4,5]))+
       sec(t('h_baths'),cs('baths',['',1,2,3,4]))+
       (sale?sec(t('h_kind'),tiles):'')+
       sec(t('fs_more'),(sale?'<label class="fs-chk"><input type="checkbox" id="fs_newc"'+(D.newc?' checked':'')+'><span>'+t('newc')+'<small>'+t('c_newc_h')+'</small></span></label>':'')+
-        '<label class="fs-chk"><input type="checkbox" id="fs_open"'+(D.open?' checked':'')+'><span>'+t('c_open_l')+'<small>'+t('c_open_h')+'</small></span></label>')+
+        (D.st!=='sold'||!sale?'<label class="fs-chk"><input type="checkbox" id="fs_open"'+(D.open?' checked':'')+'><span>'+t('c_open_l')+'<small>'+t('c_open_h')+'</small></span></label>':''))+
       sec(t('fs_sqft'),two('sq','sqmin','sqmax',LISTS.sq,function(v){ return num(v); }))+
       sec(t('fs_lot'),two('lot','lotmin','lotmax',LISTS.lot,acres))+
       sec(t('fs_year'),two('year','ymin','ymax',LISTS.year,String))+
@@ -932,6 +960,7 @@ function readFs(){
   sw('minp','maxp'); sw('sqmin','sqmax'); sw('lotmin','lotmax'); sw('ymin','ymax');
   if($('fs_newc')) D.newc=$('fs_newc').checked; if($('fs_open')) D.open=$('fs_open').checked;
   if($('fs_kw')) D.kw=$('fs_kw').value.trim().slice(0,60);
+  var stc=document.querySelector('#fsP input[name="fs_st"]:checked'); if(stc) D.st=stc.value;
 }
 function closeFilters(apply){
   if(apply&&D){ readFs(); F=D; }
@@ -954,16 +983,19 @@ $('fs').addEventListener('click',function(e){
   if(e.target===$('fs')){ closeFilters(true); return; }
   var b=e.target.closest('button'); if(!b||!D) return;
   if(b.id==='fsBack'||b.id==='fsGo'){ closeFilters(true); return; }
-  if(b.id==='fsReset'){ var ty=D.type; D=blankF(); D.type=ty; paintFs(true); return; }
+  if(b.id==='fsReset'){ var ty=D.type, so=D.st==='sold'; D=blankF(); D.type=ty; if(so) D.st='sold'; paintFs(true); return; }
   if(b.id==='fsSave'){ closeFilters(true); saveSearch(); return; }
   if(b.id==='fsPA'){ var pa=PA(); if(pa&&pa.amount){ readFs(); var list=priceList(D), cap=list.filter(function(v){ return v<=pa.amount*1.02; }).pop(); D.maxp=String(cap||Math.round(pa.amount)); paintFs(true); } return; }
-  if(b.hasAttribute('data-type')){ readFs(); var nt=b.getAttribute('data-type'); if(nt!==D.type){ D.type=nt; D.minp=D.maxp=''; } paintFs(true); return; }
+  if(b.hasAttribute('data-type')){ readFs(); var nt=b.getAttribute('data-type'), ty=nt==='lease'?'lease':'sale';
+    if(ty!==D.type){ D.type=ty; D.minp=D.maxp=''; }
+    if(nt==='sold') D.st='sold'; else if(nt==='sale'&&D.st==='sold') D.st='active';
+    paintFs(true); return; }
   if(b.hasAttribute('data-tile')){ readFs(); var k=b.getAttribute('data-tile');
     if(!k) D.kinds=[]; else { var i=D.kinds.indexOf(k); if(i>-1) D.kinds.splice(i,1); else D.kinds.push(k); if(D.kinds.length===TILES.length) D.kinds=[]; }
     paintFs(true); return; }
   var g=b.closest('[data-cs]'); if(g){ readFs(); D[g.getAttribute('data-cs')]=b.getAttribute('data-v'); paintFs(true); return; }
 });
-$('fs').addEventListener('change',function(e){ if(e.target.matches('select,input[type=checkbox]')) liveCount(); });
+$('fs').addEventListener('change',function(e){ if(e.target.matches('select,input[type=checkbox],input[type=radio]')) liveCount(); });
 $('fs').addEventListener('input',function(e){ if(e.target.id==='fs_kw') liveCount(); });
 $('fs').addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target.id==='fs_kw'){ e.preventDefault(); closeFilters(true); } });
 $('qf').addEventListener('submit',function(e){ e.preventDefault(); PICKS=[]; $('q').blur();
@@ -993,8 +1025,9 @@ var PICKS=(function(){ try{ var v=new URLSearchParams(location.search).get('home
 function query(f,forCount){
   f=f||F;
   if(PICKS.length&&!forCount){ var pk=new URLSearchParams({resultsPerPage:24}); PICKS.forEach(function(m){ pk.append('mlsNumber',m); }); return pk; }
-  var rec=$('sort').value==='rec';
-  var p=new URLSearchParams({type:f.type,resultsPerPage:PER,pageNum:rec&&state.perm?state.perm[state.page-1]||state.page:state.page,sortBy:rec?'createdOnDesc':$('sort').value});
+  var srt=$('sort').value, sold=f.type==='sale'&&f.st==='sold', rec=srt==='rec'&&!sold;
+  var p=new URLSearchParams({type:f.type,resultsPerPage:PER,pageNum:rec&&state.perm?state.perm[state.page-1]||state.page:state.page,
+    sortBy:rec?'createdOnDesc':sold&&(srt==='rec'||srt==='createdOnDesc')?'soldDateDesc':srt});
   var q=$('q').value.trim(), kw=f.kw||'';
   if(state.bounds){ var b=state.bounds; p.set('map',JSON.stringify([[[b.getWest(),b.getSouth()],[b.getEast(),b.getSouth()],[b.getEast(),b.getNorth()],[b.getWest(),b.getNorth()]]])); }
   else{ p.set('state',STATE); if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q&&!/\d/.test(q)&&state.qkind[q.toLowerCase()]!=='search') p.set('city',q); else if(q){ p.set('search',(q+' '+kw).trim()); kw=''; } }
@@ -1012,7 +1045,7 @@ function load(fit){
     return;
   }
   // "For you": a fresh random order of result pages on every visit/refresh (same filters), homes with video first
-  var rec=$('sort').value==='rec'&&!PICKS.length, key=rec?qkey():'';
+  var rec=$('sort').value==='rec'&&!PICKS.length&&!(F.type==='sale'&&F.st==='sold'), key=rec?qkey():'';
   if(rec&&state.permKey!==key){
     var chk2=++state.req; $('grid').style.opacity=.45;
     var cq=query(); cq.set('resultsPerPage',1); cq.set('pageNum',1);
@@ -1044,7 +1077,7 @@ function canWiden(){ var q=$('q').value.trim(); return !PICKS.length&&!state.bou
 function km(a,b,c,d){ var R=6371, x=(c-a)*Math.PI/180, y=(d-b)*Math.PI/180, h=Math.sin(x/2)*Math.sin(x/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)*Math.sin(y/2); return 2*R*Math.asin(Math.sqrt(h)); }
 function circle(lat,lng,r){ var pts=[]; for(var i=0;i<16;i++){ var a=i/16*2*Math.PI; pts.push([lng+r/(111.32*Math.cos(lat*Math.PI/180))*Math.cos(a), lat+r/110.57*Math.sin(a)]); } pts.push(pts[0]); return JSON.stringify([pts]); }
 function wideQuery(c,r,page){
-  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:page,sortBy:'createdOnDesc',map:circle(c.lat,c.lng,r)});
+  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:page,sortBy:F.type==='sale'&&F.st==='sold'?'soldDateDesc':'createdOnDesc',map:circle(c.lat,c.lng,r)});
   if(F.kw) p.set('search',F.kw);
   return addFilters(p,F);
 }
@@ -1072,6 +1105,15 @@ function widen(mine){
     }).catch(function(){ w.busy=false; });
   })();
 }
+/* sold / under contract / coming soon tag on the photo */
+function sdate(iso){ try{ return new Date(String(iso).slice(0,10)+'T12:00:00').toLocaleDateString(lang==='es'?'es-MX':'en-US',{month:'short',day:'numeric',year:new Date(String(iso).slice(0,4)+'-06-01').getFullYear()!==new Date().getFullYear()?'numeric':undefined}).replace('.',''); }catch(e){ return ''; } }
+function stTag(l){
+  if(!l) return '';
+  if(l.state==='sold') return '<span class="tag sold">'+esc(t('tag_sold')+(l.soldDate?sdate(l.soldDate):''))+'</span>';
+  if(l.state==='pending') return '<span class="tag pend">'+t(l.pendingKind==='option'?'tag_opt':l.pendingKind==='show'?'tag_show':'tag_pend')+'</span>';
+  if(l.state==='soon') return '<span class="tag soon">'+t('tag_soon')+'</span>';
+  return '';
+}
 /* "Casa abierta: sáb 1–4pm" (HAR times are UTC; shown in Houston time) */
 function ohLabel(l){
   var o=l&&l.openHouse&&l.openHouse[0]; if(!o) return '';
@@ -1092,7 +1134,7 @@ function render(fit){
   var ru=reelsUrl(null); ['reelsBtn','tbReels'].forEach(function(id){ var b=$(id); if(b) b.href=ru; });
   var g=$('grid'), lease=F.type==='lease'; g.style.opacity=1;
   var q=$('q').value.trim();
-  $('title').textContent=PICKS.length?t('picked'):t(lease?'ttl_lease':'ttl_sale')+t('ttl_in')+(state.near&&state.bounds?t('near_t'):state.bounds?t('area'):(q||t('tx')));
+  $('title').textContent=PICKS.length?t('picked'):t(lease?'ttl_lease':F.st==='sold'?'ttl_sold':F.st==='pending'?'ttl_pend':F.st==='all'?'ttl_all':'ttl_sale')+t('ttl_in')+(state.near&&state.bounds?t('near_t'):state.bounds?t('area'):(q||t('tx')));
   if(state.count===null){ $('count').textContent=''; g.innerHTML='<div class="empty">'+t('fail')+'</div>'; $('pager').innerHTML=''; return; }
   $('count').textContent=num(state.count)+(state.count===1?t('res1'):t('res'));
   if(!state.items.length){ g.innerHTML='<div class="empty">'+t('none')+'</div>'; $('pager').innerHTML=''; drawPins(false); return; }
@@ -1101,12 +1143,12 @@ function render(fit){
     var a=l.address||{}, n=l.daysOnMarket;
     return (i===wf?'<div class="widehd"><b>'+t('more_near')+'</b><span>'+esc(t('more_near_p')(Math.round(state.wide.r/1.15*0.621)))+'</span></div>':'')+'<article class="c" data-i="'+i+'" tabindex="0">'+
       '<div class="ph" style="background-image:url(\''+img(l.images[0],'small')+'\')">'+
-        (ohLabel(l)?'<span class="tag oh">'+esc(ohLabel(l))+'</span>':l.newConstruction?'<span class="tag nc">'+t('nc_tag')+'</span>':n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
+        (stTag(l)?stTag(l):ohLabel(l)?'<span class="tag oh">'+esc(ohLabel(l))+'</span>':l.newConstruction?'<span class="tag nc">'+t('nc_tag')+'</span>':n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
         '<button type="button" class="heart'+(favs[l.mlsNumber]?' on':'')+'" aria-label="'+t('savehome')+'">'+HEART+'</button>'+
         (hasVid(l)?'<a class="vbadge" href="'+reelsUrl(l.mlsNumber)+'">'+t('reel_v')+'</a>':'')+
         (l.images.length>1?'<button type="button" class="nav p" aria-label="‹">‹</button><button type="button" class="nav x" aria-label="›">›</button>':'')+'</div>'+
-      '<div class="bd"><div class="pr">'+money(l.listPrice)+(lease?'<span class="pm" style="color:inherit">'+t('mo')+'</span>':'<span class="pm">'+t('est')+money(estTotal(l.listPrice))+t('mo')+'</span>')+'</div>'+
-      '<div class="sp">'+specs(l)+'<i>|</i><em>'+(l.newConstruction&&!lease?t('nc_tag'):t(lease?'forrent':'forsale'))+'</em></div>'+
+      '<div class="bd"><div class="pr">'+(l.state==='sold'?money(l.soldPrice||l.listPrice)+'<span class="pm">'+t(l.soldPrice?'soldp':'lp')+'</span>':money(l.listPrice)+(lease?'<span class="pm" style="color:inherit">'+t('mo')+'</span>':'<span class="pm">'+t('est')+money(estTotal(l.listPrice))+t('mo')+'</span>'))+'</div>'+
+      '<div class="sp">'+specs(l)+'<i>|</i><em>'+(l.state==='sold'?t('soldp'):l.state==='pending'?t('tag_pend'):l.newConstruction&&!lease?t('nc_tag'):t(lease?'forrent':'forsale'))+'</em></div>'+
       '<div class="ad">'+esc(addr(a))+', '+esc(a.city)+', '+esc(a.state||'TX')+' '+esc(a.zip)+'</div>'+
       '<div class="br">'+t('listed')+esc(credit(l))+'</div></div></article>';
   }).join('');
@@ -1119,7 +1161,7 @@ function drawPins(fit){
   layer.clearLayers(); var pts=[], lease=F.type==='lease';
   state.items.forEach(function(l,i){
     var m=l.map||{}; if(!m.latitude||!m.longitude) return;
-    var mk=L.marker([m.latitude,m.longitude],{icon:L.divIcon({className:'',html:'<span class="pin'+(state.seen[l.mlsNumber]?' seen':'')+'" data-i="'+i+'">'+(lease?money(l.listPrice):short(l.listPrice))+'</span>',iconSize:[0,0]})});
+    var mk=L.marker([m.latitude,m.longitude],{icon:L.divIcon({className:'',html:'<span class="pin'+(state.seen[l.mlsNumber]?' seen':'')+(l.state==='sold'?' sold':l.state==='pending'?' pend':'')+'" data-i="'+i+'">'+(lease?money(l.listPrice):short(l.listPrice))+'</span>',iconSize:[0,0]})});
     mk.on('click',function(){ openDetail(i); });
     mk.on('mouseover',function(){ hot(i,true); }); mk.on('mouseout',function(){ hot(i,false); });
     mk.addTo(layer); pts.push([m.latitude,m.longitude]);
@@ -1367,6 +1409,8 @@ function showLB(n){ act('photos',cur); lbn=(n+cur.images.length)%cur.images.leng
 $('lb').querySelector('.lp').onclick=function(){ showLB(lbn-1); };
 $('lb').querySelector('.ln').onclick=function(){ showLB(lbn+1); };
 $('lb').querySelector('.lx').onclick=function(){ $('lb').classList.remove('on'); };
+/* "see homes for sale nearby" from a sold home: same ZIP, for sale, similar price */
+function nearUrl(l){ var a=l.address||{}, u=new URLSearchParams(); if(a.zip) u.set('q',a.zip); var p=l.soldPrice||l.listPrice; if(p) u.set('maxp',String(Math.round(p*1.1/5000)*5000)); var bd=(l.details||{}).numBedrooms; if(bd) u.set('beds',String(Math.max(1,bd-1))); return 'homes?'+u.toString(); }
 function openDetail(i){
   var l=(typeof i==='object')?i:state.items[i]; if(!l) return; cur=l;
   if(typeof i==='object') i=state.items.indexOf(l);
@@ -1379,7 +1423,7 @@ function openDetail(i){
   var desc=String(d.description||'').replace(/\*+\s*SAMPLE DATA\s*\*+/gi,'').trim();
   var chips=[[d.style||d.propertyType,'f_type'],[d.yearBuilt,'f_year'],[(l.lot||{}).acres?Number(l.lot.acres).toFixed(2)+t('acres'):null,'f_lot'],
     [d.sqft&&!lease?money(l.listPrice/d.sqft):null,'f_ppsf'],[l.daysOnMarket,'f_dom'],[l.mlsNumber,'f_mls']];
-  $('sheet').className='sheet';
+  $('sheet').className='sheet'+(l.state==='sold'?' sold':l.state==='pending'?' pend':'');
   $('sheet').innerHTML='<div class="top"><button class="back" type="button">'+t('back')+'</button>'+
       '<span class="lock"><b>JAG</b><i>Real Estate</i></span>'+
       '<button class="act'+(favs[l.mlsNumber]?' on':'')+'" type="button" id="dfav">'+HEART+'<span>'+t(favs[l.mlsNumber]?'saved':'savehome')+'</span></button>'+
@@ -1388,8 +1432,9 @@ function openDetail(i){
       '<div class="stg-ph"><button type="button" class="stg-img" data-k="0" aria-label="'+t('allph')+l.images.length+t('photos')+'" style="background-image:url(\''+img(l.images[0],'large')+'\')"></button>'+
         (l.images.length>1?'<button type="button" class="all" data-k="0">'+t('allph')+l.images.length+t('photos')+'</button>':'')+
         '<a class="reelb" href="'+reelsUrl(l.mlsNumber)+'">'+t(hasVid(l)?'reel_v':'reel_p')+'</a></div>'+
-      '<div class="stg-card"><div class="stg-k">'+t(lease?'forrent':'forsale')+' · MLS '+esc(l.mlsNumber)+'</div>'+
-        '<h2 class="stg-pr">'+money(l.listPrice)+(lease?'<small>'+t('mo')+'</small>':'')+'</h2>'+
+      '<div class="stg-card">'+(l.state==='sold'?'<div class="stban sold"><b>'+t('sold_h')+'</b><span>'+esc(t('sold_p').replace('{d}',l.soldDate?sdate(l.soldDate):''))+'</span><a href="'+esc(nearUrl(l))+'">'+t('sold_btn')+' →</a></div>':l.state==='pending'?'<div class="stban pend"><b>'+t('pend_h')+'</b><span>'+t('pend_p')+'</span></div>':'')+
+        '<div class="stg-k">'+(l.state==='sold'?t('soldp'):l.state==='pending'?t('tag_pend'):t(lease?'forrent':'forsale'))+' · MLS '+esc(l.mlsNumber)+'</div>'+
+        '<h2 class="stg-pr">'+money(l.state==='sold'&&l.soldPrice?l.soldPrice:l.listPrice)+(lease?'<small>'+t('mo')+'</small>':l.state==='sold'?'<small style="display:block;margin:8px 0 0 2px;font-size:13px;letter-spacing:.02em">'+t(l.soldPrice?'soldp':'lp')+'</small>':'')+'</h2>'+
         '<div class="stg-ad">'+esc(full)+'</div>'+
         '<div class="stg-sp">'+[d.numBedrooms!=null?d.numBedrooms+' '+t('bd'):'',d.numBathrooms!=null?d.numBathrooms+' '+t('ba'):'',d.sqft?num(d.sqft)+' '+t('sqft'):'',d.yearBuilt||''].filter(Boolean).map(function(x){return '<span>'+esc(x)+'</span>';}).join('<i>/</i>')+'</div>'+
         (lease?'':'<div class="stg-est">'+t('estpay')+'<span id="pb2"></span>'+t('mo')+'</div>')+
@@ -1495,7 +1540,7 @@ $('toastx').onclick=function(){ $('toast').classList.remove('on'); };
 function searchLabel(){
   var parts=[], q=$('q').value.trim();
   parts.push(state.bounds?t('ss_map'):(q||'Houston'));
-  parts.push(t(F.type==='sale'?'t_sale':'t_lease'));
+  parts.push(F.type==='sale'&&F.st==='sold'?t('t_sold')+' · '+t('sd_'+(F.sd||'180')):F.type==='sale'&&F.st==='pending'?t('c_pend'):t(F.type==='sale'?'t_sale':'t_lease')+(F.type==='sale'&&F.st==='all'?' '+t('c_all'):''));
   if(F.newc&&F.type==='sale') parts.push(t('ss_newc'));
   if(F.type==='sale') F.kinds.forEach(function(k){ var x=TILES.filter(function(y){ return y[0]===k; })[0]; if(x) parts.push(t(x[1]).toLowerCase()); });
   if(F.beds) parts.push(F.beds+t('ss_bd')); if(F.baths) parts.push(F.baths+t('ss_ba'));
@@ -1523,7 +1568,7 @@ function currentSearch(){
   p.forEach(function(v,k){ if(apiP[k]===undefined) apiP[k]=v; else apiP[k]=[].concat(apiP[k],v); });
   delete apiP.minOpenHouseDate;   // an alert can't keep a date: "open houses only" stays in ui and is re-dated on open
   return { api:apiP, ui:{ q:$('q').value.trim(), type:F.type, minp:F.minp, maxp:F.maxp, beds:F.beds, baths:F.baths, kinds:F.kinds.slice(), newc:!!F.newc,
-    open:!!F.open, sqmin:F.sqmin, sqmax:F.sqmax, lotmin:F.lotmin, lotmax:F.lotmax, ymin:F.ymin, ymax:F.ymax, gar:F.gar, kw:F.kw,
+    st:F.st, sd:F.sd, open:!!F.open, sqmin:F.sqmin, sqmax:F.sqmax, lotmin:F.lotmin, lotmax:F.lotmax, ymin:F.ymin, ymax:F.ymax, gar:F.gar, kw:F.kw,
     b:state.bounds?state.bounds.toBBoxString():null } };
 }
 function ssToast(msg,link){
@@ -1604,6 +1649,8 @@ try{
   ['sqmin','sqmax','ymin','ymax','gar'].forEach(function(k){ F[k]=num_(k); });
   ['lotmin','lotmax'].forEach(function(k){ var v=qs.get(k); F[k]=v&&/^\d{1,3}(\.\d{1,2})?$/.test(v)?v:''; });
   F.open=qs.get('open')==='1'; F.kw=(qs.get('kw')||'').trim().slice(0,60);
+  var st0=qs.get('st'); if(/^(active|all|pending|sold)$/.test(st0||'')) F.st=st0; var sd0=qs.get('sd'); if(/^(90|180|365)$/.test(sd0||'')) F.sd=sd0;
+  if(t0==='sold'){ F.type='sale'; F.st='sold'; }
   var k0=qs.get('kinds'); if(k0) F.kinds=normKinds(k0.split(','));
   var b0=(qs.get('b')||'').split(',').map(Number);
   if(map&&b0.length===4&&b0.every(isFinite)){ state.bounds=L.latLngBounds([b0[1],b0[0]],[b0[3],b0[2]]); quiet++; map.fitBounds(state.bounds,{animate:false}); setTimeout(function(){ quiet--; },400); $('mapnote').classList.add('on'); }
