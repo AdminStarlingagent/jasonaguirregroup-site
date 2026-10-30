@@ -415,6 +415,149 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   .mbar .bigbtn,.mbar .outbtn{border-radius:14px}
   .mbar .outbtn{border-width:2px}
 }
+
+/* ===== 2026-10-30: search like the big apps — one search bar + one Filters button, removable chips,
+   clean photo cards, a full filter page with a live "Ver N casas" button, and a bottom tab bar on phones ===== */
+.bar{padding:10px 16px;gap:10px;border-bottom:0;flex-wrap:nowrap!important}
+.q{flex:1 1 auto!important;max-width:620px;display:flex;align-items:center;height:48px;border-radius:99px;background:#f2f1ef;border:1px solid #e4e2de;padding:0 5px 0 15px}
+.q:focus-within{border-color:var(--ink);background:#fff}
+.q .qi{width:19px;height:19px;stroke:var(--muted);fill:none;stroke-width:2.3;stroke-linecap:round;flex:none}
+.q input{flex:1;min-width:0;height:100%!important;border:0!important;background:transparent!important;outline:0!important;padding:0 8px!important;font-size:16px;font-weight:500;border-radius:0!important}
+.q input::-webkit-search-cancel-button{display:none}
+.q .near{position:static!important;flex:none;width:38px;height:38px;border:0;border-radius:50%;background:transparent;color:var(--ink);padding:0;display:grid;place-items:center}
+.q .near svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round}
+.q .near.on{background:var(--buy);color:#fff}
+.fbtn{flex:none;position:relative;height:48px;min-width:48px;border-radius:99px;border:1px solid #e4e2de;background:#fff;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;font-weight:800;font-size:14.5px;color:var(--ink)}
+.fbtn:hover{border-color:var(--ink)}
+.fbtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.fbtn.set{border-color:var(--ink)}
+.fbtn b{position:absolute;top:-5px;right:-4px;min-width:21px;height:21px;border-radius:99px;background:var(--buy);color:#fff;font-size:11.5px;font-weight:800;display:grid;place-items:center;padding:0 5px;border:2px solid #fff}
+.fbtn b:empty{display:none}
+.savebtn{height:48px;border-radius:99px;padding:0 18px}
+.reelsbtn{height:48px;border-radius:99px;padding:0 16px}
+.chips2{flex:none;display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none;background:#fff;position:relative;z-index:590}
+.chips2::-webkit-scrollbar{display:none}
+.chips2[hidden]{display:none}
+.chip2{flex:none;display:inline-flex;align-items:center;gap:7px;height:36px;border-radius:99px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);font-weight:700;font-size:13.5px;padding:0 13px 0 8px;white-space:nowrap}
+.chip2 .cx{width:19px;height:19px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:13px;line-height:1;font-weight:800}
+.chip2.clr{border-color:transparent;color:var(--buy);padding:0 6px}
+.main{border-top:1px solid var(--line)}
+.lh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
+.list h1{font-size:17px!important;font-weight:800!important;letter-spacing:-.01em!important;text-transform:none!important;color:var(--ink)!important;margin:0!important}
+.ssave{display:none;border:0;background:none;color:var(--buy);font-weight:800;font-size:14px;align-items:center;gap:5px;white-space:nowrap;padding:6px 0}
+.ssave svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sub{margin-bottom:14px}
+.sub b{font-weight:600!important;color:var(--muted);font-size:13.5px!important}
+/* cards: photo on top, facts in one line, nothing boxed */
+.c{border:0!important;padding:0!important;border-radius:18px!important;overflow:hidden;box-shadow:0 1px 3px rgba(23,22,28,.10),0 8px 22px rgba(23,22,28,.08)!important}
+.c:hover,.c.hot{box-shadow:0 0 0 2px var(--buy),0 12px 28px rgba(23,22,28,.16)!important}
+.c .ph{border-radius:0!important;aspect-ratio:3/2}
+.c .tag{background:#fff!important;color:var(--ink)!important;font-size:12.5px!important;letter-spacing:0!important;text-transform:none!important;font-weight:800;padding:6px 11px!important;left:10px;top:10px;box-shadow:0 1px 5px rgba(0,0,0,.22)}
+.c .tag.oh{background:var(--ink)!important;color:#fff!important}
+.heart{background:none!important;box-shadow:none!important;width:46px!important;height:46px!important;right:4px!important;top:4px!important}
+.heart svg{width:29px!important;height:29px!important;fill:rgba(0,0,0,.28)!important;stroke:#fff!important;stroke-width:2!important;filter:drop-shadow(0 1px 3px rgba(0,0,0,.45))!important}
+.heart.on svg{fill:var(--buy)!important}
+.c .vbadge{left:10px;bottom:10px}
+.c .bd{padding:12px 15px 14px!important}
+.c .pr{font-size:25px!important;letter-spacing:-.025em!important;line-height:1.1!important;display:flex!important;align-items:baseline;gap:9px;flex-wrap:wrap}
+.c .pm{display:inline!important;margin:0!important;font-size:12.5px!important;letter-spacing:0!important;color:var(--muted)!important;font-weight:700}
+.c .sp{margin-top:5px!important;font-size:14.5px!important;font-weight:500!important;letter-spacing:0!important;text-transform:none!important}
+.c .sp b{font-weight:800}
+.c .sp i{color:#c9c7c2!important;margin:0 6px!important}
+.c .sp em{display:inline!important;font-style:normal;color:var(--ink)!important}
+.c .ad{font-size:14.5px!important;margin-top:2px!important}
+.c .br{font-size:12.5px!important;margin-top:4px!important}
+/* filter page */
+.fs{position:fixed;inset:0;z-index:9995;background:rgba(23,22,28,0);visibility:hidden;transition:background .28s ease,visibility 0s linear .34s}
+.fs.on{background:rgba(23,22,28,.45);visibility:visible;transition:background .28s ease}
+.fs-p{position:absolute;top:0;bottom:0;right:0;width:min(480px,100%);background:#fff;display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.18);transform:translateX(100%);transition:transform .34s cubic-bezier(.2,.85,.25,1)}
+.fs.on .fs-p{transform:none}
+.fs-cs button,.fs-tiles button,.fs-seg button,.chip2,.fbtn,.tabbar a,.tabbar button{transition:background .18s,color .18s,border-color .18s,transform .12s}
+.fs-cs button:active,.fs-tiles button:active,.chip2:active,.fbtn:active,.fs-go:active{transform:scale(.96)}
+.fs-tiles button.on svg{animation:jpop .28s ease}
+@keyframes jpop{50%{transform:scale(1.18)}}
+/* cards ease up as they load; a tap presses them in; the heart pops */
+@keyframes cardin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.grid .c{animation:cardin .38s cubic-bezier(.2,.8,.2,1) both;transition:box-shadow .15s,transform .15s}
+.grid .c:nth-child(2){animation-delay:.04s}.grid .c:nth-child(3){animation-delay:.08s}.grid .c:nth-child(4){animation-delay:.12s}.grid .c:nth-child(5){animation-delay:.16s}.grid .c:nth-child(n+6){animation-delay:.2s}
+.grid .c:active{transform:scale(.985)}
+.heart.on svg{animation:jpop .3s ease}
+.chips2 .chip2{animation:cardin .25s ease both}
+.viewtog{transition:transform .15s}.viewtog:active{transform:translateX(-50%) scale(.95)!important}
+@media (prefers-reduced-motion:reduce){.fs,.fs-p,.grid .c,.chips2 .chip2,.heart.on svg,.fs-tiles button.on svg{animation:none!important;transition:none!important}}
+.fs-top{flex:none;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;border-bottom:1px solid var(--line)}
+.fs-back{width:44px;height:44px;border-radius:50%;border:0;background:#f2f1ef;display:grid;place-items:center;color:var(--ink)}
+.fs-back svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.fs-top h2{margin:0;text-align:center;font-size:18px;font-weight:800}
+.fs-reset{border:0;background:none;color:var(--buy);font-weight:800;font-size:15px;padding:10px 6px;min-width:44px}
+.fs-body{flex:1;overflow-y:auto;padding:0 18px 28px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.fs-save{display:flex;align-items:center;gap:10px;background:#f6f5f3;border-radius:14px;padding:12px 14px;margin:16px 0 0;font-size:14px;font-weight:600}
+.fs-save svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--buy);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.fs-save span{flex:1;min-width:0}
+.fs-save button{border:0;background:none;color:var(--buy);font-weight:800;font-size:14.5px;white-space:nowrap;padding:6px 0}
+.fs-seg{display:flex;background:#f2f1ef;border-radius:99px;padding:4px;margin-top:18px}
+.fs-seg button{flex:1;border:0;background:none;border-radius:99px;height:42px;font-weight:700;font-size:15px;color:var(--ink)}
+.fs-seg button.on{background:var(--ink);color:#fff}
+.fs-sec{padding:22px 0;border-bottom:1px solid #eeece8}
+.fs-sec:last-child{border-bottom:0}
+.fs-sec h3{margin:0 0 12px;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.fs-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fs-two label{font-size:12.5px;font-weight:700;color:var(--muted)}
+.fs-two select{display:block;width:100%;height:52px;margin-top:5px;border:1.5px solid #cfccc6;border-radius:14px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317161c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m8 9 4-4 4 4M8 15l4 4 4-4'/%3E%3C/svg%3E") right 12px center/18px no-repeat;padding:0 36px 0 14px;font-size:16px;font-weight:600;-webkit-appearance:none;appearance:none;color:var(--ink)}
+.fs-two select:focus{border-color:var(--ink);outline:0}
+.fs-cs{display:flex;gap:8px}
+.fs-cs button{flex:1 1 0;min-width:0;height:48px;border-radius:14px;border:1.5px solid #cfccc6;background:#fff;font-weight:700;font-size:15px;padding:0 4px;color:var(--ink)}
+.fs-cs button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.fs-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fs-tiles button{height:94px;border-radius:16px;border:1.5px solid #cfccc6;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:13.5px;color:var(--ink);padding:0 4px;text-align:center;line-height:1.15}
+.fs-tiles svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.fs-tiles button.on{border:2px solid var(--buy);background:var(--buy-t);color:var(--buy-d)}
+.fs-chk{display:flex;align-items:center;gap:13px;padding:11px 0;font-size:16px;font-weight:600;cursor:pointer}
+.fs-chk input{width:24px;height:24px;accent-color:var(--buy);flex:none;margin:0}
+.fs-chk small{display:block;font-size:12.5px;font-weight:500;color:var(--muted)}
+.fs-in{width:100%;height:52px;border:1.5px solid #cfccc6;border-radius:14px;padding:0 14px;font-size:16px;font-weight:500}
+.fs-in:focus{border-color:var(--ink);outline:0}
+.fs-hint{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.fs-pa{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:14px;background:var(--ok-bg);color:var(--ok);font-weight:800;font-size:14px;padding:12px 14px;margin-bottom:12px;text-align:left}
+.fs-pa span{flex:1}.fs-pa u{text-decoration:none;background:var(--ok);color:#fff;border-radius:99px;padding:6px 11px;font-size:13px;white-space:nowrap}
+.fs-link{display:inline-block;color:var(--buy);font-weight:800;font-size:14.5px;text-decoration:none;margin-bottom:12px}
+.fs-foot{flex:none;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:#fff}
+.fs-go{width:100%;height:56px;border:0;border-radius:99px;background:var(--buy);color:#fff;font-weight:800;font-size:17px}
+.fs-go:hover{background:var(--buy-d)}
+.fs-go.zero{background:var(--ink)}
+/* bottom tab bar (phones, clients) */
+.tabbar{display:none}
+@media (max-width:860px){
+  .hin{height:50px!important;padding:0 12px!important}
+  .lock b{font-size:21px}.lock small,.lock i{font-size:6.5px}
+  .brok{font-size:9.5px;padding-left:8px}
+  .langs button{padding:5px 8px;font-size:11.5px}
+  .bar{padding:8px 12px 10px}
+  .q{height:46px}
+  .fbtn{height:46px;width:46px;padding:0}
+  .fbtn .fl{display:none}
+  .savebtn{display:none!important}
+  .chips2{padding:0 12px 10px}
+  .ssave{display:inline-flex}
+  .list{padding:12px 12px 100px!important}
+  .grid{gap:16px!important}
+  .c .nav{display:none!important}
+  body:not(.has-tb) .reelsbtn{height:46px;width:46px;padding:0;justify-content:center;border-radius:50%}
+  body:not(.has-tb) .reelsbtn span{display:none}
+  body.has-tb .reelsbtn{display:none}
+  body.has-tb .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:900;background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:5px 4px calc(5px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 14px rgba(0,0,0,.06)}
+  .tabbar a,.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;text-decoration:none;color:var(--muted);font-size:10.5px;font-weight:700;padding:4px 0;min-width:0}
+  .tabbar svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;padding:3px 10px;border-radius:99px;box-sizing:content-box}
+  .tabbar .on{color:var(--buy)}
+  .tabbar .on svg{background:var(--buy-t)}
+  body.has-tb .jc-b,body.has-tb .jc-b.up{display:none!important}
+  body.has-tb .viewtog{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  body.has-tb .toast{bottom:calc(132px + env(safe-area-inset-bottom,0px))!important}
+  .viewtog{display:flex!important;align-items:center;gap:7px;padding:11px 20px!important}
+  .viewtog svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .fs-p{width:100%;box-shadow:none;transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.85,.25,1)}
+  .fs.on .fs-p{transform:none}
+}
 </style>
 <script src="jag-track.js?v=1"></script>
 </head>
@@ -446,30 +589,21 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 
 
 <div class="bar" id="bar">
-  <form class="q" id="qf">
-    <input id="q" type="search" autocomplete="off" data-ph="q_ph" aria-label="Buscar">
-    <button type="submit" aria-label="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+  <form class="q" id="qf" role="search">
+    <svg class="qi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" type="search" enterkeyhint="search" autocomplete="off" data-ph="q_ph" aria-label="Buscar">
+    <button type="button" class="near" id="nearBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5 3.5 10.6l7.3 2.6 2.6 7.3z"/></svg></button>
   </form>
-  <button type="button" class="near" id="nearBtn"><svg viewBox="0 0 24 24"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg><span data-t="near"></span></button>
-  <div class="pills">
-    <div class="dd" data-dd="type"><button type="button" class="pill" id="p_type"></button>
-      <div class="pop"><label class="r"><input type="radio" name="type" value="sale" checked><span data-t="t_sale"></span></label><label class="r"><input type="radio" name="type" value="lease"><span data-t="t_lease"></span></label></div></div>
-    <div class="dd" data-dd="price"><button type="button" class="pill" id="p_price"></button>
-      <div class="pop"><h4 data-t="h_price"></h4><div class="rng"><select id="minp" aria-label="Min"></select><span>–</span><select id="maxp" aria-label="Max"></select></div><button type="button" class="apply" data-t="apply"></button></div></div>
-    <div class="dd" data-dd="beds"><button type="button" class="pill" id="p_beds"></button>
-      <div class="pop"><h4 data-t="h_beds"></h4><div class="seg" id="s_beds"></div><h4 data-t="h_baths"></h4><div class="seg" id="s_baths"></div><button type="button" class="apply" data-t="apply"></button></div></div>
-    <div class="dd" data-dd="kind"><button type="button" class="pill" id="p_kind"></button>
-      <div class="pop"><h4 data-t="h_kind"></h4><div id="kinds"></div><button type="button" class="apply" data-t="apply"></button></div></div>
-    <button class="pill" type="button" id="p_new" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/><path d="M12 2v3"/></svg><span data-t="newc"></span></button>
-    <a class="reelsbtn" id="reelsBtn" href="reels"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg><span data-t="reels"></span></a>
-    <button class="savebtn" type="button" id="saveBtn" data-t="save"></button>
-  </div>
+  <button type="button" class="fbtn" id="fbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg><span class="fl" data-t="filters"></span><b id="fct"></b></button>
+  <a class="reelsbtn" id="reelsBtn" href="reels"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg><span data-t="reels"></span></a>
+  <button class="savebtn" type="button" id="saveBtn" data-t="save"></button>
 </div>
+<div class="chips2" id="chips2" hidden></div>
 
 <div class="main" id="main">
   <div class="mapwrap"><div class="mapnote" id="mapnote" data-t="mapnote"></div><div id="map" aria-label="Mapa"></div></div>
   <section class="list" id="list">
-    <h1 id="title">&nbsp;</h1>
+    <div class="lh"><h1 id="title">&nbsp;</h1><button type="button" class="ssave" id="saveBtn2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span data-t="save_s"></span></button></div>
     <div class="sub"><b id="count">&nbsp;</b>
       <label><span data-t="sortl"></span>
         <select id="sort" aria-label="Orden">
@@ -495,7 +629,14 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   </section>
 </div>
 <button class="viewtog" id="viewtog" type="button"></button>
-<a class="reelsfab" id="reelsFab" href="reels"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg><span data-t="reels"></span></a>
+<nav class="tabbar" id="tabbar" aria-label="App">
+  <a href="homes" class="on" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><span data-t="tb_search"></span></a>
+  <a href="reels" id="tbReels"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="m10 9 5 3-5 3z"/></svg><span data-t="reels"></span></a>
+  <a href="account#saved"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg><span data-t="tb_saved"></span></a>
+  <a href="account#plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="m9 14 2 2 4-4"/></svg><span data-t="tb_plan"></span></a>
+  <button type="button" id="tbChat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><span data-t="tb_chat"></span></button>
+</nav>
+<div class="fs" id="fs" role="dialog" aria-modal="true" aria-labelledby="fsH"><div class="fs-p" id="fsP"></div></div>
 
 <div class="ov" id="ov" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
 <div class="fm" id="fm"></div>
@@ -524,9 +665,15 @@ var HEART='<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 
 var T={
  es:{nav_buy:'Comprar',nav_rent:'Rentar',nav_sell:'Vender',nav_loan:'Préstamo',nav_calc:'Calculadora',nav_team:'Conoce al equipo',
   demo:'Prototipo con datos de muestra — estas casas no están realmente en venta. Los listados de Houston llegan cuando se apruebe la licencia de HAR.',
-  q_ph:'Ciudad, código postal o palabra',t_sale:'En venta',t_lease:'En renta',
+  q_ph:'Ciudad o código postal',t_sale:'En venta',t_lease:'En renta',
   price:'Precio',h_price:'Rango de precio',nomin:'Sin mín.',nomax:'Sin máx.',upto:'Hasta ',
   bb:'Recámaras y baños',h_beds:'Recámaras',h_baths:'Baños',any:'Todas',bdS:' rec.',baS:' ba.',
+  filters:'Filtros',reset:'Restablecer',save_s:'Guardar',tb_search:'Buscar',tb_saved:'Favoritas',tb_plan:'Mi plan',tb_chat:'Preguntas',
+  fs_save_p:'Reciba avisos de casas nuevas con esta búsqueda',fs_qual:'¿Cuánto califico? Evaluación gratis ›',fs_pa:function(a){ return 'Pre-aprobado hasta '+a; },fs_pa_use:'Usar',
+  fs_more:'Más opciones',c_open_l:'Solo casas abiertas',c_open_h:'Con casa abierta (open house) en los próximos días',c_newc_h:'Recién construidas o en construcción',
+  fs_sqft:'Tamaño (pies²)',fs_lot:'Terreno',fs_year:'Año de construcción',fs_gar:'Garaje',fs_kw:'Palabras clave',fs_kw_ph:'Alberca, patio grande, MLS #…',fs_kw_h:'Buscamos estas palabras en la descripción de la casa.',
+  fs_see:function(n){ return n===0?'Sin casas: cambie los filtros':'Ver '+num(n)+(n===1?' casa':' casas'); },fs_busy:'Buscando…',fs_any:'Cualquiera',fs_min:'Mínimo',fs_max:'Máximo',fs_all:'Todas',
+  k_all:'Todas',k_house:'Casas',k_town:'Townhomes',k_condo:'Condos',c_open:'Casa abierta',c_built:'Construida',c_gar:'garaje',c_clear:'Borrar todo',oh:'Casa abierta: ',ac:' acre',acs:' acres',
   kind:'Tipo de casa',h_kind:'Tipo de propiedad',newc:'Construcción nueva',nc_tag:'Construcción nueva',f_builder:'Constructora',ss_newc:'construcción nueva',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
   apply:'Aplicar',save:'Guardar búsqueda',ss_saved:'Búsqueda guardada. Le avisaremos cuando salgan casas nuevas.',ss_go:'Ver mis búsquedas',ss_err:'No pudimos guardar la búsqueda. Intente de nuevo.',ss_map:'Área del mapa',ss_upto:'hasta ',ss_from:'desde ',ss_bd:'+ rec',ss_ba:'+ ba',mapnote:'Mostrando casas en esta zona del mapa',
   picked:'Casas seleccionadas para usted',picked_all:'Ver todas las casas',ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',near:'Cerca de mí',near_t:'su zona',near_wide:'Pocas casas muy cerca: ampliamos la búsqueda a 10 millas.',near_denied:'Para buscar cerca de usted, permita el acceso a su ubicación en su navegador.',near_fail:'No pudimos encontrar su ubicación. Escriba su ciudad o código postal.',near_out:'Por ahora solo mostramos casas en Texas. Escriba una ciudad o código postal de Texas.',near_me:'Usted está aquí',
@@ -568,9 +715,15 @@ var T={
   idx:'Datos de listados proporcionados por Houston Association of REALTORS® (HAR) a través de Repliers. Información considerada confiable pero no garantizada; verifique todos los datos de forma independiente. Jason Aguirre Group · eXp Realty.'},
  en:{nav_buy:'Buy',nav_rent:'Rent',nav_sell:'Sell',nav_loan:'Get a mortgage',nav_calc:'Calculator',nav_team:'Meet the team',
   demo:'Prototype running on sample data — these homes are not actually for sale. Houston listings arrive once the HAR license is approved.',
-  q_ph:'City, ZIP or keyword',t_sale:'For sale',t_lease:'For rent',
+  q_ph:'City or ZIP code',t_sale:'For sale',t_lease:'For rent',
   price:'Price',h_price:'Price range',nomin:'No min',nomax:'No max',upto:'Up to ',
   bb:'Beds & baths',h_beds:'Bedrooms',h_baths:'Bathrooms',any:'Any',bdS:' bd',baS:' ba',
+  filters:'Filters',reset:'Reset',save_s:'Save',tb_search:'Search',tb_saved:'Saved',tb_plan:'My plan',tb_chat:'Questions',
+  fs_save_p:'Get alerts when new homes match this search',fs_qual:'How much do I qualify for? Free evaluation ›',fs_pa:function(a){ return 'Pre-approved up to '+a; },fs_pa_use:'Use it',
+  fs_more:'More options',c_open_l:'Open houses only',c_open_h:'Has an open house in the next few days',c_newc_h:'Newly built or being built',
+  fs_sqft:'Size (sqft)',fs_lot:'Lot size',fs_year:'Year built',fs_gar:'Garage',fs_kw:'Keywords',fs_kw_ph:'Pool, big yard, MLS #…',fs_kw_h:'We look for these words in the home\'s description.',
+  fs_see:function(n){ return n===0?'No homes: change the filters':'See '+num(n)+(n===1?' home':' homes'); },fs_busy:'Searching…',fs_any:'Any',fs_min:'Min',fs_max:'Max',fs_all:'All',
+  k_all:'All',k_house:'Houses',k_town:'Townhomes',k_condo:'Condos',c_open:'Open house',c_built:'Built',c_gar:'garage',c_clear:'Clear all',oh:'Open: ',ac:' acre',acs:' acres',
   kind:'Home type',h_kind:'Home type',newc:'New construction',nc_tag:'New construction',f_builder:'Builder',ss_newc:'new construction',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
   apply:'Apply',save:'Save search',ss_saved:'Search saved. We will email you when new homes hit the market.',ss_go:'See my searches',ss_err:'We could not save the search. Please try again.',ss_map:'Map area',ss_upto:'up to ',ss_from:'from ',ss_bd:'+ bd',ss_ba:'+ ba',mapnote:'Showing homes in this map area',
   picked:'Homes picked for you',picked_all:'See all homes',ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',near:'Near me',near_t:'your area',near_wide:'Few homes right nearby, so we widened the search to 10 miles.',near_denied:'To search near you, allow location access in your browser.',near_fail:'We couldn’t find your location. Type your city or ZIP code.',near_out:'For now we only show homes in Texas. Type a Texas city or ZIP code.',near_me:'You are here',
@@ -653,59 +806,181 @@ function updated(l){
 }
 function img(p,cls){ return CDN+p+'?class='+cls; }
 
-var F={type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:['Residential'],newc:false};
+var F={type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:[],newc:false,open:false,sqmin:'',sqmax:'',lotmin:'',lotmax:'',ymin:'',ymax:'',gar:'',kw:''};
 var state={page:1,pages:1,items:[],bounds:null,seen:{},qkind:{}}, map, layer, quiet=0;
 
-/* ---------- filter UI ---------- */
-function priceOpts(){
-  var ps=F.type==='lease'?[800,1200,1500,1800,2200,2800,3500,5000]:[100000,150000,200000,250000,300000,350000,400000,500000,650000,800000,1000000,1500000];
-  var o=function(first,sel){ return '<option value="">'+first+'</option>'+ps.map(function(p){return '<option value="'+p+'"'+(String(p)===sel?' selected':'')+'>'+(F.type==='lease'?money(p):short(p))+'</option>';}).join(''); };
-  $('minp').innerHTML=o(t('nomin'),F.minp); $('maxp').innerHTML=o(t('nomax'),F.maxp);
+/* ---------- filters: one Filters button → a full filter page; active filters show as removable chips ---------- */
+var IC_T={
+  all:'<svg viewBox="0 0 24 24"><path d="M3 11 8 7l5 4v9H3z"/><path d="M13 9.5 17 6l4 3.5V20h-8"/></svg>',
+  house:'<svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg>',
+  town:'<svg viewBox="0 0 24 24"><path d="M2.5 11 7 7l4.5 4v9h-9z"/><path d="M11.5 11 16 7l4.5 4v9h-9z"/><path d="M6 20v-3h2v3M15 20v-3h2v3"/></svg>',
+  condo:'<svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="1"/><path d="M9.5 7h1M13.5 7h1M9.5 10.5h1M13.5 10.5h1M9.5 14h1M13.5 14h1M11 21v-3h2v3"/></svg>',
+  land:'<svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="m5 20 4-8 3 5 2-3 5 6"/><circle cx="16" cy="6" r="2"/></svg>',
+  multi:'<svg viewBox="0 0 24 24"><path d="M4 20V9l8-5 8 5v11z"/><path d="M8 20v-4h3v4M13 20v-4h3v4M9 11h1.5M13.5 11H15"/></svg>'
+};
+var TILES=[['house','k_house'],['town','k_town'],['condo','k_condo'],['land','k_Land'],['multi','k_Income']];
+var STY={house:['Single Family Residence'],town:['Townhouse/Condo,Townhouse'],condo:['Townhouse/Condo,Condominium','Condominium']};
+var RANGE={sq:['sqmin','sqmax'],lot:['lotmin','lotmax'],year:['ymin','ymax']};
+var LISTS={sq:[750,1000,1250,1500,1750,2000,2500,3000,3500,4000,5000],lot:[0.25,0.5,1,2,5,10,20],year:[1960,1980,1990,2000,2005,2010,2015,2020,2023,2025]};
+/* old links / saved searches used Residential, Land, Residential Income, Farm */
+function normKinds(arr){ var out=[]; (arr||[]).forEach(function(k){ var m={'Land':'land','Residential Income':'multi'}[k]||k; if(TILES.some(function(x){ return x[0]===m; })&&out.indexOf(m)<0) out.push(m); }); return out; }
+function todayCT(){ try{ return new Date().toLocaleDateString('en-CA',{timeZone:'America/Chicago'}); }catch(e){ return new Date().toISOString().slice(0,10); } }
+function addFilters(p,f){
+  f=f||F; var sale=f.type==='sale';
+  if(f.newc&&sale) p.set('newc','1');
+  if(f.minp) p.set('minPrice',f.minp); if(f.maxp) p.set('maxPrice',f.maxp);
+  if(f.beds) p.set('minBedrooms',f.beds); if(f.baths) p.set('minBaths',f.baths);
+  if(f.sqmin) p.set('minSqft',f.sqmin); if(f.sqmax) p.set('maxSqft',f.sqmax);
+  if(f.lotmin) p.set('minLotSizeSqft',Math.round(+f.lotmin*43560)); if(f.lotmax) p.set('maxLotSizeSqft',Math.round(+f.lotmax*43560));
+  if(f.ymin) p.set('minYearBuilt',f.ymin); if(f.ymax) p.set('maxYearBuilt',f.ymax);
+  if(f.gar) p.set('minGarageSpaces',f.gar);
+  if(f.open) p.set('minOpenHouseDate',todayCT());
+  if(sale){
+    var ks=f.kinds||[], res=ks.filter(function(k){ return STY[k]; }), oth=ks.filter(function(k){ return !STY[k]; });
+    if(!ks.length||res.length) p.append('propertyType','Residential');
+    if(oth.indexOf('land')>-1) p.append('propertyType','Land');
+    if(oth.indexOf('multi')>-1) p.append('propertyType','Residential Income');
+    /* houses / townhomes / condos are HAR "styles" of Residential; mixed with land or multi-family we show all Residential */
+    if(res.length&&res.length<3&&!oth.length) res.forEach(function(k){ STY[k].forEach(function(v){ p.append('style',v); }); });
+  }
+  return p;
 }
-function segs(){
-  $('s_beds').innerHTML=['',1,2,3,4,5].map(function(n){return '<button type="button" data-v="'+n+'" class="'+(String(n)===F.beds?'on':'')+'">'+(n?n+'+':t('any'))+'</button>';}).join('');
-  $('s_baths').innerHTML=['',1,2,3,4].map(function(n){return '<button type="button" data-v="'+n+'" class="'+(String(n)===F.baths?'on':'')+'">'+(n?n+'+':t('any'))+'</button>';}).join('');
-  $('kinds').innerHTML=KINDS.map(function(k){return '<label class="r"><input type="checkbox" value="'+k[0]+'"'+(F.kinds.indexOf(k[0])>-1?' checked':'')+'>'+t(k[1])+'</label>';}).join('');
+function acres(v){ v=+v; return (v===0.25?'¼':v===0.5?'½':String(v))+(v>1?t('acs'):t('ac')); }
+function rangeTxt(a,b,fmt){ return a&&b?fmt(a)+' – '+fmt(b):a?fmt(a)+'+':'≤ '+fmt(b); }
+function chipList(){
+  var c=[], sale=F.type==='sale', sp=sale?short:money;
+  if(!sale) c.push(['type',t('t_lease')]);
+  if(F.minp||F.maxp) c.push(['price',F.minp&&F.maxp?sp(+F.minp)+' – '+sp(+F.maxp):F.minp?sp(+F.minp)+'+':t('upto')+sp(+F.maxp)]);
+  if(F.beds) c.push(['beds',F.beds+'+ '+t('bd')]);
+  if(F.baths) c.push(['baths',F.baths+'+ '+t('ba')]);
+  if(sale) F.kinds.forEach(function(k){ var x=TILES.filter(function(y){ return y[0]===k; })[0]; if(x) c.push(['kind:'+k,t(x[1])]); });
+  if(F.newc&&sale) c.push(['newc',t('newc')]);
+  if(F.open) c.push(['open',t('c_open')]);
+  if(F.sqmin||F.sqmax) c.push(['sq',rangeTxt(F.sqmin,F.sqmax,function(v){ return num(v); })+' '+t('sqft')]);
+  if(F.lotmin||F.lotmax) c.push(['lot',rangeTxt(F.lotmin,F.lotmax,acres)]);
+  if(F.ymin||F.ymax) c.push(['year',t('c_built')+' '+rangeTxt(F.ymin,F.ymax,String)]);
+  if(F.gar) c.push(['gar',F.gar+'+ '+t('c_gar')]);
+  if(F.kw) c.push(['kw','“'+F.kw+'”']);
+  return c;
 }
-function pills(){
-  $('p_type').innerHTML='<span class="dot"></span>'+t(F.type==='sale'?'t_sale':'t_lease');
-  var sp=F.type==='lease'?money:short, pl=t('price');
-  if(F.minp&&F.maxp) pl=sp(+F.minp)+' – '+sp(+F.maxp); else if(F.minp) pl=sp(+F.minp)+'+'; else if(F.maxp) pl=t('upto')+sp(+F.maxp);
-  $('p_price').textContent=pl; $('p_price').classList.toggle('set',!!(F.minp||F.maxp));
-  var bl=[F.beds?F.beds+'+'+t('bdS'):'',F.baths?F.baths+'+'+t('baS'):''].filter(Boolean).join(', ');
-  $('p_beds').textContent=bl||t('bb'); $('p_beds').classList.toggle('set',!!bl);
-  var only=F.kinds.length===1&&F.kinds[0]==='Residential';
-  $('p_kind').textContent=only?t('kind'):t('kind')+' ('+F.kinds.length+')'; $('p_kind').classList.toggle('set',!only);
-  var nb=$('p_new'); nb.hidden=F.type!=='sale'; nb.classList.toggle('set',!!F.newc&&F.type==='sale'); nb.setAttribute('aria-pressed',String(!!F.newc));
+function clearChip(k){
+  if(k==='type'){ F.type='sale'; F.minp=F.maxp=''; }
+  else if(k==='price'){ F.minp=F.maxp=''; }
+  else if(k.indexOf('kind:')===0){ var v=k.slice(5); F.kinds=F.kinds.filter(function(x){ return x!==v; }); }
+  else if(RANGE[k]){ F[RANGE[k][0]]=F[RANGE[k][1]]=''; }
+  else if(k==='newc'||k==='open') F[k]=false;
+  else if(k==='all'){ var q=F.type; F=blankF(); F.type='sale'; }
+  else F[k]='';
 }
-function closeDD(){ document.querySelectorAll('.dd.open').forEach(function(d){ d.classList.remove('open'); }); }
-document.querySelectorAll('.dd > .pill').forEach(function(b){
-  b.addEventListener('click',function(e){ e.stopPropagation(); var d=b.parentNode, was=d.classList.contains('open'); closeDD(); if(!was) d.classList.add('open'); });
+function blankF(){ return {type:'sale',minp:'',maxp:'',beds:'',baths:'',kinds:[],newc:false,open:false,sqmin:'',sqmax:'',lotmin:'',lotmax:'',ymin:'',ymax:'',gar:'',kw:''}; }
+function paintBar(){
+  var c=chipList(), n=c.length;
+  $('fct').textContent=n||''; $('fbtn').classList.toggle('set',!!n);
+  $('fbtn').setAttribute('aria-label',t('filters')+(n?' ('+n+')':''));
+  $('nearBtn').setAttribute('aria-label',t('near')); $('nearBtn').title=t('near');
+  var box=$('chips2'); box.hidden=!n;
+  box.innerHTML=c.map(function(x){ return '<button type="button" class="chip2" data-k="'+esc(x[0])+'" aria-label="✕ '+esc(x[1])+'"><span class="cx" aria-hidden="true">×</span>'+esc(x[1])+'</button>'; }).join('')+
+    (n>1?'<button type="button" class="chip2 clr" data-k="all">'+t('c_clear')+'</button>':'');
+}
+$('chips2').addEventListener('click',function(e){ var b=e.target.closest('[data-k]'); if(!b) return; clearChip(b.getAttribute('data-k')); commit(); });
+function closeDD(){ if($('fs').classList.contains('on')) closeFilters(true); }
+function commit(){ paintBar(); state.page=1; load(); }
+
+/* the filter page works on a copy (D) and applies it on "Ver N casas" or the back arrow */
+var D=null, cntT=null, cntReq=0;
+function priceList(f){ return f.type==='lease'?[800,1000,1200,1500,1800,2200,2800,3500,5000]:[100000,125000,150000,175000,200000,225000,250000,275000,300000,350000,400000,450000,500000,600000,750000,1000000,1500000]; }
+function sel(id,list,val,first,fmt){ return '<select id="'+id+'"><option value="">'+first+'</option>'+list.map(function(v){ return '<option value="'+v+'"'+(String(v)===String(val)?' selected':'')+'>'+fmt(v)+'</option>'; }).join('')+'</select>'; }
+function two(lab,a,b,list,fmt){ return '<div class="fs-two"><label>'+t('fs_min')+sel('fs_'+a,list,D[a],t('nomin'),fmt)+'</label><label>'+t('fs_max')+sel('fs_'+b,list,D[b],t('nomax'),fmt)+'</label></div>'; }
+function cs(k,list){ return '<div class="fs-cs" data-cs="'+k+'">'+list.map(function(v){ return '<button type="button" data-v="'+v+'" class="'+(String(v)===String(D[k])?'on':'')+'">'+(v===''?t('fs_all'):v+'+')+'</button>'; }).join('')+'</div>'; }
+function sec(h,body){ return '<section class="fs-sec"><h3>'+h+'</h3>'+body+'</section>'; }
+function fsHtml(){
+  var sale=D.type==='sale', pa=PA(), sp=sale?short:money;
+  var tiles='<div class="fs-tiles"><button type="button" data-tile="" class="'+(D.kinds.length?'':'on')+'">'+IC_T.all+'<span>'+t('k_all')+'</span></button>'+
+    TILES.map(function(x){ return '<button type="button" data-tile="'+x[0]+'" class="'+(D.kinds.indexOf(x[0])>-1?'on':'')+'">'+IC_T[x[0]]+'<span>'+t(x[1])+'</span></button>'; }).join('')+'</div>';
+  var paLine=sale?(pa&&pa.amount?'<button type="button" class="fs-pa" id="fsPA"><span>✓ '+esc(t('fs_pa')(short(pa.amount)))+'</span><u>'+t('fs_pa_use')+'</u></button>':(!pa?'<a class="fs-link" href="apply.html">'+t('fs_qual')+'</a>':'')):'';
+  return '<div class="fs-top"><button type="button" class="fs-back" id="fsBack" aria-label="'+t('back').replace(/^‹\s*/,'')+'"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h2 id="fsH">'+t('filters')+'</h2><button type="button" class="fs-reset" id="fsReset">'+t('reset')+'</button></div>'+
+    '<div class="fs-body" id="fsBody">'+
+      '<div class="fs-save"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span>'+t('fs_save_p')+'</span><button type="button" id="fsSave">'+t('save')+'</button></div>'+
+      '<div class="fs-seg" role="radiogroup"><button type="button" role="radio" data-type="sale" class="'+(sale?'on':'')+'" aria-checked="'+sale+'">'+t('t_sale')+'</button><button type="button" role="radio" data-type="lease" class="'+(sale?'':'on')+'" aria-checked="'+!sale+'">'+t('t_lease')+'</button></div>'+
+      sec(t('h_price'),paLine+two('price','minp','maxp',priceList(D),function(v){ return sp(v); }))+
+      sec(t('h_beds'),cs('beds',['',1,2,3,4,5]))+
+      sec(t('h_baths'),cs('baths',['',1,2,3,4]))+
+      (sale?sec(t('h_kind'),tiles):'')+
+      sec(t('fs_more'),(sale?'<label class="fs-chk"><input type="checkbox" id="fs_newc"'+(D.newc?' checked':'')+'><span>'+t('newc')+'<small>'+t('c_newc_h')+'</small></span></label>':'')+
+        '<label class="fs-chk"><input type="checkbox" id="fs_open"'+(D.open?' checked':'')+'><span>'+t('c_open_l')+'<small>'+t('c_open_h')+'</small></span></label>')+
+      sec(t('fs_sqft'),two('sq','sqmin','sqmax',LISTS.sq,function(v){ return num(v); }))+
+      sec(t('fs_lot'),two('lot','lotmin','lotmax',LISTS.lot,acres))+
+      sec(t('fs_year'),two('year','ymin','ymax',LISTS.year,String))+
+      sec(t('fs_gar'),cs('gar',['',1,2,3]))+
+      sec(t('fs_kw'),'<input class="fs-in" id="fs_kw" type="text" maxlength="60" enterkeyhint="done" placeholder="'+esc(t('fs_kw_ph'))+'" value="'+esc(D.kw)+'"><p class="fs-hint">'+t('fs_kw_h')+'</p>')+
+    '</div>'+
+    '<div class="fs-foot"><button type="button" class="fs-go" id="fsGo">'+t('fs_busy')+'</button></div>';
+}
+function paintFs(keepScroll){
+  var y=keepScroll&&$('fsBody')?$('fsBody').scrollTop:0;
+  $('fsP').innerHTML=fsHtml(); if(y) $('fsBody').scrollTop=y;
+  liveCount();
+}
+function openFilters(){
+  D=JSON.parse(JSON.stringify(F)); paintFs(false);
+  $('fs').classList.add('on'); document.body.style.overflow='hidden';
+  setTimeout(function(){ var b=$('fsBack'); if(b) b.focus(); },60);
+}
+function readFs(){
+  ['minp','maxp','sqmin','sqmax','lotmin','lotmax','ymin','ymax'].forEach(function(k){ var el=$('fs_'+k); if(el) D[k]=el.value; });
+  var sw=function(a,b){ if(D[a]&&D[b]&&+D[a]>+D[b]){ var x=D[a]; D[a]=D[b]; D[b]=x; } };
+  sw('minp','maxp'); sw('sqmin','sqmax'); sw('lotmin','lotmax'); sw('ymin','ymax');
+  if($('fs_newc')) D.newc=$('fs_newc').checked; if($('fs_open')) D.open=$('fs_open').checked;
+  if($('fs_kw')) D.kw=$('fs_kw').value.trim().slice(0,60);
+}
+function closeFilters(apply){
+  if(apply&&D){ readFs(); F=D; }
+  D=null; $('fs').classList.remove('on'); document.body.style.overflow='';
+  if(apply){ PICKS=[]; commit(); }
+}
+function liveCount(){
+  clearTimeout(cntT); var go=$('fsGo'); if(go){ go.textContent=t('fs_busy'); go.classList.remove('zero'); }
+  cntT=setTimeout(function(){
+    if(!D) return; readFs();
+    var mine=++cntReq, cq=query(D,true); cq.set('resultsPerPage',1); cq.set('pageNum',1);
+    fetch(API+'?'+cq).then(function(r){ return r.ok?r.json():null; }).then(function(d){
+      if(mine!==cntReq||!$('fsGo')) return; var n=d?d.count||0:null;
+      $('fsGo').textContent=n==null?t('apply'):t('fs_see')(n); $('fsGo').classList.toggle('zero',n===0);
+    }).catch(function(){ if($('fsGo')) $('fsGo').textContent=t('apply'); });
+  },300);
+}
+$('fbtn').addEventListener('click',openFilters);
+$('fs').addEventListener('click',function(e){
+  if(e.target===$('fs')){ closeFilters(true); return; }
+  var b=e.target.closest('button'); if(!b||!D) return;
+  if(b.id==='fsBack'||b.id==='fsGo'){ closeFilters(true); return; }
+  if(b.id==='fsReset'){ var ty=D.type; D=blankF(); D.type=ty; paintFs(true); return; }
+  if(b.id==='fsSave'){ closeFilters(true); saveSearch(); return; }
+  if(b.id==='fsPA'){ var pa=PA(); if(pa&&pa.amount){ readFs(); var list=priceList(D), cap=list.filter(function(v){ return v<=pa.amount*1.02; }).pop(); D.maxp=String(cap||Math.round(pa.amount)); paintFs(true); } return; }
+  if(b.hasAttribute('data-type')){ readFs(); var nt=b.getAttribute('data-type'); if(nt!==D.type){ D.type=nt; D.minp=D.maxp=''; } paintFs(true); return; }
+  if(b.hasAttribute('data-tile')){ readFs(); var k=b.getAttribute('data-tile');
+    if(!k) D.kinds=[]; else { var i=D.kinds.indexOf(k); if(i>-1) D.kinds.splice(i,1); else D.kinds.push(k); if(D.kinds.length===TILES.length) D.kinds=[]; }
+    paintFs(true); return; }
+  var g=b.closest('[data-cs]'); if(g){ readFs(); D[g.getAttribute('data-cs')]=b.getAttribute('data-v'); paintFs(true); return; }
 });
-document.querySelectorAll('.pop').forEach(function(p){ p.addEventListener('click',function(e){ e.stopPropagation(); }); });
-document.addEventListener('click',closeDD);
-function commit(){ closeDD(); pills(); state.page=1; load(); }
-$('p_new').addEventListener('click',function(){ F.newc=!F.newc; commit(); });
-document.querySelectorAll('input[name=type]').forEach(function(r){ r.addEventListener('change',function(){ F.type=r.value; F.minp=F.maxp=''; priceOpts(); commit(); }); });
-['s_beds','s_baths'].forEach(function(id){ $(id).addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; F[id==='s_beds'?'beds':'baths']=b.getAttribute('data-v'); segs(); }); });
-document.querySelectorAll('.apply').forEach(function(b){ b.addEventListener('click',function(){
-  F.minp=$('minp').value; F.maxp=$('maxp').value;
-  if(F.minp&&F.maxp&&+F.minp>+F.maxp){ var x=F.minp; F.minp=F.maxp; F.maxp=x; priceOpts(); }
-  var ks=[].map.call(document.querySelectorAll('#kinds input:checked'),function(i){return i.value;}); F.kinds=ks.length?ks:['Residential']; segs();
-  commit();
-}); });
-$('qf').addEventListener('submit',function(e){ e.preventDefault(); PICKS=[];
+$('fs').addEventListener('change',function(e){ if(e.target.matches('select,input[type=checkbox]')) liveCount(); });
+$('fs').addEventListener('input',function(e){ if(e.target.id==='fs_kw') liveCount(); });
+$('fs').addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target.id==='fs_kw'){ e.preventDefault(); closeFilters(true); } });
+$('qf').addEventListener('submit',function(e){ e.preventDefault(); PICKS=[]; $('q').blur();
   var qv=$('q').value.trim();
   if(qv&&window.JagAccount&&JagAccount.user()) JagAccount.logActivity(/^\d{5}$/.test(qv)?{kind:'search',zip:qv,beds:F.beds||null,baths:F.baths||null,price:F.maxp||null}:{kind:'search',city:qv.slice(0,60),beds:F.beds||null,baths:F.baths||null,price:F.maxp||null});
   state.bounds=null; setNear(false); $('mapnote').classList.remove('on'); state.page=1; load(); });
 $('sort').addEventListener('change',function(){ state.page=1; load(); });
+$('tbChat').addEventListener('click',function(){ if(window.JagChat) JagChat.open(); });
+/* the bottom tab bar is for clients on phones; not for the team or inside the JAG app frame */
+(function(){ var team=false; try{ team=!!localStorage.getItem('jag_agent'); }catch(e){} if(!team&&window.top===window) document.body.classList.add('has-tb'); })();
 
 function applyLang(){
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-t]').forEach(function(el){ el.textContent=t(el.getAttribute('data-t')); });
   document.querySelectorAll('[data-ph]').forEach(function(el){ el.placeholder=t(el.getAttribute('data-ph')); });
   document.querySelectorAll('.langs button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-lang')===lang); });
-  priceOpts(); segs(); pills(); setTog(); render();
+  paintBar(); setTog(); render(); if(D) paintFs(true);
   if(window.JagAccount) JagAccount.relabel();
 }
 document.querySelectorAll('.langs button').forEach(function(b){
@@ -715,18 +990,16 @@ document.querySelectorAll('.langs button').forEach(function(b){
 /* ---------- data ---------- */
 /* /homes?homes=MLS1,MLS2: just the homes an agent picked for this client */
 var PICKS=(function(){ try{ var v=new URLSearchParams(location.search).get('homes')||''; return v.split(',').map(function(x){ return x.trim(); }).filter(function(x){ return /^[A-Za-z0-9-]{3,24}$/.test(x); }).slice(0,24); }catch(e){ return []; } })();
-function query(){
-  if(PICKS.length){ var pk=new URLSearchParams({resultsPerPage:24}); PICKS.forEach(function(m){ pk.append('mlsNumber',m); }); return pk; }
+function query(f,forCount){
+  f=f||F;
+  if(PICKS.length&&!forCount){ var pk=new URLSearchParams({resultsPerPage:24}); PICKS.forEach(function(m){ pk.append('mlsNumber',m); }); return pk; }
   var rec=$('sort').value==='rec';
-  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:rec&&state.perm?state.perm[state.page-1]||state.page:state.page,sortBy:rec?'createdOnDesc':$('sort').value});
-  var q=$('q').value.trim();
+  var p=new URLSearchParams({type:f.type,resultsPerPage:PER,pageNum:rec&&state.perm?state.perm[state.page-1]||state.page:state.page,sortBy:rec?'createdOnDesc':$('sort').value});
+  var q=$('q').value.trim(), kw=f.kw||'';
   if(state.bounds){ var b=state.bounds; p.set('map',JSON.stringify([[[b.getWest(),b.getSouth()],[b.getEast(),b.getSouth()],[b.getEast(),b.getNorth()],[b.getWest(),b.getNorth()]]])); }
-  else{ p.set('state',STATE); if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q&&!/\d/.test(q)&&state.qkind[q.toLowerCase()]!=='search') p.set('city',q); else if(q) p.set('search',q); }
-  if(F.newc&&F.type==='sale') p.set('newc','1');
-  if(F.minp) p.set('minPrice',F.minp); if(F.maxp) p.set('maxPrice',F.maxp);
-  if(F.beds) p.set('minBedrooms',F.beds); if(F.baths) p.set('minBaths',F.baths);
-  if(F.type==='sale') F.kinds.forEach(function(k){ p.append('propertyType',k); });
-  return p;
+  else{ p.set('state',STATE); if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q&&!/\d/.test(q)&&state.qkind[q.toLowerCase()]!=='search') p.set('city',q); else if(q){ p.set('search',(q+' '+kw).trim()); kw=''; } }
+  if(kw) p.set('search',kw);
+  return addFilters(p,f);
 }
 function load(fit){
   /* a word like "Willis" is a city first; if HAR has no city by that name it's a keyword (street, subdivision…) */
@@ -772,11 +1045,8 @@ function km(a,b,c,d){ var R=6371, x=(c-a)*Math.PI/180, y=(d-b)*Math.PI/180, h=Ma
 function circle(lat,lng,r){ var pts=[]; for(var i=0;i<16;i++){ var a=i/16*2*Math.PI; pts.push([lng+r/(111.32*Math.cos(lat*Math.PI/180))*Math.cos(a), lat+r/110.57*Math.sin(a)]); } pts.push(pts[0]); return JSON.stringify([pts]); }
 function wideQuery(c,r,page){
   var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:page,sortBy:'createdOnDesc',map:circle(c.lat,c.lng,r)});
-  if(F.newc&&F.type==='sale') p.set('newc','1');
-  if(F.minp) p.set('minPrice',F.minp); if(F.maxp) p.set('maxPrice',F.maxp);
-  if(F.beds) p.set('minBedrooms',F.beds); if(F.baths) p.set('minBaths',F.baths);
-  if(F.type==='sale') F.kinds.forEach(function(k){ p.append('propertyType',k); });
-  return p;
+  if(F.kw) p.set('search',F.kw);
+  return addFilters(p,F);
 }
 function widen(mine){
   var w=state.wide;
@@ -802,13 +1072,24 @@ function widen(mine){
     }).catch(function(){ w.busy=false; });
   })();
 }
+/* "Casa abierta: sáb 1–4pm" (HAR times are UTC; shown in Houston time) */
+function ohLabel(l){
+  var o=l&&l.openHouse&&l.openHouse[0]; if(!o) return '';
+  try{
+    var s0=o.start?new Date(o.start):null, e0=o.end?new Date(o.end):null, tz={timeZone:'America/Chicago'};
+    var dayOf=function(d){ return d.toLocaleDateString(lang==='es'?'es-MX':'en-US',Object.assign({weekday:'short'},tz)).replace('.',''); };
+    var hm=function(d){ return d.toLocaleTimeString('en-US',Object.assign({hour:'numeric',minute:'2-digit'},tz)).replace(':00','').replace(' ','').toLowerCase(); };
+    if(s0&&!isNaN(s0)) return t('oh')+dayOf(s0)+' '+hm(s0)+(e0&&!isNaN(e0)?'–'+hm(e0):'');
+    var d=new Date(o.date+'T12:00:00'); return t('oh')+dayOf(d);
+  }catch(e){ return ''; }
+}
 function specs(l){
   var d=l.details||{};
   return [d.numBedrooms!=null?'<b>'+d.numBedrooms+'</b> '+t('bd'):'',d.numBathrooms!=null?'<b>'+d.numBathrooms+'</b> '+t('ba'):'',d.sqft?'<b>'+num(d.sqft)+'</b> '+t('sqft'):''].filter(Boolean).join('<i>|</i>');
 }
 function render(fit){
   if(state.count===undefined) return;
-  var ru=reelsUrl(null); ['reelsBtn','reelsFab'].forEach(function(id){ var b=$(id); if(b) b.href=ru; });
+  var ru=reelsUrl(null); ['reelsBtn','tbReels'].forEach(function(id){ var b=$(id); if(b) b.href=ru; });
   var g=$('grid'), lease=F.type==='lease'; g.style.opacity=1;
   var q=$('q').value.trim();
   $('title').textContent=PICKS.length?t('picked'):t(lease?'ttl_lease':'ttl_sale')+t('ttl_in')+(state.near&&state.bounds?t('near_t'):state.bounds?t('area'):(q||t('tx')));
@@ -820,12 +1101,12 @@ function render(fit){
     var a=l.address||{}, n=l.daysOnMarket;
     return (i===wf?'<div class="widehd"><b>'+t('more_near')+'</b><span>'+esc(t('more_near_p')(Math.round(state.wide.r/1.15*0.621)))+'</span></div>':'')+'<article class="c" data-i="'+i+'" tabindex="0">'+
       '<div class="ph" style="background-image:url(\''+img(l.images[0],'small')+'\')">'+
-        (l.newConstruction?'<span class="tag nc">'+t('nc_tag')+'</span>':n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
+        (ohLabel(l)?'<span class="tag oh">'+esc(ohLabel(l))+'</span>':l.newConstruction?'<span class="tag nc">'+t('nc_tag')+'</span>':n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
         '<button type="button" class="heart'+(favs[l.mlsNumber]?' on':'')+'" aria-label="'+t('savehome')+'">'+HEART+'</button>'+
         (hasVid(l)?'<a class="vbadge" href="'+reelsUrl(l.mlsNumber)+'">'+t('reel_v')+'</a>':'')+
         (l.images.length>1?'<button type="button" class="nav p" aria-label="‹">‹</button><button type="button" class="nav x" aria-label="›">›</button>':'')+'</div>'+
       '<div class="bd"><div class="pr">'+money(l.listPrice)+(lease?'<span class="pm" style="color:inherit">'+t('mo')+'</span>':'<span class="pm">'+t('est')+money(estTotal(l.listPrice))+t('mo')+'</span>')+'</div>'+
-      '<div class="sp">'+specs(l)+' <em>- '+t(lease?'forrent':'forsale')+'</em></div>'+
+      '<div class="sp">'+specs(l)+'<i>|</i><em>'+(l.newConstruction&&!lease?t('nc_tag'):t(lease?'forrent':'forsale'))+'</em></div>'+
       '<div class="ad">'+esc(addr(a))+', '+esc(a.city)+', '+esc(a.state||'TX')+' '+esc(a.zip)+'</div>'+
       '<div class="br">'+t('listed')+esc(credit(l))+'</div></div></article>';
   }).join('');
@@ -1216,7 +1497,9 @@ function searchLabel(){
   parts.push(state.bounds?t('ss_map'):(q||'Houston'));
   parts.push(t(F.type==='sale'?'t_sale':'t_lease'));
   if(F.newc&&F.type==='sale') parts.push(t('ss_newc'));
+  if(F.type==='sale') F.kinds.forEach(function(k){ var x=TILES.filter(function(y){ return y[0]===k; })[0]; if(x) parts.push(t(x[1]).toLowerCase()); });
   if(F.beds) parts.push(F.beds+t('ss_bd')); if(F.baths) parts.push(F.baths+t('ss_ba'));
+  if(F.sqmin) parts.push(num(F.sqmin)+'+ '+t('sqft')); if(F.gar) parts.push(F.gar+'+ '+t('c_gar')); if(F.kw) parts.push('“'+F.kw+'”');
   var sp=F.type==='lease'?money:short;
   if(F.minp&&F.maxp) parts.push(sp(+F.minp)+'–'+sp(+F.maxp)); else if(F.maxp) parts.push(t('ss_upto')+sp(+F.maxp)); else if(F.minp) parts.push(t('ss_from')+sp(+F.minp));
   return parts.join(' · ');
@@ -1227,7 +1510,10 @@ function reelsUrl(start){
   var u=new URLSearchParams(), q=$('q').value.trim();
   if(q&&!PICKS.length) u.set('q',q); if(F.type==='lease') u.set('type','lease');
   ['minp','maxp','beds','baths'].forEach(function(k){ if(F[k]) u.set(k,F[k]); });
-  if(F.newc) u.set('newc','1'); if(F.kinds.join(',')!=='Residential') u.set('kinds',F.kinds.join(','));
+  if(F.newc) u.set('newc','1');
+  /* JAG Reels filters by HAR property type (houses/townhomes/condos are all "Residential" there) */
+  var rk=[]; if(!F.kinds.length||F.kinds.some(function(k){ return STY[k]; })) rk.push('Residential'); if(F.kinds.indexOf('land')>-1) rk.push('Land'); if(F.kinds.indexOf('multi')>-1) rk.push('Residential Income');
+  if(rk.join(',')!=='Residential') u.set('kinds',rk.join(','));
   if(state.bounds) u.set('b',state.bounds.toBBoxString()); if(start) u.set('start',start);
   var s=u.toString(); return 'reels'+(s?'?'+s:'');
 }
@@ -1235,24 +1521,27 @@ function currentSearch(){
   var p=query(), apiP={};
   ['pageNum','resultsPerPage','sortBy'].forEach(function(k){ p.delete(k); });
   p.forEach(function(v,k){ if(apiP[k]===undefined) apiP[k]=v; else apiP[k]=[].concat(apiP[k],v); });
+  delete apiP.minOpenHouseDate;   // an alert can't keep a date: "open houses only" stays in ui and is re-dated on open
   return { api:apiP, ui:{ q:$('q').value.trim(), type:F.type, minp:F.minp, maxp:F.maxp, beds:F.beds, baths:F.baths, kinds:F.kinds.slice(), newc:!!F.newc,
+    open:!!F.open, sqmin:F.sqmin, sqmax:F.sqmax, lotmin:F.lotmin, lotmax:F.lotmax, ymin:F.ymin, ymax:F.ymax, gar:F.gar, kw:F.kw,
     b:state.bounds?state.bounds.toBBoxString():null } };
 }
 function ssToast(msg,link){
   $('toastmsg').textContent=msg; $('toastlink').textContent=link?t('ss_go'):''; $('toastlink').href='account#searches'; $('toastlink').style.display=link?'':'none';
   $('toast').classList.add('on'); clearTimeout(toastT); toastT=setTimeout(function(){ $('toast').classList.remove('on'); $('toastlink').style.display=''; },9000);
 }
-$('saveBtn').addEventListener('click',function(){
-  closeDD();
+function saveSearch(){
   var A=window.JagAccount, snap=currentSearch(), label=searchLabel();
   if(!A) return;
   A.requireSignIn('why_search').then(function(){ return A.addSearch(label,snap); })
    .then(function(){ ssToast(t('ss_saved'),true); })
    .catch(function(e){ if(!e||e.message!=='cancelled') ssToast(t('ss_err'),false); });
-});
+}
+$('saveBtn').addEventListener('click',saveSearch); $('saveBtn2').addEventListener('click',saveSearch);
 
 /* ---------- map: results follow the map, like the big portals ---------- */
-function setTog(){ $('viewtog').textContent=$('main').classList.contains('mapview')?t('listv'):t('map'); }
+function setTog(){ var mv=$('main').classList.contains('mapview');
+  $('viewtog').innerHTML=(mv?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>')+'<span>'+(mv?t('listv'):t('map'))+'</span>'; }
 $('viewtog').addEventListener('click',function(){ $('main').classList.toggle('mapview'); setTog(); if(map){ quiet++; map.invalidateSize(); if(state.near&&state.bounds) map.fitBounds(state.bounds,{animate:false}); drawPins(!state.bounds); setTimeout(function(){ quiet--; },400); } });
 try{
   map=L.map('map',{scrollWheelZoom:true}).setView([29.76,-95.37],10);
@@ -1312,7 +1601,10 @@ try{
   if(t0==='lease'){ F.type='lease'; var r=document.querySelector('input[name=type][value=lease]'); if(r) r.checked=true; }
   var num_=function(k){ var v=qs.get(k); return v&&/^\d{1,9}$/.test(v)?v:''; };
   F.minp=num_('minp'); F.maxp=num_('maxp'); F.beds=num_('beds'); F.baths=num_('baths'); F.newc=qs.get('newc')==='1';
-  var k0=qs.get('kinds'); if(k0){ var ks=k0.split(',').filter(function(k){ return KINDS.some(function(x){ return x[0]===k; }); }); if(ks.length) F.kinds=ks; }
+  ['sqmin','sqmax','ymin','ymax','gar'].forEach(function(k){ F[k]=num_(k); });
+  ['lotmin','lotmax'].forEach(function(k){ var v=qs.get(k); F[k]=v&&/^\d{1,3}(\.\d{1,2})?$/.test(v)?v:''; });
+  F.open=qs.get('open')==='1'; F.kw=(qs.get('kw')||'').trim().slice(0,60);
+  var k0=qs.get('kinds'); if(k0) F.kinds=normKinds(k0.split(','));
   var b0=(qs.get('b')||'').split(',').map(Number);
   if(map&&b0.length===4&&b0.every(isFinite)){ state.bounds=L.latLngBounds([b0[1],b0[0]],[b0[3],b0[2]]); quiet++; map.fitBounds(state.bounds,{animate:false}); setTimeout(function(){ quiet--; },400); $('mapnote').classList.add('on'); }
 }catch(e){}

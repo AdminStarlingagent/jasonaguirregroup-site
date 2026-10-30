@@ -701,6 +701,7 @@ function searchUrl(s){
   ['minp','maxp','beds','baths'].forEach(function(k){ if(u[k]) q.set(k,u[k]); });
   if(u.kinds&&u.kinds.length&&u.kinds.join(',')!=='Residential') q.set('kinds',u.kinds.join(','));
   if(u.b) q.set('b',u.b); if(u.newc) q.set('newc','1');
+  ['sqmin','sqmax','lotmin','lotmax','ymin','ymax','gar','kw'].forEach(function(k){ if(u[k]) q.set(k,u[k]); }); if(u.open) q.set('open','1');
   return 'homes'+(q.toString()?'?'+q.toString():'');
 }
 function paintSearches(){

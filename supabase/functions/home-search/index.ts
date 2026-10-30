@@ -21,6 +21,10 @@ const CLASSES = ["residential", "condo"];
 const PASS = new Set([
   "type", "state", "city", "zip", "search", "map", "minPrice", "maxPrice",
   "minBedrooms", "minBaths", "propertyType", "sortBy", "pageNum", "mlsNumber",
+  // the full filter page (homes.html): max beds/baths, size, lot, year built, garage, open houses
+  "maxBedrooms", "maxBaths", "minSqft", "maxSqft", "minLotSizeSqft", "maxLotSizeSqft",
+  "minYearBuilt", "maxYearBuilt", "minGarageSpaces", "minOpenHouseDate", "maxOpenHouseDate",
+  "style",   // HAR's home style: Single Family Residence, Townhouse, Condominium, Manufactured…
 ]);
 
 // Only the fields the page displays. raw.NewConstructionYN is HAR's own "new construction" flag.
@@ -32,6 +36,8 @@ const FIELDS = [
   "office.brokerageName", "agents", "permissions", "raw.NewConstructionYN", "raw.BuilderName",
   // the listing agent's own video / virtual tour link (feeds JAG Reels)
   "details.virtualTourUrl", "details.alternateURLVideoLink",
+  // upcoming open houses ("Casa abierta: vie 12–5pm" on the card)
+  "openHouse",
 ].join(",");
 
 // Extra facts for a single listing page (?detail=1 with one mlsNumber).
@@ -44,6 +50,7 @@ const FIELDS_DETAIL = [
   "raw.AssociationYN", "raw.AssociationName", "raw.AssociationPhone", "raw.AssociationFee", "raw.AssociationFeeFrequency",
   "raw.ListAgentFullName", "raw.ListAgentEmail", "raw.ListAgentPreferredPhone", "raw.ListAgentStateLicense",
   "raw.ListOfficeName", "raw.ListOfficePhone", "raw.Disclosures", "raw.CountyOrParish", "raw.SubdivisionName",
+  "openHouse",
 ].join(",");
 
 const MAX_PER_PAGE = 24;
@@ -121,6 +128,21 @@ function clean(l: any, detail = false) {
     };
   }
   delete l.raw;
+  // open houses: only upcoming ones, compact
+  if (Array.isArray(l.openHouse)) {
+    const today = new Date(Date.now() - 6 * 3600e3).toISOString().slice(0, 10);
+    l.openHouse = l.openHouse
+      .filter((o: any) => o && typeof o.date === "string" && o.date.slice(0, 10) >= today)
+      .slice(0, 4)
+      .map((o: any) => ({ date: String(o.date).slice(0, 10), start: o.startTime || null, end: o.endTime || null }));
+    if (!l.openHouse.length) delete l.openHouse;
+  } else if (l.openHouse && typeof l.openHouse === "object") {
+    const arr = Object.values(l.openHouse) as any[];
+    const today = new Date(Date.now() - 6 * 3600e3).toISOString().slice(0, 10);
+    const oh = arr.filter((o) => o && typeof o.date === "string" && o.date.slice(0, 10) >= today).slice(0, 4)
+      .map((o) => ({ date: String(o.date).slice(0, 10), start: o.startTime || null, end: o.endTime || null }));
+    if (oh.length) l.openHouse = oh; else delete l.openHouse;
+  }
   return l;
 }
 
