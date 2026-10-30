@@ -16,7 +16,7 @@
 (function(){
   var C = window.JAG_CRM || {}, BASE = String(C.url || '').replace(/\/+$/, ''), KEY = C.anonKey;
   var SITE = 'https://jasonaguirregroup.company';
-  var o = null, me = null, P = null, uid = null, fub = {}, FILES = {}, OFF = {}, LOANX = {}, upl = 0, tab = 'note', filt = 'all', col = 'c', busy = false, lolaAns = '', open = {};
+  var o = null, me = null, P = null, uid = null, fub = {}, FILES = {}, OFF = {}, LOANX = {}, APX = {}, upl = 0, tab = 'note', filt = 'all', col = 'c', busy = false, lolaAns = '', open = {};
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
@@ -229,7 +229,9 @@
   function loadExtra(u){
     return Promise.all([
       rpc('jag_contact_offers', { p_contact: u }).then(function(j){ if(j && j.ok) OFF[u] = j; }).catch(function(){}),
-      rpc('jag_contact_loan_get', { p_contact: u }).then(function(j){ if(j && j.ok) LOANX[u] = j; }).catch(function(){})
+      rpc('jag_contact_loan_get', { p_contact: u }).then(function(j){ if(j && j.ok) LOANX[u] = j; }).catch(function(){}),
+      rpc('jag_appts_for_contact', { p_contact: u }).then(function(list){ APX[u] = APX[u] || {}; APX[u].list = Array.isArray(list) ? list : []; if(window.JagAppts) JagAppts.remember(APX[u].list); }).catch(function(){}),
+      rpc('jag_lola_stage_team', { p_contact: u }).then(function(L){ APX[u] = APX[u] || {}; APX[u].lola = L || null; }).catch(function(){})
     ]).then(function(){ if(u === uid && P) render(); });
   }
   var OST = [['submitted', 'Submitted'], ['reviewing', 'Team reviewing'], ['sent', 'Sent to seller'], ['countered', 'Countered'], ['accepted', 'Accepted'], ['declined', 'Not accepted'], ['withdrawn', 'Withdrawn']];
@@ -573,7 +575,9 @@
           '<div class="lka"><button type="button" class="pbtn s" data-a="nudge" data-i="' + i + '">💬 Text an offer nudge</button><a class="pbtn g s" href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">View ↗</a></div></div></div>'; }).join('') +
         (favs.length > 6 && !open.__favall ? '<button type="button" class="pbtn g s" data-a="favall">Show all ' + favs.length + '</button>' : '')
       : '<div class="none">Nothing liked yet. Homes they save in the app or ❤️ on a list you send show up here.</div>') + '</div>';
+    var AX = APX[uid] || {}, apptCard = window.JagAppts && AX.list ? JagAppts.cardHtml(AX.list, AX.lola) : '';
     var hot = (fullOffers || offers).some(function(x){ return /^(submitted|reviewing|sent|countered)$/.test(x.status); });
+    lola = lola + apptCard;
     return hot ? lola + offerCard + loanCard + favCard + tasks + files + collab + tourCard + listCard : lola + (favs.length ? favCard : '') + tasks + files + collab + tourCard + offerCard + loanCard + listCard + (favs.length ? '' : favCard);
   }
 
@@ -671,6 +675,7 @@
     if(a === 'shw') return showings();
     if(a === 'offer') return offer();
     if(a === 'favall'){ open.__favall = true; render(); return; }
+    if(a === 'apbook'){ if(window.JagAppts) JagAppts.book({ id: c.id, name: c.name }, function(){ loadExtra(uid); }); return; }
     if(a === 'nudge'){ var fv = (P.favorites || [])[+b.getAttribute('data-i')]; if(!fv) return;
       tab = 'text'; cmpDraft.text = { body: nudgeText(fv) }; if(window.innerWidth <= 900) col = 'c'; render();
       var tb2 = $('cm-body'); if(tb2){ tb2.focus(); tb2.scrollIntoView({ block: 'center' }); } toast('Check the text, then send it from your phone'); return; }

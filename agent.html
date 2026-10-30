@@ -308,6 +308,7 @@ body{background:var(--paper)}
   <nav class="tabs" aria-label="Agent Hub"><div class="wrap">
     <button type="button" data-tab="today" class="on">Today <span class="tc" id="tc-today"></span></button>
     <button type="button" data-tab="clients">Contacts</button>
+    <button type="button" data-tab="appts">Appointments <span class="tc" id="tc-appts"></span></button>
     <button type="button" data-tab="messages">Messages <span class="tc" id="tc-msgs"></span></button>
     <button type="button" data-tab="showings" id="tab-showings" hidden>Showings <span class="tc" id="tc-shows"></span></button>
     <button type="button" data-tab="offers">Offers <span class="tc" id="tc-offers"></span></button>
@@ -316,6 +317,8 @@ body{background:var(--paper)}
   </div></nav>
   <main class="wrap">
     <section id="t-today"></section>
+
+    <section id="t-appts" hidden></section>
 
     <section id="t-clients" hidden>
       <div class="pwbar" id="pwbar" hidden><b>Tired of email codes? Set a password and sign in with it next time.</b><button type="button" id="pwbar-go">Set a password</button><button type="button" class="x" id="pwbar-x">Not now</button></div>
@@ -413,8 +416,9 @@ body{background:var(--paper)}
 <script src="jag-lola-offer.js?v=2"></script>
 <script src="jag-showings.js?v=1"></script>
 <script src="jag-crm.js?v=5"></script>
-<script src="jag-profile.js?v=4"></script>
+<script src="jag-profile.js?v=5"></script>
 <script src="jag-today.js?v=1"></script>
+<script src="jag-appts.js?v=1"></script>
 <script>
 (function(){
   var C = window.JAG_CRM, BASE = C.url.replace(/\/+$/, ''), KEY = C.anonKey;
@@ -630,6 +634,9 @@ body{background:var(--paper)}
         openList: openList, stages: function(){ return cstages.map(function(x){ return x.name; }); },
         onCount: function(n){ $('tc-today').textContent = n ? n : ''; }, toast: function(m){ if(window.JagCRM) JagCRM.toast(m); } });
       rpc('jag_stage_owners_get').then(function(j){ if(j && j.ok){ team = j.team || []; paintFilters(); if(contacts.length) paint(); } }).catch(function(){});
+      if(window.JagAppts) JagAppts.init({ rpc: rpc, me: me, openProfile: function(id){ if(window.JagProfile) JagProfile.open(id); },
+        onCount: function(n){ $('tc-appts').textContent = n ? n : ''; }, toast: function(m){ if(window.JagCRM) JagCRM.toast(m); } });
+      if(window.JagAppts) JagAppts.load();
       if(window.JagProfile) JagProfile.init({ rpc: rpc, me: me, isLead: me.isLead,
         listIds: function(){ return contacts.map(function(x){ return x.id; }); },
         findRow: findC,
@@ -900,8 +907,9 @@ body{background:var(--paper)}
   function showTab(t){
     curTab = t;
     document.querySelectorAll('.tabs [data-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-tab') === t); });
-    ['today', 'clients', 'messages', 'showings', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
+    ['today', 'clients', 'appts', 'messages', 'showings', 'offers', 'share', 'links'].forEach(function(k){ $('t-' + k).hidden = k !== t; });
     if(t === 'today'){ if(window.JagToday) JagToday.load(); }
+    else if(t === 'appts'){ if(window.JagAppts) JagAppts.load(); }
     else if(t === 'messages'){ if(!thUser) loadInbox(); } else if(t === 'showings'){ if(window.JagShowings) JagShowings.load(); } else if(t !== 'share') load();
   }
   document.querySelector('.tabs').addEventListener('click', function(e){
@@ -913,9 +921,10 @@ body{background:var(--paper)}
     else if(t === 'showings') history.replaceState(null, '', '#showings');
     else if(t === 'today') history.replaceState(null, '', location.pathname + location.search);
     else if(t === 'clients') history.replaceState(null, '', '#contacts');
+    else if(t === 'appts') history.replaceState(null, '', '#appts');
     else if(t !== 'messages' && location.hash) history.replaceState(null, '', location.pathname + location.search);
   });
-  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else if(curTab === 'showings') JagShowings.load(); else if(curTab === 'today'){ if(window.JagToday) JagToday.load(); } else load(); } });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else if(curTab === 'showings') JagShowings.load(); else if(curTab === 'today'){ if(window.JagToday) JagToday.load(); } else if(curTab === 'appts'){ if(window.JagAppts) JagAppts.load(); } else load(); } });
 
   /* ---------------- messages (Mensajes from website clients) ---------------- */
   var threads = [], mfilter = 'mine', thUser = null, th = null, thPending = [], thSig = '', thBusy = false;
@@ -1016,6 +1025,7 @@ body{background:var(--paper)}
     if(/^#(showings|tours)/i.test(location.hash) && me){ if(me.canShow) showTab('showings'); return; }
     if(/^#today/i.test(location.hash) && me){ showTab('today'); return; }
     if(/^#contacts/i.test(location.hash) && me){ showTab('clients'); return; }
+    if(/^#appts/i.test(location.hash) && me){ showTab('appts'); return; }
     var m = location.hash.match(/^#(?:mensajes|messages)(?:\/([0-9a-f-]{36}))?/i); if(!m || !me) return;
     showTab('messages'); if(m[1]) openThread(m[1]);
   }
@@ -1026,6 +1036,7 @@ body{background:var(--paper)}
     var m = suf.match(/#c\/([\w-]{2,40})/); if(m && me && window.JagProfile){ JagProfile.open(m[1]); return true; }
     if(/^#today/i.test(suf) && me){ if(window.JagProfile && JagProfile.isOpen()) JagProfile.close(); showTab('today'); return true; }
     if(/^#contacts/i.test(suf) && me){ showTab('clients'); return true; }
+    if(/^#appts/i.test(suf) && me){ if(window.JagProfile && JagProfile.isOpen()) JagProfile.close(); showTab('appts'); return true; }
     return false;
   };
   start();
