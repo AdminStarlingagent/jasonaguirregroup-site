@@ -400,7 +400,7 @@ function submit(){
     return fetch(SB+'/rest/v1/rpc/jag_offer_submit',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+(tk||KEY),'Content-Type':'application/json'},body:JSON.stringify({p:p})});
   }).then(function(r){ return r.json(); }).then(function(j){
     if(!j||!j.ok){ busy=false; $('next').disabled=false; $('next').textContent=t('send'); alert(j&&j.reason==='too_many'?t('many'):t('fail')); return; }
-    try{ var so=strengthObj(); emailTeam(p, JagOffer.text().lv[JagOffer.strength(so).level]); }catch(e){}
+    // the team email now goes from the database (jag_offers insert → jag-client-email 'buyer_offer': the client's agent, Jason copied)
     try{ if(window.JagAccount&&JagAccount.user()) JagAccount.logActivity({kind:'inquiry',mls:D.mls||null,price:num(D.offer_price)||null}); }catch(e){}
     step=N; render(); window.scrollTo({top:0,behavior:'smooth'});
   }).catch(function(){ busy=false; $('next').disabled=false; $('next').textContent=t('send'); alert(t('fail')); });

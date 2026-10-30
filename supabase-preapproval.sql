@@ -136,3 +136,29 @@ begin
 end $$;
 revoke all on function public.jag_contact_offers(uuid) from public, anon;
 grant execute on function public.jag_contact_offers(uuid) to authenticated;
+
+-- ============================================================
+-- Website offers → branded team email (replaces the Web3Forms email that went to admin@starlingagent.com).
+-- To the client's agent (offer agent link → account agent → Contacts owner → Jason), Jason copied. jag-client-email 'buyer_offer'.
+-- ============================================================
+grant execute on function public.jag_preapproval(uuid) to service_role;
+create or replace function ops.kick_offer_email(p_id uuid)
+returns bigint language plpgsql security definer set search_path to '' as $$
+declare v_tok text; v_req bigint;
+begin
+  select decrypted_secret into v_tok from vault.decrypted_secrets where name = 'jag_alerts_token';
+  select net.http_post(url := 'https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/jag-client-email',
+    body := jsonb_build_object('kind', 'buyer_offer', 'id', p_id::text),
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-jag-token', v_tok), timeout_milliseconds := 8000) into v_req;
+  return v_req;
+end $$;
+revoke all on function ops.kick_offer_email(uuid) from public, anon, authenticated;
+create or replace function public.jag_offers_email_trg()
+returns trigger language plpgsql security definer set search_path to '' as $$
+begin
+  perform ops.kick_offer_email(new.id);
+  return new;
+exception when others then return new;
+end $$;
+drop trigger if exists jag_offers_email on public.jag_offers;
+create trigger jag_offers_email after insert on public.jag_offers for each row execute function public.jag_offers_email_trg();

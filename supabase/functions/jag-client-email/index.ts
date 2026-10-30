@@ -3,6 +3,8 @@
 //   kind 'cobuyer_invite': id = jag_client_cobuyers row. "Ana lo invitó a buscar casa juntos en JAG" with an accept button.
 //   kind 'investor_invite': id = jag_investors row. Private invite to the investor portal (jasonaguirregroup.company/invest), Spanish + English.
 //   kind 'investor_request': id = jag_investor_requests row. To Jason: an investor tapped "List it with JAG" or "Hard-money lender intro".
+//   kind 'buyer_offer': id = jag_offers id (uuid). To the client's agent, Jason copied: a client sent an offer from the website,
+//     with every term, a pre-approval check and a button to their profile. (Replaces the old Web3Forms email.)
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SITE, esc, row, button, agentStrip, h1, h2, lead, callout, shell, steps, eyebrow, facts, money, phoneFmt, tel, C } from "./jag-email.ts";
 
@@ -126,6 +128,50 @@ Deno.serve(async (req) => {
     const t = await r.text();
     await db.from("jag_investor_requests").update(r.ok ? { emailed_at: new Date().toISOString(), email_error: null } : { email_error: ("resend " + r.status + " " + t).slice(0, 300) }).eq("id", q.id);
     return json({ ok: r.ok });
+  }
+  if (b.kind === "buyer_offer") {
+    const { data: o } = await db.from("jag_offers").select("*").eq("id", String(b.id || "")).maybeSingle();
+    if (!o) return json({ ok: false, error: "offer not found" });
+    const { data: cl } = o.user_id ? await db.from("jag_clients").select("agent_code,name").eq("user_id", o.user_id).maybeSingle() : { data: null };
+    let ct: any = null;
+    if (o.user_id) ({ data: ct } = await db.from("jag_contacts").select("id,assigned_code").eq("user_id", o.user_id).maybeSingle());
+    if (!ct && o.email) ({ data: ct } = await db.from("jag_contacts").select("id,assigned_code").ilike("email", o.email).eq("deleted", false).limit(1).maybeSingle());
+    const code = o.agent_code || (cl && cl.agent_code) || (ct && ct.assigned_code) || "jason";
+    const { data: ag } = await db.from("jag_agents").select("code,name,first_name,email").eq("code", code).maybeSingle();
+    const { data: jason } = await db.from("jag_agents").select("email").eq("code", "jason").maybeSingle();
+    const boss = (jason && jason.email) || "jason.aguirre@jasonhoustonrealty.com";
+    const to = ag && ag.email ? [ag.email] : [boss];
+    const cc = to[0].toLowerCase() === boss.toLowerCase() ? undefined : [boss];
+    const { data: pa } = o.user_id ? await db.rpc("jag_preapproval", { p_user: o.user_id }) : { data: null };
+    const lp = Number(o.list_price) || 0, op = Number(o.offer_price) || 0;
+    const CT: Record<string, string> = { "Inspección": "Inspection", "Avalúo": "Appraisal", "Financiamiento": "Financing", "Venta de mi casa actual": "Sale of current home" };
+    const rows: [string, string][] = [
+      ["Buyer", o.name || ""], ["Phone", phoneFmt(o.phone) || ""], ["Email", o.email || ""], ["Language", o.lang === "en" ? "English" : "Spanish"],
+      ["Co-buyer", o.co_buyer || ""], ["Home", o.address || ""], ["MLS", o.mls || ""], ["List price", money(lp)],
+      ["Offer price", money(op) + (lp && op ? ` (${(op / lp * 100).toFixed(1)}% of list)` : "")], ["Earnest money", money(o.earnest)],
+      ["Paying", o.financing === "cash" ? "Cash" : o.financing ? "Loan" + (o.loan_type ? " · " + o.loan_type : "") : ""],
+      ["Down payment", o.down_payment || ""], ["Lender", o.lender || ""],
+      ["Pre-approval / funds", ({ yes: "Yes, has it", working: "Working on it", no: "Not yet" } as Record<string, string>)[o.proof] || o.proof || ""],
+      ["Conditions", (o.contingencies || []).map((k: string) => CT[k] || k).join(", ")], ["Option period", o.option_days ? o.option_days + " days" : ""],
+      ["Target closing", o.close_date ? new Date(o.close_date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""],
+      ["Client notes", o.notes || ""], ["Agent", ag ? (ag.name || ag.first_name || code) : code],
+    ].filter((r) => r[1]) as [string, string][];
+    const amt = pa && !pa.expired && Number(pa.amount) > 0 ? Number(pa.amount) : 0;
+    const paLine = pa ? (pa.expired ? callout("<b>⚠️ Their pre-approval expired</b> (" + esc(pa.expires) + "). Ask the lender for a new letter before sending.", "red")
+        : amt && op > amt ? callout(`<b>⚠️ Above their pre-approval</b><br>Pre-approved up to ${money(amt)}${pa.loan_type ? " · " + esc(String(pa.loan_type).toUpperCase()) : ""}${pa.lender ? " · " + esc(pa.lender) : ""}. Talk to them or the lender before this goes to the seller.`, "red")
+        : callout(`<b>✓ Pre-approved</b>${amt ? " up to " + money(amt) : ""}${pa.loan_type ? " · " + esc(String(pa.loan_type).toUpperCase()) : ""}${pa.lender ? " · " + esc(pa.lender) : ""}`, "green")) : "";
+    const prof = ct ? SITE + "/workspace.html#hub=" + encodeURIComponent("#c/" + ct.id) : SITE + "/agent.html";
+    const subject = `New buyer offer: ${o.name || "Client"} — ${o.address || "MLS " + (o.mls || "")}`;
+    const html = shell({ es: false, team: true, title: subject, preheader: `${money(op)} offer${lp ? " on a " + money(lp) + " list" : ""} from the website. Not binding until they sign.`,
+      body: row(eyebrow("Website offer worksheet · not a binding offer") + h1(subject)
+          + lead("The client filled in their offer on the website. Review it, then prepare the contract from their profile.")
+          + paLine + facts(rows)
+          + `<div style="margin-top:18px">${button(prof, "Open their profile", { full: true })}</div>`
+          + (o.phone ? `<div style="margin-top:10px">${button("tel:" + tel(o.phone), "Call " + String(o.name || "them").split(/\s+/)[0], { full: true, kind: "outline" })}</div>` : ""), "0 32px"),
+      footerNote: "Sent by the JAG website when a client submits an offer." });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM, to, cc, reply_to: o.email || undefined, subject, html }) });
+    return json({ ok: r.ok, status: r.status, to, cc });
   }
   return json({ ok: false, error: "unknown kind" }, 400);
 });
