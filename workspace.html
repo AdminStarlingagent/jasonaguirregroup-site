@@ -173,7 +173,7 @@ a{color:inherit}
       f = document.createElement('iframe');
       f.dataset.sec = id; f.title = S(id).long;
       f.setAttribute('allow', 'clipboard-read; clipboard-write; web-share; geolocation; fullscreen');
-      f.addEventListener('load', function(){ f.dataset.loaded = '1'; if(id === cur) settle(); });
+      f.addEventListener('load', function(){ f.dataset.loaded = '1'; watchFrame(id, f); if(id === cur){ settle(); syncHash(); } });
       frames[id] = f; f.src = src; $('frames').appendChild(f);
     } else if(reload){
       f.dataset.loaded = ''; f.src = src;
@@ -181,6 +181,22 @@ a{color:inherit}
     return f;
   }
   function settle(){ $('boot').hidden = true; preloadSoon(); }
+  // Keep the page's own spot (an open contact, a message thread, the Contacts tab) in the address bar as #hub=%23c%2F<id>,
+  // so refreshing or sharing the link comes back to the same place instead of the tab's start screen.
+  function frameHash(id){ var f = frames[id]; if(!f || !f.dataset.loaded) return null; try{ var h = f.contentWindow.location.hash; return h && h !== '#' ? h : ''; }catch(e){ return null; } }
+  function syncHash(){
+    if(!cur) return; var h = frameHash(cur); if(h === null) return;
+    var want = '#' + cur + (h ? '=' + encodeURIComponent(h) : '');
+    if(location.hash !== want){ try{ history.replaceState(null, '', want); }catch(e){} }
+  }
+  function watchFrame(id, f){
+    try{
+      var w = f.contentWindow, hs = w.history;
+      if(hs.__jagSync) return; hs.__jagSync = 1;
+      ['replaceState', 'pushState'].forEach(function(k){ var orig = hs[k]; hs[k] = function(){ var r = orig.apply(hs, arguments); if(id === cur) setTimeout(syncHash, 0); return r; }; });
+      w.addEventListener('hashchange', function(){ if(id === cur) syncHash(); });
+    }catch(e){}
+  }
 
   function go(id, suf, resetId){
     if(resetId && frames[resetId] && resetId !== id){ frames[resetId].src = S(resetId).page; }
@@ -201,7 +217,8 @@ a{color:inherit}
     cur = id;
     document.title = S(id).long + ' · JAG Workspace';
     try{ localStorage.setItem('jag_team_tab', id); }catch(e){}
-    if(location.hash !== '#' + id){ try{ history.replaceState(null, '', '#' + id); }catch(e){} }
+    var fh = frameHash(id), want = '#' + id + (fh ? '=' + encodeURIComponent(fh) : fh === null && suf ? '=' + encodeURIComponent(suf) : '');
+    if(location.hash !== want){ try{ history.replaceState(null, '', want); }catch(e){} }
     if(f.dataset.loaded) settle();
     closeMenu();
   }

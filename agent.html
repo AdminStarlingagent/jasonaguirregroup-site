@@ -413,7 +413,7 @@ body{background:var(--paper)}
 <script src="jag-lola-offer.js?v=2"></script>
 <script src="jag-showings.js?v=1"></script>
 <script src="jag-crm.js?v=4"></script>
-<script src="jag-profile.js?v=2"></script>
+<script src="jag-profile.js?v=3"></script>
 <script src="jag-today.js?v=1"></script>
 <script>
 (function(){
@@ -634,7 +634,7 @@ body{background:var(--paper)}
         listIds: function(){ return contacts.map(function(x){ return x.id; }); },
         findRow: findC,
         handoff: function(c, cb){ if(window.JagShowings) JagShowings.handoff(c, function(code){ c.showing_agent_code = code; paint(); if(cb) cb(code); }); },
-        openThread: function(u){ showTab('messages'); openThread(u); }, reload: load, onClose: function(){ load(); if(curTab === 'today' && window.JagToday) JagToday.load(); } });
+        openThread: function(u){ showTab('messages'); openThread(u); }, reload: load, onClose: function(){ load(); if(curTab === 'today' && window.JagToday) JagToday.load(); if(curTab === 'clients'){ try{ history.replaceState(null, '', '#contacts'); }catch(x){} } } });
       load(); if(window.JagToday) JagToday.load(); routeHash();
     }).catch(function(e){
       if(String(e && e.message) === 'signin'){ ls('jag_agent', null); showSignIn('Your sign-in expired. Sign in again.'); }
@@ -912,6 +912,7 @@ body{background:var(--paper)}
     if(t === 'messages' && location.hash.indexOf('#mensajes') !== 0) history.replaceState(null, '', '#mensajes');
     else if(t === 'showings') history.replaceState(null, '', '#showings');
     else if(t === 'today') history.replaceState(null, '', location.pathname + location.search);
+    else if(t === 'clients') history.replaceState(null, '', '#contacts');
     else if(t !== 'messages' && location.hash) history.replaceState(null, '', location.pathname + location.search);
   });
   document.addEventListener('visibilitychange', function(){ if(!document.hidden && me){ if(curTab === 'messages') msgTickNow(); else if(curTab === 'showings') JagShowings.load(); else if(curTab === 'today'){ if(window.JagToday) JagToday.load(); } else load(); } });

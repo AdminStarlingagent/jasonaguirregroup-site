@@ -5,7 +5,8 @@
      middle  write: note · email · text · log call  →  Lola's summary  →  ONE history of everything
              (notes, calls, emails, texts, app messages, AI chats, homes and lists sent, alert emails, saved homes,
               screenings, loan apps, tours, offers, and Follow Up Boss notes/calls while both run)
-     right   Lola: the next best step and messages ready to send · tasks · collaborators · tours · offers · loan · lists
+     right   Lola: the next best step and messages ready to send · tasks · files · collaborators · tours · offers · loan · lists
+             Files: team uploads (private bucket contact-files) + the client's own uploads (client-proof); supabase-contact-files.sql
    Phones: the three columns become three tabs (History · Details · Lola & tasks).
    Opened at agent.html#c/<contact id> (an app account id from older links works too). Any contact: Follow Up Boss leads
    and app accounts alike (jag_contacts). Data: jag_contact_profile (supabase-contacts-phase2.sql); stage / notes / calls /
@@ -15,7 +16,7 @@
 (function(){
   var C = window.JAG_CRM || {}, BASE = String(C.url || '').replace(/\/+$/, ''), KEY = C.anonKey;
   var SITE = 'https://jasonaguirregroup.company';
-  var o = null, me = null, P = null, uid = null, fub = {}, tab = 'note', filt = 'all', col = 'c', busy = false, lolaAns = '', open = {};
+  var o = null, me = null, P = null, uid = null, fub = {}, FILES = {}, upl = 0, tab = 'note', filt = 'all', col = 'c', busy = false, lolaAns = '', open = {};
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function digits(p){ return String(p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); }
@@ -159,6 +160,11 @@
     '.tadd{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}',
     '.tadd .r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}',
     '.none{color:var(--muted);font-size:13.5px}',
+    '.pc h3 label.add{display:grid;place-items:center;cursor:pointer}',
+    '.fdrop{border:2px dashed #d9d6d1;border-radius:14px;padding:14px;text-align:center;color:var(--muted);font-size:13.5px;font-weight:700;cursor:pointer;display:block;margin-bottom:4px}',
+    '.fdrop.on{border-color:var(--red);background:#fff5f5;color:var(--red)}',
+    '.li .fo{border:0;background:#f6f5f3;border-radius:99px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--ink);min-height:32px;white-space:nowrap}',
+    '.fmsg{font-size:13px;font-weight:700;color:var(--muted);margin-top:6px}',
     '.pf-load{display:grid;place-items:center;min-height:60vh;color:var(--muted);font-weight:700}'
   ].join('\n');
   document.head.appendChild(css);
@@ -169,7 +175,10 @@
     uid = u; P = null; lolaAns = ''; open = {}; filt = 'all'; tab = 'note';
     var el = $('pf');
     if(!el){ el = document.createElement('div'); el.id = 'pf'; el.className = 'pf'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Client profile'); document.body.appendChild(el);
-      el.addEventListener('click', onClick); el.addEventListener('change', onChange); }
+      el.addEventListener('click', onClick); el.addEventListener('change', onChange);
+      el.addEventListener('dragover', function(e){ if(!uid || !e.dataTransfer || Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') < 0) return; e.preventDefault(); var d = $('pf-fdrop'); if(d) d.classList.add('on'); });
+      el.addEventListener('dragleave', function(e){ if(e.target && e.target.id === 'pf-fdrop') e.target.classList.remove('on'); });
+      el.addEventListener('drop', function(e){ if(!uid || !e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return; e.preventDefault(); var d = $('pf-fdrop'); if(d) d.classList.remove('on'); upload(e.dataTransfer.files); }); }
     el.hidden = false; el.scrollTop = 0; document.body.style.overflow = 'hidden';
     el.innerHTML = '<div class="pf-load">Loading profile…</div>';
     try{ if(location.hash !== '#c/' + u) history.replaceState(null, '', '#c/' + u); }catch(e){}
@@ -190,7 +199,47 @@
       if(j.contact && j.contact.id && j.contact.id !== uid){ uid = u = j.contact.id; try{ history.replaceState(null, '', '#c/' + u); }catch(e){} }
       P = j; render();
       if(first && !fub[u]) loadFub(u);
+      loadFiles(u);
     }).catch(function(){ if(u === uid) $('pf').innerHTML = '<div class="pf-top"><div class="in"><button type="button" class="pf-back" data-a="close">← Contacts</button></div></div><div class="pf-load">Could not load this profile. Check your connection.</div>'; });
+  }
+  function loadFiles(u){
+    return rpc('jag_contact_files', { p_contact: u }).then(function(j){ if(j && j.ok){ FILES[u] = j; if(u === uid && P) render(); } }).catch(function(){});
+  }
+  function fileIcon(n, m){ n = String(n || '').toLowerCase(); m = String(m || '');
+    return /pdf/.test(m) || /\.pdf$/.test(n) ? '📄' : /^image\//.test(m) || /\.(jpe?g|png|heic|heif|webp|gif)$/.test(n) ? '🖼️' : /sheet|excel|csv/.test(m) || /\.(xlsx?|csv)$/.test(n) ? '📊' : '📎'; }
+  function fsize(b){ b = +b || 0; return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : b ? Math.max(1, Math.round(b / 1024)) + ' KB' : ''; }
+  function upload(list){
+    var u = uid, msg = function(t){ var m = $('pf-fmsg'); if(m) m.textContent = t; };
+    var fl = Array.prototype.slice.call(list || []).filter(function(f){ return f && f.size; });
+    if(!fl.length) return;
+    var big = fl.filter(function(f){ return f.size > 26214400; }); fl = fl.filter(function(f){ return f.size <= 26214400; });
+    if(big.length) toast(big.map(function(f){ return f.name; }).join(', ') + ': too big (25 MB max)');
+    if(!fl.length) return;
+    upl += fl.length; msg('Uploading ' + fl.length + ' file' + (fl.length === 1 ? '' : 's') + '…');
+    var done = 0, bad = 0;
+    fl.reduce(function(chain, f){ return chain.then(function(){
+      var safe = (f.name || 'file').replace(/[^A-Za-z0-9._-]/g, '_').slice(-80), path = u + '/' + Date.now() + '-' + safe;
+      return JagShare.token().then(function(t){
+        return fetch(BASE + '/storage/v1/object/contact-files/' + path.split('/').map(encodeURIComponent).join('/'), { method: 'POST',
+          headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': f.type || 'application/octet-stream', 'x-upsert': 'false' }, body: f });
+      }).then(function(r){ if(!r.ok) throw new Error('up');
+        return rpc('jag_contact_file_add', { p_contact: u, p_path: path, p_name: f.name || safe, p_mime: f.type || null, p_size: f.size });
+      }).then(function(j){ if(!j || !j.ok) throw new Error('add'); done++; }).catch(function(){ bad++; });
+    }); }, Promise.resolve()).then(function(){
+      upl -= fl.length;
+      msg(bad ? (done ? done + ' uploaded · ' : '') + bad + ' could not upload. Try again.' : '');
+      if(done) toast(done === 1 ? 'File added' : done + ' files added');
+      return loadFiles(u);
+    });
+  }
+  function openFile(bucket, path){
+    var w = window.open('about:blank', '_blank');
+    JagShare.token().then(function(t){
+      return fetch(BASE + '/storage/v1/object/sign/' + bucket + '/' + path.split('/').map(encodeURIComponent).join('/'),
+        { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 600 }) });
+    }).then(function(r){ return r.json(); }).then(function(j){ var x = j && (j.signedURL || j.signedUrl);
+      if(x && w) w.location = BASE + '/storage/v1' + x; else { if(w) w.close(); toast('Could not open the file.'); } })
+      .catch(function(){ if(w) w.close(); toast('Could not open the file.'); });
   }
   function loadFub(u){
     fub[u] = { loading: true };
@@ -394,6 +443,18 @@
       (open.__tadd ? '<div class="tadd"><input type="text" id="t-title" placeholder="Call back about paystubs"><div class="r2"><select id="t-due"><option value="0">Today</option><option value="1" selected>Tomorrow</option><option value="3">In 3 days</option><option value="7">Next week</option><option value="">No date</option></select>' +
         '<select id="t-who">' + (P.team || []).map(function(a){ return '<option value="' + esc(a.code) + '"' + (a.code === ((me || {}).code) ? ' selected' : '') + '>' + esc(a.first_name || a.name) + '</option>'; }).join('') + '</select></div><button type="button" class="pbtn s" data-a="tsave">Add task</button></div>' : '') + '</div>';
     var inTeam = {}; (P.collaborators || []).forEach(function(k){ inTeam[k.code] = 1; });
+    var FL = FILES[uid] || {}, tf = FL.files || [], cf = FL.client || (P.proof || []).map(function(p){ return Object.assign({ bucket: 'client-proof' }, p); });
+    var files = '<div class="pc" id="pf-files"><h3>Files' + (tf.length + cf.length ? ' (' + (tf.length + cf.length) + ')' : '') +
+        ' <label class="add" aria-label="Add files">+<input type="file" multiple hidden data-a="fup"></label></h3>' +
+      '<label class="fdrop" id="pf-fdrop">📎 Drop files here or tap to add<small style="display:block;font-weight:600;margin-top:2px">PDF, photos, Word, Excel · up to 25 MB · only your team can see them</small><input type="file" multiple hidden data-a="fup"></label>' +
+      tf.map(function(f){ return '<div class="li"><span class="av2">' + fileIcon(f.file_name, f.mime) + '</span><div class="m"><b>' + esc(f.file_name) + '</b><small>' +
+          esc([fsize(f.size), (f.uploaded_by ? agentFirst(f.uploaded_by) + ' · ' : '') + ago(f.uploaded_at)].filter(Boolean).join(' · ')) + '</small></div>' +
+          '<button type="button" class="fo" data-a="fopen" data-b="contact-files" data-p="' + esc(f.path) + '">Open</button>' +
+          '<button type="button" class="rm" data-a="fdel" data-id="' + f.id + '" data-n="' + esc(f.file_name) + '" aria-label="Remove ' + esc(f.file_name) + '">×</button></div>'; }).join('') +
+      cf.map(function(p){ return '<div class="li"><span class="av2">📎</span><div class="m"><b>' + esc(p.kind === 'pof' ? 'Proof of funds' : 'Pre-approval letter') + '</b><small>' +
+          esc([p.file_name, 'from the client', ago(p.uploaded_at), p.status].filter(Boolean).join(' · ')) + '</small></div>' +
+          (p.path ? '<button type="button" class="fo" data-a="fopen" data-b="client-proof" data-p="' + esc(p.path) + '">Open</button>' : '') + '</div>'; }).join('') +
+      '<div class="fmsg" id="pf-fmsg" role="status"></div></div>';
     var collab = '<div class="pc"><h3>Collaborators <button type="button" class="add" data-a="cadd" aria-label="Add collaborator">+</button></h3>' +
       '<div class="li"><span class="av2">' + esc(initials(agentName(c.agent_code) || '?')) + '</span><div class="m"><b>' + esc(c.agent_code ? agentName(c.agent_code) : 'Nobody assigned') + '</b><small>Assigned agent</small></div></div>' +
       (P.collaborators || []).map(function(k){ return '<div class="li"><span class="av2">' + (k.photo_url ? '<img src="' + esc(k.photo_url) + '" alt="">' : esc(initials(k.name))) + '</span><div class="m"><b>' + esc(k.name || k.code) + '</b><small>Added ' + esc(ago(k.at)) + (k.added_by ? ' by ' + esc(agentFirst(k.added_by)) : '') + '</small></div><button type="button" class="rm" data-a="crm" data-code="' + esc(k.code) + '" aria-label="Remove ' + esc(k.name || k.code) + '">×</button></div>'; }).join('') +
@@ -403,11 +464,11 @@
     var showBtn = o.isLead ? '<button type="button" class="add" data-a="shw" aria-label="Set up showings">+</button>' : '';
     var tourCard = '<div class="pc"><h3>Tours & showings ' + showBtn + '</h3>' + (tours.length ? tours.map(function(t){ return '<div class="li"><div class="m"><b>' + esc(day(t.tour_date)) + ' · ' + esc(t.time_window || '') + '</b><small>' + esc(cap(t.status)) + ' · ' + t.homes + ' home' + (t.homes === 1 ? '' : 's') + (t.showing_agent ? ' · ' + esc(agentFirst(t.showing_agent)) : '') + '</small></div></div>'; }).join('') : '<div class="none">No tours yet.' + (c.showing_agent_code ? ' Showing agent: ' + esc(agentFirst(c.showing_agent_code)) + '.' : '') + '</div>') + '</div>';
     var offerCard = '<div class="pc"><h3>Offers <button type="button" class="add" data-a="offer" aria-label="Write an offer">+</button></h3>' + (offers.length ? offers.map(function(x){ return '<div class="li"><div class="m"><b>' + esc(x.address || 'MLS ' + x.mls) + '</b><small>' + money(x.offer_price) + ' · ' + esc(window.JagOffer ? JagOffer.statusText(x.status) : x.status) + ' · ' + esc(ago(x.created_at)) + '</small></div></div>'; }).join('') : '<div class="none">No offers yet.</div>') + '</div>';
-    var loanCard = '<div class="pc"><h3>Loan & files</h3>' + (apps.length ? apps.map(function(a){ return '<div class="li"><span class="av2">📄</span><div class="m"><b>JAG Home Loan app</b><small>' + esc(when(a.created_at).split(' · ')[0]) + ' · ' + esc(a.status || 'New') + (a.est_amount ? ' · est. ' + money(a.est_amount) : '') + '</small></div><a href="admin.html" target="_blank" rel="noopener">Open ↗</a></div>'; }).join('') : '<div class="none">No loan application yet.</div>') +
-      (P.proof || []).map(function(p){ return '<div class="li"><span class="av2">📎</span><div class="m"><b>' + esc(p.kind === 'pof' ? 'Proof of funds' : 'Pre-approval letter') + '</b><small>' + esc(p.file_name || '') + ' · ' + esc(p.status) + '</small></div></div>'; }).join('') + '</div>';
+    var loanCard = '<div class="pc"><h3>Loan</h3>' + (apps.length ? apps.map(function(a){ return '<div class="li"><span class="av2">📄</span><div class="m"><b>JAG Home Loan app</b><small>' + esc(when(a.created_at).split(' · ')[0]) + ' · ' + esc(a.status || 'New') + (a.est_amount ? ' · est. ' + money(a.est_amount) : '') + '</small></div><a href="admin.html" target="_blank" rel="noopener">Open ↗</a></div>'; }).join('') : '<div class="none">No loan application yet.</div>') +
+      '</div>';
     var listCard = lists.length ? '<div class="pc"><h3>Client lists (Matrix)</h3>' + lists.map(function(l){ return '<div class="li"><div class="m"><b>' + esc(l.name) + '</b><small>' + l.homes + ' homes · ❤️ ' + l.loved + ' · opened ' + l.opens + '×</small></div><a href="matrix.html#cart=' + esc(l.id) + '">Open</a></div>'; }).join('') + '</div>' : '';
     var favCard = '<div class="pc"><h3>Saved homes (' + favs.length + ')</h3>' + (favs.length ? favs.slice(0, 6).map(function(f){ var s = f.snap || {}; return '<div class="li"><div class="m"><b>' + esc(s.addr || 'MLS ' + f.mls) + '</b><small>' + esc([s.city, money(f.last_price || s.price), f.last_status && f.last_status !== 'Active' ? f.last_status : ''].filter(Boolean).join(' · ')) + '</small></div><a href="homes#' + encodeURIComponent(f.mls) + '" target="_blank" rel="noopener">View ↗</a></div>'; }).join('') : '<div class="none">Nothing saved yet.</div>') + '</div>';
-    return lola + tasks + collab + tourCard + offerCard + loanCard + listCard + favCard;
+    return lola + tasks + files + collab + tourCard + offerCard + loanCard + listCard + favCard;
   }
 
   /* ---------- Lola's ready-to-send messages (Spanish first, by where the client is) ---------- */
@@ -503,9 +564,12 @@
     if(a === 'crm'){ var cc = b.getAttribute('data-code'); if(!confirm('Remove ' + agentName(cc) + ' as a collaborator?')) return; rpc('jag_contact_collab', { p_user: uid, p_code: cc, p_add: false }).then(function(){ load(); }); return; }
     if(a === 'shw') return showings();
     if(a === 'offer') return offer();
+    if(a === 'fopen'){ openFile(b.getAttribute('data-b'), b.getAttribute('data-p')); return; }
+    if(a === 'fdel'){ if(!confirm('Remove ' + b.getAttribute('data-n') + ' from this contact?')) return; rpc('jag_contact_file_remove', { p_id: +b.getAttribute('data-id') }).then(function(j){ if(j && j.ok) toast('File removed'); loadFiles(uid); }); return; }
   }
   function onChange(e){
     var t = e.target;
+    if(t.matches('[data-a="fup"]')){ upload(t.files); t.value = ''; return; }
     if(t.matches('[data-a="tdone"]')){ rpc('jag_contact_task', { p: { id: +t.getAttribute('data-id'), op: t.checked ? 'done' : 'reopen' } }).then(function(){ load(); }); return; }
     var f = t.getAttribute('data-f'); if(!f) return;
     var p = {}; p[f] = t.value; save(p, f === 'agent_code' && t.value ? 'Assigned to ' + agentFirst(t.value) + (t.value !== (me || {}).code ? ' · they were notified' : '') : f === 'stage' ? 'Stage saved · Follow Up Boss updated' : 'Saved');
