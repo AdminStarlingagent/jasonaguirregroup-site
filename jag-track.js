@@ -88,6 +88,9 @@
   window.JagTrack = { ev: ev, id: function(){ return vid; }, channel: function(){ return ch; } };
   send('page_view');
 
+  /* ---- ad + CRM pixels (TikTok, Follow Up Boss): jag-pixels.js decides which pages get them (public pages only) ---- */
+  try{ var px = document.createElement('script'); px.async = true; px.src = 'jag-pixels.js?v=1'; document.head.appendChild(px); }catch(e){}
+
   /* ---- first touch on a form = started (application, home value, offer) ---- */
   var startKind = /\/apply$/.test(page) ? 'apply_start' : /\/value$/.test(page) ? 'value_start'
                 : /\/(offer|offer-listing-intake)$/.test(page) ? 'offer_start' : null;
