@@ -11,7 +11,7 @@
    ============================================================ */
 (function(){
   if (window.__jagPixels) return; window.__jagPixels = 1;
-  var TIKTOK = 'CNC4GV3C77UBR2I96NL0', FUB = 'WT-GNOQKSCV';
+  var TIKTOK = '', FUB = 'WT-GNOQKSCV';   // TikTok paused: waiting for a proper Web pixel (old ID CNC4GV3C77UBR2I96NL0 was a hidden Lead Ad pixel, not in Data sources)
   var PUBLIC = /^\/(index|homes|h|buscar|calculadora|value|reels|team|offer-listing-intake)?(\.html)?\/?$/i;
   if (!/(^|\.)jasonaguirregroup\.company$/i.test(location.hostname)) return;
   if (!PUBLIC.test(location.pathname)) return;
@@ -20,7 +20,7 @@
   try{ if (localStorage.getItem('jag_agent')) return; }catch(e){}   // the team browsing their own site
 
   /* ---- TikTok Pixel (TikTok's standard base code) ---- */
-  !function (w, d, t) {
+  if (TIKTOK) !function (w, d, t) {
     w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || [];
     ttq.methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie', 'holdConsent', 'revokeConsent', 'grantConsent'];
     ttq.setAndDefer = function(t, e){ t[e] = function(){ t.push([e].concat(Array.prototype.slice.call(arguments, 0))); }; };
