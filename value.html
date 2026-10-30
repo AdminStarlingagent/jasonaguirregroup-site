@@ -185,7 +185,6 @@
 
 <script>
   var VALUE_PROXY = 'https://lucky-lake-acf9rentcast-proxy.jason-aguirre.workers.dev/';
-  var WEB3FORMS_KEY = '0c030dec-75ac-44a3-8a41-3dca53bb4529';
 
   /* ---- refine-quiz tuning: % adjustment applied to the base estimate ---- */
   var QUESTIONS = [
@@ -433,26 +432,20 @@
       + 'Base estimate: ' + (basePrice ? money(basePrice) : 'n/a') + '\n'
       + 'Refined estimate: ' + (refined ? money(refined) : 'n/a') + (basePrice? '  (' + (adj>=0?'+':'') + adj + '% from home details)':'') + '\n\n'
       + 'HOME DETAILS QUIZ\n' + quizLines() + '\n';
-    try{
-      if(window.jagCapture){
-        var cap = { name:name, email:email, phone:phone,
-          'Property':(lastAddr||''),
-          'Automated Estimate':(refined?money(refined):''),
-          'Base Estimate':(basePrice?money(basePrice):''),
-          'Value Adjustment':(basePrice?((adj>=0?'+':'')+adj+'%'):''),
-          'Report Unlocked':'Yes' };
-        QUESTIONS.forEach(function(q){ cap[q.k] = answers[q.k] || '(skipped)'; });
-        window.jagCapture('Home Value', cap);
-      }
-    }catch(e){}
-    fetch('https://api.web3forms.com/submit', {
-      method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify({ access_key: WEB3FORMS_KEY, subject:'New Home-Value Lead \u2014 ' + name + (refined?(' ('+money(refined)+')'):''), from_name:'Jason Aguirre Group \u2014 eXp Realty', replyto: email, botcheck:false, message: msg })
-    }).then(function(){
+    var cap = { name:name, email:email, phone:phone,
+      'Property':(lastAddr||''),
+      'Automated Estimate':(refined?money(refined):''),
+      'Base Estimate':(basePrice?money(basePrice):''),
+      'Value Adjustment':(basePrice?((adj>=0?'+':'')+adj+'%'):''),
+      'Report Unlocked':'Yes' };
+    QUESTIONS.forEach(function(q){ cap[q.k] = answers[q.k] || '(skipped)'; });
+    // saved in the JAG database; the team email goes out from there (jag-client-email 'lead_alert')
+    Promise.resolve(window.jagCapture ? window.jagCapture('Home Value', cap) : false).then(function(ok){
+      if(!ok) throw new Error('save');
       $('lead-form').classList.add('hide'); $('lead-ok').classList.remove('hide');
       unlockReport();
     }).catch(function(){
-      $('ld-btn').disabled = false; $('err-contact').textContent = 'Something went wrong \u2014 please call or text Jason instead.'; $('err-contact').classList.remove('hide');
+      $('ld-btn').disabled = false; $('err-contact').textContent = 'Something went wrong \u2014 please call or text (832) 702-3574.'; $('err-contact').classList.remove('hide');
     });
   });
 </script>

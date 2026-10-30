@@ -2,7 +2,8 @@
    JAG lead capture → Supabase (feeds the /admin.html CRM).
    Safe no-op until configured: paste your two Supabase values
    below and every form on the site starts logging inquiries.
-   The Web3Forms email path is never blocked by this.
+   Returns a Promise<boolean> (saved or not). The team email goes out from the database (jag_leads insert → jag-client-email
+   'lead_alert', JAG inboxes only). No outside form service.
    ============================================================ */
 window.JAG_CRM = {
   url: "https://nyaxywghbpphjhwcmspd.supabase.co",  /* jag-crm  (Project Settings → API → Project URL) */
@@ -12,7 +13,7 @@ window.JAG_CRM = {
 window.jagCapture = function(type, data){
   try{
     var c = window.JAG_CRM || {};
-    if(!c.url || !c.anonKey || !data) return;
+    if(!c.url || !c.anonKey || !data) return Promise.resolve(false);
     var name = data.__name || data['Legal Full Name'] ||
       [ (data['First Name']||data.firstName||''), (data['Last Name']||data.lastName||'') ].join(' ').trim() ||
       data.name || null;
@@ -30,7 +31,7 @@ window.jagCapture = function(type, data){
       body.visitor_id = window.JagTrack.id(); body.channel = window.JagTrack.channel();
       try{ window.JagTrack.ev('lead', { detail: type }); }catch(e){}
     }
-    fetch(c.url.replace(/\/+$/,'') + '/rest/v1/jag_leads', {
+    return fetch(c.url.replace(/\/+$/,'') + '/rest/v1/jag_leads', {
       method: 'POST',
       headers: {
         apikey: c.anonKey,
@@ -39,8 +40,8 @@ window.jagCapture = function(type, data){
         Prefer: 'return=minimal'
       },
       body: JSON.stringify(body)
-    }).catch(function(){});
-  }catch(e){}
+    }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+  }catch(e){ return Promise.resolve(false); }
 };
 
 /* Secure variant: inserts the lead, gets its id back, then stores tax IDs
@@ -48,7 +49,7 @@ window.jagCapture = function(type, data){
 window.jagCaptureSecure = function(type, data, secure){
   try{
     var c = window.JAG_CRM || {};
-    if(!c.url || !c.anonKey || !data) return;
+    if(!c.url || !c.anonKey || !data) return Promise.resolve(false);
     var name = data.__name || data['Legal Full Name'] ||
       [ (data['First Name']||data.firstName||''), (data['Last Name']||data.lastName||'') ].join(' ').trim() ||
       data.name || null;
@@ -74,7 +75,7 @@ window.jagCaptureSecure = function(type, data, secure){
           var r=Math.random()*16|0, v=ch==='x'?r:(r&0x3|0x8); return v.toString(16);
         });
     body.id = id;
-    fetch(base + '/rest/v1/jag_leads', {
+    return fetch(base + '/rest/v1/jag_leads', {
       method: 'POST',
       headers: {
         apikey: c.anonKey,
@@ -84,7 +85,7 @@ window.jagCaptureSecure = function(type, data, secure){
       },
       body: JSON.stringify(body)
     }).then(function(r){
-      if(!r.ok || !secure) return;
+      if(!r.ok || !secure) return r.ok;
       Object.keys(secure).forEach(function(which){
         fetch(base + '/rest/v1/rpc/jag_store_tax_id', {
           method: 'POST',
@@ -96,6 +97,7 @@ window.jagCaptureSecure = function(type, data, secure){
           body: JSON.stringify({ p_lead_id: id, p_which: which, p_value: secure[which] })
         }).catch(function(){});
       });
-    }).catch(function(){});
-  }catch(e){}
+      return true;
+    }).catch(function(){ return false; });
+  }catch(e){ return Promise.resolve(false); }
 };

@@ -308,7 +308,6 @@ const CONFIG = {
   companyName : "JAG Home Loans",             // shown in header, consent copy, chat
   tagline     : "Jason Aguirre Group",
   nmls        : "Jason Aguirre Group \u00b7 eXp Realty, LLC",  // footer attribution (loans by licensed lending partners)
-  accessKey   : "b54619e1-0734-4f77-a6f6-c192aa348fe4", // Web3Forms access key
   subjectPrefix: "New Mortgage Application",  // email subject prefix
   privacyUrl  : "privacy-terms.html",         // site privacy & terms page
   termsUrl    : "privacy-terms.html#terms",   // site privacy & terms page
@@ -1670,11 +1669,10 @@ async function chatFlow(){
 }
 
 /* ================================================================
-   SUBMISSION  (Web3Forms + optional webhook)
+   SUBMISSION  (JAG database → team email from jag-client-email 'lead_alert'; optional webhook)
    ================================================================ */
 function buildPayload(){
   const p = {
-    access_key: CONFIG.accessKey,
     subject: CONFIG.subjectPrefix + ' — ' + A.first + ' ' + A.last + ' (' + (A.goal||'') + ')',
     from_name: CONFIG.companyName + ' Application',
     botcheck: '',
@@ -1779,23 +1777,7 @@ async function finishAll(){
   stage.replaceChildren(sending);
 
   const payload = buildPayload();
-  try{
-    var secure = {};
-    if(digits(A.taxId||'').length===9) secure.borrower = digits(A.taxId);
-    if(digits(A.coTaxId||'').length===9) secure.coborrower = digits(A.coTaxId);
-    if(Object.keys(secure).length && window.jagCaptureSecure){
-      window.jagCaptureSecure('Mortgage Application', payload, secure);
-    }else if(window.jagCapture){
-      window.jagCapture('Mortgage Application', payload);
-    }
-  }catch(e){}
-  try{
-    await fetch('https://api.web3forms.com/submit', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body: JSON.stringify(payload)
-    });
-  }catch(e){}
+  try{ await Promise.race([saveApp(payload), new Promise(r=>setTimeout(r, 8000))]); }catch(e){}
 
   const done = el('div','step done-card');
   done.innerHTML = '<div class="done-check">'+IC.shield+'</div>'
@@ -1887,21 +1869,21 @@ function homesLinks(){
   return wrap;
 }
 
-async function submitAll(){
-  await typing(1200);
-  const payload = buildPayload();
-
-  // log a copy to the JAG admin CRM (fire-and-forget; never blocks the email)
+// Saves the application in the JAG database (tax IDs go to the encrypted vault). The team email goes out from there.
+function saveApp(payload){
   try{
     var secure = {};
     if(digits(A.taxId||'').length===9) secure.borrower = digits(A.taxId);
     if(digits(A.coTaxId||'').length===9) secure.coborrower = digits(A.coTaxId);
-    if(Object.keys(secure).length && window.jagCaptureSecure){
-      window.jagCaptureSecure('Mortgage Application', payload, secure);
-    }else if(window.jagCapture){
-      window.jagCapture('Mortgage Application', payload);
-    }
+    if(Object.keys(secure).length && window.jagCaptureSecure) return Promise.resolve(window.jagCaptureSecure('Mortgage Application', payload, secure));
+    if(window.jagCapture) return Promise.resolve(window.jagCapture('Mortgage Application', payload));
   }catch(e){}
+  return Promise.resolve(false);
+}
+async function submitAll(){
+  await typing(1200);
+  const payload = buildPayload();
+  const saved = saveApp(payload);
 
   // optional side-channel copy (n8n / GHL inbound webhook)
   if(CONFIG.webhookUrl){
@@ -1909,15 +1891,7 @@ async function submitAll(){
   }
 
   let ok=false;
-  try{
-    const res = await fetch('https://api.web3forms.com/submit',{
-      method:'POST',
-      headers:{'Content-Type':'application/json',Accept:'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    ok = !!data.success;
-  }catch(e){ ok=false; }
+  try{ ok = !!(await saved); }catch(e){ ok=false; }
 
   if(!ok){
     addBot(ui('fail'));

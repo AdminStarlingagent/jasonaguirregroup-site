@@ -5,6 +5,8 @@
 //   kind 'investor_request': id = jag_investor_requests row. To Jason: an investor tapped "List it with JAG" or "Hard-money lender intro".
 //   kind 'buyer_offer': id = jag_offers id (uuid). To the team list (body.to) + the client's agent (JAG domains only): a website offer,
 //     with every term, a pre-approval check and a button to their profile. (Replaces the old Web3Forms email.)
+//   kind 'lead_alert': id = jag_leads id (uuid). New loan application / home value / listing intake / home inquiry → the JAG
+//     inboxes in ops.settings 'lead_emails' ({default:[…], <type>:[…]}, sent as body.to). Tax IDs and birth dates are never emailed.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SITE, esc, row, button, agentStrip, h1, h2, lead, callout, shell, steps, eyebrow, facts, money, phoneFmt, tel, C } from "./jag-email.ts";
 
@@ -176,6 +178,40 @@ Deno.serve(async (req) => {
     const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: FROM, to, cc, reply_to: o.email || undefined, subject, html }) });
     return json({ ok: r.ok, status: r.status, to, cc });
+  }
+  if (b.kind === "lead_alert") {
+    const { data: l } = await db.from("jag_leads").select("*").eq("id", String(b.id || "")).maybeSingle();
+    if (!l) return json({ ok: false, error: "lead not found" });
+    // recipients come from the database (ops.settings 'lead_emails', resolved by ops.kick_lead_email); JAG domains only
+    const boss = "jason.aguirre@jasonhoustonrealty.com";
+    const to: string[] = Array.from(new Set(((Array.isArray(b.to) && b.to.length ? b.to : [boss]) as string[]).map(String).filter((e) => /@(jasonhoustonrealty\.com|jasonaguirregroup\.company)$/i.test(e))));
+    if (!to.length) to.push(boss);
+    const p: any = l.payload || {};
+    const SKIP = /^(access_key|botcheck|subject|from_name|replyto|__name|formType|message)$|ssn|tax ?id|date of birth|birth/i;
+    const rows: [string, string][] = [["Name", l.name || ""], ["Phone", phoneFmt(l.phone) || ""], ["Email", l.email || ""], ["Language", l.lang || ""]];
+    for (const [k, v] of Object.entries(p)) {
+      if (SKIP.test(k) || v == null || v === "") continue;
+      const val = typeof v === "object" ? (Array.isArray(v) ? v.join(", ") : JSON.stringify(v)) : String(v);
+      if (/•••/.test(val) || /^(name|email|phone)$/i.test(k)) continue;
+      rows.push([k, val.slice(0, 600)]);
+    }
+    const LBL: Record<string, string> = { "Mortgage Application": "New loan application", "Home Value": "New home-value lead", "Seller Listing": "New listing intake",
+      "Buyer Offer": "New buyer offer (intake form)", "home-search": "New home inquiry" };
+    const what = LBL[l.type] || "New website lead";
+    const subject = `${what}: ${l.name || "Website visitor"}${p["Loan Goal"] ? " (" + p["Loan Goal"] + ")" : p.Property ? " — " + p.Property : p["MLS #"] ? " — MLS " + p["MLS #"] : ""}`;
+    let ct: any = null;
+    if (l.email) ({ data: ct } = await db.from("jag_contacts").select("id").ilike("email", l.email).eq("deleted", false).limit(1).maybeSingle());
+    const prof = ct ? SITE + "/workspace.html#hub=" + encodeURIComponent("#c/" + ct.id) : SITE + "/admin.html";
+    const html = shell({ es: false, team: true, title: subject, preheader: `${what} from the JAG website.`,
+      body: row(eyebrow("JAG website · " + (l.type || "lead")) + h1(subject)
+          + lead("Saved in the JAG CRM" + (l.type === "Mortgage Application" ? " (tax IDs are encrypted there and never emailed)" : "") + ". Call them while it's fresh.")
+          + facts(rows.filter((r) => r[1]))
+          + `<div style="margin-top:18px">${button(prof, ct ? "Open their profile" : "Open the JAG admin", { full: true })}</div>`
+          + (l.phone ? `<div style="margin-top:10px">${button("tel:" + tel(l.phone), "Call " + String(l.name || "them").split(/\s+/)[0], { full: true, kind: "outline" })}</div>` : ""), "0 32px"),
+      footerNote: "Sent by the JAG website (jasonaguirregroup.company)." });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM, to, reply_to: l.email || undefined, subject, html }) });
+    return json({ ok: r.ok, status: r.status, to });
   }
   return json({ ok: false, error: "unknown kind" }, 400);
 });
