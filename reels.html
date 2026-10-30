@@ -60,8 +60,16 @@ svg{display:block}
 @keyframes kb2{from{transform:scale(1.16) translate(3%,1%)}to{transform:scale(1.03) translate(0,0)}}
 @keyframes kb3{from{transform:scale(1.04) translate(-2%,2%)}to{transform:scale(1.15) translate(2%,-1%)}}
 .reel.paused .fr.on,.reel.paused .bars i.cur b{animation-play-state:paused!important}
-.vid{display:flex;align-items:center;justify-content:center}
-.vid iframe{width:100%;aspect-ratio:16/9;border:0;background:#000}
+/* Video fills the whole reel, top to bottom, like TikTok / Instagram ("cover").
+   YouTube/Vimeo play inside an iframe, where object-fit can't reach the video, so the frame itself is sized to
+   cover the screen: full height, 16:9 wide (wider than a phone), centered, and the sides are cut off.
+   A vertical video then fills the screen top to bottom; a wide video fills it too, cropped at the sides. */
+.vid{overflow:hidden;background:#000}
+.vid iframe,.vid video{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border:0;background:#000;
+  height:100%;width:max(100%,177.78dvh);pointer-events:none}
+.vid video{width:100%;object-fit:cover}
+@supports not (height:100dvh){.vid iframe{width:max(100%,177.78vh)}}
+/* (.app is always a phone-shaped column, on desktop too, so "full height, 16:9 wide" always covers it) */
 .reel.vmode .frames,.reel.vmode .bars{display:none}
 .reel:not(.vmode) .vid{display:none}
 .shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.45) 0,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 48%,rgba(0,0,0,.82) 100%)}
