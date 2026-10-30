@@ -8,6 +8,7 @@
    Load after jag-account.js.
    ============================================================ */
 (function(){
+   if(window.top !== window) return;   // inside the JAG app (the site runs in a frame there): nothing to install
   var KEY = 'jag_a2hs', SNOOZE_DAYS = 14, MAX_SHOWS = 3;
   var ua = navigator.userAgent || '';
   var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
