@@ -35,12 +35,20 @@ begin
   return null;
 end $$;
 
+-- policies run as the signed-in user, so they go through one security-definer check
+create or replace function public.jag_contact_file_ok(p_name text)
+returns boolean language sql stable security definer set search_path to '' as $$
+  select public.jag_is_team() and coalesce(public.jag_contact_visible(public.jag_path_contact(p_name)), false);
+$$;
+revoke all on function public.jag_contact_file_ok(text) from public, anon;
+grant execute on function public.jag_contact_file_ok(text) to authenticated;
+
 drop policy if exists "contact files: team uploads" on storage.objects;
 create policy "contact files: team uploads" on storage.objects for insert to authenticated
-  with check (bucket_id = 'contact-files' and public.jag_is_team() and public.jag_contact_visible(public.jag_path_contact(name)));
+  with check (bucket_id = 'contact-files' and public.jag_contact_file_ok(name));
 drop policy if exists "contact files: team reads" on storage.objects;
 create policy "contact files: team reads" on storage.objects for select to authenticated
-  using (bucket_id = 'contact-files' and public.jag_is_team() and public.jag_contact_visible(public.jag_path_contact(name)));
+  using (bucket_id = 'contact-files' and public.jag_contact_file_ok(name));
 
 -- list: team files + the client's own uploads
 create or replace function public.jag_contact_files(p_contact uuid)
