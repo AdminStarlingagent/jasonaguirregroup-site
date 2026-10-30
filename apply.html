@@ -165,6 +165,18 @@ h1.title{font-size:clamp(28px,4.8vw,36px);font-weight:600;letter-spacing:-.015em
 .done-links .call-btn:hover{background:#a30d26}
 .done-back{color:#c8102e;font-weight:800;text-decoration:none;padding:8px 4px}
 .done-back:hover{text-decoration:underline}
+.look{max-width:520px;margin:6px auto 0;text-align:center}
+.look h2{font-size:22px;letter-spacing:-.03em;margin:4px 0 6px;font-weight:800}
+.look>p{margin:0 0 14px;color:#45444c;font-size:15px;line-height:1.5}
+.look .strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px}
+.look .h{position:relative;display:block;border-radius:16px;overflow:hidden;aspect-ratio:3/4;background:#ecebe8 center/cover no-repeat;text-decoration:none;color:#fff;text-align:left}
+.look .h::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.72))}
+.look .h b{position:absolute;left:9px;right:9px;bottom:22px;z-index:1;font-size:15px;font-weight:800;letter-spacing:-.02em}
+.look .h small{position:absolute;left:9px;right:9px;bottom:7px;z-index:1;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.look .h i{position:absolute;top:8px;left:8px;z-index:1;font-style:normal;font-size:10.5px;font-weight:800;background:rgba(0,0,0,.55);padding:3px 7px;border-radius:99px}
+.look .h.sk{animation:lk 1.2s ease-in-out infinite alternate}@keyframes lk{to{opacity:.55}}
+.look .reels-btn{background:#17161c;color:#fff;width:100%}.look .reels-btn:hover{background:#000}
+.look .tip{font-size:12.5px;color:#6a6972;margin:10px 0 0}
 .call-btn{display:flex;align-items:center;justify-content:center;text-decoration:none;max-width:420px;margin-left:auto;margin-right:auto}
 .msg{display:none;color:var(--warn);font-size:14.5px;font-weight:500;margin:-6px 0 16px 20px}
 .msg.show{display:block}
@@ -971,6 +983,8 @@ en:{
   doneCall:'See homes for sale',
   doneBack:'Back to the home you were looking at',
   doneUpTo:p=>'See homes up to '+p,
+  lkH:'Start looking at homes in your range',lkP:(a,p)=>'Homes'+(a?' in and around '+a:' in Houston')+' up to '+p+'. Swipe through them like videos and tap ❤️ on the ones you like.',lkPx:a=>'Homes'+(a?' in and around '+a:' in Houston')+'. Swipe through them like videos and tap ❤️ on the ones you like.',
+  lkReels:'▶ Watch homes in Reels',lkList:'See them as a list',lkSave:'Tip: homes you ❤️ go to your account, and we let you know if the price drops.',lkVid:'Video',
   estK:'Your estimate',
   estP:'Based on the income you shared, you could qualify for a home in this price range.',
   estItin:'With an ITIN, lenders usually ask for a down payment of about 10% to 20%.',
@@ -1057,6 +1071,8 @@ es:{
   doneCall:'Ver casas en venta',
   doneBack:'Volver a la casa que estaba viendo',
   doneUpTo:p=>'Ver casas hasta '+p,
+  lkH:'Empiece a ver casas en su rango',lkP:(a,p)=>'Casas'+(a?' en '+a+' y alrededores':' en Houston')+' de hasta '+p+'. Véalas como videos y toque ❤️ en las que le gusten.',lkPx:a=>'Casas'+(a?' en '+a+' y alrededores':' en Houston')+'. Véalas como videos y toque ❤️ en las que le gusten.',
+  lkReels:'▶ Ver casas en Reels',lkList:'Verlas en lista',lkSave:'Tip: las casas que marque con ❤️ se guardan en su cuenta y le avisamos si bajan de precio.',lkVid:'Video',
   estK:'Su estimado',
   estP:'Con base en el ingreso que nos comparti\u00f3, podr\u00eda calificar para una casa en este rango de precio.',
   estItin:'Con ITIN, los prestamistas normalmente piden un enganche de 10% a 20%.',
@@ -1825,19 +1841,49 @@ function estimateCard(){
   return c;
 }
 
+/* After applying: get them looking at homes in their estimated range right away (Reels first: the most engaging),
+   around the home they came from, or where they live now. Reels and the list keep going wider if the area runs thin. */
+function lookArea(){
+  let jh = null; try{ jh = JSON.parse(sessionStorage.getItem('jag_home')||'null'); }catch(e){}
+  const hz = jh && jh.home ? (String(jh.home).match(/\b(7\d{4})\b/)||[])[1] : '';
+  if(hz) return { q: hz, label: hz, mls: jh.mls || '' };
+  if(/^(TX|Texas)$/i.test(String(A.state||'').trim()) && /^7\d{4}$/.test(digits(A.zip||''))) return { q: digits(A.zip), label: String(A.city||'').trim() || digits(A.zip), mls: '' };
+  return { q: '', label: '', mls: jh && jh.mls || '' };
+}
 function homesLinks(){
-  const wrap = el('div','done-links');
-  let mls = '';
-  try{ mls = (JSON.parse(sessionStorage.getItem('jag_home')||'null')||{}).mls || ''; }catch(e){}
-  const e = estimateRange();
-  const go = el('a','next call-btn', e && e.hi ? ui('doneUpTo')(money(e.hi)) : ui('doneCall'));
-  go.href = 'homes' + (e && e.hi ? '?maxp=' + e.hi : '');
-  wrap.appendChild(go);
-  if(mls){
-    const back = el('a','done-back', ui('doneBack'));
-    back.href = 'homes#' + encodeURIComponent(mls);
-    wrap.appendChild(back);
-  }
+  const e = estimateRange(), ar = lookArea(), has = e && e.hi;
+  const qp = new URLSearchParams(); if(ar.q) qp.set('q', ar.q); if(has){ qp.set('maxp', e.hi); qp.set('minp', Math.round(e.hi*0.6/5000)*5000); }
+  const qs = qp.toString() ? '?'+qp.toString() : '';
+  const wrap = el('div','look');
+  wrap.innerHTML = '<h2>'+esc(ui('lkH'))+'</h2><p>'+esc(has ? ui('lkP')(ar.label, money(e.hi)) : ui('lkPx')(ar.label))+'</p>'
+    + '<div class="strip" aria-hidden="true"><span class="h sk"></span><span class="h sk"></span><span class="h sk"></span></div>';
+  const links = el('div','done-links');
+  const reels = el('a','next call-btn reels-btn', ui('lkReels')); reels.href = 'reels'+qs;
+  const list = el('a','next call-btn', has ? ui('doneUpTo')(money(e.hi)) : ui('lkList')); list.href = 'homes'+qs;
+  [reels, list].forEach(a=>a.addEventListener('click', ()=>{ try{ if(window.JagTrack) JagTrack.ev(a===reels?'apply_done_reels':'apply_done_homes',{detail:ar.q||'tx'}); }catch(x){} }));
+  links.appendChild(reels); links.appendChild(list);
+  if(ar.mls){ const back = el('a','done-back', ui('doneBack')); back.href = 'homes#' + encodeURIComponent(ar.mls); links.appendChild(back); }
+  wrap.appendChild(links);
+  wrap.appendChild(el('p','tip', ui('lkSave')));
+  // a peek at 3 real homes in their range (video homes first); each opens Reels on that home
+  const API = 'https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search';
+  const base = { type:'sale', resultsPerPage:'24', sortBy:'createdOnDesc', state:'TX' };
+  if(has){ base.maxPrice = String(e.hi); base.minPrice = String(Math.round(e.hi*0.6/5000)*5000); }
+  const get = p => fetch(API+'?'+new URLSearchParams(p)+'&propertyType=Residential').then(r=>r.ok?r.json():null).catch(()=>null);
+  (ar.q ? get(Object.assign({zip:ar.q}, base)) : Promise.resolve(null)).then(d=>{
+    const L = (d&&d.listings)||[]; return L.length>=3 ? L : get(base).then(d2=>L.concat(((d2&&d2.listings)||[]).filter(x=>!L.some(y=>y.mlsNumber===x.mlsNumber))));
+  }).then(L=>{
+    const strip = wrap.querySelector('.strip'); if(!strip) return;
+    const vid = l => !!(l.video && (l.video.kind==='youtube'||l.video.kind==='vimeo'));
+    L = (L||[]).filter(l=>l.images&&l.images.length);
+    for(let i=L.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [L[i],L[j]]=[L[j],L[i]]; }
+    L = L.filter(vid).concat(L.filter(l=>!vid(l))).slice(0,3);
+    if(L.length<3){ strip.remove(); return; }
+    strip.removeAttribute('aria-hidden');
+    strip.innerHTML = L.map(l=>{ const a=l.address||{}; const p2=new URLSearchParams(qp); p2.set('start', l.mlsNumber);
+      return '<a class="h" href="reels?'+p2+'" style="background-image:url(\'https://cdn.repliers.io/'+esc(l.images[0])+'?class=small\')">'
+        +(vid(l)?'<i>▶ '+esc(ui('lkVid'))+'</i>':'')+'<b>'+money(l.listPrice)+'</b><small>'+esc(a.city||'')+'</small></a>'; }).join('');
+  });
   return wrap;
 }
 
