@@ -17,7 +17,7 @@
 
 create table if not exists public.jag_kv (k text primary key, v jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now());
 alter table public.jag_kv enable row level security;
-insert into public.jag_kv (k, v) values ('lola_listings', '{"paused": false, "per_day": 300}') on conflict (k) do nothing;
+insert into public.jag_kv (k, v) values ('lola_listings', '{"paused": false, "per_day": 300, "skip_agents": ["adriana"]}') on conflict (k) do nothing;
 
 create table if not exists public.jag_lead_alerts (
   contact_id uuid primary key references public.jag_contacts(id) on delete cascade,
@@ -82,13 +82,16 @@ end $function$;
 
 -- add the next newest eligible contacts
 create or replace function public.jag_lead_alerts_enroll(p_status text, p_limit int) returns int language plpgsql security definer set search_path = '' as $function$
-declare v_n int;
+declare v_n int; v_skip text[];
 begin
+  select coalesce(array(select jsonb_array_elements_text(v->'skip_agents')), '{}') into v_skip from public.jag_kv where k = 'lola_listings';
   with pick as (
     select c.id, c.lang, c.tags from public.jag_contacts c left join public.jag_fub_ponds p on p.id = c.pond_id
      where not c.deleted and c.email ~ '^[^\s@]+@[^\s@]+\.[^\s@]{2,}$'
        and coalesce(p.name, '') not in ('Out of town', 'Dallas Pond', 'Investors')
-       and coalesce(c.stage, '') not in ('Out Of Town', 'Closed', 'Past Client', 'Sphere', 'Investor', 'Unresponsive', 'Listing agreement', 'Active listing', 'Trash')
+       and coalesce(c.stage, '') not in ('Out Of Town', 'Closed', 'Past Client', 'Sphere', 'Investor', 'Unresponsive', 'Listing agreement', 'Active listing',
+                                         'Under contract', 'Pending', 'Trash')
+       and not (coalesce(c.assigned_code, '') = any(coalesce(v_skip, '{}')))   -- agents outside the Houston team (jag_kv skip_agents)
        and not (c.tags && array['Bounced', 'Dallas', 'DFW', '#starling_stop'])
        and not exists (select 1 from public.jag_lead_alerts a where a.contact_id = c.id)
        and not (c.user_id is not null and exists (select 1 from public.jag_client_searches s where s.user_id = c.user_id))
@@ -133,6 +136,7 @@ begin
   with due as (
     select a.contact_id from public.jag_lead_alerts a join public.jag_contacts c on c.id = a.contact_id
      where a.status in ('pilot', 'active') and not c.deleted and c.email is not null
+       and coalesce(c.stage, '') not in ('Under contract', 'Pending', 'Closed', 'Past Client', 'Trash')
        and (a.last_sent_at is null or a.last_sent_at < now() - interval '6 days 20 hours')
        and (a.claimed_at is null or a.claimed_at < now() - interval '20 minutes')
      order by a.last_sent_at nulls first, a.created_at
@@ -258,3 +262,11 @@ revoke all on function public.jag_lead_alert_get(text), public.jag_lead_alert_se
 grant execute on function public.jag_lead_alert_get(text), public.jag_lead_alert_set(text, jsonb) to anon, authenticated;
 revoke all on function public.jag_lead_alerts_stats(), public.jag_lead_alerts_pause(boolean) from public, anon;
 grant execute on function public.jag_lead_alerts_stats(), public.jag_lead_alerts_pause(boolean) to authenticated;
+
+-- Pilot (Oct 29 2026): select public.jag_lead_alerts_enroll('pilot', 100);
+-- Sender cron (UTC; 10 AM-2 PM Houston in daylight time, 9 AM-1 PM in standard time):
+-- select cron.schedule('jag-lola-listings', '*/10 15-18 * * *', $c$
+--   select net.http_post(url := 'https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/lola-listings',
+--     headers := jsonb_build_object('Content-Type','application/json', 'x-jag-token', (select decrypted_secret from vault.decrypted_secrets where name = 'jag_alerts_token')),
+--     body := '{}'::jsonb, timeout_milliseconds := 150000);
+-- $c$);
