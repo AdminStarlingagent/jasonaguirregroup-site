@@ -3,7 +3,7 @@
 //   kind 'cobuyer_invite': id = jag_client_cobuyers row. "Ana lo invitó a buscar casa juntos en JAG" with an accept button.
 //   kind 'investor_invite': id = jag_investors row. Private invite to the investor portal (jasonaguirregroup.company/invest), Spanish + English.
 //   kind 'investor_request': id = jag_investor_requests row. To Jason: an investor tapped "List it with JAG" or "Hard-money lender intro".
-//   kind 'buyer_offer': id = jag_offers id (uuid). To the client's agent, Jason copied: a client sent an offer from the website,
+//   kind 'buyer_offer': id = jag_offers id (uuid). To the team list (body.to) + the client's agent (JAG domains only): a website offer,
 //     with every term, a pre-approval check and a button to their profile. (Replaces the old Web3Forms email.)
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SITE, esc, row, button, agentStrip, h1, h2, lead, callout, shell, steps, eyebrow, facts, money, phoneFmt, tel, C } from "./jag-email.ts";
@@ -140,8 +140,12 @@ Deno.serve(async (req) => {
     const { data: ag } = await db.from("jag_agents").select("code,name,first_name,email").eq("code", code).maybeSingle();
     const { data: jason } = await db.from("jag_agents").select("email").eq("code", "jason").maybeSingle();
     const boss = (jason && jason.email) || "jason.aguirre@jasonhoustonrealty.com";
-    const to = ag && ag.email ? [ag.email] : [boss];
-    const cc = to[0].toLowerCase() === boss.toLowerCase() ? undefined : [boss];
+    // the team list from the database (ops.settings 'lead_emails', sent as body.to) + the client's agent; JAG domains only
+    const jag = (e: string) => /@(jasonhoustonrealty\.com|jasonaguirregroup\.company)$/i.test(e);
+    const team: string[] = ((Array.isArray(b.to) && b.to.length ? b.to : [boss]) as string[]).map(String).filter(jag);
+    const to: string[] = Array.from(new Set([...(ag && ag.email && jag(ag.email) ? [ag.email] : []), ...team].map((e) => e.toLowerCase())));
+    if (!to.length) to.push(boss);
+    const cc = undefined;
     const { data: pa } = o.user_id ? await db.rpc("jag_preapproval", { p_user: o.user_id }) : { data: null };
     const lp = Number(o.list_price) || 0, op = Number(o.offer_price) || 0;
     const CT: Record<string, string> = { "Inspección": "Inspection", "Avalúo": "Appraisal", "Financiamiento": "Financing", "Venta de mi casa actual": "Sale of current home" };
