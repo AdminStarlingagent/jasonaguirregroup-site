@@ -1,5 +1,6 @@
 /* ============================================================
    JAG CRM pieces for the Agent Hub (agent.html), phase 1.
+   - "🔗 My invite link": the agent's own link (/join?a=<code>), same for everyone, no name needed (supabase-invite-link.sql)
    - "＋ Invite a client": make their profile (name, cell, email, language, note) and send their personal link
      (/join#token) by text from the agent's own phone, email (sent by JAG from the agent), WhatsApp, the phone's
      share sheet, or copy. Android Chrome can pick straight from the phone's contacts; on iPhone, Text opens Messages
@@ -37,7 +38,13 @@
     '.crm-top{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}',
     '.crm-inv{border:0;border-radius:99px;background:var(--red);color:#fff;font-weight:800;font-size:15px;padding:13px 20px;min-height:48px;display:inline-flex;align-items:center;gap:8px}',
     '.crm-inv:hover{background:var(--red-d)}',
-    '@media(max-width:560px){.crm-inv{flex:1 1 100%;justify-content:center}}',
+    '.crm-lnk{border:2px solid var(--ink);border-radius:99px;background:#fff;color:var(--ink);font-weight:800;font-size:15px;padding:11px 18px;min-height:48px;display:inline-flex;align-items:center;gap:8px}',
+    '.crm-lnk:hover{background:#f6f5f3}',
+    '@media(max-width:560px){.crm-inv,.crm-lnk{flex:1 1 100%;justify-content:center}}',
+    '.crm-url{display:flex;align-items:center;gap:8px;background:#f6f5f3;border:1px solid #e6e3de;border-radius:14px;padding:12px 14px;font-weight:700;font-size:15px;word-break:break-all}',
+    '.crm-url span{flex:1;min-width:0}',
+    '.crm-stat{display:flex;gap:8px}.crm-stat div{flex:1;background:#f6f5f3;border-radius:14px;padding:10px 12px;text-align:center}.crm-stat b{display:block;font-size:22px;font-weight:800}.crm-stat small{color:var(--muted);font-size:12px;font-weight:700}',
+    '.crm-or{display:flex;align-items:center;gap:10px;background:#f6f5f3;border-radius:14px;padding:10px 12px;font-size:13.5px}.crm-or span{flex:1}.crm-or button{border:0;background:var(--ink);color:#fff;border-radius:99px;font-weight:800;font-size:13px;padding:9px 13px;min-height:40px;white-space:nowrap}',
     '.bell{position:relative;display:inline-flex;align-items:center;gap:4px}',
     '.bell .tc{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;border-radius:99px;background:var(--red);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;margin:0}',
     '.bell .tc:empty{display:none}',
@@ -213,6 +220,7 @@
     var ov = document.createElement('div'); ov.className = 'crm-ov'; ov.id = 'crm-ov';
     ov.innerHTML = '<div class="crm-sh" role="dialog" aria-modal="true" aria-labelledby="crm-h">' +
       '<div class="crm-hd"><div><h2 id="crm-h">Invite a client</h2><p>Make their profile and send their personal link. You\'ll get a notification when they open it and when they join.</p></div><button type="button" class="crm-close" id="crm-x" aria-label="Close">×</button></div>' +
+      '<div class="crm-or"><span><b>No name handy?</b> Send your own invite link instead. Same link for everyone.</span><button type="button" id="crm-golink">🔗 My link</button></div>' +
       (PICKER ? '<button type="button" class="crm-pick" id="crm-pick">📇 Pick from my phone contacts</button>' : '') +
       '<div class="fld"><label for="crm-n">Client name</label><input id="crm-n" autocomplete="off" value="' + esc(pre.name || '') + '" placeholder="María López"></div>' +
       '<div class="crm-two"><div class="fld"><label for="crm-p">Cell phone</label><input id="crm-p" type="tel" inputmode="tel" autocomplete="off" value="' + esc(pre.phone ? fmtPhone(pre.phone) : '') + '" placeholder="(281) 555-0142"></div>' +
@@ -234,6 +242,7 @@
     ov.addEventListener('click', function(e){ if(e.target === ov) closeSheet(); });
     document.addEventListener('keydown', escClose);
     $('crm-x').onclick = closeSheet;
+    $('crm-golink').onclick = openLink;
     setTimeout(function(){ (pre.name ? $('crm-p') : $('crm-n')).focus(); }, 60);
     $('crm-l').addEventListener('click', function(e){ var b = e.target.closest('[data-v]'); if(!b) return; this.querySelectorAll('[data-v]').forEach(function(x){ x.setAttribute('aria-checked', String(x === b)); }); });
     if($('crm-pick')) $('crm-pick').onclick = function(){
@@ -334,6 +343,53 @@
     $('crm-again').onclick = function(){ openInvite(); };
     $('crm-ok').onclick = closeSheet;
     loadInvites();
+  }
+
+  /* ---------------- my invite link (same link for everyone: /join?a=<code>) ---------------- */
+  function myUrl(){ var c = (me && me.code && me.code !== 'pending') ? me.code : ''; return c ? SITE + '/join?a=' + encodeURIComponent(c) : ''; }
+  function linkText(lang, url){
+    var a = me || {}, af = a.first_name || first(a.name) || 'Jason';
+    return lang === 'en'
+      ? 'Hi! It\'s ' + af + ' with Jason Aguirre Group (eXp Realty). I\'m inviting you to our app to search homes, save your favorites, see the ones I send you and request showings. Create your free account here: ' + url
+      : '¡Hola! Soy ' + af + ' de Jason Aguirre Group (eXp Realty). Te invito a nuestra app para buscar casas, guardar tus favoritas, ver las que te mando y pedir visitas. Crea tu cuenta gratis aquí: ' + url;
+  }
+  function openLink(){
+    var url = myUrl(); closeSheet();
+    if(!url){ toast('Your agent profile isn\'t set up yet. Ask Jason.'); return; }
+    var ov = document.createElement('div'); ov.className = 'crm-ov'; ov.id = 'crm-ov';
+    ov.innerHTML = '<div class="crm-sh" role="dialog" aria-modal="true" aria-labelledby="crm-h">' +
+      '<div class="crm-hd"><div><h2 id="crm-h">My invite link</h2><p>One link, always the same. Send it to as many people as you want, post it in a group chat, or paste it while you\'re texting someone. They fill in their own info, and everyone who joins becomes your client.</p></div><button type="button" class="crm-close" id="crm-x" aria-label="Close">×</button></div>' +
+      '<div class="crm-url"><span id="crm-u">' + esc(url) + '</span></div>' +
+      '<div class="crm-send"><button type="button" class="p w" id="crm-cl">🔗 Copy link</button></div>' +
+      '<div class="crm-lbl">Or send it with a message</div>' +
+      '<div class="fld"><div class="seg" role="radiogroup" aria-label="Message language" id="crm-ll"><button type="button" role="radio" data-v="es" aria-checked="true">Español</button><button type="button" role="radio" data-v="en" aria-checked="false">English</button></div></div>' +
+      '<div class="crm-send">' +
+        '<button type="button" class="p" data-lk="sms">💬 Text</button>' +
+        '<button type="button" class="p" data-lk="whatsapp">🟢 WhatsApp</button>' +
+        (navigator.share ? '<button type="button" data-lk="share">📤 Share…</button><button type="button" data-lk="copy">📋 Copy message</button>' : '<button type="button" class="w" data-lk="copy">📋 Copy message + link</button>') +
+      '</div>' +
+      '<div class="crm-stat" id="crm-ls" hidden></div>' +
+      '<p class="crm-hint">If someone is already another agent\'s client, they stay with that agent. You\'ll get a 🔔 notification and a text each time someone joins from your link.</p>' +
+      '</div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e){ if(e.target === ov) closeSheet(); });
+    document.addEventListener('keydown', escClose);
+    $('crm-x').onclick = closeSheet;
+    $('crm-cl').onclick = function(){ copy(url).then(function(){ toast('Link copied. Paste it anywhere.'); }); };
+    $('crm-ll').addEventListener('click', function(e){ var b = e.target.closest('[data-v]'); if(!b) return; this.querySelectorAll('[data-v]').forEach(function(x){ x.setAttribute('aria-checked', String(x === b)); }); });
+    function lng(){ var l = document.querySelector('#crm-ll [aria-checked="true"]'); return l ? l.getAttribute('data-v') : 'es'; }
+    ov.querySelectorAll('[data-lk]').forEach(function(b){ b.onclick = function(){
+      var ch = b.getAttribute('data-lk'), text = linkText(lng(), url);
+      if(ch === 'sms') topGo('sms:?&body=' + encodeURIComponent(text));
+      else if(ch === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      else if(ch === 'share') navigator.share({ title: 'JAG app invite', text: text }).catch(function(){});
+      else copy(text).then(function(){ toast('Message copied. Paste it in any chat.'); });
+    }; });
+    rpc('jag_my_invite_link').then(function(j){
+      var el = $('crm-ls'); if(!el || !j || !j.ok) return;
+      el.innerHTML = '<div><b>' + (j.opens || 0) + '</b><small>Opened</small></div><div><b>' + (j.joins || 0) + '</b><small>Joined</small></div>';
+      el.hidden = false;
+    }).catch(function(){});
   }
 
   /* ---------------- invited list ---------------- */
@@ -437,19 +493,20 @@
       var sec = $('t-clients');
       if(sec && !$('crm-top')){
         var top = document.createElement('div'); top.className = 'crm-top'; top.id = 'crm-top';
-        top.innerHTML = '<button type="button" class="crm-inv" id="crm-inv">＋ Invite a client</button>';
+        top.innerHTML = '<button type="button" class="crm-inv" id="crm-inv">＋ Invite a client</button>' + (myUrl() ? '<button type="button" class="crm-lnk" id="crm-mylink">🔗 My invite link</button>' : '');
         var inv = document.createElement('div'); inv.className = 'invs'; inv.id = 'crm-invs'; inv.hidden = true;
         inv.addEventListener('click', invClick);
         var stats = $('stats');
         sec.insertBefore(top, stats || sec.firstChild);
         sec.insertBefore(inv, stats || sec.firstChild);
         $('crm-inv').onclick = function(){ openInvite(); };
+        if($('crm-mylink')) $('crm-mylink').onclick = openLink;
       }
       loadInvites(); loadNotifs();
       clearInterval(timer);
       timer = setInterval(function(){ if(!document.hidden) loadNotifs(); }, 30000);
       document.addEventListener('visibilitychange', function(){ if(!document.hidden){ loadNotifs(); loadInvites(); } });
     },
-    journey: journey, timeline: timeline, invite: openInvite, reloadInvites: loadInvites, next: nextStep, state: state, toast: toast, copy: copy
+    journey: journey, timeline: timeline, invite: openInvite, inviteLink: openLink, reloadInvites: loadInvites, next: nextStep, state: state, toast: toast, copy: copy
   };
 })();

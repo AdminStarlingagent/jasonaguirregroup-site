@@ -15,8 +15,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* Client invite: an agent made this person's profile and sent /join#<token>. They create their account here
-   (email code, no password), and the account is tied to that agent (jag_invite_accept). Spanish first. */
+/* Client invite. Two kinds of link:
+     /join#<token>  an agent made this person's profile and sent their personal link (jag_invite_accept)
+     /join?a=<code> the agent's own invite link, the same for everyone (jag_link_join, supabase-invite-link.sql)
+   They create their account here (email code, no password), and the account is tied to that agent. Spanish first. */
 :root{
   --ink:#17161c; --paper:#fff; --card:#f5f5f7; --line:#dddde3;
   --accent:#c8102e; --accent-d:#a30d26; --accent-t:#fdecef;
@@ -94,6 +96,9 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
   var $ = function(id){ return document.getElementById(id); };
   var card = $('card');
   var token = (location.hash || '').replace(/^#/, '').replace(/[^0-9a-f]/gi, '').slice(0, 40);
+  // agent's own invite link: /join?a=katherine (same link for everyone, no personal token)
+  var code = (function(){ try{ var a = (new URLSearchParams(location.search).get('a') || '').toLowerCase(); return /^[a-z0-9-]{2,30}$/.test(a) ? a : ''; }catch(e){ return ''; } })();
+  var link = !token && !!code;
   var inv = null, email = '', name = '', phone = '', cooldown = 0;
 
   function ls(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
@@ -126,7 +131,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
       plan: 'Ver mi plan', homes: 'Buscar casas',
       joined_h: 'Ya creaste tu cuenta', joined_p: 'Entra con tu correo para ver tus casas y tu plan.', signin: 'Entrar a mi cuenta',
       bad_h: 'Este enlace ya no funciona', bad_p: 'Pídele a tu agente un enlace nuevo, o crea tu cuenta aquí.', create: 'Crear cuenta o entrar',
-      bademail: 'Escribe un correo válido.', badcode: 'Ese código no funcionó o ya venció. Intenta otra vez o pide uno nuevo.', wait: 'Espera un momento antes de pedir otro código.',
+      badname: 'Escribe tu nombre.', bademail: 'Escribe un correo válido.', badcode: 'Ese código no funcionó o ya venció. Intenta otra vez o pide uno nuevo.', wait: 'Espera un momento antes de pedir otro código.',
       neterr: 'No pudimos conectar. Intenta de nuevo.', sent_again: 'Código enviado otra vez.',
       terms: 'Al continuar aceptas nuestros <a href="privacy-terms.html" target="_blank" rel="noopener">términos y privacidad</a>. Tu agente podrá ver las casas que guardas para ayudarte mejor.'
     },
@@ -142,7 +147,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
       plan: 'See my plan', homes: 'Search homes',
       joined_h: 'You already made your account', joined_p: 'Sign in with your email to see your homes and your plan.', signin: 'Sign in',
       bad_h: 'This link doesn\'t work anymore', bad_p: 'Ask your agent for a new link, or create your account here.', create: 'Create an account or sign in',
-      bademail: 'Enter a valid email.', badcode: 'That code didn\'t work or expired. Try again or request a new one.', wait: 'Please wait a moment before requesting another code.',
+      badname: 'Enter your name.', bademail: 'Enter a valid email.', badcode: 'That code didn\'t work or expired. Try again or request a new one.', wait: 'Please wait a moment before requesting another code.',
       neterr: 'We couldn\'t connect. Please try again.', sent_again: 'Code sent again.',
       terms: 'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. Your agent can see the homes you save so they can help you better.'
     }
@@ -152,7 +157,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
   function agentFirst(){ var a = (inv && inv.agent) || {}; return a.first_name || String(a.name || 'Jason').split(' ')[0]; }
   function agentCard(){
     var a = (inv && inv.agent) || {};
-    var av = a.photo_url ? '<img src="' + esc(a.photo_url) + '" alt="" onerror="this.outerHTML=\'<span class=ph>' + esc((a.name || 'J')[0]) + '</span>\'">' : '<span class="ph">' + esc((a.name || 'J')[0]) + '</span>';
+    var av = /^https?:\/\//.test(a.photo_url || '') ? '<img src="' + esc(a.photo_url) + '" alt="" onerror="this.outerHTML=\'<span class=ph>' + esc((a.name || 'J')[0]) + '</span>\'">' : '<span class="ph">' + esc((a.name || 'J')[0]) + '</span>';
     return '<div class="agent">' + av + '<div><b>' + esc(a.name || 'Jason Aguirre') + '</b><small>' + t('your') + (a.phone ? ' · ' + esc(fmtPhone(a.phone)) : '') + ' · eXp Realty</small></div></div>';
   }
 
@@ -171,6 +176,7 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
       ev.preventDefault();
       name = $('n').value.trim(); phone = $('p').value.trim();
       var v = $('e').value.trim().toLowerCase();
+      if(link && !name){ $('n').focus(); return err(t('badname')); }
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ $('e').focus(); return err(t('bademail')); }
       email = v; $('go').disabled = true;
       sendCode().then(function(){ cooldown = Date.now() + 60000; screenCode(); })
@@ -216,8 +222,10 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
   function accept(tok){
     card.innerHTML = '<div class="spin" role="status"></div>';
     return rpc('jag_client_init', { p_name: name || (inv && inv.name) || null, p_phone: phone || (inv && inv.phone) || null, p_lang: lang(), p_terms: true }, tok)
-      .then(function(){ return rpc('jag_invite_accept', { p_token: token }, tok); })
-      .then(function(){ if(inv && inv.agent && inv.agent.code) ls('jag_ref_linked', inv.agent.code); screenDone(); })
+      .then(function(){ return link ? rpc('jag_link_join', { p_code: code }, tok) : rpc('jag_invite_accept', { p_token: token }, tok); })
+      .then(function(j){
+        if(link && j && j.ok && j.agent) inv.agent = j.agent;   // already someone's client: show their real agent
+        if(inv && inv.agent && inv.agent.code) ls('jag_ref_linked', inv.agent.code); screenDone(); })
       .catch(function(){ screenDone(); });
   }
   function screenDone(){
@@ -256,9 +264,10 @@ input.code{letter-spacing:.4em;text-align:center;font-size:24px;font-weight:800}
   }; });
   paintLang();
 
-  if(!token){ screen = screenBad; screenBad(); return; }
+  if(!token && !link){ screen = screenBad; screenBad(); return; }
   var isAgent = false; try{ isAgent = !!localStorage.getItem('jag_agent'); }catch(e){}
-  rpc('jag_invite_public', { p_token: token, p_count: !isAgent }).then(function(j){
+  (link ? rpc('jag_link_public', { p_code: code, p_count: !isAgent }).then(function(j){ return j && j.ok ? { ok: true, link: true, agent: j.agent } : j; })
+        : rpc('jag_invite_public', { p_token: token, p_count: !isAgent })).then(function(j){
     if(!j || !j.ok){ screen = screenBad; paintLang(); screenBad(); return; }
     inv = j; paintLang();
     // the rest of the site shows this agent's name and number (jag-share.js reads jag_ref)
