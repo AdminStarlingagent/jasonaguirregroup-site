@@ -1,5 +1,5 @@
 /* ============================================================
-   JAG client accounts: sign in with an emailed code (no password),
+   JAG client accounts: sign in with an emailed code or a password (clients can create one),
    favorites, saved searches, activity for recommendations.
    Talks to Supabase Auth + REST with the public key; row-level security
    means each client can only ever read or change their own rows.
@@ -11,19 +11,27 @@
 
   var T = {
     es:{ m_cli:'Clientes', m_in:'Iniciar sesión', m_new:'Crear una cuenta', m_team:'Equipo JAG / Agentes', m_hub:'Iniciar sesión en el Agent Hub', m_adm:'Admin (CRM)', m_join:'Únase a nuestro equipo', team_go:'Usted es del equipo JAG. Abriendo el Agent Hub…', hub:'Agent Hub (equipo)', admin:'Admin', team:'Equipo JAG', signin:'Iniciar sesión', account:'Mi cuenta', invest:'Portal de inversionista', saved:'Casas guardadas', searches:'Búsquedas guardadas', signout:'Cerrar sesión',
-      h1:'Inicie sesión o cree su cuenta', p1:'Guarde casas, reciba avisos de casas nuevas y vea recomendaciones para usted. Sin contraseña: le enviamos un código a su correo.',
+      h1:'Inicie sesión o cree su cuenta', p1:'Guarde casas, reciba avisos de casas nuevas y vea recomendaciones para usted. Le enviamos un código a su correo, o entre con su contraseña si ya tiene una.',
       email:'Correo electrónico', send:'Enviarme el código', terms:'Al continuar acepta nuestros <a href="privacy-terms.html" target="_blank" rel="noopener">términos y privacidad</a>. Puede borrar su cuenta cuando quiera.',
       h2:'Revise su correo', p2:'Le enviamos un código a ', code:'Código del correo', verify:'Entrar', resend:'Reenviar código', other:'Usar otro correo',
       h3:'¡Bienvenido! ¿Cómo se llama?', p3:'Así sabemos cómo dirigirnos a usted. El teléfono es opcional.', name:'Nombre', phone:'Teléfono (opcional)', done:'Listo', skip:'Ahora no',
       bademail:'Escriba un correo válido.', badcode:'Ese código no funcionó o ya venció. Intente otra vez o pida uno nuevo.', wait:'Espere un momento antes de pedir otro código.', neterr:'No pudimos conectar. Intente de nuevo.',
-      why_new:'Cree su cuenta gratis: guarde casas, reciba avisos de casas nuevas y escríbale a su agente.', why_offer:'Entre a su portal para ver el estado de su oferta. Le enviamos un código a su correo.', why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar' },
+      why_new:'Cree su cuenta gratis: guarde casas, reciba avisos de casas nuevas y escríbale a su agente.', why_offer:'Entre a su portal para ver el estado de su oferta. Le enviamos un código a su correo.', why_fav:'Inicie sesión para guardar esta casa y recibir avisos si cambia de precio.', why_search:'Inicie sesión para guardar esta búsqueda y recibir avisos de casas nuevas.', sent_again:'Código enviado otra vez.', close:'Cerrar',
+      pw_link:'Entrar con contraseña', pw_h:'Inicie sesión', pw_p:'Escriba su correo y su contraseña.', pw:'Contraseña', pw_go:'Entrar', pw_code:'Mejor envíenme un código', pw_show:'Mostrar',
+      badpw:'El correo o la contraseña no coinciden. Si nunca creó una contraseña, entre con un código y créela en Mi perfil.', pw_wait:'Demasiados intentos. Espere unos minutos o entre con un código.',
+      newpw:'Cree una contraseña (opcional)', newpw_h:'Mínimo 8 caracteres. Así la próxima vez entra sin esperar un código.', shortpw:'La contraseña debe tener al menos 8 caracteres.',
+      weakpw:'Esa contraseña es muy fácil de adivinar. Pruebe otra más larga.', reauth:'Por seguridad, cierre sesión, entre con un código y vuelva a intentarlo.', pwerr:'No pudimos guardar la contraseña. Intente de nuevo.' },
     en:{ m_cli:'Clients', m_in:'Sign in', m_new:'Create an account', m_team:'JAG team / Agents', m_hub:'Agent Hub sign in', m_adm:'Admin (CRM)', m_join:'Join our team', team_go:'You\'re on the JAG team. Opening the Agent Hub…', hub:'Agent Hub (team)', admin:'Admin', team:'JAG team', signin:'Sign in', account:'My account', invest:'Investor portal', saved:'Saved homes', searches:'Saved searches', signout:'Sign out',
-      h1:'Sign in or create your account', p1:'Save homes, get alerts on new listings and see picks for you. No password: we email you a code.',
+      h1:'Sign in or create your account', p1:'Save homes, get alerts on new listings and see picks for you. We email you a code, or sign in with your password if you have one.',
       email:'Email', send:'Email me a code', terms:'By continuing you agree to our <a href="privacy-terms.html" target="_blank" rel="noopener">terms and privacy</a>. You can delete your account any time.',
       h2:'Check your email', p2:'We sent a code to ', code:'Code from the email', verify:'Sign in', resend:'Resend code', other:'Use a different email',
       h3:'Welcome! What is your name?', p3:'So we know how to address you. Phone is optional.', name:'Name', phone:'Phone (optional)', done:'Done', skip:'Not now',
       bademail:'Enter a valid email.', badcode:'That code did not work or expired. Try again or request a new one.', wait:'Please wait a moment before requesting another code.', neterr:'We could not connect. Please try again.',
-      why_new:'Create your free account: save homes, get new-listing alerts and message your agent.', why_offer:'Open your portal to see your offer status. We will email you a code.', why_fav:'Sign in to save this home and get alerts if the price changes.', why_search:'Sign in to save this search and get alerts on new homes.', sent_again:'Code sent again.', close:'Close' }
+      why_new:'Create your free account: save homes, get new-listing alerts and message your agent.', why_offer:'Open your portal to see your offer status. We will email you a code.', why_fav:'Sign in to save this home and get alerts if the price changes.', why_search:'Sign in to save this search and get alerts on new homes.', sent_again:'Code sent again.', close:'Close',
+      pw_link:'Sign in with a password', pw_h:'Sign in', pw_p:'Enter your email and password.', pw:'Password', pw_go:'Sign in', pw_code:'Email me a code instead', pw_show:'Show',
+      badpw:'That email and password do not match. If you never created a password, sign in with a code and create one in My profile.', pw_wait:'Too many tries. Wait a few minutes or sign in with a code.',
+      newpw:'Create a password (optional)', newpw_h:'At least 8 characters. Next time you can sign in without waiting for a code.', shortpw:'The password needs at least 8 characters.',
+      weakpw:'That password is too easy to guess. Try a longer one.', reauth:'For your security, sign out, sign in with a code and try again.', pwerr:'We could not save the password. Please try again.' }
   };
   function lang(){ try{ var v=localStorage.getItem('jag_lang'); if(v==='en'||v==='es') return v; }catch(e){} return 'es'; }
   function t(k){ return (T[lang()]||T.es)[k]; }
@@ -89,6 +97,27 @@
       body:JSON.stringify({type:'email',email:email,token:code})})
       .then(function(r){ return r.json().then(function(j){ if(!r.ok||!j.access_token) throw new Error('bad_code'); setSession(j); return j; }); });
   }
+  function signInPassword(email, pw){
+    return fetch(URL_+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,password:pw})})
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){
+        if(!r.ok||!j.access_token){ var e=new Error(j.error_code||'bad_pw'); e.status=r.status; throw e; }
+        setSession(j); rememberPw(); return j; }); });
+  }
+  /* create or change the password of the signed-in client (Supabase Auth: PUT /user) */
+  function setPassword(pw){
+    pw=String(pw||'');
+    if(pw.length<8) return Promise.reject(new Error('short'));
+    return rest('/auth/v1/user',{method:'PUT',body:JSON.stringify({password:pw})}).then(function(r){
+      if(r.ok){ rememberPw(); return true; }
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        var c=String(j.error_code||j.code||'');
+        throw new Error(c==='weak_password'?'weak':c==='reauthentication_needed'||c==='reauthentication_not_valid'?'reauth':c==='same_password'?'same':'pwerr'); });
+    });
+  }
+  function pwErrText(e){ var m=e&&e.message; return m==='short'?t('shortpw'):m==='weak'?t('weakpw'):m==='reauth'?t('reauth'):m==='same'?'':t('pwerr'); }
+  function rememberPw(){ try{ localStorage.setItem('jag_signin','pw'); }catch(e){} }
+  function usesPw(){ try{ return localStorage.getItem('jag_signin')==='pw'; }catch(e){ return false; } }
   function init(extra){
     extra=extra||{};
     return rpc('jag_client_init',{p_name:extra.name||null,p_phone:extra.phone||null,p_lang:lang(),p_terms:true})
@@ -168,8 +197,10 @@
     if(step==='email'){
       b.innerHTML=(why?'<div class="why">'+esc(why)+'</div>':'')+'<h3>'+t('h1')+'</h3><p>'+t('p1')+'</p>'+
         '<form novalidate><label for="ja-e">'+t('email')+'</label><input id="ja-e" type="email" autocomplete="email" inputmode="email" value="'+esc(email)+'">'+
-        '<div class="ja-err" id="ja-err"></div><button class="ja-btn" type="submit">'+t('send')+'</button><p class="ja-fine">'+t('terms')+'</p></form>';
+        '<div class="ja-err" id="ja-err"></div><button class="ja-btn" type="submit">'+t('send')+'</button>'+
+        '<div class="ja-row"><button type="button" class="ja-link" id="ja-pwl">'+t('pw_link')+'</button></div><p class="ja-fine">'+t('terms')+'</p></form>';
       var f=b.querySelector('form'), inp=b.querySelector('#ja-e');
+      b.querySelector('#ja-pwl').onclick=function(){ var v=inp.value.trim().toLowerCase(); if(v) email=v; step='pw'; render(); };
       setTimeout(function(){ inp.focus(); },50);
       f.onsubmit=function(e){ e.preventDefault();
         var v=inp.value.trim().toLowerCase();
@@ -189,34 +220,58 @@
       f2.onsubmit=function(e){ e.preventDefault();
         var v=c.value.replace(/\D/g,''); if(v.length<6||v.length>8) return err(t('badcode'));
         var btn=f2.querySelector('.ja-btn'); btn.disabled=true;
-        verify(email,v).then(function(sess){
-          return rpc('jag_agent_me').catch(function(){ return null; }).then(function(a){
-            if(a&&a.ok&&a.agent){ teamHandoff(sess,a.agent,email); return 'team'; }
-            return init();
-          });
-        }).then(function(j){
-          if(j==='team') return;
-          if(j&&j.new){ step='name'; render(); } else finish();
-        }).catch(function(){ btn.disabled=false; c.value=''; err(t('badcode')); });
+        verify(email,v).then(afterAuth).catch(function(){ btn.disabled=false; c.value=''; err(t('badcode')); });
       };
       b.querySelector('#ja-re').onclick=function(){
         if(Date.now()<cooldown) return err(t('wait'));
         sendCode(email).then(function(){ cooldown=Date.now()+60000; err(t('sent_again')); }).catch(function(x){ err(x.status===429?t('wait'):t('neterr')); });
       };
       b.querySelector('#ja-ot').onclick=function(){ step='email'; render(); };
+    }else if(step==='pw'){
+      b.innerHTML=(why?'<div class="why">'+esc(why)+'</div>':'')+'<h3>'+t('pw_h')+'</h3><p>'+t('pw_p')+'</p>'+
+        '<form novalidate><label for="ja-e2">'+t('email')+'</label><input id="ja-e2" type="email" autocomplete="username" inputmode="email" value="'+esc(email)+'">'+
+        '<label for="ja-pw">'+t('pw')+'</label><div style="position:relative"><input id="ja-pw" type="password" autocomplete="current-password" style="padding-right:84px">'+
+        '<button type="button" class="ja-link" id="ja-sh" style="position:absolute;right:12px;top:4px">'+t('pw_show')+'</button></div>'+
+        '<div class="ja-err" id="ja-err"></div><button class="ja-btn" type="submit">'+t('pw_go')+'</button>'+
+        '<div class="ja-row"><button type="button" class="ja-link" id="ja-cd">'+t('pw_code')+'</button></div><p class="ja-fine">'+t('terms')+'</p></form>';
+      var f4=b.querySelector('form'), e4=b.querySelector('#ja-e2'), p4=b.querySelector('#ja-pw');
+      setTimeout(function(){ (email?p4:e4).focus(); },50);
+      b.querySelector('#ja-sh').onclick=function(){ p4.type=p4.type==='password'?'text':'password'; };
+      b.querySelector('#ja-cd').onclick=function(){ var v=e4.value.trim().toLowerCase(); if(v) email=v; step='email'; render(); };
+      f4.onsubmit=function(e){ e.preventDefault();
+        var v=e4.value.trim().toLowerCase(), pw=p4.value;
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return err(t('bademail'));
+        if(!pw) return err(t('badpw'));
+        var btn=f4.querySelector('.ja-btn'); btn.disabled=true; email=v;
+        signInPassword(v,pw).then(afterAuth).catch(function(x){ btn.disabled=false; p4.value=''; err(x&&x.status===429?t('pw_wait'):x&&x.status>=400&&x.status<500?t('badpw'):t('neterr')); });
+      };
     }else if(step==='name'){
       b.innerHTML='<h3>'+t('h3')+'</h3><p>'+t('p3')+'</p><form novalidate><label for="ja-n">'+t('name')+'</label><input id="ja-n" autocomplete="name">'+
         '<label for="ja-p">'+t('phone')+'</label><input id="ja-p" type="tel" autocomplete="tel" inputmode="tel">'+
-        '<button class="ja-btn" type="submit">'+t('done')+'</button><div class="ja-row"><span></span><button type="button" class="ja-link" id="ja-sk">'+t('skip')+'</button></div></form>';
+        '<label for="ja-np">'+t('newpw')+'</label><input id="ja-np" type="password" autocomplete="new-password" minlength="8" style="margin-bottom:4px"><p class="ja-fine" style="margin:0 0 12px">'+t('newpw_h')+'</p>'+
+        '<div class="ja-err" id="ja-err"></div><button class="ja-btn" type="submit">'+t('done')+'</button><div class="ja-row"><span></span><button type="button" class="ja-link" id="ja-sk">'+t('skip')+'</button></div></form>';
       var f3=b.querySelector('form');
       setTimeout(function(){ b.querySelector('#ja-n').focus(); },50);
       f3.onsubmit=function(e){ e.preventDefault();
-        var n=b.querySelector('#ja-n').value.trim(), p=b.querySelector('#ja-p').value.trim();
+        var n=b.querySelector('#ja-n').value.trim(), p=b.querySelector('#ja-p').value.trim(), np=b.querySelector('#ja-np').value;
+        if(np&&np.length<8) return err(t('shortpw'));
         var btn=f3.querySelector('.ja-btn'); btn.disabled=true;
-        (n||p?init({name:n,phone:p}):Promise.resolve()).catch(function(){}).then(finish);
+        (np?setPassword(np):Promise.resolve()).then(function(){
+          return (n||p?init({name:n,phone:p}):Promise.resolve()).catch(function(){}).then(finish);
+        }).catch(function(x){ btn.disabled=false; var m=pwErrText(x); if(m) err(m); else finish(); });
       };
       b.querySelector('#ja-sk').onclick=finish;
     }
+  }
+  /* after a code or password sign-in: team members go to the Agent Hub; new clients get the name (and password) step */
+  function afterAuth(sess){
+    return rpc('jag_agent_me').catch(function(){ return null; }).then(function(a){
+      if(a&&a.ok&&a.agent){ teamHandoff(sess,a.agent,email); return 'team'; }
+      return init();
+    }).then(function(j){
+      if(j==='team') return;
+      if(j&&j.new){ step='name'; render(); } else finish();
+    });
   }
   /* a team email (an agent card in Follow Up Boss) signing in on the public site: keep the same login as the
      team session the Agent Hub, Admin and "Comenzar oferta" use, skip the client account, open the Agent Hub */
@@ -243,7 +298,7 @@
   /* open the sign-in window; resolves once signed in (rejects if closed) */
   function requireSignIn(reason, presetEmail){
     if(S) return Promise.resolve(api.user());
-    ensureModal(); why=reason?t(reason)||reason:''; step='email';
+    ensureModal(); why=reason?t(reason)||reason:''; step=usesPw()&&reason!=='why_new'?'pw':'email';
     if(presetEmail && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(presetEmail).trim())) email=String(presetEmail).trim().toLowerCase();
     render(); ov.classList.add('on');
     return new Promise(function(res,rej){ pending={resolve:res,reject:rej}; });
@@ -310,7 +365,7 @@
     user:function(){ return S?{id:S.user.id,email:S.user.email}:null; },
     profile:function(){ return profile; },
     onChange:function(f){ listeners.push(f); },
-    requireSignIn:requireSignIn, signOut:signOut, mountButton:mountButton, relabel:paintButtons,
+    requireSignIn:requireSignIn, signOut:signOut, setPassword:setPassword, pwErrText:pwErrText, mountButton:mountButton, relabel:paintButtons,
     rest:rest, json:json, rpc:rpc, token:token,
     favorites:favorites, addFavorite:addFavorite, removeFavorite:removeFavorite,
     searches:searchesList, addSearch:addSearch, updateSearch:updateSearch, removeSearch:removeSearch,

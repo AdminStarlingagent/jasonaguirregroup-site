@@ -112,7 +112,7 @@ section[data-pane].on{display:block}
 
 .form{max-width:560px}
 .form label{display:block;font-weight:700;font-size:13.5px;margin:0 0 5px}
-.form input[type=text],.form input[type=tel],.form input[type=email],.form select{width:100%;border:1.5px solid #c9c8d0;border-radius:10px;padding:11px 12px;font-size:16px;margin:0 0 14px;background:#fff}
+.form input[type=text],.form input[type=tel],.form input[type=email],.form input[type=password],.form select{width:100%;border:1.5px solid #c9c8d0;border-radius:10px;padding:11px 12px;font-size:16px;margin:0 0 14px;background:#fff}
 .form input[readonly]{background:var(--card);color:var(--muted)}
 .form label.radio{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:12px;margin:0 0 8px;cursor:pointer;font-weight:400;font-size:14px}
 .radio input{margin-top:2px;accent-color:var(--buy);width:18px;height:18px;flex:none}
@@ -486,6 +486,14 @@ body.on-msgs .jc-b,body.on-msgs .jc{display:none!important}
         <label for="p_phone" data-t="p_phone"></label><input id="p_phone" type="tel" autocomplete="tel" maxlength="40">
         <p style="margin:16px 0 0"><button class="btn" type="submit" data-t="p_save"></button><span class="saved" id="p_ok" data-t="p_saved"></span></p>
       </form></div>
+      <div class="pcard"><h3 data-t="pw_h"></h3><p class="st-sub" data-t="pw_p"></p>
+      <form class="form" id="pwf" novalidate>
+        <input id="pw_user" type="email" autocomplete="username" hidden>
+        <label for="pw_new" data-t="pw_new"></label>
+        <div style="position:relative"><input id="pw_new" type="password" autocomplete="new-password" minlength="8" maxlength="72" style="padding-right:84px"><button type="button" id="pw_sh" data-t="pw_show" style="position:absolute;right:10px;top:23px;transform:translateY(-50%);border:0;background:none;font-weight:700;color:#2653d9;cursor:pointer;font-family:inherit"></button></div>
+        <p style="margin:16px 0 0"><button class="btn" type="submit" data-t="pw_save"></button><span class="saved" id="pw_ok" data-t="pw_saved"></span></p>
+        <p class="hint" id="pw_err" role="status"></p>
+      </form></div>
       <div class="pcard" id="sm_card" hidden><h3 data-t="sm_h"></h3>
         <label class="chk" id="sm_lbl"><input type="checkbox" id="sm_on"><span><b data-t="sm_l"></b><small data-t="sm_fine"></small></span></label>
         <p class="hint" id="sm_hint" role="status"></p>
@@ -517,7 +525,7 @@ body.on-msgs .jc-b,body.on-msgs .jc{display:none!important}
   <span data-t="foot"></span>
 </div></footer>
 
-<script src="jag-account.js"></script>
+<script src="jag-account.js?v=2"></script>
 <script src="jag-premium.js?v=1"></script>
 <script src="jag-tour-plan.js?v=1"></script>
 <script src="jag-install.js" defer></script>
@@ -580,6 +588,7 @@ var T={
   p_email:'Correo',p_name:'Nombre',p_phone:'Teléfono',p_lang:'Idioma de los correos',st_h:'Ajustes',st_lang:'Idioma',st_lang_d:'Para la app y los correos y textos que le mandamos.',st_theme:'Apariencia',st_theme_d:'Automático usa el modo de su teléfono o computadora.',st_sys:'Automático',st_light:'Claro',st_dark:'Oscuro',st_saved:'✓ Guardado',st_err:'No se pudo guardar. Intente de nuevo.',st_size:'Tamaño de letra',st_size_d:'Agranda todo el texto de la app.',sz_n:'Normal',sz_l:'Grande',sz_x:'Muy grande',nt_h:'Avisos por correo',nt_p:'Elija qué le avisamos y cuándo. Todo sigue apareciendo en Novedades.',nt_new:'Casas nuevas',nt_price:'Bajas de precio',nt_status:'Cambios de estado',nt_i:'Al momento',nt_d:'Diario',nt_o:'No',nt_msgs:'Mensajes de su agente',nt_msgs_d:'Le avisamos cuando su agente le escribe.',nt_on:'Sí',nt_off:'No',nt_q:'Horas de silencio',nt_q_d:'No le mandamos avisos en este horario; le llegan en la mañana.',nt_q0:'Ninguna',ct_h:'Cómo prefiere que lo contactemos',ct_p:'Su agente lo ve antes de llamarle o escribirle.',ct_how:'Por',ct_call:'Llamada',ct_text:'Texto',ct_email:'Correo',ct_when:'Mejor horario',ct_m:'Mañana',ct_a:'Tarde',ct_e:'Noche',ct_any:'Cualquiera',co_h:'Compran juntos',co_p:'Invite a su pareja o familiar. Verán las mismas casas guardadas y los mismos mensajes con su agente.',co_nph:'Nombre',co_eph:'Correo de esa persona',co_send:'Invitar',co_sent:'✓ Invitación enviada',co_pend:'Invitación enviada',co_acc:'Comparte su cuenta',co_rm:'Quitar',co_with:'Comparte la búsqueda de {n}',co_member_p:'Ven las mismas casas guardadas y mensajes.',co_leave:'Salir',co_max:'Ya tiene 3 personas en su cuenta.',co_e_email:'Revise el correo.',co_e_self:'Ese es su propio correo.',co_e_limit:'Máximo 3 personas.',co_e_member:'Solo la cuenta principal puede invitar.',co_e_has_household:'Primero quite a las personas de su cuenta para unirse a otra.',co_e_already_member:'Ya comparte otra cuenta. Salga de esa primero.',ci_h:'{n} lo invitó a buscar casa juntos',ci_p:'Si acepta, verán las mismas casas guardadas y los mismos mensajes con su agente.',ci_yes:'Aceptar',ci_no:'No, gracias',by:'Guardada por {n}',dl_btn:'Descargar mis datos',dl_p:'Un archivo con su perfil, casas guardadas, búsquedas, avisos y mensajes.',dl_wait:'Preparando…',p_freq:'¿Cada cuánto quiere avisos?',
   f_instant:'Al momento',f_instant_d:'Le escribimos en cuanto sale una casa o cambia un precio.',f_daily:'Resumen diario',f_daily_d:'Un correo cada mañana con todo lo nuevo.',f_off:'No enviar correos',f_off_d:'Los avisos se quedan aquí en su cuenta.',
   p_save:'Guardar cambios',p_saved:'Guardado ✓',p_out:'Cerrar sesión',
+  pw_h:'Contraseña',pw_p:'Cree una contraseña para entrar sin esperar un código. También sirve para cambiarla.',pw_new:'Nueva contraseña (mínimo 8 caracteres)',pw_show:'Mostrar',pw_save:'Guardar contraseña',pw_saved:'Listo ✓ Ya puede entrar con su contraseña.',
   d_h:'Borrar mi cuenta',d_p:'Se borran su cuenta, casas guardadas, búsquedas y avisos. No se puede deshacer.',d_btn:'Borrar mi cuenta',
   dd_h:'¿Borrar su cuenta?',dd_p:'Escriba BORRAR para confirmar.',dd_word:'BORRAR',dd_no:'Cancelar',dd_yes:'Borrar para siempre',dd_done:'Su cuenta fue borrada.',
   err:'Algo falló. Intente de nuevo.',loading:'Cargando…',
@@ -638,6 +647,7 @@ var T={
   p_email:'Email',p_name:'Name',p_phone:'Phone',p_lang:'Email language',st_h:'Settings',st_lang:'Language',st_lang_d:'For the app and the emails and texts we send you.',st_theme:'Appearance',st_theme_d:'Automatic matches your phone or computer.',st_sys:'Automatic',st_light:'Light',st_dark:'Dark',st_saved:'✓ Saved',st_err:'Couldn’t save. Try again.',st_size:'Text size',st_size_d:'Makes all the text in the app bigger.',sz_n:'Normal',sz_l:'Large',sz_x:'Extra large',nt_h:'Email alerts',nt_p:'Choose what we tell you about and when. Everything still shows in Updates.',nt_new:'New homes',nt_price:'Price drops',nt_status:'Status changes',nt_i:'Right away',nt_d:'Daily',nt_o:'Off',nt_msgs:'Messages from your agent',nt_msgs_d:'We let you know when your agent writes.',nt_on:'On',nt_off:'Off',nt_q:'Quiet hours',nt_q_d:'No alerts during these hours; they arrive in the morning.',nt_q0:'None',ct_h:'How should we reach you?',ct_p:'Your agent sees this before calling or writing.',ct_how:'By',ct_call:'Call',ct_text:'Text',ct_email:'Email',ct_when:'Best time',ct_m:'Morning',ct_a:'Afternoon',ct_e:'Evening',ct_any:'Anytime',co_h:'Buying together',co_p:'Invite your partner or a family member. You’ll both see the same saved homes and messages with your agent.',co_nph:'Name',co_eph:'Their email',co_send:'Invite',co_sent:'✓ Invitation sent',co_pend:'Invitation sent',co_acc:'Shares your account',co_rm:'Remove',co_with:'You share {n}’s home search',co_member_p:'You both see the same saved homes and messages.',co_leave:'Leave',co_max:'You already have 3 people on your account.',co_e_email:'Check the email.',co_e_self:'That’s your own email.',co_e_limit:'3 people max.',co_e_member:'Only the main account can invite.',co_e_has_household:'Remove the people on your account before joining another.',co_e_already_member:'You already share another account. Leave it first.',ci_h:'{n} invited you to house-hunt together',ci_p:'If you accept, you’ll both see the same saved homes and messages with your agent.',ci_yes:'Accept',ci_no:'No thanks',by:'Saved by {n}',dl_btn:'Download my data',dl_p:'A file with your profile, saved homes, searches, alerts and messages.',dl_wait:'Preparing…',p_freq:'How often do you want alerts?',
   f_instant:'Right away',f_instant_d:'We email you as soon as a home hits or a price changes.',f_daily:'Daily digest',f_daily_d:'One email each morning with everything new.',f_off:'No emails',f_off_d:'Alerts stay here in your account.',
   p_save:'Save changes',p_saved:'Saved ✓',p_out:'Sign out',
+  pw_h:'Password',pw_p:'Create a password to sign in without waiting for a code. You can also change it here.',pw_new:'New password (at least 8 characters)',pw_show:'Show',pw_save:'Save password',pw_saved:'Done ✓ You can now sign in with your password.',
   d_h:'Delete my account',d_p:'Deletes your account, saved homes, searches and alerts. This cannot be undone.',d_btn:'Delete my account',
   dd_h:'Delete your account?',dd_p:'Type DELETE to confirm.',dd_word:'DELETE',dd_no:'Cancel',dd_yes:'Delete forever',dd_done:'Your account was deleted.',
   err:'Something went wrong. Please try again.',loading:'Loading…',
@@ -792,6 +802,16 @@ $('pf').addEventListener('submit',function(e){
    .catch(function(){ alert(t('err')); });
 });
 $('signout').onclick=function(){ A.signOut(); };
+/* password: create or change it (sign-in by code keeps working too) */
+$('pw_sh').onclick=function(){ var i=$('pw_new'); i.type=i.type==='password'?'text':'password'; };
+$('pwf').addEventListener('submit',function(e){
+  e.preventDefault(); var v=$('pw_new').value, b=this.querySelector('.btn'); $('pw_err').textContent=''; $('pw_ok').classList.remove('on');
+  var u=A.user(); $('pw_user').value=u&&u.email||'';
+  b.disabled=true;
+  A.setPassword(v).then(function(){ $('pw_new').value=''; $('pw_ok').classList.add('on'); setTimeout(function(){ $('pw_ok').classList.remove('on'); },6000); })
+   .catch(function(x){ var m=A.pwErrText(x); if(m) $('pw_err').textContent=m; else { $('pw_new').value=''; $('pw_ok').classList.add('on'); } })
+   .then(function(){ b.disabled=false; });
+});
 
 /* ---------- settings: language + appearance (saved right away) ---------- */
 var langSynced=false, stT;
