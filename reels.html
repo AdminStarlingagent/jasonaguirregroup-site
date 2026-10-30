@@ -283,14 +283,62 @@ function homesUrl(){
 }
 function getJSON(u){ return fetch(u).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
 
+/* A fresh random order every visit (same filters), homes with video first; when a ZIP/city runs out, keep going
+   15% wider around it with the same price / beds / baths / type. */
+var RANDP=40;
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), x=a[i]; a[i]=a[j]; a[j]=x; } return a; }
+function vidFirst(a){ return a.filter(playable).concat(a.filter(function(l){ return !playable(l); })); }
+function km(a,b,c,d){ var R=6371, x=(c-a)*Math.PI/180, y=(d-b)*Math.PI/180, h=Math.sin(x/2)*Math.sin(x/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)*Math.sin(y/2); return 2*R*Math.asin(Math.sqrt(h)); }
+function circle(lat,lng,r){ var pts=[]; for(var i=0;i<16;i++){ var a=i/16*2*Math.PI; pts.push([lng+r/(111.32*Math.cos(lat*Math.PI/180))*Math.cos(a), lat+r/110.57*Math.sin(a)]); } pts.push(pts[0]); return JSON.stringify([pts]); }
+function wideQuery(c,r,page){
+  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:page,sortBy:'createdOnDesc',map:circle(c.lat,c.lng,r)});
+  if(F.newc&&F.type==='sale') p.set('newc','1');
+  if(F.minp) p.set('minPrice',F.minp); if(F.maxp) p.set('maxPrice',F.maxp);
+  if(F.beds) p.set('minBedrooms',F.beds); if(F.baths) p.set('minBaths',F.baths);
+  if(F.type==='sale') F.kinds.forEach(function(k){ p.append('propertyType',k); });
+  return p;
+}
+function loadWide(){
+  if(S.busy) return; var w=S.wide, mine=S.req;
+  if(!w){
+    var pts=S.items.map(function(l){ return l.map||{}; }).filter(function(m){ return m.latitude&&m.longitude; }).map(function(m){ return [+m.latitude,+m.longitude]; });
+    if(!pts.length){ S.wdone=true; appendReels(S.items.length); return; }
+    var med=function(i){ var a=pts.map(function(x){ return x[i]; }).sort(function(x,y){ return x-y; }); return a[Math.floor(a.length/2)]; };
+    var c={lat:med(0),lng:med(1)}, far=0; pts.forEach(function(x){ var d=km(c.lat,c.lng,x[0],x[1]); if(d<30) far=Math.max(far,d); });
+    w=S.wide={c:c,r:Math.max(far,3),page:1};
+  }
+  if(w.r>80){ S.wdone=true; appendReels(S.items.length); return; }
+  S.busy=true;
+  var seen={}; S.items.forEach(function(l){ seen[l.mlsNumber]=1; }); var got=[], tries=0;
+  (function step(){
+    if(mine!==S.req) return;
+    if(got.length>=6||w.r>80||tries>=8){ S.busy=false; if(w.r>80&&!got.length){ S.wdone=true; appendReels(S.items.length); } if(got.length){ var from=S.items.length; S.items=S.items.concat(vidFirst(shuffle(got))); appendReels(from); } return; }
+    tries++;
+    getJSON(API+'?'+wideQuery(w.c,w.r,w.page)).then(function(d){
+      var L=(d.listings||[]).filter(function(l){ return l.images&&l.images.length&&!seen[l.mlsNumber]; });
+      L.forEach(function(l){ seen[l.mlsNumber]=1; got.push(l); });
+      if(w.page<Math.min(d.numPages||1,3)&&!L.length) w.page++; else { w.r*=1.15; w.page=1; }
+      step();
+    }).catch(function(){ S.busy=false; });
+  })();
+}
 function loadMore(){
-  if(S.busy||S.done) return; S.busy=true; var mine=S.req, page=S.page+1;
-  getJSON(API+'?'+query(page)).then(function(d){
+  if(S.done&&F.q&&!F.b&&!S.wdone&&S.items.length) return loadWide();
+  if(S.busy||S.done) return;
+  if(!S.perm){   // random page order for this visit
+    S.busy=true; var mine0=S.req, cq=query(1); cq.set('resultsPerPage',1);
+    getJSON(API+'?'+cq).then(function(d){ var n=Math.max(1,Math.min(Math.ceil((d.count||0)/PER),RANDP)), a=[]; for(var k=1;k<=n;k++) a.push(k); S.perm=shuffle(a); })
+      .catch(function(){ S.perm=[1]; }).then(function(){ if(mine0!==S.req) return; S.busy=false; loadMore(); });
+    return;
+  }
+  S.busy=true; var mine=S.req, page=S.page+1;
+  getJSON(API+'?'+query(S.perm[page-1]||page)).then(function(d){
     if(mine!==S.req) return;
     var L=(d.listings||[]).filter(function(l){ return l.images&&l.images.length; });
     /* a word like "Willis" is a city first; if HAR has no city by that name, try it as a keyword */
-    if(page===1&&!L.length&&F.q&&!/\d/.test(F.q)&&!S.asSearch&&!F.b){ S.asSearch=true; S.busy=false; loadMore(); return; }
-    S.page=page; S.pages=d.numPages||1;
+    if(page===1&&!L.length&&F.q&&!/\d/.test(F.q)&&!S.asSearch&&!F.b){ S.asSearch=true; S.perm=null; S.busy=false; loadMore(); return; }
+    S.page=page; S.pages=Math.min(d.numPages||1,S.perm.length);
+    L=vidFirst(shuffle(L));
     if(page===1&&START){ var k=L.findIndex(function(l){ return l.mlsNumber===START; }); if(k>0) L.unshift(L.splice(k,1)[0]); }
     var seen={}; S.items.forEach(function(l){ seen[l.mlsNumber]=1; });
     L=L.filter(function(l){ return !seen[l.mlsNumber]; });
@@ -366,7 +414,7 @@ function appendReels(from){
     if((i+1)%EVERY===0&&i>2&&!PA()){ var e=document.createElement('section'); e.className='reel ev'; e.innerHTML=evHtml(); feed.appendChild(e); io.observe(e); }
   }
   if(!S.items.length){ showMsg('none'); return; }
-  if(S.done&&!feed.querySelector('.msg.end')){
+  if(S.done&&(S.wdone||!F.q||F.b)&&!feed.querySelector('.msg.end')){
     var end=document.createElement('div'); end.className='msg end';
     end.innerHTML='<span>'+t('end')+'</span><a href="'+homesUrl()+'">'+t('all')+'</a><p class="legal">'+t('legal')+'</p>';
     feed.appendChild(end);

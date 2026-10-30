@@ -268,6 +268,8 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 .oklink{display:block;margin-top:10px;color:var(--loan);font-weight:800}
 .toast{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:22px;z-index:1200;background:var(--ink);color:#fff;border-radius:10px;padding:12px 14px;display:none;align-items:center;gap:12px;box-shadow:0 8px 26px rgba(0,0,0,.35);max-width:calc(100vw - 24px);font-size:14px;font-weight:600}
 .toast.on{display:flex}
+.widehd{grid-column:1/-1;border-top:2px solid var(--line,#e7e5e1);padding:18px 2px 4px}.widehd b{display:block;font-size:20px;font-weight:800}.widehd span{color:#5b5a62;font-size:14px}
+.wmore{min-height:48px;padding:0 22px;border-radius:12px;border:2px solid var(--buy,#c8102e);background:#fff;color:var(--buy,#c8102e);font-weight:800;font-size:15px}
 .toast #toastmsg{flex:1 1 auto;min-width:0;line-height:1.35}
 @media(max-width:700px){.toast{bottom:calc(96px + env(safe-area-inset-bottom,0px));width:auto;left:12px;right:12px}}
 .toast a{color:#fff;background:var(--loan);border-radius:6px;padding:8px 12px;font-weight:800;text-decoration:none;white-space:nowrap}
@@ -467,6 +469,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
     <div class="sub"><b id="count">&nbsp;</b>
       <label><span data-t="sortl"></span>
         <select id="sort" aria-label="Orden">
+          <option value="rec" data-t="s_rec"></option>
           <option value="createdOnDesc" data-t="s_new"></option>
           <option value="listPriceAsc" data-t="s_low"></option>
           <option value="listPriceDesc" data-t="s_high"></option>
@@ -523,7 +526,7 @@ var T={
   kind:'Tipo de casa',h_kind:'Tipo de propiedad',newc:'Construcción nueva',nc_tag:'Construcción nueva',f_builder:'Constructora',ss_newc:'construcción nueva',k_Residential:'Casas',k_Land:'Terrenos',k_Income:'Multifamiliar',k_Farm:'Ranchos',
   apply:'Aplicar',save:'Guardar búsqueda',ss_saved:'Búsqueda guardada. Le avisaremos cuando salgan casas nuevas.',ss_go:'Ver mis búsquedas',ss_err:'No pudimos guardar la búsqueda. Intente de nuevo.',ss_map:'Área del mapa',ss_upto:'hasta ',ss_from:'desde ',ss_bd:'+ rec',ss_ba:'+ ba',mapnote:'Mostrando casas en esta zona del mapa',
   picked:'Casas seleccionadas para usted',picked_all:'Ver todas las casas',ttl_sale:'Casas en venta',ttl_lease:'Casas en renta',ttl_in:' en ',tx:'Texas',area:'esta zona',near:'Cerca de mí',near_t:'su zona',near_wide:'Pocas casas muy cerca: ampliamos la búsqueda a 10 millas.',near_denied:'Para buscar cerca de usted, permita el acceso a su ubicación en su navegador.',near_fail:'No pudimos encontrar su ubicación. Escriba su ciudad o código postal.',near_out:'Por ahora solo mostramos casas en Texas. Escriba una ciudad o código postal de Texas.',near_me:'Usted está aquí',
-  res:' resultados',res1:' resultado',sortl:'Ordenar:',s_new:'Más recientes',s_low:'Precio (menor)',s_high:'Precio (mayor)',
+  res:' resultados',res1:' resultado',sortl:'Ordenar:',s_rec:'Para usted',s_new:'Más recientes',more_near:'Más casas cerca',more_near_p:function(mi){ return 'Ya vio todas las de esta zona. Estas están hasta '+mi+' millas, con su mismo precio y recámaras.'; },more_btn:'Ver más casas cerca',s_low:'Precio (menor)',s_high:'Precio (mayor)',
   none:'No encontramos casas con esos filtros. Mueve el mapa o cambia los filtros.',
   fail:'No pudimos cargar las casas. Intenta de nuevo.',prev:'‹ Anterior',next:'Siguiente ›',page:'Página ',of:' de ',
   bd:'rec',ba:'ba',sqft:'pies²',est:'Est. ',mo:'/mes',forsale:'Casa en venta',forrent:'Casa en renta',
@@ -567,7 +570,7 @@ var T={
   kind:'Home type',h_kind:'Home type',newc:'New construction',nc_tag:'New construction',f_builder:'Builder',ss_newc:'new construction',k_Residential:'Houses',k_Land:'Lots / land',k_Income:'Multi-family',k_Farm:'Farms & ranches',
   apply:'Apply',save:'Save search',ss_saved:'Search saved. We will email you when new homes hit the market.',ss_go:'See my searches',ss_err:'We could not save the search. Please try again.',ss_map:'Map area',ss_upto:'up to ',ss_from:'from ',ss_bd:'+ bd',ss_ba:'+ ba',mapnote:'Showing homes in this map area',
   picked:'Homes picked for you',picked_all:'See all homes',ttl_sale:'Homes for sale',ttl_lease:'Homes for rent',ttl_in:' in ',tx:'Texas',area:'this area',near:'Near me',near_t:'your area',near_wide:'Few homes right nearby, so we widened the search to 10 miles.',near_denied:'To search near you, allow location access in your browser.',near_fail:'We couldn’t find your location. Type your city or ZIP code.',near_out:'For now we only show homes in Texas. Type a Texas city or ZIP code.',near_me:'You are here',
-  res:' results',res1:' result',sortl:'Sort:',s_new:'Newest',s_low:'Price (low to high)',s_high:'Price (high to low)',
+  res:' results',res1:' result',sortl:'Sort:',s_rec:'For you',s_new:'Newest',more_near:'More homes nearby',more_near_p:function(mi){ return "You've seen every home in this area. These are within "+mi+' miles, same price and bedrooms.'; },more_btn:'Show more homes nearby',s_low:'Price (low to high)',s_high:'Price (high to low)',
   none:'No homes match those filters. Move the map or change the filters.',
   fail:'We couldn\'t load homes. Please try again.',prev:'‹ Previous',next:'Next ›',page:'Page ',of:' of ',
   bd:'bds',ba:'ba',sqft:'sqft',est:'Est. ',mo:'/mo',forsale:'House for sale',forrent:'House for rent',
@@ -710,7 +713,8 @@ document.querySelectorAll('.langs button').forEach(function(b){
 var PICKS=(function(){ try{ var v=new URLSearchParams(location.search).get('homes')||''; return v.split(',').map(function(x){ return x.trim(); }).filter(function(x){ return /^[A-Za-z0-9-]{3,24}$/.test(x); }).slice(0,24); }catch(e){ return []; } })();
 function query(){
   if(PICKS.length){ var pk=new URLSearchParams({resultsPerPage:24}); PICKS.forEach(function(m){ pk.append('mlsNumber',m); }); return pk; }
-  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:state.page,sortBy:$('sort').value});
+  var rec=$('sort').value==='rec';
+  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:rec&&state.perm?state.perm[state.page-1]||state.page:state.page,sortBy:rec?'createdOnDesc':$('sort').value});
   var q=$('q').value.trim();
   if(state.bounds){ var b=state.bounds; p.set('map',JSON.stringify([[[b.getWest(),b.getSouth()],[b.getEast(),b.getSouth()],[b.getEast(),b.getNorth()],[b.getWest(),b.getNorth()]]])); }
   else{ p.set('state',STATE); if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q&&!/\d/.test(q)&&state.qkind[q.toLowerCase()]!=='search') p.set('city',q); else if(q) p.set('search',q); }
@@ -730,16 +734,70 @@ function load(fit){
       .then(function(){ if(chk===state.req) load(fit); });
     return;
   }
+  // "For you": a fresh random order of result pages on every visit/refresh (same filters), homes with video first
+  var rec=$('sort').value==='rec'&&!PICKS.length, key=rec?qkey():'';
+  if(rec&&state.permKey!==key){
+    var chk2=++state.req; $('grid').style.opacity=.45;
+    var cq=query(); cq.set('resultsPerPage',1); cq.set('pageNum',1);
+    fetch(API+'?'+cq).then(function(r){ return r.ok?r.json():null; }).then(function(d){
+      var pages=Math.max(1,Math.min(Math.ceil(((d&&d.count)||0)/PER),RANDP)), perm=[]; for(var k=1;k<=pages;k++) perm.push(k);
+      state.perm=shuffle(perm); state.permKey=key;
+    }).catch(function(){ state.perm=null; state.permKey=key; }).then(function(){ if(chk2===state.req) load(fit); });
+    return;
+  }
+  state.wide=null;
   var mine=++state.req; $('grid').style.opacity=.45;
   fetch(API+'?'+query())
    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
    .then(function(d){ if(mine!==state.req) return;
      state.items=d.listings||[]; state.pages=d.numPages||1; state.count=d.count||0;
+     if(rec&&state.perm){ state.pages=Math.min(state.pages,state.perm.length); state.items=vidFirst(shuffle(state.items)); }
      if(state.near&&state.near.miles<10&&state.count<6){ nearSearch(state.near.lat,state.near.lng,10); ssToast(t('near_wide'),false); return; }
-     render(fit!==false&&!state.bounds); })
+     render(fit!==false&&!state.bounds);
+     if(canWiden()&&state.page>=state.pages) widen(mine); })
    .catch(function(){ if(mine!==state.req) return; state.items=[]; state.count=null; render(); });
 }
 state.req=0;
+var RANDP=40;   // "For you" shuffles across the first 40 pages (960 homes) of the search
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), x=a[i]; a[i]=a[j]; a[j]=x; } return a; }
+function vidFirst(a){ return a.filter(hasVid).concat(a.filter(function(l){ return !hasVid(l); })); }
+function qkey(){ var p=query(); p.delete('pageNum'); p.delete('sortBy'); return p.toString(); }
+/* Running out in a ZIP or city: keep going with homes around it, 15% wider each time, same price / beds / baths / type. */
+function canWiden(){ var q=$('q').value.trim(); return !PICKS.length&&!state.bounds&&!!q&&state.items.length>0; }
+function km(a,b,c,d){ var R=6371, x=(c-a)*Math.PI/180, y=(d-b)*Math.PI/180, h=Math.sin(x/2)*Math.sin(x/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(y/2)*Math.sin(y/2); return 2*R*Math.asin(Math.sqrt(h)); }
+function circle(lat,lng,r){ var pts=[]; for(var i=0;i<16;i++){ var a=i/16*2*Math.PI; pts.push([lng+r/(111.32*Math.cos(lat*Math.PI/180))*Math.cos(a), lat+r/110.57*Math.sin(a)]); } pts.push(pts[0]); return JSON.stringify([pts]); }
+function wideQuery(c,r,page){
+  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:page,sortBy:'createdOnDesc',map:circle(c.lat,c.lng,r)});
+  if(F.newc&&F.type==='sale') p.set('newc','1');
+  if(F.minp) p.set('minPrice',F.minp); if(F.maxp) p.set('maxPrice',F.maxp);
+  if(F.beds) p.set('minBedrooms',F.beds); if(F.baths) p.set('minBaths',F.baths);
+  if(F.type==='sale') F.kinds.forEach(function(k){ p.append('propertyType',k); });
+  return p;
+}
+function widen(mine){
+  var w=state.wide;
+  if(!w){
+    var pts=state.items.map(function(l){ return l.map||{}; }).filter(function(m){ return m.latitude&&m.longitude; }).map(function(m){ return [+m.latitude,+m.longitude]; });
+    if(!pts.length) return;
+    var med=function(i){ var a=pts.map(function(x){ return x[i]; }).sort(function(x,y){ return x-y; }); return a[Math.floor(a.length/2)]; };
+    var c={lat:med(0),lng:med(1)}, far=0; pts.forEach(function(x){ var d=km(c.lat,c.lng,x[0],x[1]); if(d<30) far=Math.max(far,d); });
+    w=state.wide={c:c,r:Math.max(far,3),from:state.items.length,page:1,busy:false};
+  }
+  if(w.busy||w.r>80) return; w.busy=true;
+  var seen={}; state.items.forEach(function(l){ seen[l.mlsNumber]=1; });
+  var got=[], tries=0;
+  (function step(){
+    if(mine!==state.req) return;
+    if(got.length>=12||w.r>80||tries>=8){ w.busy=false; if(got.length){ state.items=state.items.concat(vidFirst(shuffle(got))); render(false); } else if(w.r<=80) render(false); return; }
+    tries++;
+    fetch(API+'?'+wideQuery(w.c,w.r,w.page)).then(function(r){ return r.ok?r.json():null; }).then(function(d){
+      var L=((d&&d.listings)||[]).filter(function(l){ return !seen[l.mlsNumber]; });
+      L.forEach(function(l){ seen[l.mlsNumber]=1; got.push(l); });
+      if(d&&w.page<Math.min(d.numPages||1,3)&&!L.length) w.page++; else { w.r=w.r*1.15; w.page=1; }
+      step();
+    }).catch(function(){ w.busy=false; });
+  })();
+}
 function specs(l){
   var d=l.details||{};
   return [d.numBedrooms!=null?'<b>'+d.numBedrooms+'</b> '+t('bd'):'',d.numBathrooms!=null?'<b>'+d.numBathrooms+'</b> '+t('ba'):'',d.sqft?'<b>'+num(d.sqft)+'</b> '+t('sqft'):''].filter(Boolean).join('<i>|</i>');
@@ -753,9 +811,10 @@ function render(fit){
   if(state.count===null){ $('count').textContent=''; g.innerHTML='<div class="empty">'+t('fail')+'</div>'; $('pager').innerHTML=''; return; }
   $('count').textContent=num(state.count)+(state.count===1?t('res1'):t('res'));
   if(!state.items.length){ g.innerHTML='<div class="empty">'+t('none')+'</div>'; $('pager').innerHTML=''; drawPins(false); return; }
+  var wf=state.wide&&state.wide.from<state.items.length?state.wide.from:-1;
   g.innerHTML=state.items.map(function(l,i){
     var a=l.address||{}, n=l.daysOnMarket;
-    return '<article class="c" data-i="'+i+'" tabindex="0">'+
+    return (i===wf?'<div class="widehd"><b>'+t('more_near')+'</b><span>'+esc(t('more_near_p')(Math.round(state.wide.r/1.15*0.621)))+'</span></div>':'')+'<article class="c" data-i="'+i+'" tabindex="0">'+
       '<div class="ph" style="background-image:url(\''+img(l.images[0],'small')+'\')">'+
         (l.newConstruction?'<span class="tag nc">'+t('nc_tag')+'</span>':n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
         '<button type="button" class="heart'+(favs[l.mlsNumber]?' on':'')+'" aria-label="'+t('savehome')+'">'+HEART+'</button>'+
@@ -767,6 +826,7 @@ function render(fit){
       '<div class="br">'+t('listed')+esc(credit(l))+'</div></div></article>';
   }).join('');
   $('pager').innerHTML=state.pages>1?'<button type="button" id="pv" '+(state.page<=1?'disabled':'')+'>'+t('prev')+'</button><span>'+t('page')+state.page+t('of')+num(state.pages)+'</span><button type="button" id="nx" '+(state.page>=state.pages?'disabled':'')+'>'+t('next')+'</button>':'';
+  if(state.wide&&state.wide.r<=80&&!state.wide.busy&&state.page>=state.pages) $('pager').insertAdjacentHTML('beforeend','<button type="button" id="wmore" class="wmore">'+t('more_btn')+'</button>');
   drawPins(fit);
 }
 function drawPins(fit){
@@ -891,6 +951,7 @@ $('grid').addEventListener('keydown',function(e){ if(e.key==='Enter'&&e.target.c
 $('grid').addEventListener('mouseover',function(e){ var c=e.target.closest('.c'); if(c) hot(+c.getAttribute('data-i'),true); });
 $('grid').addEventListener('mouseout',function(e){ var c=e.target.closest('.c'); if(c) hot(+c.getAttribute('data-i'),false); });
 $('pager').addEventListener('click',function(e){
+  if(e.target.id==='wmore'){ e.target.disabled=true; e.target.textContent='…'; widen(state.req); return; }
   if(e.target.id==='pv'&&state.page>1) state.page--; else if(e.target.id==='nx'&&state.page<state.pages) state.page++; else return;
   load(false); $('list').scrollTop=0;
 });
