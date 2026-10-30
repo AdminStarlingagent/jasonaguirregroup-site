@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JAG Reels — Casas en video</title>
+<meta name="description" content="Desliza y descubre casas en venta en Houston, estilo TikTok. Jason Aguirre Group · eXp Realty.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JAG Casas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--buy:#c8102e;--buy-d:#a30d26;--ink:#17161c;--loan:#2653d9;--w:#fff;--wt:rgba(255,255,255,.78);--glass:rgba(23,22,28,.55)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#000;color:#fff;overflow:hidden;
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:3px solid #fff;outline-offset:2px}
+svg{display:block}
+
+/* the phone-shaped column; full screen on phones, centered on desktop */
+.app{position:relative;height:100dvh;width:min(100vw,calc(100dvh * 9 / 16));margin:0 auto;background:#111;overflow:hidden}
+@media (min-width:700px){ body{background:radial-gradient(circle at 50% 40%,#2a2a33,#000 70%)} .app{box-shadow:0 0 60px rgba(0,0,0,.6)} }
+
+/* top bar */
+.top{position:absolute;z-index:30;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;display:flex;align-items:center;gap:8px;pointer-events:none}
+.top>*{pointer-events:auto}
+.ib{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ib svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.brand{display:flex;align-items:baseline;gap:6px;margin-right:auto;text-decoration:none;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.brand b{font-size:22px;font-weight:800;letter-spacing:-.02em;color:#fff}
+.brand span{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;background:var(--buy);padding:3px 7px;border-radius:4px}
+.area{max-width:38%;height:40px;padding:0 12px;border-radius:99px;background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px}
+.area svg{width:16px;height:16px;flex:none;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round}
+.area em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.langs{display:flex;border-radius:99px;overflow:hidden;background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.langs button{font-size:11.5px;font-weight:800;padding:0 9px;height:40px;opacity:.7}
+.langs button.on{opacity:1;background:#fff;color:var(--ink);border-radius:99px}
+
+/* feed */
+.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.reel{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#111}
+.media,.frames,.vid,.bg{position:absolute;inset:0}
+.bg{background:#222 center/cover no-repeat;filter:blur(24px) brightness(.55);transform:scale(1.2)}
+.fr{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s ease}
+.fr.on{opacity:1}
+.reel.act .fr.on{animation:kb1 4.2s ease-out both}
+.reel.act .fr.on.k2{animation-name:kb2}
+.reel.act .fr.on.k3{animation-name:kb3}
+@keyframes kb1{from{transform:scale(1.02) translate(0,0)}to{transform:scale(1.16) translate(-3%,-2%)}}
+@keyframes kb2{from{transform:scale(1.16) translate(3%,1%)}to{transform:scale(1.03) translate(0,0)}}
+@keyframes kb3{from{transform:scale(1.04) translate(-2%,2%)}to{transform:scale(1.15) translate(2%,-1%)}}
+.reel.paused .fr.on,.reel.paused .bars i.cur b{animation-play-state:paused!important}
+.vid{display:flex;align-items:center;justify-content:center}
+.vid iframe{width:100%;aspect-ratio:16/9;border:0;background:#000}
+.reel.vmode .frames,.reel.vmode .bars{display:none}
+.reel:not(.vmode) .vid{display:none}
+.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.45) 0,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 48%,rgba(0,0,0,.82) 100%)}
+
+/* story-style progress bars, one per photo */
+.bars{position:absolute;z-index:6;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 60px);display:flex;gap:3px}
+.bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.32);overflow:hidden}
+.bars i b{display:block;height:100%;width:0;background:#fff}
+.bars i.done b{width:100%}
+.reel.act .bars i.cur b{animation:fill var(--d,4.2s) linear forwards}
+@keyframes fill{to{width:100%}}
+
+/* tap zones: left = previous photo, right = next photo, hold = pause */
+.tap{position:absolute;z-index:4;top:15%;bottom:38%;width:34%}
+.tap.l{left:0}.tap.r{right:0}
+
+/* listing info */
+.info{position:absolute;z-index:8;left:0;right:76px;bottom:0;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);text-shadow:0 1px 8px rgba(0,0,0,.55)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.tag{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-shadow:none}
+.tag.new{background:var(--buy)}
+.tag.vd{background:#fff;color:var(--ink)}
+.pr{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.pm{display:inline-block;margin-top:4px;font-size:13.5px;font-weight:700;color:#fff;background:rgba(38,83,217,.92);padding:3px 9px;border-radius:6px;text-shadow:none}
+.sp{margin-top:8px;font-size:15px;font-weight:600}
+.sp b{font-weight:800}
+.sp i{font-style:normal;opacity:.6;margin:0 6px}
+.ad{margin-top:4px;font-size:14px;color:var(--wt);line-height:1.35}
+.cr{margin-top:6px;font-size:11px;color:rgba(255,255,255,.66)}
+.cta{display:flex;gap:8px;margin-top:12px}
+.cta a,.cta button{flex:1;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;text-decoration:none;text-shadow:none;white-space:nowrap}
+.cta .go{background:var(--buy)}
+.cta .go:active{background:var(--buy-d)}
+.cta .de{background:rgba(255,255,255,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ttour{margin-top:8px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* right rail */
+.rail{position:absolute;z-index:9;right:8px;bottom:calc(env(safe-area-inset-bottom) + 120px);display:flex;flex-direction:column;align-items:center;gap:16px}
+.rb{text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.rb .ic{width:48px;height:48px;border-radius:99px;display:grid;place-items:center;background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.rb svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rb.fav.on .ic{background:#fff}
+.rb.fav.on svg{fill:var(--buy);stroke:var(--buy)}
+.rb.fav.pop .ic{animation:pop .35s ease}
+@keyframes pop{50%{transform:scale(1.25)}}
+.burst{position:absolute;z-index:12;left:50%;top:42%;width:110px;height:110px;margin:-55px 0 0 -55px;pointer-events:none;animation:burst .8s ease forwards}
+.burst svg{width:100%;height:100%;fill:var(--buy);filter:drop-shadow(0 4px 14px rgba(0,0,0,.4))}
+@keyframes burst{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.1);opacity:1}70%{transform:scale(1);opacity:1}100%{transform:scale(1.3) translateY(-30px);opacity:0}}
+.pausei{position:absolute;z-index:11;left:50%;top:45%;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:99px;background:rgba(0,0,0,.45);display:none;place-items:center;pointer-events:none}
+.pausei svg{width:30px;height:30px;fill:#fff}
+.reel.paused .pausei{display:grid}
+
+/* "can I buy one of these?" card that appears every few homes */
+.reel.ev{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#c8102e 0%,#6b0818 55%,#17161c 100%)}
+.evb{padding:0 28px;text-align:center;max-width:420px}
+.evb .big{font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.02em}
+.evb p{font-size:16px;line-height:1.5;color:rgba(255,255,255,.88);margin:14px 0 22px}
+.evb a{display:flex;height:52px;border-radius:12px;background:#fff;color:var(--buy);font-weight:800;font-size:16px;align-items:center;justify-content:center;text-decoration:none}
+.evb small{display:block;margin-top:12px;font-size:12.5px;color:rgba(255,255,255,.75)}
+.evb .sk{margin-top:26px;font-size:13px;font-weight:700;opacity:.8}
+
+/* end, empty, loading */
+.msg{height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 30px;gap:14px;scroll-snap-align:start;color:var(--wt);font-size:15px;line-height:1.5}
+.msg a,.msg button{color:#fff;background:var(--buy);padding:12px 20px;border-radius:10px;font-weight:800;text-decoration:none}
+.spin{width:38px;height:38px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:99px;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* swipe hint (first visit only) */
+.hint{position:absolute;z-index:40;left:50%;bottom:34%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:6px;font-weight:800;font-size:14px;text-shadow:0 1px 8px rgba(0,0,0,.6);pointer-events:none}
+.hint.on{display:flex;animation:hint 1.6s ease-in-out 3}
+.hint svg{width:34px;height:34px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@keyframes hint{0%,100%{transform:translate(-50%,0);opacity:.4}50%{transform:translate(-50%,-26px);opacity:1}}
+
+/* filter sheet */
+.scrim{position:absolute;inset:0;z-index:50;background:rgba(0,0,0,.5);display:none}
+.scrim.on{display:block}
+.sheet{position:absolute;z-index:51;left:0;right:0;bottom:0;background:#fff;color:var(--ink);border-radius:18px 18px 0 0;padding:18px 18px calc(env(safe-area-inset-bottom) + 18px);transform:translateY(105%);transition:transform .28s ease}
+.sheet.on{transform:none}
+.sheet h3{margin:0 0 14px;font-size:18px;font-weight:800}
+.sheet label{display:block;font-size:12.5px;font-weight:800;color:#5f5e68;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.sheet input,.sheet select{width:100%;height:46px;border:1.5px solid #c9c8d0;border-radius:10px;padding:0 12px;font-size:16px;background:#fff;color:var(--ink)}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.seg{display:flex;border:1.5px solid #c9c8d0;border-radius:10px;overflow:hidden}
+.seg button{flex:1;height:44px;font-weight:700;font-size:14px;color:var(--ink)}
+.seg button+button{border-left:1.5px solid #c9c8d0}
+.seg button.on{background:var(--ink);color:#fff}
+.sheet .apply{margin-top:18px;width:100%;height:50px;border-radius:12px;background:var(--buy);color:#fff;font-weight:800;font-size:16px}
+
+.toast{position:absolute;z-index:60;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 62px);background:#fff;color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;display:none;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.toast.on{display:flex}
+.toast a{margin-left:auto;color:var(--buy);font-weight:800;white-space:nowrap}
+.legal{font-size:10.5px;line-height:1.45;color:rgba(255,255,255,.6);max-width:420px}
+@media (prefers-reduced-motion:reduce){ .reel.act .fr.on{animation:none} .hint.on{animation:none} }
+</style>
+<script src="jag-track.js?v=1"></script>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <a class="ib" id="back" href="homes" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <a class="brand" href="index.html" aria-label="JAG Reels"><b>JAG</b><span>Reels</span></a>
+    <button class="area" id="areaBtn" type="button"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><em id="areaTx">Houston</em></button>
+    <span class="langs" role="group" aria-label="Idioma / Language"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
+  </header>
+
+  <main class="feed" id="feed" aria-live="polite"></main>
+
+  <div class="hint" id="hint"><svg viewBox="0 0 24 24"><path d="M6 14l6-6 6 6"/></svg><span data-t="hint"></span></div>
+  <div class="toast" id="toast" role="status"><span id="toastmsg"></span><a id="toastlink" href="apply.html"></a></div>
+
+  <div class="scrim" id="scrim"></div>
+  <form class="sheet" id="sheet" aria-label="Filtros">
+    <h3 data-t="f_h"></h3>
+    <label for="fq" data-t="f_where"></label>
+    <input id="fq" type="search" autocomplete="off" data-ph="f_where_ph">
+    <label data-t="f_type"></label>
+    <div class="seg" id="ftype"><button type="button" data-v="sale" data-t="t_sale"></button><button type="button" data-v="lease" data-t="t_lease"></button></div>
+    <div class="row">
+      <div><label for="fmax" data-t="f_max"></label><select id="fmax"></select></div>
+      <div><label for="fbeds" data-t="f_beds"></label><select id="fbeds"></select></div>
+    </div>
+    <button class="apply" type="submit" data-t="f_go"></button>
+  </form>
+</div>
+
+<script src="jag-capture.js"></script>
+<script src="jag-account.js"></script>
+<script src="jag-premium.js?v=1"></script>
+<script src="jag-install.js" defer></script>
+<script>
+/* ============================================================
+   JAG Reels — vertical, swipeable home feed (TikTok-style).
+   Listings come through the same JAG proxy as /homes (HAR via
+   Repliers). Each home plays its listing video when the listing
+   agent added one on HAR (YouTube/Vimeo); every other home plays
+   as a photo reel built from its MLS photos (no files, no edits
+   to the photos themselves). Listing credit stays on every reel.
+   ============================================================ */
+var API='https://nyaxywghbpphjhwcmspd.supabase.co/functions/v1/home-search', CDN='https://cdn.repliers.io/';
+var STATE='TX', PER=24, RATE=6.75, TAXRATE=2.1, INSRATE=1.0, MIRATE=0.55, PHOTO_MS=4200, MAXPH=8, EVERY=8;
+var HEART='<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.9c0 5.4-7.5 10-7.5 10z"/></svg>';
+var IC={
+  share:'<svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12M7 8l5-5 5 5"/></svg>',
+  info:'<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  mute:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l4 6M21 9l-4 6"/></svg>',
+  snd:'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  pics:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>',
+  play:'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#fff" stroke="none"/></svg>',
+  pause:'<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+};
+
+var T={
+ es:{hint:'Desliza para ver más casas',f_h:'¿Dónde quiere vivir?',f_where:'Ciudad o código postal',f_where_ph:'Houston, Katy, 77083…',f_type:'Buscar',t_sale:'En venta',t_lease:'En renta',
+  f_max:'Precio máximo',f_beds:'Recámaras',any:'Todas',nomax:'Sin máximo',f_go:'Ver casas',
+  bd:'rec',ba:'ba',sqft:'pies²',est:'Pago est. ',mo:'/mes',new_:'Nueva',nc:'Construcción nueva',vid:'▶ Video',tour3d:'Ver tour virtual',
+  listed:'Listado por: ',save:'Guardar',saved:'Guardada',share:'Compartir',details:'Detalles',sound:'Sonido',muted:'Silencio',photos:'Fotos',video:'Video',
+  go_tour:'Agendar visita',go_det:'Ver casa',go_rent:'Pedir info',copied:'Enlace copiado',
+  ev_saved:'Casa guardada. ¿Quiere saber si puede comprarla?',ev_go:'Evaluación gratis',
+  ev_big:'¿Le gustó alguna casa?',ev_p:'Vea si califica para comprar una como estas. Evaluación gratis de 3 minutos, sin revisar su crédito.',ev_btn:'Ver si califico',ev_fine:'Compradores con ITIN bienvenidos.',ev_skip:'Desliza para seguir viendo casas',
+  loading:'Cargando casas…',none:'No encontramos casas con esos filtros.',change:'Cambiar búsqueda',fail:'No pudimos cargar las casas.',retry:'Intentar de nuevo',
+  end:'Ya vio todas las casas de esta búsqueda.',all:'Ver la búsqueda completa',area_all:'Houston',
+  legal:'Datos de listados proporcionados por Houston Association of REALTORS® (HAR) a través de Repliers. Información considerada confiable pero no garantizada. Videos y tours son del agente del listado. Jason Aguirre Group · eXp Realty · (832) 702-3574.',
+  shtxt:'Mira esta casa'},
+ en:{hint:'Swipe up for more homes',f_h:'Where do you want to live?',f_where:'City or ZIP code',f_where_ph:'Houston, Katy, 77083…',f_type:'Looking to',t_sale:'Buy',t_lease:'Rent',
+  f_max:'Max price',f_beds:'Bedrooms',any:'Any',nomax:'No max',f_go:'Show homes',
+  bd:'bd',ba:'ba',sqft:'sqft',est:'Est. ',mo:'/mo',new_:'New',nc:'New construction',vid:'▶ Video',tour3d:'Open virtual tour',
+  listed:'Listed by: ',save:'Save',saved:'Saved',share:'Share',details:'Details',sound:'Sound',muted:'Muted',photos:'Photos',video:'Video',
+  go_tour:'Schedule a tour',go_det:'See home',go_rent:'Ask about it',copied:'Link copied',
+  ev_saved:'Home saved. Want to know if you can buy it?',ev_go:'Free evaluation',
+  ev_big:'See a home you like?',ev_p:'Find out if you qualify to buy one like these. Free 3-minute evaluation, no credit check.',ev_btn:'See if I qualify',ev_fine:'ITIN buyers welcome.',ev_skip:'Swipe to keep watching homes',
+  loading:'Loading homes…',none:'No homes match those filters.',change:'Change search',fail:'We could not load the homes.',retry:'Try again',
+  end:'You have seen every home in this search.',all:'See the full search',area_all:'Houston',
+  legal:'Listing data provided by Houston Association of REALTORS® (HAR) through Repliers. Deemed reliable but not guaranteed. Videos and tours belong to the listing agent. Jason Aguirre Group · eXp Realty · (832) 702-3574.',
+  shtxt:'Check out this home'}
+};
+var lang='es', favs={};
+try{ var sv=localStorage.getItem('jag_lang'); if(sv==='en'||sv==='es') lang=sv; favs=JSON.parse(localStorage.getItem('jag_favs')||'{}')||{}; }catch(e){}
+function t(k){ return T[lang][k]; }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function money(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+function short(n){ return n>=1e6?'$'+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M':n>=1e4?'$'+Math.round(n/1000)+'K':money(n); }
+function num(n){ return Number(n).toLocaleString('en-US'); }
+function img(p,cls){ return CDN+p+'?class='+cls; }
+function addr(a){ return [a.streetNumber,a.streetDirectionPrefix,a.streetName,a.streetSuffix,a.streetDirection].filter(Boolean).join(' ')+(a.unitNumber&&a.unitNumber!=='0'?' #'+a.unitNumber:''); }
+function credit(l){ var ag=(l.agents||[])[0]||{}, b=(l.office||{}).brokerageName||((ag.brokerage||{}).name)||'', a=ag.name?String(ag.name).trim():''; return [a,b].filter(Boolean).join(', ')||'—'; }
+function isLease(l){ return String(l.type||'').toLowerCase()==='lease'; }
+/* same estimate the /homes cards show: 3.5% down FHA-style, taxes + insurance + MI */
+function estTotal(p){ var P=p*.965, r=RATE/1200, n=360, pi=P*r/(1-Math.pow(1+r,-n)); return pi+p*TAXRATE/1200+p*INSRATE/1200+P*MIRATE/1200; }
+
+/* ---------- search (same URL params as /homes, so filters carry over both ways) ---------- */
+var qs=new URLSearchParams(location.search);
+var F={q:(qs.get('q')||'').trim().slice(0,80),type:qs.get('type')==='lease'?'lease':'sale',maxp:/^\d{1,9}$/.test(qs.get('maxp')||'')?qs.get('maxp'):'',
+  minp:/^\d{1,9}$/.test(qs.get('minp')||'')?qs.get('minp'):'',beds:/^\d$/.test(qs.get('beds')||'')?qs.get('beds'):'',baths:/^\d$/.test(qs.get('baths')||'')?qs.get('baths'):'',
+  newc:qs.get('newc')==='1',kinds:(qs.get('kinds')||'Residential').split(',').filter(function(k){ return /^(Residential|Land|Residential Income|Farm)$/.test(k); }),
+  b:(qs.get('b')||'').split(',').map(Number)};
+if(!F.kinds.length) F.kinds=['Residential'];
+if(!(F.b.length===4&&F.b.every(isFinite))) F.b=null;
+var START=/^[A-Za-z0-9-]{3,24}$/.test(qs.get('start')||'')?qs.get('start'):null;
+var S={page:0,pages:1,items:[],busy:false,done:false,asSearch:false,req:0};
+
+function query(page){
+  var p=new URLSearchParams({type:F.type,resultsPerPage:PER,pageNum:page,sortBy:'createdOnDesc'});
+  if(F.b){ var b=F.b; p.set('map',JSON.stringify([[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]]])); }
+  else{ p.set('state',STATE); var q=F.q; if(/^\d{5}$/.test(q)) p.set('zip',q); else if(q&&!/\d/.test(q)&&!S.asSearch) p.set('city',q); else if(q) p.set('search',q); }
+  if(F.newc&&F.type==='sale') p.set('newc','1');
+  if(F.minp) p.set('minPrice',F.minp); if(F.maxp) p.set('maxPrice',F.maxp);
+  if(F.beds) p.set('minBedrooms',F.beds); if(F.baths) p.set('minBaths',F.baths);
+  if(F.type==='sale') F.kinds.forEach(function(k){ p.append('propertyType',k); });
+  return p;
+}
+function homesUrl(){
+  var u=new URLSearchParams();
+  if(F.q) u.set('q',F.q); if(F.type==='lease') u.set('type','lease');
+  ['minp','maxp','beds','baths'].forEach(function(k){ if(F[k]) u.set(k,F[k]); });
+  if(F.newc) u.set('newc','1'); if(F.kinds.join(',')!=='Residential') u.set('kinds',F.kinds.join(','));
+  if(F.b) u.set('b',F.b.join(','));
+  var s=u.toString(); return 'homes'+(s?'?'+s:'');
+}
+function getJSON(u){ return fetch(u).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+
+function loadMore(){
+  if(S.busy||S.done) return; S.busy=true; var mine=S.req, page=S.page+1;
+  getJSON(API+'?'+query(page)).then(function(d){
+    if(mine!==S.req) return;
+    var L=(d.listings||[]).filter(function(l){ return l.images&&l.images.length; });
+    /* a word like "Willis" is a city first; if HAR has no city by that name, try it as a keyword */
+    if(page===1&&!L.length&&F.q&&!/\d/.test(F.q)&&!S.asSearch&&!F.b){ S.asSearch=true; S.busy=false; loadMore(); return; }
+    S.page=page; S.pages=d.numPages||1;
+    if(page===1&&START){ var k=L.findIndex(function(l){ return l.mlsNumber===START; }); if(k>0) L.unshift(L.splice(k,1)[0]); }
+    var seen={}; S.items.forEach(function(l){ seen[l.mlsNumber]=1; });
+    L=L.filter(function(l){ return !seen[l.mlsNumber]; });
+    var from=S.items.length; S.items=S.items.concat(L);
+    if(page>=S.pages||!L.length) S.done=true;
+    appendReels(from); S.busy=false;
+  }).catch(function(){ if(mine!==S.req) return; S.busy=false; if(!S.items.length) showMsg('fail'); });
+}
+/* /reels?start=MLS: open on one home (shared link, or "▶ Video" on a /homes card), then keep going with the search */
+function loadStart(){
+  if(!START) return loadMore();
+  getJSON(API+'?mlsNumber='+encodeURIComponent(START)).then(function(d){
+    var l=d&&d.listings&&d.listings[0];
+    if(l&&l.images&&l.images.length){ S.items=[l]; appendReels(0); }
+  }).catch(function(){}).then(loadMore);
+}
+
+/* ---------- feed ---------- */
+var feed=$('feed'), io, active=null, evCount=0;
+function showMsg(kind){
+  feed.innerHTML='';
+  var m=document.createElement('div'); m.className='msg';
+  if(kind==='loading') m.innerHTML='<div class="spin"></div><span>'+t('loading')+'</span>';
+  else if(kind==='none') m.innerHTML='<span>'+t('none')+'</span><button type="button" data-open="filters">'+t('change')+'</button>';
+  else m.innerHTML='<span>'+t('fail')+'</span><button type="button" data-retry="1">'+t('retry')+'</button>';
+  feed.appendChild(m);
+}
+function specs(l){
+  var d=l.details||{};
+  return [d.numBedrooms!=null?'<b>'+d.numBedrooms+'</b> '+t('bd'):'',d.numBathrooms!=null?'<b>'+d.numBathrooms+'</b> '+t('ba'):'',d.sqft?'<b>'+num(d.sqft)+'</b> '+t('sqft'):''].filter(Boolean).join('<i>·</i>');
+}
+function playable(l){ var v=l.video; return !!(v&&(v.kind==='youtube'||v.kind==='vimeo')); }
+function reelHtml(l,i){
+  var a=l.address||{}, n=l.daysOnMarket, lease=isLease(l), v=l.video, pics=Math.min(l.images.length,MAXPH);
+  var tags=(playable(l)?'<span class="tag vd">'+t('vid')+'</span>':'')+
+    (l.newConstruction?'<span class="tag new">'+t('nc')+'</span>':n!=null&&n<=3?'<span class="tag new">'+t('new_')+'</span>':'')+
+    (l.builder?'<span class="tag">'+esc(l.builder)+'</span>':'');
+  var bars=''; for(var k=0;k<pics;k++) bars+='<i><b></b></i>';
+  var det='homes#'+encodeURIComponent(l.mlsNumber), tour='homes?open=tour#'+encodeURIComponent(l.mlsNumber);
+  return '<div class="media"><div class="bg" style="background-image:url(\''+img(l.images[0],'small')+'\')"></div><div class="frames"></div><div class="vid"></div></div>'+
+    '<div class="bars" style="--d:'+PHOTO_MS+'ms">'+bars+'</div>'+
+    '<div class="tap l" data-tap="-1"></div><div class="tap r" data-tap="1"></div>'+
+    '<div class="shade"></div><div class="pausei">'+IC.pause+'</div>'+
+    '<div class="info">'+(tags?'<div class="tags">'+tags+'</div>':'')+
+      '<div class="pr">'+money(l.listPrice)+(lease?'<span style="font-size:18px">'+t('mo')+'</span>':'')+'</div>'+
+      (lease?'':'<span class="pm">'+t('est')+money(estTotal(l.listPrice))+t('mo')+'</span>')+
+      '<div class="sp">'+specs(l)+'</div>'+
+      '<div class="ad">'+esc(addr(a))+(addr(a)?'<br>':'')+esc(a.city||'')+', '+esc(a.state||'TX')+' '+esc(a.zip||'')+'</div>'+
+      (v&&v.kind==='tour'?'<a class="ttour" href="'+esc(v.url)+'" target="_blank" rel="noopener nofollow">'+t('tour3d')+' ›</a>':'')+
+      '<div class="cr">'+t('listed')+esc(credit(l))+' · MLS# '+esc(l.mlsNumber)+'</div>'+
+      '<div class="cta"><a class="go" href="'+tour+'" data-k="tour">'+t(lease?'go_rent':'go_tour')+'</a><a class="de" href="'+det+'" data-k="det">'+t('go_det')+'</a></div>'+
+    '</div>'+
+    '<div class="rail">'+
+      '<button type="button" class="rb fav'+(favs[l.mlsNumber]?' on':'')+'" data-a="fav"><span class="ic">'+HEART+'</span><span class="lb">'+t(favs[l.mlsNumber]?'saved':'save')+'</span></button>'+
+      '<button type="button" class="rb" data-a="share"><span class="ic">'+IC.share+'</span><span>'+t('share')+'</span></button>'+
+      '<a class="rb" href="'+det+'" data-k="det"><span class="ic">'+IC.info+'</span><span>'+t('details')+'</span></a>'+
+      (playable(l)?'<button type="button" class="rb" data-a="mode"><span class="ic">'+IC.pics+'</span><span class="lb">'+t('photos')+'</span></button>'+
+        (v.kind==='youtube'?'<button type="button" class="rb" data-a="snd"><span class="ic">'+IC.mute+'</span><span class="lb">'+t('muted')+'</span></button>':''):'')+
+    '</div>';
+}
+function evHtml(){
+  return '<div class="evb"><div class="big">'+t('ev_big')+'</div><p>'+t('ev_p')+'</p>'+
+    '<a href="apply.html?'+(lang==='es'?'lang=es&':'')+'src=reels" data-k="eval">'+t('ev_btn')+'</a><small>'+t('ev_fine')+'</small>'+
+    '<div class="sk">'+t('ev_skip')+' ↓</div></div>';
+}
+function appendReels(from){
+  var m=feed.querySelector('.msg'); if(m) m.remove();
+  for(var i=from;i<S.items.length;i++){
+    var l=S.items[i], el=document.createElement('section');
+    el.className='reel'+(playable(l)?' vmode':''); el.setAttribute('data-i',i);
+    el.setAttribute('aria-label',money(l.listPrice)+' — '+addr(l.address||{}));
+    el.innerHTML=reelHtml(l,i); feed.appendChild(el); io.observe(el);
+    if((i+1)%EVERY===0&&i>2){ var e=document.createElement('section'); e.className='reel ev'; e.innerHTML=evHtml(); feed.appendChild(e); io.observe(e); }
+  }
+  if(!S.items.length){ showMsg('none'); return; }
+  if(S.done&&!feed.querySelector('.msg.end')){
+    var end=document.createElement('div'); end.className='msg end';
+    end.innerHTML='<span>'+t('end')+'</span><a href="'+homesUrl()+'">'+t('all')+'</a><p class="legal">'+t('legal')+'</p>';
+    feed.appendChild(end);
+  }
+  if(from===0) firstHint();
+}
+
+/* ---------- one reel at a time: photos cycle, video plays, the rest sleep ---------- */
+function frames(el,l){
+  var fr=el.querySelector('.frames'); if(fr.childNodes.length) return;
+  var pics=l.images.slice(0,MAXPH);
+  fr.innerHTML=pics.map(function(p,k){ return '<img class="fr'+(k===0?' on':'')+' k'+(k%3+1)+'" alt="" decoding="async" '+(k<2?'src':'data-src')+'="'+img(p,'large')+'">'; }).join('');
+}
+function warm(i){ /* build photos for the next couple of reels so swiping never shows a blank */
+  for(var k=i;k<=i+2;k++){ var el=feed.querySelector('.reel[data-i="'+k+'"]'); if(el&&S.items[k]) frames(el,S.items[k]); }
+}
+function showPhoto(el,n){
+  var imgs=el.querySelectorAll('.fr'), bars=el.querySelectorAll('.bars i'); if(!imgs.length) return;
+  n=(n+imgs.length)%imgs.length; el._n=n;
+  imgs.forEach(function(im,k){ if(k===n||k===(n+1)%imgs.length){ if(im.dataset.src){ im.src=im.dataset.src; delete im.dataset.src; } } im.classList.toggle('on',k===n); });
+  /* restart the Ken Burns move on the shown photo */
+  var on=imgs[n]; on.style.animation='none'; void on.offsetWidth; on.style.animation='';
+  bars.forEach(function(b,k){ b.classList.toggle('done',k<n); b.classList.remove('cur'); var f=b.firstChild; f.style.animation='none'; void f.offsetWidth; f.style.animation=''; if(k===n) b.classList.add('cur'); });
+}
+function nextPhoto(el,dir){ showPhoto(el,(el._n||0)+dir); var l=S.items[+el.getAttribute('data-i')]; if(dir&&l) act('photos',l); }
+var muted=true;
+function videoSrc(v){
+  if(v.kind==='youtube') return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(v.id)+'?autoplay=1&mute=1&playsinline=1&loop=1&playlist='+encodeURIComponent(v.id)+'&controls=0&rel=0&modestbranding=1&enablejsapi=1&origin='+encodeURIComponent(location.origin);
+  return 'https://player.vimeo.com/video/'+encodeURIComponent(v.id)+'?autoplay=1&muted=1&loop=1&playsinline=1&title=0&byline=0&portrait=0';
+}
+function ytCmd(el,fn){ var f=el.querySelector('.vid iframe'); if(f&&f.contentWindow) try{ f.contentWindow.postMessage(JSON.stringify({event:'command',func:fn,args:[]}),'*'); }catch(e){} }
+function startVideo(el,l){
+  var box=el.querySelector('.vid'); if(box.firstChild) return;
+  box.innerHTML='<iframe src="'+videoSrc(l.video)+'" title="Video" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+  if(!muted&&l.video.kind==='youtube'){ var f=box.firstChild; f.addEventListener('load',function(){ setTimeout(function(){ ytCmd(el,'unMute'); },400); }); }
+}
+function stopVideo(el){ var box=el.querySelector('.vid'); if(box) box.innerHTML=''; }
+function activate(el){
+  if(active===el) return;
+  if(active){ active.classList.remove('act','paused'); stopVideo(active); clearTimeout(active._vt); }
+  active=el; el.classList.add('act');
+  if(el.classList.contains('ev')){ track('reel_eval_card'); maybeMore(); return; }
+  var i=+el.getAttribute('data-i'), l=S.items[i]; if(!l) return;
+  frames(el,l); warm(i+1);
+  if(el.classList.contains('vmode')) startVideo(el,l); else showPhoto(el,el._n||0);
+  /* counts as a view after 3 seconds on screen (feeds the active buyer score + homepage featured homes) */
+  el._vt=setTimeout(function(){ if(active===el){ logEvent(l.mlsNumber,'view'); act('view',l); track('reel_view',{mls:l.mlsNumber,video:playable(l)?1:0}); } },3000);
+  try{ history.replaceState(null,'',location.pathname+'?'+withStart(l.mlsNumber)); }catch(e){}
+  maybeMore();
+}
+function withStart(m){ var u=new URLSearchParams(location.search); u.set('start',m); return u.toString(); }
+function maybeMore(){ var i=+(active&&active.getAttribute('data-i')); if(!isNaN(i)&&i>=S.items.length-4) loadMore(); else if(active&&active.classList.contains('ev')&&S.items.length) loadMore(); }
+
+/* photos advance when their progress bar fills */
+feed.addEventListener('animationend',function(e){
+  if(e.animationName!=='fill') return; var el=e.target.closest('.reel'); if(el===active&&!el.classList.contains('paused')) showPhoto(el,(el._n||0)+1);
+});
+
+/* ---------- taps ---------- */
+var holdT=null, held=false, lastTap=0;
+feed.addEventListener('pointerdown',function(e){
+  var z=e.target.closest('.tap'); if(!z) return; held=false;
+  holdT=setTimeout(function(){ held=true; var el=z.closest('.reel'); if(el===active){ el.classList.add('paused'); ytCmd(el,'pauseVideo'); } },260);
+});
+function endHold(){ clearTimeout(holdT); if(held&&active){ active.classList.remove('paused'); ytCmd(active,'playVideo'); } }
+feed.addEventListener('pointerup',endHold); feed.addEventListener('pointercancel',endHold); feed.addEventListener('pointerleave',endHold);
+feed.addEventListener('click',function(e){
+  var el=e.target.closest('.reel');
+  var r=e.target.closest('[data-retry]'); if(r){ restart(); return; }
+  if(e.target.closest('[data-open="filters"]')){ openSheet(); return; }
+  var lk=e.target.closest('a[data-k]'); if(lk&&el){ var l0=S.items[+el.getAttribute('data-i')]; if(l0&&lk.getAttribute('data-k')==='tour') act('form_open',l0); track('reel_'+lk.getAttribute('data-k'),{mls:l0&&l0.mlsNumber}); return; }
+  if(!el||el.classList.contains('ev')) return;
+  var l=S.items[+el.getAttribute('data-i')]; if(!l) return;
+  var z=e.target.closest('.tap');
+  if(z){
+    if(held){ held=false; return; }
+    var now=Date.now();
+    if(now-lastTap<300){ lastTap=0; if(!favs[l.mlsNumber]) doFav(el,l,true); return; }   /* double-tap = save, like TikTok */
+    lastTap=now;
+    var dir=+z.getAttribute('data-tap');
+    setTimeout(function(){ if(lastTap===now&&!el.classList.contains('vmode')) nextPhoto(el,dir); },280);
+    return;
+  }
+  var b=e.target.closest('[data-a]'); if(!b) return;
+  var a=b.getAttribute('data-a');
+  if(a==='fav') doFav(el,l,false);
+  else if(a==='share') share(l);
+  else if(a==='mode'){
+    var v=el.classList.toggle('vmode'), lb=b.querySelector('.lb');
+    if(v){ lb.textContent=t('photos'); b.querySelector('.ic').innerHTML=IC.pics; startVideo(el,l); }
+    else{ lb.textContent=t('video'); b.querySelector('.ic').innerHTML=IC.play; stopVideo(el); frames(el,l); showPhoto(el,el._n||0); act('photos',l); }
+  }
+  else if(a==='snd'){
+    muted=!muted; ytCmd(el,muted?'mute':'unMute'); if(!muted) ytCmd(el,'playVideo');
+    feed.querySelectorAll('[data-a="snd"]').forEach(function(s){ s.querySelector('.ic').innerHTML=muted?IC.mute:IC.snd; s.querySelector('.lb').textContent=t(muted?'muted':'sound'); });
+  }
+});
+document.addEventListener('keydown',function(e){
+  if($('sheet').classList.contains('on')||!active) return;
+  if(e.key==='ArrowRight'&&!active.classList.contains('vmode')) nextPhoto(active,1);
+  else if(e.key==='ArrowLeft'&&!active.classList.contains('vmode')) nextPhoto(active,-1);
+  else if(e.key===' '){ e.preventDefault(); active.classList.toggle('paused'); }
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); feed.scrollBy({top:(e.key==='ArrowDown'?1:-1)*feed.clientHeight,behavior:'smooth'}); }
+});
+
+/* ---------- save / share (same accounts + hearts as /homes) ---------- */
+function storeFavs(){ try{ localStorage.setItem('jag_favs',JSON.stringify(favs)); }catch(e){} }
+function paintFav(m){
+  feed.querySelectorAll('.reel[data-i]').forEach(function(el){ var l=S.items[+el.getAttribute('data-i')]; if(!l||(m&&l.mlsNumber!==m)) return;
+    var b=el.querySelector('.fav'); if(!b) return; var on=!!favs[l.mlsNumber]; b.classList.toggle('on',on); b.querySelector('.lb').textContent=t(on?'saved':'save'); });
+}
+function addFav(el,l,burst){
+  favs[l.mlsNumber]=1; storeFavs(); paintFav(l.mlsNumber); logEvent(l.mlsNumber,'save'); track('reel_save',{mls:l.mlsNumber});
+  var b=el.querySelector('.fav'); if(b){ b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+  if(burst){ var h=document.createElement('div'); h.className='burst'; h.innerHTML=HEART; el.appendChild(h); setTimeout(function(){ h.remove(); },900); }
+  toast(t('ev_saved'),t('ev_go'),evalUrl(l));
+  var A=window.JagAccount; if(A&&A.user()) A.addFavorite(l).catch(function(){});
+}
+/* saving needs an account (like the big portals) so we can alert on price and status changes */
+function doFav(el,l,burst){
+  var A=window.JagAccount, m=l.mlsNumber;
+  if(favs[m]){ delete favs[m]; storeFavs(); paintFav(m); if(A&&A.user()) A.removeFavorite(m).catch(function(){}); return; }
+  if(A&&!A.user()){ if(active) active.classList.add('paused'); A.requireSignIn('why_fav').then(function(){ addFav(el,l,burst); }).catch(function(){}).then(function(){ if(active) active.classList.remove('paused'); }); return; }
+  addFav(el,l,burst);
+}
+function syncFavs(){
+  var A=window.JagAccount; if(!A) return;
+  if(!A.user()){ favs={}; storeFavs(); paintFav(); return; }
+  A.favorites().then(function(rows){ var s={}; (rows||[]).forEach(function(r){ s[r.mls]=1; }); Object.keys(favs).forEach(function(k){ s[k]=1; }); favs=s; storeFavs(); paintFav(); }).catch(function(){});
+}
+function evalUrl(l){
+  var u=new URLSearchParams(); if(lang==='es') u.set('lang','es'); u.set('src','reels');
+  if(l){ var a=l.address||{}; u.set('home',addr(a)+', '+a.city+', '+(a.state||'TX')+' '+a.zip); u.set('mls',l.mlsNumber); u.set('price',Math.round(l.listPrice)); }
+  return 'apply.html?'+u.toString();
+}
+function share(l){
+  var url=location.origin+'/reels?start='+encodeURIComponent(l.mlsNumber)+(lang==='en'?'&lang=en':'');
+  var a=l.address||{}, text=t('shtxt')+': '+money(l.listPrice)+' — '+addr(a)+', '+(a.city||'');
+  track('reel_share',{mls:l.mlsNumber});
+  if(navigator.share){ navigator.share({title:'JAG Real Estate',text:text,url:url}).catch(function(){}); return; }
+  (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(function(){ toast(t('copied')); }).catch(function(){ prompt(t('copied'),url); });
+}
+var toastT;
+function toast(msg,link,href){
+  $('toastmsg').textContent=msg; var a=$('toastlink'); a.textContent=link||''; a.style.display=link?'':'none'; if(href) a.href=href;
+  $('toast').classList.add('on'); clearTimeout(toastT); toastT=setTimeout(function(){ $('toast').classList.remove('on'); },link?7000:2200);
+}
+
+/* ---------- tracking (same signals /homes sends) ---------- */
+var acted={}, logged={};
+function act(kind,l){
+  try{ if(!window.JagAccount||!JagAccount.user()) return;
+    var m=l&&l.mlsNumber?String(l.mlsNumber):'', k=kind+':'+m; if(acted[k]) return; acted[k]=1; var la=(l&&l.address)||{};
+    JagAccount.logActivity({kind:kind,mls:m||null,zip:la.zip||null,city:la.city?String(la.city).slice(0,60):null,price:(l&&l.listPrice)||null});
+  }catch(e){}
+}
+function logEvent(mls,kind){
+  try{
+    var c=window.JAG_CRM||{}; if(!c.url||!c.anonKey||!mls) return;
+    var k=kind+':'+mls; if(logged[k]) return; logged[k]=1;
+    if(kind==='view'){ try{ if(sessionStorage.getItem('jv:'+mls)) return; sessionStorage.setItem('jv:'+mls,'1'); }catch(e){} }
+    fetch(c.url.replace(/\/+$/,'')+'/rest/v1/rpc/jag_log_listing_event',{method:'POST',keepalive:true,
+      headers:{apikey:c.anonKey,Authorization:'Bearer '+c.anonKey,'Content-Type':'application/json'},
+      body:JSON.stringify({p_mls:mls,p_kind:kind})}).catch(function(){});
+  }catch(e){}
+}
+function track(kind,extra){ try{ if(window.JagTrack) JagTrack.ev(kind,extra||{}); }catch(e){} }
+
+/* ---------- filters ---------- */
+function areaLabel(){ return F.b?(lang==='es'?'Área del mapa':'Map area'):(F.q||t('area_all')); }
+function fillSheet(){
+  $('fq').value=F.q;
+  [].forEach.call($('ftype').children,function(b){ b.classList.toggle('on',b.getAttribute('data-v')===F.type); });
+  var steps=F.type==='lease'?[1000,1500,2000,2500,3000,4000,5000]:[150000,200000,250000,300000,350000,400000,500000,750000,1000000];
+  var sp=F.type==='lease'?money:short;
+  $('fmax').innerHTML='<option value="">'+t('nomax')+'</option>'+steps.map(function(v){ return '<option value="'+v+'"'+(String(v)===F.maxp?' selected':'')+'>'+sp(v)+'</option>'; }).join('');
+  $('fbeds').innerHTML='<option value="">'+t('any')+'</option>'+[1,2,3,4,5].map(function(v){ return '<option value="'+v+'"'+(String(v)===F.beds?' selected':'')+'>'+v+'+</option>'; }).join('');
+}
+function openSheet(){ fillSheet(); $('scrim').classList.add('on'); $('sheet').classList.add('on'); if(active) active.classList.add('paused'); setTimeout(function(){ $('fq').focus(); },250); }
+function closeSheet(){ $('scrim').classList.remove('on'); $('sheet').classList.remove('on'); if(active) active.classList.remove('paused'); }
+$('areaBtn').addEventListener('click',openSheet);
+$('scrim').addEventListener('click',closeSheet);
+$('ftype').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; F.type=b.getAttribute('data-v'); F.maxp=''; fillSheet(); });
+$('sheet').addEventListener('submit',function(e){
+  e.preventDefault(); F.q=$('fq').value.trim().slice(0,80); F.maxp=$('fmax').value; F.beds=$('fbeds').value; F.b=null; F.minp=''; START=null;
+  var u=new URLSearchParams(); if(F.q) u.set('q',F.q); if(F.type==='lease') u.set('type','lease'); if(F.maxp) u.set('maxp',F.maxp); if(F.beds) u.set('beds',F.beds);
+  try{ history.replaceState(null,'',location.pathname+(u.toString()?'?'+u.toString():'')); }catch(e2){}
+  closeSheet(); restart(); track('reel_search');
+});
+function restart(){
+  S={page:0,pages:1,items:[],busy:false,done:false,asSearch:false,req:S.req+1};
+  if(active){ stopVideo(active); active=null; }
+  showMsg('loading'); feed.scrollTop=0; paintTop(); loadStart();
+}
+
+/* ---------- language ---------- */
+function paintTop(){ $('areaTx').textContent=areaLabel(); $('back').href=homesUrl(); }
+function applyLang(rerender){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-t]').forEach(function(el){ el.textContent=t(el.getAttribute('data-t')); });
+  document.querySelectorAll('[data-ph]').forEach(function(el){ el.placeholder=t(el.getAttribute('data-ph')); });
+  document.querySelectorAll('.langs button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-lang')===lang); });
+  paintTop(); if(window.JagAccount&&JagAccount.relabel) JagAccount.relabel();
+  if(rerender) feed.querySelectorAll('.reel[data-i]').forEach(function(el){
+    var i=+el.getAttribute('data-i'), l=S.items[i], wasV=el.classList.contains('vmode'), n=el._n||0, isAct=el===active;
+    el.innerHTML=reelHtml(l,i); if(isAct){ active=null; el.classList.remove('act'); activate(el); if(!wasV) showPhoto(el,n); }
+  });
+  feed.querySelectorAll('.reel.ev').forEach(function(el){ el.innerHTML=evHtml(); });
+}
+document.querySelectorAll('.langs button').forEach(function(b){
+  b.addEventListener('click',function(){ lang=b.getAttribute('data-lang'); try{ localStorage.setItem('jag_lang',lang); }catch(e){} applyLang(true); });
+});
+if(qs.get('lang')==='en'||qs.get('lang')==='es') lang=qs.get('lang');
+
+function firstHint(){
+  try{ if(localStorage.getItem('jag_reels_hint')) return; localStorage.setItem('jag_reels_hint','1'); }catch(e){ return; }
+  var h=$('hint'); h.classList.add('on'); var off=function(){ h.classList.remove('on'); feed.removeEventListener('scroll',off); };
+  feed.addEventListener('scroll',off); setTimeout(off,5200);
+}
+
+/* ---------- go ---------- */
+io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting&&e.intersectionRatio>=.6) activate(e.target); }); },{root:feed,threshold:[.6]});
+document.addEventListener('visibilitychange',function(){ if(!active) return; if(document.hidden){ active.classList.add('paused'); ytCmd(active,'pauseVideo'); } else { active.classList.remove('paused'); ytCmd(active,'playVideo'); } });
+if(window.JagAccount){ if(JagAccount.onChange) JagAccount.onChange(syncFavs); if(JagAccount.user()) syncFavs(); }
+applyLang(false); showMsg('loading'); loadStart(); track('reels_open');
+</script>
+</body>
+</html>

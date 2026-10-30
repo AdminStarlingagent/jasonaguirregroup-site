@@ -357,6 +357,13 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
 .stg-bg{position:relative;z-index:0;font-size:clamp(80px,15vw,210px);font-weight:800;letter-spacing:-.065em;line-height:.86;color:#efedea;white-space:nowrap;user-select:none}
 .stg-ph{position:relative;z-index:1;margin:clamp(-120px,-7vw,-48px) 0 0 32%;height:min(56vh,520px)}
 .stg-img{display:block;width:100%;height:100%;border:0;padding:0;border-radius:28px;background:var(--card) center/cover no-repeat;cursor:zoom-in}
+.stg-ph .reelb{position:absolute;left:14px;top:14px;border-radius:99px;background:var(--ink);color:#fff;font-weight:800;font-size:13px;padding:12px 18px;text-decoration:none;box-shadow:0 6px 20px rgba(23,22,28,.25)}
+.c .vbadge{position:absolute;left:8px;bottom:8px;background:#fff;color:var(--ink);border-radius:99px;font-size:12px;font-weight:800;padding:4px 10px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.reelsbtn{flex:none;height:42px;border-radius:6px;background:var(--ink);color:#fff;font-weight:800;padding:0 14px;display:flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap}
+.reelsbtn svg{width:15px;height:15px;fill:#fff}
+@media (max-width:760px){.reelsbtn{height:36px;font-size:13px;padding:0 11px}}
+.reelsfab{display:none}
+@media (max-width:760px){.reelsfab{display:flex;align-items:center;gap:6px;position:fixed;left:14px;bottom:18px;z-index:550;background:var(--buy);color:#fff;border-radius:99px;padding:12px 18px;font-weight:800;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.3)}.reelsfab svg{width:14px;height:14px;fill:#fff}}
 .stg-ph .all{position:absolute;right:16px;bottom:16px;border:0;border-radius:99px;background:#fff;color:var(--buy);font-weight:800;font-size:13px;padding:12px 18px;box-shadow:0 6px 20px rgba(23,22,28,.2)}
 .stg-card{position:relative;z-index:3;width:min(420px,calc(100% - 24px));margin:-300px 0 0 3%;background:#fff;border-radius:24px;padding:26px;box-shadow:0 24px 60px rgba(23,22,28,.18),0 2px 8px rgba(23,22,28,.06);display:flex;flex-direction:column;gap:14px}
 .stg-k{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -446,6 +453,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
     <div class="dd" data-dd="kind"><button type="button" class="pill" id="p_kind"></button>
       <div class="pop"><h4 data-t="h_kind"></h4><div id="kinds"></div><button type="button" class="apply" data-t="apply"></button></div></div>
     <button class="pill" type="button" id="p_new" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/><path d="M12 2v3"/></svg><span data-t="newc"></span></button>
+    <a class="reelsbtn" id="reelsBtn" href="reels"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg><span data-t="reels"></span></a>
     <button class="savebtn" type="button" id="saveBtn" data-t="save"></button>
   </div>
 </div>
@@ -478,6 +486,7 @@ table.ph td{padding:12px;border-bottom:1px solid var(--line)}
   </section>
 </div>
 <button class="viewtog" id="viewtog" type="button"></button>
+<a class="reelsfab" id="reelsFab" href="reels"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg><span data-t="reels"></span></a>
 
 <div class="ov" id="ov" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
 <div class="fm" id="fm"></div>
@@ -517,7 +526,7 @@ var T={
   fail:'No pudimos cargar las casas. Intenta de nuevo.',prev:'‹ Anterior',next:'Siguiente ›',page:'Página ',of:' de ',
   bd:'rec',ba:'ba',sqft:'pies²',est:'Est. ',mo:'/mes',forsale:'Casa en venta',forrent:'Casa en renta',
   new_:'Nueva',dom:' días en el mercado',back:'‹ Volver a la búsqueda',savehome:'Guardar',saved:'Guardada',share:'Compartir',copied:'Enlace copiado',
-  allph:'Ver las ',photos:' fotos',estpay:'Pago est.: ',prequal:'Precalifícate',
+  allph:'Ver las ',reels:'Reels',reel_v:'▶ Ver video',reel_p:'▶ Ver en Reels',photos:' fotos',estpay:'Pago est.: ',prequal:'Precalifícate',
   f_type:'Tipo',f_year:'Construida en',f_lot:'Terreno',f_dom:'Días en venta',f_ppsf:'Precio/pie²',f_mls:'MLS #',acres:' acres',
   about:'Sobre esta casa',more:'Ver más',less:'Ver menos',pay_h:'Pago mensual estimado',down:'Enganche',rate:'Interés %',
   pay_fine:'Todos los montos son estimados para fines informativos y pueden variar. Los impuestos, el seguro y el seguro hipotecario son aproximados salvo que se indique que vienen del listado. No es una oferta ni una aprobación de préstamo.',
@@ -561,7 +570,7 @@ var T={
   fail:'We couldn\'t load homes. Please try again.',prev:'‹ Previous',next:'Next ›',page:'Page ',of:' of ',
   bd:'bds',ba:'ba',sqft:'sqft',est:'Est. ',mo:'/mo',forsale:'House for sale',forrent:'House for rent',
   new_:'New',dom:' days on market',back:'‹ Back to search',savehome:'Save',saved:'Saved',share:'Share',copied:'Link copied',
-  allph:'See all ',photos:' photos',estpay:'Est. payment: ',prequal:'Get pre-qualified',
+  allph:'See all ',reels:'Reels',reel_v:'▶ Watch video',reel_p:'▶ Watch as a reel',photos:' photos',estpay:'Est. payment: ',prequal:'Get pre-qualified',
   f_type:'Type',f_year:'Built in',f_lot:'Lot',f_dom:'Days on market',f_ppsf:'Price/sqft',f_mls:'MLS #',acres:' acres',
   about:'About this home',more:'Show more',less:'Show less',pay_h:'Estimated monthly payment',down:'Down payment',rate:'Rate %',
   pay_fine:'All amounts are estimates for information only and may vary. Taxes, insurance and mortgage insurance are approximate unless marked as coming from the listing. Not a loan offer or approval.',
@@ -735,6 +744,7 @@ function specs(l){
 }
 function render(fit){
   if(state.count===undefined) return;
+  var ru=reelsUrl(null); ['reelsBtn','reelsFab'].forEach(function(id){ var b=$(id); if(b) b.href=ru; });
   var g=$('grid'), lease=F.type==='lease'; g.style.opacity=1;
   var q=$('q').value.trim();
   $('title').textContent=PICKS.length?t('picked'):t(lease?'ttl_lease':'ttl_sale')+t('ttl_in')+(state.near&&state.bounds?t('near_t'):state.bounds?t('area'):(q||t('tx')));
@@ -747,6 +757,7 @@ function render(fit){
       '<div class="ph" style="background-image:url(\''+img(l.images[0],'small')+'\')">'+
         (l.newConstruction?'<span class="tag nc">'+t('nc_tag')+'</span>':n!=null?'<span class="tag">'+(n<=3?t('new_'):n+t('dom'))+'</span>':'')+
         '<button type="button" class="heart'+(favs[l.mlsNumber]?' on':'')+'" aria-label="'+t('savehome')+'">'+HEART+'</button>'+
+        (hasVid(l)?'<a class="vbadge" href="'+reelsUrl(l.mlsNumber)+'">'+t('reel_v')+'</a>':'')+
         (l.images.length>1?'<button type="button" class="nav p" aria-label="‹">‹</button><button type="button" class="nav x" aria-label="›">›</button>':'')+'</div>'+
       '<div class="bd"><div class="pr">'+money(l.listPrice)+(lease?'<span class="pm" style="color:inherit">'+t('mo')+'</span>':'<span class="pm">'+t('est')+money(estTotal(l.listPrice))+t('mo')+'</span>')+'</div>'+
       '<div class="sp">'+specs(l)+' <em>- '+t(lease?'forrent':'forsale')+'</em></div>'+
@@ -861,6 +872,7 @@ function syncFavs(){
 }
 if(window.JagAccount){ JagAccount.onChange(syncFavs); if(JagAccount.user()) syncFavs(); }
 $('grid').addEventListener('click',function(e){
+  if(e.target.closest('a[href]')) return;
   var c=e.target.closest('.c'); if(!c) return; var i=+c.getAttribute('data-i'), l=state.items[i];
   var h=e.target.closest('.heart'); if(h){ h.classList.toggle('on',toggleFav(l.mlsNumber)); return; }
   var nv=e.target.closest('.nav');
@@ -1020,7 +1032,8 @@ function openDetail(i){
       '<button class="act" type="button" id="dshare"><svg viewBox="0 0 24 24"><path d="M12 15V4m0 0l-4 4m4-4l4 4M5 13v6h14v-6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>'+t('share')+'</span></button></div>'+
     '<div class="stg"><div class="stg-bg" aria-hidden="true">'+money(l.listPrice)+'</div>'+
       '<div class="stg-ph"><button type="button" class="stg-img" data-k="0" aria-label="'+t('allph')+l.images.length+t('photos')+'" style="background-image:url(\''+img(l.images[0],'large')+'\')"></button>'+
-        (l.images.length>1?'<button type="button" class="all" data-k="0">'+t('allph')+l.images.length+t('photos')+'</button>':'')+'</div>'+
+        (l.images.length>1?'<button type="button" class="all" data-k="0">'+t('allph')+l.images.length+t('photos')+'</button>':'')+
+        '<a class="reelb" href="'+reelsUrl(l.mlsNumber)+'">'+t(hasVid(l)?'reel_v':'reel_p')+'</a></div>'+
       '<div class="stg-card"><div class="stg-k">'+t(lease?'forrent':'forsale')+' · MLS '+esc(l.mlsNumber)+'</div>'+
         '<h2 class="stg-pr">'+money(l.listPrice)+(lease?'<small>'+t('mo')+'</small>':'')+'</h2>'+
         '<div class="stg-ad">'+esc(full)+'</div>'+
@@ -1135,6 +1148,16 @@ function searchLabel(){
   if(F.minp&&F.maxp) parts.push(sp(+F.minp)+'–'+sp(+F.maxp)); else if(F.maxp) parts.push(t('ss_upto')+sp(+F.maxp)); else if(F.minp) parts.push(t('ss_from')+sp(+F.minp));
   return parts.join(' · ');
 }
+/* JAG Reels: the same search as a swipeable video feed (reels.html reads the same URL params) */
+function hasVid(l){ var v=l&&l.video; return !!(v&&(v.kind==='youtube'||v.kind==='vimeo')); }
+function reelsUrl(start){
+  var u=new URLSearchParams(), q=$('q').value.trim();
+  if(q&&!PICKS.length) u.set('q',q); if(F.type==='lease') u.set('type','lease');
+  ['minp','maxp','beds','baths'].forEach(function(k){ if(F[k]) u.set(k,F[k]); });
+  if(F.newc) u.set('newc','1'); if(F.kinds.join(',')!=='Residential') u.set('kinds',F.kinds.join(','));
+  if(state.bounds) u.set('b',state.bounds.toBBoxString()); if(start) u.set('start',start);
+  var s=u.toString(); return 'reels'+(s?'?'+s:'');
+}
 function currentSearch(){
   var p=query(), apiP={};
   ['pageNum','resultsPerPage','sortBy'].forEach(function(k){ p.delete(k); });
@@ -1226,7 +1249,9 @@ if(window.JagAccount) JagAccount.mountButton($('acct'));
 (function(){
   var m=/^#([A-Za-z0-9-]{3,24})$/.exec(location.hash); if(!m) return;
   fetch(API+'?mlsNumber='+encodeURIComponent(m[1])).then(function(r){ return r.ok?r.json():null; })
-   .then(function(d){ if(d&&d.listings&&d.listings[0]) openDetail(d.listings[0]); }).catch(function(){});
+   .then(function(d){ if(d&&d.listings&&d.listings[0]){ openDetail(d.listings[0]);
+     /* homes?open=tour#MLS (from JAG Reels): go straight to the showing request */
+     if(new URLSearchParams(location.search).get('open')==='tour') setTimeout(function(){ openForm('tour',d.listings[0]); },150); } }).catch(function(){});
 })();
 </script>
 </body>

@@ -30,6 +30,8 @@ const FIELDS = [
   "details.sqft", "details.yearBuilt", "details.description",
   "details.propertyType", "details.style", "lot.acres",
   "office.brokerageName", "agents", "permissions", "raw.NewConstructionYN", "raw.BuilderName",
+  // the listing agent's own video / virtual tour link (feeds JAG Reels)
+  "details.virtualTourUrl", "details.alternateURLVideoLink",
 ].join(",");
 
 // Extra facts for a single listing page (?detail=1 with one mlsNumber).
@@ -64,8 +66,35 @@ function json(body: unknown, status: number, origin: string | null, extra: Recor
   });
 }
 
+// HAR video/tour fields are free text ("Lamar – https://youtu.be/…"). Pull out the first link and
+// say what it is, so pages can play YouTube/Vimeo inline and open anything else as a tour link.
+function videoOf(d: any) {
+  for (const raw of [d?.alternateURLVideoLink, d?.virtualTourUrl]) {
+    if (typeof raw !== "string") continue;
+    const m = raw.match(/https?:\/\/[^\s"'<>]+/i);
+    if (!m) continue;
+    let u: URL;
+    try { u = new URL(m[0].replace(/[),.;]+$/, "")); } catch { continue; }
+    if (u.protocol !== "https:" && u.protocol !== "http:") continue;
+    const host = u.hostname.replace(/^www\.|^m\./, "").toLowerCase();
+    let id: string | null = null;
+    if (host === "youtu.be") id = u.pathname.split("/")[1] || null;
+    else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+      id = u.searchParams.get("v") || (u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/) || [])[1] || null;
+    }
+    if (id && /^[A-Za-z0-9_-]{6,20}$/.test(id)) return { kind: "youtube", id, url: "https://youtu.be/" + id };
+    if (host === "vimeo.com" || host === "player.vimeo.com") {
+      const v = (u.pathname.match(/(\d{6,12})/) || [])[1];
+      if (v) return { kind: "vimeo", id: v, url: "https://vimeo.com/" + v };
+    }
+    u.protocol = "https:";
+    return { kind: "tour", id: null, url: u.toString().slice(0, 500) };
+  }
+  return null;
+}
+
 // Respect the listing's own display permissions from the MLS.
-function clean(l: any) {
+function clean(l: any, detail = false) {
   const p = l.permissions || {};
   if (p.displayPublic === "N" || p.displayInternetEntireListing === "N") return null;
   if (p.displayAddressOnInternet === "N" && l.address) {
@@ -73,6 +102,8 @@ function clean(l: any) {
     delete l.map;
   }
   delete l.permissions;
+  l.video = videoOf(l.details);
+  if (!detail && l.details) { delete l.details.virtualTourUrl; delete l.details.alternateURLVideoLink; }
   // only the two raw MLS facts we show: new construction + builder
   const r = l.raw || {};
   l.newConstruction = r.NewConstructionYN === true;
@@ -130,7 +161,7 @@ Deno.serve(async (req: Request) => {
       return json({ error: "upstream_error", status: r.status }, 502, origin);
     }
     const d = await r.json();
-    const listings = (d.listings ?? []).map(clean).filter(Boolean);
+    const listings = (d.listings ?? []).map((l: any) => clean(l, detail)).filter(Boolean);
     return json(
       { count: d.count ?? 0, numPages: d.numPages ?? 1, page: d.page ?? 1, listings },
       200,
