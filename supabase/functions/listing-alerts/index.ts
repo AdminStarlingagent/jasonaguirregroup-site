@@ -18,8 +18,10 @@ const RESEND = Deno.env.get("RESEND_API_KEY") || "";
 const FROM = Deno.env.get("ALERTS_FROM") || "Jason Aguirre Group <alerts@updates.jasonhoustonrealty.com>";
 const REPLY_TO = Deno.env.get("ALERTS_REPLY_TO") || "jason.aguirre@jasonhoustonrealty.com";
 const BOARD = "147";
-const FIELDS = "mlsNumber,listPrice,type,address,images,details.numBedrooms,details.numBathrooms,details.sqft,details.propertyType,permissions,standardStatus,listDate";
-const SEARCH_KEYS = new Set(["type", "state", "city", "zip", "search", "map", "minPrice", "maxPrice", "minBedrooms", "minBaths", "propertyType"]);
+const FIELDS = "mlsNumber,listPrice,type,address,images,details.numBedrooms,details.numBathrooms,details.sqft,details.propertyType,details.style,permissions,standardStatus,listDate,status,lastStatus";
+const SEARCH_KEYS = new Set(["type", "state", "city", "zip", "search", "map", "minPrice", "maxPrice", "minBedrooms", "minBaths", "propertyType",
+  // the full filter page (homes.html, Oct 2026): max beds/baths, size, lot, year built, garage, home style (house / townhome / condo)
+  "maxBedrooms", "maxBaths", "minSqft", "maxSqft", "minLotSizeSqft", "maxLotSizeSqft", "minYearBuilt", "maxYearBuilt", "minGarageSpaces", "style"]);
 
 type Row = Record<string, any>;
 
@@ -32,10 +34,11 @@ async function db(path: string, init: RequestInit = {}): Promise<any> {
   return r.status === 204 ? null : r.json().catch(() => null);
 }
 
+let lastErr = "";
 async function repliers(q: URLSearchParams): Promise<Row[]> {
   q.set("boardId", BOARD);
   const r = await fetch("https://api.repliers.io/listings?" + q.toString(), { headers: { "REPLIERS-API-KEY": RK, Accept: "application/json" } });
-  if (!r.ok) { console.error("repliers", r.status, (await r.text()).slice(0, 200)); return []; }
+  if (!r.ok) { lastErr = `${r.status} ${(await r.text()).slice(0, 200)}`; console.error("repliers", lastErr); return []; }
   const d = await r.json();
   return (d.listings || []).filter((l: Row) => {
     const p = l.permissions || {};
@@ -66,6 +69,38 @@ async function sig(uid: string) {
   return Array.from(new Uint8Array(s)).slice(0, 16).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/* A saved search → the Repliers query for what is new since the last check, the same filters the search page uses.
+   For sale (default, or "for sale + under contract"): homes listed since the last check.
+   "Under contract" searches: homes that went under contract since the last check. "Sold": homes that sold since then.
+   "Open houses only": homes with an open house coming up (each home is announced once). */
+function searchQuery(params: Row, lastChecked: string): { q: URLSearchParams; dedupe: string; alt: string | null } | null {
+  const api = (params && params.api) || {}, ui = (params && params.ui) || {};
+  if (api.type === "lease") return null;
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(api)) {
+    if (!SEARCH_KEYS.has(k)) continue;
+    for (const x of ([] as any[]).concat(v)) q.append(k, String(x).slice(0, 2000));
+  }
+  if (String(api.newc) === "1") q.set("raw.NewConstructionYN", "true"); // "Construcción nueva" searches
+  q.append("class", "residential"); q.append("class", "condo");
+  q.set("hasImages", "true"); q.set("resultsPerPage", "15"); q.set("fields", FIELDS);
+  const since = day(new Date(lastChecked || Date.now()).getTime() - 864e5);
+  const st = String(api.st || ui.st || "active");
+  const todayCT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date());
+  if (st === "sold") {
+    q.set("status", "U"); q.set("lastStatus", "Sld"); q.set("minSoldDate", since); q.set("sortBy", "soldDateDesc");
+    return { q, dedupe: "sold:", alt: "sold" };
+  }
+  if (st === "pending") {
+    q.set("status", "U"); q.set("lastStatus", "Sc"); q.set("minUnavailableDate", since); q.set("sortBy", "updatedOnDesc");
+    return { q, dedupe: "pend:", alt: "pending" };
+  }
+  q.set("status", "A"); q.set("sortBy", "createdOnDesc");
+  if (ui.open) { q.set("minOpenHouseDate", todayCT); return { q, dedupe: "new:", alt: "open" }; }
+  q.set("minListDate", since);
+  return { q, dedupe: "new:", alt: null };
+}
+
 /* ---------------- collect alerts ---------------- */
 async function collect(clients: Map<string, Row>) {
   const now = new Date();
@@ -76,22 +111,13 @@ async function collect(clients: Map<string, Row>) {
   const searches: Row[] = await db("jag_client_searches?select=*&alerts=eq.true");
   for (const s of searches) {
     if (!clients.has(s.user_id)) continue;
-    const api = (s.params && s.params.api) || {};
-    if (api.type === "lease") continue; // rental alerts not offered yet
-    const q = new URLSearchParams();
-    for (const [k, v] of Object.entries(api)) {
-      if (!SEARCH_KEYS.has(k)) continue;
-      for (const x of ([] as any[]).concat(v)) q.append(k, String(x).slice(0, 2000));
-    }
-    if (String(api.newc) === "1") q.set("raw.NewConstructionYN", "true"); // "Construcción nueva" searches
-    q.set("status", "A"); q.append("class", "residential"); q.append("class", "condo");
-    q.set("hasImages", "true"); q.set("minListDate", day(new Date(s.last_checked_at).getTime() - 864e5));
-    q.set("sortBy", "createdOnDesc"); q.set("resultsPerPage", "15"); q.set("fields", FIELDS);
-    const ls = await repliers(q);
+    const sq = searchQuery(s.params, s.last_checked_at);
+    if (!sq) continue; // rental alerts not offered yet
+    const ls = await repliers(sq.q);
     stats.searches++;
     for (const l of ls) {
-      out.push({ user_id: s.user_id, kind: "new", mls: String(l.mlsNumber), search_id: s.id, dedupe: "new:" + l.mlsNumber,
-        detail: { label: s.label, snap: snap(l) } });
+      out.push({ user_id: s.user_id, kind: "new", mls: String(l.mlsNumber), search_id: s.id, dedupe: sq.dedupe + l.mlsNumber,
+        detail: { label: s.label, snap: snap(l), ...(sq.alt ? { alt: sq.alt } : {}) } });
     }
     await db(`jag_client_searches?id=eq.${s.id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ last_checked_at: now.toISOString() }) });
   }
@@ -180,13 +206,13 @@ async function collect(clients: Map<string, Row>) {
 /* ---------------- email (JAG design from jag-email.ts) ---------------- */
 const TXT: Record<string, Record<string, any>> = {
   es: { hi: "Hola", intro: "Tenemos novedades de casas para usted:", new: "Casa nueva", smart: "Casa nueva parecida a lo que busca", price: "Cambió de precio", status: "Cambió de estado",
-    view: "Ver la casa", manage: "Administrar mis avisos", unsub: "Dejar de recibir estos correos", why: "Recibe este correo porque tiene avisos de casas en su cuenta de jasonaguirregroup.company (usted o su agente los activó).",
+    sold: "Se vendió", pending: "Bajo contrato", open: "Casa abierta", view: "Ver la casa", manage: "Administrar mis avisos", unsub: "Dejar de recibir estos correos", why: "Recibe este correo porque tiene avisos de casas en su cuenta de jasonaguirregroup.company (usted o su agente los activó).",
     disc: "Información de listados de HAR a través de Repliers; se considera confiable pero no garantizada.", bd: "rec", ba: "baños", sqft: "pies²", for: "Para su búsqueda: ",
-    s_new: (n: number) => n === 1 ? "1 casa nueva para usted" : `${n} casas nuevas para usted`, s_change: "Novedades de sus casas guardadas", cta: "¿Quiere verla o saber si califica? Responda a este correo o llámenos al", all: "Ver todo en mi cuenta" },
+    s_new: (n: number) => n === 1 ? "1 casa nueva para usted" : `${n} casas nuevas para usted`, s_change: "Novedades de sus casas guardadas", s_alt: (n: number) => n === 1 ? "1 novedad para su búsqueda" : `${n} novedades para su búsqueda`, cta: "¿Quiere verla o saber si califica? Responda a este correo o llámenos al", all: "Ver todo en mi cuenta" },
   en: { hi: "Hi", intro: "Here is what is new for you:", new: "New home", smart: "New home like what you are looking for", price: "Price change", status: "Status change",
-    view: "View home", manage: "Manage my alerts", unsub: "Unsubscribe from these emails", why: "You get this email because your jasonaguirregroup.company account has home alerts on (set up by you or your agent).",
+    sold: "Just sold", pending: "Under contract", open: "Open house", view: "View home", manage: "Manage my alerts", unsub: "Unsubscribe from these emails", why: "You get this email because your jasonaguirregroup.company account has home alerts on (set up by you or your agent).",
     disc: "Listing information from HAR through Repliers; deemed reliable but not guaranteed.", bd: "bd", ba: "ba", sqft: "sqft", for: "For your search: ",
-    s_new: (n: number) => n === 1 ? "1 new home for you" : `${n} new homes for you`, s_change: "Updates on your saved homes", cta: "Want to see it or find out if you qualify? Reply to this email or call", all: "See everything in my account" },
+    s_new: (n: number) => n === 1 ? "1 new home for you" : `${n} new homes for you`, s_change: "Updates on your saved homes", s_alt: (n: number) => n === 1 ? "1 update for your search" : `${n} updates for your search`, cta: "Want to see it or find out if you qualify? Reply to this email or call", all: "See everything in my account" },
 };
 
 function emailHtml(c: Row, alerts: Row[], unsubUrl: string, subject: string) {
@@ -196,7 +222,7 @@ function emailHtml(c: Row, alerts: Row[], unsubUrl: string, subject: string) {
   const cards = alerts.slice(0, 12).map((a) => {
     const d = a.detail || {}, s = d.snap || {};
     const label = a.kind === "price" ? esc(L.price) : a.kind === "status" ? `${esc(L.status)}: ${esc(d.new_status)}`
-      : `${esc(d.smart ? L.smart : L.new)}${d.label && !d.smart ? ` · <span style="color:${C.muted};font-weight:600">${esc(L.for)}${esc(d.label)}</span>` : ""}`;
+      : `${esc(d.smart ? L.smart : d.alt ? L[d.alt] : L.new)}${d.label && !d.smart ? ` · <span style="color:${C.muted};font-weight:600">${esc(L.for)}${esc(d.label)}</span>` : ""}`;
     const priceHtml = a.kind === "price"
       ? `<div style="font-size:26px;line-height:1.2;font-weight:800;letter-spacing:-.5px">${money(d.new_price)} <span style="font-size:16px;font-weight:600;color:${C.muted};text-decoration:line-through">${money(d.old_price)}</span></div>`
       : undefined;
@@ -265,8 +291,9 @@ async function sendEmails(clients: Map<string, Row>) {
     if (!out.length) continue;
     if (!RESEND) { skipped++; continue; }
     const L = TXT[c.lang === "en" ? "en" : "es"];
-    const nNew = out.filter((a) => a.kind === "new").length;
-    const subject = nNew ? L.s_new(nNew) : L.s_change;
+    const nNew = out.filter((a) => a.kind === "new" && !(a.detail || {}).alt).length;
+    const nAlt = out.filter((a) => a.kind === "new" && (a.detail || {}).alt).length;
+    const subject = nNew ? L.s_new(nNew) : nAlt ? L.s_alt(nAlt) : L.s_change;
     const tok = await sig(uid);
     const fnUnsub = `${SB}/functions/v1/listing-alerts?u=${uid}&s=${tok}`;
     const pageUnsub = `${SITE}/unsubscribe?u=${uid}&s=${tok}`;
@@ -313,6 +340,23 @@ Deno.serve(async (req: Request) => {
     if (ok !== true) return new Response(JSON.stringify({ error: "forbidden" }), { status: 403 });
     if (!RK) return new Response(JSON.stringify({ error: "REPLIERS_API_KEY missing" }), { status: 503 });
 
+    // dry run (team testing): {dry:true, params?:{api,ui}} → what each saved search (or the given one) would find; nothing is saved or sent
+    const body: Row = await req.json().catch(() => ({}));
+    if (body && body.dry) {
+      const since = body.since || new Date(Date.now() - 3 * 864e5).toISOString();
+      const list: Row[] = body.params ? [{ id: "test", label: "test", params: body.params }] : await db("jag_client_searches?select=id,label,params&alerts=eq.true");
+      const res: Row[] = [];
+      for (const s of list) {
+        lastErr = "";
+        const sq = searchQuery(s.params, since);
+        if (!sq) { res.push({ id: s.id, label: s.label, skip: "lease" }); continue; }
+        const ls = await repliers(sq.q);
+        res.push({ id: s.id, label: s.label, alt: sq.alt, error: lastErr || null, n: ls.length,
+          q: Object.fromEntries([...sq.q.entries()].filter(([k]) => k !== "fields")),
+          sample: ls.slice(0, 4).map((l) => ({ mls: l.mlsNumber, price: l.listPrice, beds: l.details?.numBedrooms, sqft: l.details?.sqft, ptype: l.details?.propertyType, style: l.details?.style, status: l.status, last: l.lastStatus })) });
+      }
+      return new Response(JSON.stringify({ ok: true, dry: true, res }), { headers: { "Content-Type": "application/json" } });
+    }
     const list: Row[] = await db("jag_clients?select=*");
     const clients = new Map(list.map((c) => [c.user_id, c]));
     const col = await collect(clients);
